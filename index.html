@@ -8,732 +8,338 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f7f4f0;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --muted: #888;
-      --accent: #6b7f5e;
-      --accent2: #c4a882;
-      --accent3: #8fa3c7;
-      --danger: #c97b6e;
-      --border: #e8e2da;
-      --shadow: 0 2px 16px rgba(0,0,0,0.06);
+      --bg: #f7f4f0; --card: #ffffff; --text: #1a1a1a; --muted: #888;
+      --accent: #6b7f5e; --accent2: #c4a882; --accent3: #8fa3c7;
+      --danger: #c97b6e; --border: #e8e2da; --shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     header {
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 18px 28px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
     }
-
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.02em;
+    header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; letter-spacing: -0.02em; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    #last-update { font-size: 0.78rem; color: var(--muted); background: var(--bg); padding: 5px 12px; border-radius: 20px; }
+    #btn-reload {
+      background: var(--accent); color: white; border: none; border-radius: 8px;
+      padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+      cursor: pointer; transition: opacity 0.2s;
     }
+    #btn-reload:hover { opacity: 0.85; }
 
-    header span {
-      font-size: 0.8rem;
-      color: var(--muted);
-      background: var(--bg);
-      padding: 6px 14px;
-      border-radius: 20px;
-    }
-
-    #loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 60vh;
-      gap: 16px;
-      color: var(--muted);
-    }
-
-    .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
+    #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 16px; color: var(--muted); }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #error-msg {
-      display: none;
-      max-width: 480px;
-      margin: 60px auto;
-      background: #fff8f7;
-      border: 1px solid #f0d5d0;
-      border-radius: 12px;
-      padding: 28px;
-      text-align: center;
-    }
-
+    #error-msg { display: none; max-width: 480px; margin: 60px auto; background: #fff8f7; border: 1px solid #f0d5d0; border-radius: 12px; padding: 28px; text-align: center; }
     #error-msg h3 { color: var(--danger); margin-bottom: 10px; font-family: 'Playfair Display', serif; }
     #error-msg p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
-    #error-msg code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
 
     #dashboard { display: none; }
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
 
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 32px 24px;
-    }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--text); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
-    /* Config bar */
-    .config-bar {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); animation: fadeUp 0.4s ease both; }
+    .kpi-card:nth-child(1){animation-delay:.05s} .kpi-card:nth-child(2){animation-delay:.10s}
+    .kpi-card:nth-child(3){animation-delay:.15s} .kpi-card:nth-child(4){animation-delay:.20s}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+    .kpi-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
+    .kpi-value.green { color: var(--accent); } .kpi-value.sand { color: var(--accent2); }
+    .kpi-value.red   { color: var(--danger); } .kpi-value.blue { color: var(--accent3); }
 
-    .config-bar label { font-size: 0.82rem; color: var(--muted); }
+    .chart-full { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
+    .chart-full h3 { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 600; margin-bottom: 14px; }
+    .chart-full canvas { max-height: 230px; }
 
-    .config-bar input {
-      flex: 1;
-      min-width: 260px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      color: var(--text);
-      background: var(--bg);
-    }
+    .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width:680px){ .two-cols { grid-template-columns: 1fr; } }
 
-    .config-bar input:focus { outline: none; border-color: var(--accent); }
-
-    .config-bar button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.2s;
-    }
-
-    .config-bar button:hover { opacity: 0.85; }
-
-    /* Section title */
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* KPI cards */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .kpi-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 20px;
-      box-shadow: var(--shadow);
-      animation: fadeUp 0.4s ease both;
-    }
-
-    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
-    .kpi-card:nth-child(2) { animation-delay: 0.10s; }
-    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .kpi-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .kpi-value {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .kpi-value.accent  { color: var(--accent); }
-    .kpi-value.accent2 { color: var(--accent2); }
-    .kpi-value.danger  { color: var(--danger); }
-
-    /* Charts row */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    @media (max-width: 700px) {
-      .charts-row { grid-template-columns: 1fr; }
-    }
-
-    .chart-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 20px;
-      box-shadow: var(--shadow);
-      animation: fadeUp 0.5s ease both;
-    }
-
-    .chart-card h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: var(--text);
-    }
-
-    .chart-card canvas { max-height: 220px; }
-
-    /* Full width chart */
-    .chart-full {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 20px;
-      box-shadow: var(--shadow);
-      margin-bottom: 32px;
-      animation: fadeUp 0.5s ease both;
-    }
-
-    .chart-full h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .chart-full canvas { max-height: 240px; }
-
-    /* Tabs */
-    .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      padding: 6px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.82rem;
-      color: var(--muted);
-      cursor: pointer;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* Tables */
-    .table-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 20px;
-      box-shadow: var(--shadow);
-      margin-bottom: 32px;
-      animation: fadeUp 0.5s ease both;
-      overflow-x: auto;
-    }
-
-    .table-card h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.84rem;
-    }
-
-    thead th {
-      text-align: left;
-      font-weight: 500;
-      color: var(--muted);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); overflow-x: auto; animation: fadeUp 0.5s ease both; }
+    .table-card h3 { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 600; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    thead th { text-align: left; font-weight: 500; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: var(--bg); }
+    td { padding: 9px 10px; }
 
-    td { padding: 10px 12px; }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .badge-red  { background: #fdecea; color: var(--danger); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+    .badge-red    { background: #fdecea; color: var(--danger); }
     .badge-yellow { background: #fef9ec; color: #b38a2a; }
     .badge-green  { background: #eef4eb; color: var(--accent); }
 
-    /* Two cols layout */
-    .two-cols {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 32px;
-    }
+    .tab-row { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab-btn { background: none; border: none; padding: 5px 13px; font-family: 'DM Sans', sans-serif; font-size: 0.80rem; color: var(--muted); cursor: pointer; border-radius: 6px; transition: all .2s; }
+    .tab-btn.active { background: var(--accent); color: white; }
+    .tab-panel { display: none; } .tab-panel.active { display: block; }
+    .donut-wrap { max-width: 210px; margin: 0 auto; }
+    .donut-wrap canvas { max-height: 170px; }
 
-    @media (max-width: 700px) {
-      .two-cols { grid-template-columns: 1fr; }
-    }
-
-    /* Donut chart container */
-    .donut-wrap { max-width: 220px; margin: 0 auto; }
-    .donut-wrap canvas { max-height: 180px; }
-
-    footer {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.75rem;
-      padding: 24px;
-      border-top: 1px solid var(--border);
-      margin-top: 16px;
-    }
+    footer { text-align: center; color: var(--muted); font-size: 0.73rem; padding: 24px; border-top: 1px solid var(--border); margin-top: 8px; }
   </style>
 </head>
 <body>
-
 <header>
   <h1>Consultório · Dashboard</h1>
-  <span id="last-update">—</span>
+  <div class="header-right">
+    <span id="last-update">—</span>
+    <button id="btn-reload" onclick="loadData()">↻ Atualizar</button>
+  </div>
 </header>
 
 <main>
-  <!-- Config -->
-  <div class="config-bar">
-    <label>ID da planilha Google Sheets:</label>
-    <input type="text" id="sheet-id" placeholder="Cole aqui o ID da sua planilha..." />
-    <button onclick="loadData()">Carregar dados</button>
-  </div>
-
-  <div id="loading" style="display:none;">
-    <div class="spinner"></div>
-    <span>Carregando dados...</span>
-  </div>
-
+  <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
   <div id="error-msg">
     <h3>Não foi possível carregar os dados</h3>
-    <p>Verifique se o ID da planilha está correto e se ela está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.<br><br>
-    O ID fica na URL da planilha:<br>
-    <code>docs.google.com/spreadsheets/d/<strong>SEU_ID_AQUI</strong>/edit</code></p>
+    <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong> e tente novamente.</p>
   </div>
 
   <div id="dashboard">
-
-    <!-- KPIs -->
-    <p class="section-title">Resumo do mês atual</p>
+    <p class="section-title">Mês atual</p>
     <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Faturamento</div>
-        <div class="kpi-value accent" id="kpi-fat">—</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Pacientes Ativos</div>
-        <div class="kpi-value" id="kpi-pac">—</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">% Faltas</div>
-        <div class="kpi-value danger" id="kpi-falta">—</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Sessões no mês</div>
-        <div class="kpi-value accent2" id="kpi-sessoes">—</div>
-      </div>
+      <div class="kpi-card"><div class="kpi-label">Faturamento</div><div class="kpi-value green" id="kpi-fat">—</div></div>
+      <div class="kpi-card"><div class="kpi-label">Pacientes Ativos</div><div class="kpi-value" id="kpi-pac">—</div></div>
+      <div class="kpi-card"><div class="kpi-label">% Faltas</div><div class="kpi-value red" id="kpi-falta">—</div></div>
+      <div class="kpi-card"><div class="kpi-label">Sessões realizadas</div><div class="kpi-value sand" id="kpi-sessoes">—</div></div>
     </div>
 
-    <!-- Gráficos de linha histórica -->
     <p class="section-title">Histórico</p>
-    <div class="chart-full">
-      <h3>Faturamento mensal</h3>
-      <canvas id="chart-fat"></canvas>
-    </div>
+    <div class="chart-full"><h3>Faturamento mensal</h3><canvas id="chart-fat"></canvas></div>
+    <div class="chart-full"><h3>Pacientes únicos por mês</h3><canvas id="chart-pac"></canvas></div>
 
-    <div class="chart-full">
-      <h3>Pacientes por mês</h3>
-      <canvas id="chart-pac"></canvas>
-    </div>
-
-    <!-- Saldo + Motivos -->
     <p class="section-title">Pacientes & Faltas</p>
     <div class="two-cols">
       <div class="table-card">
-        <h3>Saldo de atendimentos</h3>
-        <table>
-          <thead>
-            <tr><th>Paciente</th><th>Horário</th><th>Saldo</th></tr>
-          </thead>
-          <tbody id="tabela-saldo"></tbody>
-        </table>
+        <h3>Saldo de atendimentos <small style="font-family:'DM Sans';font-weight:400;color:var(--muted);font-size:.75rem">(ativos)</small></h3>
+        <table><thead><tr><th>Paciente</th><th>Horário</th><th>Saldo</th></tr></thead>
+        <tbody id="tabela-saldo"></tbody></table>
       </div>
-
       <div class="table-card">
         <h3>Motivos de falta</h3>
-        <table>
-          <thead>
-            <tr><th>Motivo</th><th>Qtd</th></tr>
-          </thead>
-          <tbody id="tabela-motivos"></tbody>
-        </table>
+        <table><thead><tr><th>Motivo</th><th>Qtd</th></tr></thead>
+        <tbody id="tabela-motivos"></tbody></table>
       </div>
     </div>
 
-    <!-- Perfil dos pacientes -->
-    <p class="section-title">Perfil dos pacientes</p>
-    <div class="chart-card" style="margin-bottom:32px;">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('genero', this)">Gênero</button>
-        <button class="tab-btn" onclick="switchTab('faixaetaria', this)">Faixa Etária</button>
-        <button class="tab-btn" onclick="switchTab('modalidade', this)">Modalidade</button>
+    <p class="section-title">Perfil dos pacientes ativos</p>
+    <div class="table-card">
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('genero',this)">Gênero</button>
+        <button class="tab-btn" onclick="switchTab('faixa',this)">Faixa Etária</button>
+        <button class="tab-btn" onclick="switchTab('modal',this)">Modalidade</button>
       </div>
-
-      <div class="tab-panel active" id="tab-genero">
-        <div class="donut-wrap"><canvas id="chart-genero"></canvas></div>
-      </div>
-      <div class="tab-panel" id="tab-faixaetaria">
-        <div class="donut-wrap"><canvas id="chart-faixa"></canvas></div>
-      </div>
-      <div class="tab-panel" id="tab-modalidade">
-        <div class="donut-wrap"><canvas id="chart-modal"></canvas></div>
-      </div>
+      <div class="tab-panel active" id="tab-genero"><div class="donut-wrap"><canvas id="chart-genero"></canvas></div></div>
+      <div class="tab-panel" id="tab-faixa"><div class="donut-wrap"><canvas id="chart-faixa"></canvas></div></div>
+      <div class="tab-panel" id="tab-modal"><div class="donut-wrap"><canvas id="chart-modal"></canvas></div></div>
     </div>
-
-  </div><!-- /dashboard -->
+  </div>
 </main>
-
-<footer>Dados lidos diretamente do Google Sheets · Atualizado a cada carregamento</footer>
+<footer>Dados lidos do Google Sheets · Atualizado a cada carregamento</footer>
 
 <script>
-  // ─── Paleta ──────────────────────────────────────────────────────────────
-  const COLORS = ['#6b7f5e','#c4a882','#8fa3c7','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5'];
+const SHEET_ID = "1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI";
+const GID      = "0";
+const COLORS   = ['#6b7f5e','#c4a882','#8fa3c7','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#888';
+let charts = {};
 
-  Chart.defaults.font.family = "'DM Sans', sans-serif";
-  Chart.defaults.color = '#888';
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
 
-  let charts = {};
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
 
-  function destroyChart(id) {
-    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-  }
-
-  // ─── Tabs ────────────────────────────────────────────────────────────────
-  function switchTab(name, btn) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  // ─── Carregar planilha ───────────────────────────────────────────────────
-  async function loadData() {
-    const sheetId = document.getElementById('sheet-id').value.trim();
-    if (!sheetId) { alert('Cole o ID da planilha primeiro!'); return; }
-
-    localStorage.setItem('psi_sheet_id', sheetId);
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('error-msg').style.display = 'none';
-
-    try {
-      // Lê a primeira aba via gviz (sem autenticação)
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Sheet1`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Erro HTTP ' + res.status);
-      const text = await res.text();
-
-      // Remove wrapper do Google
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = parseGviz(json);
-
-      if (!rows.length) throw new Error('Planilha vazia ou aba incorreta');
-
-      processAndRender(rows);
-
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      document.getElementById('last-update').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-
-    } catch(e) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('error-msg').style.display = 'block';
-      console.error(e);
+function parseCSV(text){
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const cols=[]; let cur='', inQ=false;
+    for(let c of line){
+      if(c==='"'){ inQ=!inQ; }
+      else if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; }
+      else cur+=c;
     }
+    cols.push(cur.trim());
+    const obj={};
+    headers.forEach((h,i)=>{ obj[h]=(cols[i]||'').replace(/^"|"$/g,''); });
+    return obj;
+  });
+}
+
+function parseValor(v){
+  if(!v) return 0;
+  return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;
+}
+
+function parseData(v){
+  if(!v) return null;
+  const p=String(v).split('/');
+  if(p.length===3) return new Date(+p[2],+p[1]-1,+p[0]);
+  return new Date(v);
+}
+
+function anoMes(d){
+  if(!d||isNaN(d)) return '';
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+function iniciais(nome){
+  return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');
+}
+
+function countBy(arr,fn){
+  const m={};
+  arr.forEach(r=>{ const v=fn(r); if(v){ m[v]=(m[v]||0)+1; } });
+  return m;
+}
+
+async function loadData(){
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('error-msg').style.display='none';
+  try {
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    const raw=parseCSV(text);
+    const rows=raw.filter(r=>r['Data']&&r['Data'].trim());
+    processAndRender(rows);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } catch(e){
+    console.error(e);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-msg').style.display='block';
   }
+}
 
-  // ─── Parsear resposta gviz ───────────────────────────────────────────────
-  function parseGviz(json) {
-    const cols = json.table.cols.map(c => c.label);
-    return json.table.rows.map(row => {
-      const obj = {};
-      row.c.forEach((cell, i) => {
-        obj[cols[i]] = cell ? cell.v : null;
-      });
-      return obj;
-    });
-  }
+function processAndRender(rows){
+  // Enriquece linhas — espelha transformações do notebook Databricks
+  rows.forEach(r=>{
+    r._data            = parseData(r['Data']);
+    r._anoMes          = anoMes(r._data);
+    r._paciente        = (r['Paciente']||'').trim();
+    r._iniciais        = iniciais(r._paciente);
+    r._genero          = (r['Gênero']||'').trim();
+    r._faixaEtaria     = (r['Faixa Etária']||'').trim();
+    r._modalidade      = (r['Modalidade']||'').trim();
+    r._horario         = (r['Horário']||'').trim();
+    r._ativo           = (r['Ativo']||'').trim();
+    r._comparecimento  = (r['Comparecimento']||'').trim();
+    r._motivo          = (r['Motivo']||'').trim();
+    r._valorSessao     = parseValor(r['Valor da sessão']);
+    r._sessoesCobradas = parseFloat(r['Sessões cobradas'])||0;
+    // comparecimento_sim: igual ao Databricks
+    r._compareceuSim   = (r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado') ? 1 : 0;
+    r._valorTotal      = r._sessoesCobradas * r._valorSessao;
+  });
 
-  // ─── Mapear colunas ──────────────────────────────────────────────────────
-  // Baseado nos prints: Mês, Data, Paciente, Gênero, Faixa Etária, Modalidade,
-  // Convênio, Horário, Valor da sessão, Sessões cobradas, Valor total, Valor final,
-  // Sessão cobrada?, Ativo, Comparecimento, Motivo
-  function col(row, name) {
-    // Tenta exato, depois case-insensitive parcial
-    if (row[name] !== undefined) return row[name];
-    const k = Object.keys(row).find(k => k.toLowerCase().includes(name.toLowerCase()));
-    return k ? row[k] : null;
-  }
+  // Mês atual
+  const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
+  const mesAtual=meses[meses.length-1]||'';
+  const rowsMes=rows.filter(r=>r._anoMes===mesAtual);
 
-  // ─── Processar e renderizar ──────────────────────────────────────────────
-  function processAndRender(rows) {
-    // Normaliza mês: pega "Mês" ou "es" (visto no print cortado)
-    const getMes = r => col(r, 'Mês') || col(r, 'es') || col(r, 'Mes') || '';
-    const getComp = r => {
-      const v = col(r, 'Comparecimento');
-      return v ? String(v).toLowerCase() : '';
-    };
-    const getAtivo = r => {
-      const v = col(r, 'Ativo');
-      return v ? String(v).toLowerCase() : '';
-    };
-    const getValorFinal = r => {
-      let v = col(r, 'Valor final') ?? col(r, 'Valor Final') ?? col(r, 'Valor total') ?? 0;
-      if (typeof v === 'string') v = parseFloat(v.replace(/[R$\s.]/g,'').replace(',','.')) || 0;
-      return Number(v) || 0;
-    };
-    const getMotivo = r => col(r, 'Motivo') || '';
-    const getGenero = r => col(r, 'Gênero') || col(r, 'Genero') || '';
-    const getFaixa  = r => col(r, 'Faixa Etária') || col(r, 'Faixa Etaria') || '';
-    const getModal  = r => col(r, 'Modalidade') || '';
-    const getHorario = r => col(r, 'Horário') || col(r, 'Horario') || '';
-    const getPaciente = r => col(r, 'Paciente') || '';
+  // KPI: Faturamento
+  const fatMes=rowsMes.reduce((s,r)=>s+r._valorTotal,0);
+  document.getElementById('kpi-fat').textContent='R$ '+fatMes.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-    // ── Mês atual ──
-    const meses = [...new Set(rows.map(getMes).filter(Boolean))].sort();
-    const mesAtual = meses[meses.length - 1] || '';
+  // KPI: Pacientes ativos
+  const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente)).size;
+  document.getElementById('kpi-pac').textContent=pacAtivos;
 
-    const rowsMes = rows.filter(r => getMes(r) === mesAtual);
+  // KPI: % Faltas mês atual
+  const totalMes=rowsMes.length;
+  const faltasMes=rowsMes.filter(r=>r._comparecimento==='Não').length;
+  document.getElementById('kpi-falta').textContent=totalMes?(faltasMes/totalMes*100).toFixed(1)+'%':'0.0%';
 
-    // KPI: Faturamento mês atual
-    const fatMes = rowsMes.reduce((s, r) => s + getValorFinal(r), 0);
-    document.getElementById('kpi-fat').textContent = 'R$ ' + fatMes.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  // KPI: Sessões realizadas mês
+  document.getElementById('kpi-sessoes').textContent=rowsMes.filter(r=>r._compareceuSim===1).length;
 
-    // KPI: Pacientes ativos
-    const pacAtivos = new Set(rows.filter(r => getAtivo(r).includes('ativ')).map(getPaciente)).size;
-    document.getElementById('kpi-pac').textContent = pacAtivos;
+  // Histórico
+  const fatPorMes={}, pacPorMes={};
+  rows.forEach(r=>{
+    const m=r._anoMes; if(!m) return;
+    fatPorMes[m]=(fatPorMes[m]||0)+r._valorTotal;
+    if(!pacPorMes[m]) pacPorMes[m]=new Set();
+    if(r._paciente) pacPorMes[m].add(r._paciente);
+  });
+  const mo=Object.keys(fatPorMes).sort();
+  renderBar('chart-fat', mo, mo.map(m=>fatPorMes[m]), 'Faturamento (R$)', '#6b7f5e');
+  renderBar('chart-pac', mo, mo.map(m=>pacPorMes[m]?pacPorMes[m].size:0), 'Pacientes', '#c4a882');
 
-    // KPI: % Faltas mês atual
-    const totalMes = rowsMes.length;
-    const faltasMes = rowsMes.filter(r => getComp(r).includes('falt') || getComp(r).includes('não')).length;
-    const pctFalta = totalMes ? (faltasMes / totalMes * 100).toFixed(1) : '0.0';
-    document.getElementById('kpi-falta').textContent = pctFalta + '%';
+  // Saldo de atendimentos — apenas pacientes ativos, lógica fiel ao Databricks
+  const pacientesAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
+  const saldoMap={}, horarioMap={};
+  rows.filter(r=>pacientesAtivos.has(r._paciente)).forEach(r=>{
+    const key=r._paciente;
+    if(!saldoMap[key]) saldoMap[key]={iniciais:r._iniciais,sessoes:0,compareceu:0};
+    horarioMap[key]=r._horario||horarioMap[key]||'';
+    saldoMap[key].sessoes    +=r._sessoesCobradas;
+    saldoMap[key].compareceu +=r._compareceuSim;
+  });
+  const saldoArr=Object.entries(saldoMap)
+    .map(([k,v])=>({iniciais:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.compareceu}))
+    .sort((a,b)=>a.saldo-b.saldo);
+  const tbSaldo=document.getElementById('tabela-saldo');
+  tbSaldo.innerHTML='';
+  saldoArr.forEach(({iniciais,horario,saldo})=>{
+    const cls=saldo<0?'badge-red':saldo===0?'badge-yellow':'badge-green';
+    tbSaldo.innerHTML+=`<tr><td><strong>${iniciais}</strong></td><td style="color:var(--muted);font-size:.8rem">${horario}</td><td><span class="badge ${cls}">${saldo}</span></td></tr>`;
+  });
 
-    // KPI: Sessões no mês
-    document.getElementById('kpi-sessoes').textContent = totalMes;
+  // Motivos de falta
+  const motivoCount={};
+  rows.filter(r=>r._comparecimento==='Não').forEach(r=>{
+    const m=r._motivo||'Sem justificativa';
+    motivoCount[m]=(motivoCount[m]||0)+1;
+  });
+  const tbMotivo=document.getElementById('tabela-motivos');
+  tbMotivo.innerHTML='';
+  Object.entries(motivoCount).sort((a,b)=>b[1]-a[1]).forEach(([mot,qty])=>{
+    tbMotivo.innerHTML+=`<tr><td>${mot}</td><td><strong>${qty}</strong></td></tr>`;
+  });
 
-    // ── Histórico mensal ──
-    const fatPorMes = {};
-    const pacPorMes = {};
-    rows.forEach(r => {
-      const m = getMes(r);
-      if (!m) return;
-      fatPorMes[m] = (fatPorMes[m] || 0) + getValorFinal(r);
-      if (!pacPorMes[m]) pacPorMes[m] = new Set();
-      const p = getPaciente(r);
-      if (p) pacPorMes[m].add(p);
-    });
+  // Donuts — última entrada de cada paciente ativo
+  const ativos={};
+  rows.filter(r=>r._ativo==='Ativo').forEach(r=>{ ativos[r._paciente]=r; });
+  const ativosArr=Object.values(ativos);
+  renderDonut('chart-genero', countBy(ativosArr, r=>r._genero));
+  renderDonut('chart-faixa',  countBy(ativosArr, r=>r._faixaEtaria));
+  renderDonut('chart-modal',  countBy(ativosArr, r=>r._modalidade));
+}
 
-    const mesesOrdenados = Object.keys(fatPorMes).sort();
-    const fatValues = mesesOrdenados.map(m => fatPorMes[m]);
-    const pacValues = mesesOrdenados.map(m => pacPorMes[m] ? pacPorMes[m].size : 0);
+function renderBar(id,labels,data,label,color){
+  destroyChart(id);
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{label,data,backgroundColor:color+'99',borderColor:color,borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0ece6'},ticks:{font:{size:10}}}}}
+  });
+}
 
-    renderBarChart('chart-fat', mesesOrdenados, fatValues, 'Faturamento (R$)', '#6b7f5e');
-    renderBarChart('chart-pac', mesesOrdenados, pacValues, 'Pacientes', '#c4a882');
+function renderDonut(id,countMap){
+  destroyChart(id);
+  const labels=Object.keys(countMap),data=Object.values(countMap);
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12,boxWidth:10}}}}
+  });
+}
 
-    // ── Saldo de atendimentos ──
-    // Saldo = sessões cobradas - comparecimentos
-    const saldoMap = {};
-    const horarioMap = {};
-    rows.forEach(r => {
-      const p = getPaciente(r);
-      if (!p) return;
-      horarioMap[p] = getHorario(r) || horarioMap[p] || '';
-      if (!saldoMap[p]) saldoMap[p] = 0;
-      const cobrada = col(r, 'Sessão cobrada?') || col(r, 'Sessao cobrada?') || '';
-      const compareceu = getComp(r);
-      // Saldo: cobrado mas não compareceu = negativo
-      if (String(cobrada).toLowerCase().includes('sim') && (compareceu.includes('falt') || compareceu.includes('não'))) {
-        saldoMap[p] -= 1;
-      }
-    });
-
-    const saldoArr = Object.entries(saldoMap).sort((a,b) => a[1]-b[1]);
-    const tbSaldo = document.getElementById('tabela-saldo');
-    tbSaldo.innerHTML = '';
-    saldoArr.forEach(([pac, saldo]) => {
-      const cls = saldo < 0 ? 'badge-red' : saldo === 0 ? 'badge-yellow' : 'badge-green';
-      tbSaldo.innerHTML += `<tr>
-        <td>${pac}</td>
-        <td style="color:var(--muted)">${horarioMap[pac]}</td>
-        <td><span class="badge ${cls}">${saldo}</span></td>
-      </tr>`;
-    });
-
-    // ── Motivos de falta ──
-    const motivoCount = {};
-    rows.forEach(r => {
-      const comp = getComp(r);
-      if (comp.includes('falt') || comp.includes('não')) {
-        const m = getMotivo(r) || 'Sem justificativa';
-        motivoCount[m] = (motivoCount[m] || 0) + 1;
-      }
-    });
-    const motivoArr = Object.entries(motivoCount).sort((a,b) => b[1]-a[1]);
-    const tbMotivo = document.getElementById('tabela-motivos');
-    tbMotivo.innerHTML = '';
-    motivoArr.forEach(([mot, qty]) => {
-      tbMotivo.innerHTML += `<tr><td>${mot}</td><td><strong>${qty}</strong></td></tr>`;
-    });
-
-    // ── Donut charts ──
-    renderDonut('chart-genero', countBy(rows, getGenero));
-    renderDonut('chart-faixa',  countBy(rows, getFaixa));
-    renderDonut('chart-modal',  countBy(rows, getModal));
-  }
-
-  function countBy(rows, fn) {
-    const m = {};
-    rows.forEach(r => { const v = fn(r); if (v) m[v] = (m[v]||0)+1; });
-    return m;
-  }
-
-  function renderBarChart(id, labels, data, label, color) {
-    destroyChart(id);
-    const ctx = document.getElementById(id).getContext('2d');
-    charts[id] = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label,
-          data,
-          backgroundColor: color + '99',
-          borderColor: color,
-          borderWidth: 1.5,
-          borderRadius: 4,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-          y: { grid: { color: '#f0ece6' }, ticks: { font: { size: 10 } } }
-        }
-      }
-    });
-  }
-
-  function renderDonut(id, countMap) {
-    destroyChart(id);
-    const labels = Object.keys(countMap);
-    const data   = Object.values(countMap);
-    const ctx = document.getElementById(id).getContext('2d');
-    charts[id] = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{
-          data,
-          backgroundColor: COLORS.slice(0, labels.length),
-          borderWidth: 0,
-          hoverOffset: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        cutout: '62%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { font: { size: 11 }, padding: 12, boxWidth: 10 }
-          }
-        }
-      }
-    });
-  }
-
-  // ─── Persistência do ID ──────────────────────────────────────────────────
-  window.onload = () => {
-    const saved = localStorage.getItem('psi_sheet_id');
-    if (saved) {
-      document.getElementById('sheet-id').value = saved;
-      loadData();
-    }
-  };
+window.onload=loadData;
 </script>
 </body>
 </html>

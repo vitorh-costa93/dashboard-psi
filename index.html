@@ -387,7 +387,7 @@ function updateDonut(){
     data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
       responsive:true,cutout:'55%',
-      layout:{padding:{left:55,right:55,top:20,bottom:20}},
+      layout:{padding:{left:75,right:75,top:20,bottom:20}},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/total*100).toFixed(2)}%)`}}

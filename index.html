@@ -68,8 +68,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .badge-green{background:#eef4eb;color:var(--accent);}
 
 /* ── Donut ── */
-.donut-wrap{position:relative;max-width:220px;margin:0 auto;}
-.donut-wrap canvas{max-height:200px;}
+.donut-wrap{position:relative;max-width:280px;margin:0 auto;}
+.donut-wrap canvas{width:100%!important;}
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
 /* ── Motivos — tabela compacta ── */
@@ -387,7 +387,7 @@ function updateDonut(){
     data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
       responsive:true,cutout:'55%',
-      layout:{padding:{left:10,right:10,top:20,bottom:20}},
+      layout:{padding:{left:10,right:10,top:40,bottom:40}},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/total*100).toFixed(2)}%)`}}

@@ -387,7 +387,7 @@ function updateDonut(){
     data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
       responsive:true,cutout:'55%',
-      layout:{padding:{left:75,right:75,top:20,bottom:20}},
+      layout:{padding:{left:10,right:10,top:20,bottom:20}},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/total*100).toFixed(2)}%)`}}
@@ -396,39 +396,51 @@ function updateDonut(){
     plugins:[{
       id:'outerLabels',
       afterDraw(chart){
-        const{ctx,data}=chart;
+        const{ctx,data,chartArea}=chart;
         const meta=chart.getDatasetMeta(0);
         ctx.save();
+        const canvasW=chart.width, canvasH=chart.height;
         meta.data.forEach((arc,i)=>{
           const angle=(arc.startAngle+arc.endAngle)/2;
           const or=arc.outerRadius;
-          // Ponto na borda do arco
+          const lineLen=16;
           const xEdge=arc.x+Math.cos(angle)*or;
           const yEdge=arc.y+Math.sin(angle)*or;
-          // Linha para fora
-          const lineLen=14;
           const xLine=arc.x+Math.cos(angle)*(or+lineLen);
           const yLine=arc.y+Math.sin(angle)*(or+lineLen);
-          // Texto
-          const xText=arc.x+Math.cos(angle)*(or+lineLen+4);
-          const yText=arc.y+Math.sin(angle)*(or+lineLen+4);
           const isRight=Math.cos(angle)>=0;
-          const pct=(data.datasets[0].data[i]/total*100).toFixed(2);
+          const pct=(data.datasets[0].data[i]/data.datasets[0].data.reduce((a,b)=>a+b,0)*100).toFixed(2);
           const label=data.labels[i];
           const qty=data.datasets[0].data[i];
+          const line1=label;
+          const line2=`${qty} (${pct}%)`;
 
+          // Mede largura do texto mais longo
+          ctx.font='bold 10px DM Sans';
+          const w1=ctx.measureText(line1).width;
+          ctx.font='10px DM Sans';
+          const w2=ctx.measureText(line2).width;
+          const maxW=Math.max(w1,w2);
+
+          // Posição X do texto: clamp para não sair do canvas
+          let xText=xLine+(isRight?4:-4);
+          if(isRight) xText=Math.min(xText, canvasW-maxW-4);
+          else        xText=Math.max(xText, maxW+4);
+
+          // Linha
           ctx.strokeStyle=COLORS[i%COLORS.length];
           ctx.lineWidth=1.2;
           ctx.beginPath();ctx.moveTo(xEdge,yEdge);ctx.lineTo(xLine,yLine);ctx.stroke();
 
-          ctx.fillStyle='#2a2a2a';
-          ctx.font='bold 10px DM Sans';
+          // Labels
           ctx.textAlign=isRight?'left':'right';
           ctx.textBaseline='middle';
-          ctx.fillText(label,xText,yText-7);
+          ctx.font='bold 10px DM Sans';
+          ctx.fillStyle='#2a2a2a';
+          ctx.fillText(line1,xText,yLine-7);
           ctx.font='10px DM Sans';
           ctx.fillStyle='#888';
-          ctx.fillText(`${qty} (${pct}%)`,xText,yText+7);
+          ctx.fillText(line2,xText,yLine+7);
         });
         ctx.restore();
       }

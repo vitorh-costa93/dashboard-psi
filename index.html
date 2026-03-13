@@ -215,6 +215,16 @@ function setComp(id,atual,ant,suffix){
   el.className='kpi-comp '+(up?'up':'dn');
 }
 
+// Diferença absoluta em pontos percentuais (para KPIs que já são %)
+function setCompPP(id,atual,ant,suffix){
+  const el=document.getElementById(id);
+  if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
+  const diff=(atual-ant).toFixed(1);
+  const up=atual>=ant;
+  el.textContent=(up?'▲ +':'▼ ')+diff+' p.p. '+suffix;
+  el.className='kpi-comp '+(up?'up':'dn');
+}
+
 async function loadData(){
   document.getElementById('loading').style.display='flex';
   document.getElementById('dashboard').style.display='none';
@@ -305,16 +315,16 @@ function processAndRender(){
   if(prevAteDia){
     setComp('kpi-fat-mom',curFatAteDia,prevFatAteDia,momSuffix);
     setComp('kpi-pac-mom',cur.pac,prev?prev.pac:null,momSuffix);
-    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total:0;
-    const pp=prevAteDia.total?prevAteDia.faltas/prevAteDia.total:0;
-    setComp('kpi-falta-mom',cp,pp,momSuffix);
+    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total*100:0;
+    const pp=prevAteDia.total?prevAteDia.faltas/prevAteDia.total*100:0;
+    setCompPP('kpi-falta-mom',cp,pp,momSuffix);
   }
   if(pyoyAteDia){
     setComp('kpi-fat-yoy',curFatAteDia,pyoyFatAteDia,yoySuffix);
     setComp('kpi-pac-yoy',cur.pac,pyoy?pyoy.pac:null,yoySuffix);
-    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total:0;
-    const yp=pyoyAteDia.total?pyoyAteDia.faltas/pyoyAteDia.total:0;
-    setComp('kpi-falta-yoy',cp,yp,yoySuffix);
+    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total*100:0;
+    const yp=pyoyAteDia.total?pyoyAteDia.faltas/pyoyAteDia.total*100:0;
+    setCompPP('kpi-falta-yoy',cp,yp,yoySuffix);
   }
 
   // ── Gráficos histórico ──

@@ -451,9 +451,10 @@ function renderDashboard(rows, rowsKPI, f, ativosFiltered, pacientesAtivosFiltra
     return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.map(x=>x._paciente)).size,faltas:r.filter(x=>x._falta).length,total:r.length};
   }
 
-  // Se filtro de mês ativo, KPI usa mês selecionado completo; senão usa ateDia para mês atual
-  const usaAteDia=!f.mes;
-  const limiteDia=usaAteDia?diaHoje:null;
+  // Se o mês de referência é o mês atual → limita ao dia de hoje
+  // Se é um mês passado → mês completo
+  const mesAtualStr=anoMes(hoje);
+  const limiteDia=mesRef===mesAtualStr?diaHoje:null;
 
   const cur      =aggMes(mesRef, limiteDia);
   const prevAteDia=aggMes(mesAnt, limiteDia);

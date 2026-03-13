@@ -1,341 +1,500 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — Consultório</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #f7f4f0; --card: #ffffff; --text: #1a1a1a; --muted: #888;
-      --accent: #6b7f5e; --accent2: #c4a882; --accent3: #8fa3c7;
-      --danger: #c97b6e; --border: #e8e2da; --shadow: 0 2px 16px rgba(0,0,0,0.06);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Visão Geral — Consultório</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f5f2eb; --card:#ffffff; --header-bg:#d6ccb0;
+  --text:#2a2a2a; --muted:#888; --light:#f9f7f2;
+  --accent:#8b9e6e; --accent2:#c4a882; --accent3:#7a9fb5;
+  --danger:#c0392b; --warn:#e67e22;
+  --border:#e0d9cc; --shadow:0 1px 8px rgba(0,0,0,0.07);
+  --bar:#c8bc96; --bar-dark:#9e9272;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
 
-    header {
-      background: var(--card); border-bottom: 1px solid var(--border);
-      padding: 18px 28px; display: flex; align-items: center;
-      justify-content: space-between; position: sticky; top: 0; z-index: 100;
-    }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; letter-spacing: -0.02em; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    #last-update { font-size: 0.78rem; color: var(--muted); background: var(--bg); padding: 5px 12px; border-radius: 20px; }
-    #btn-reload {
-      background: var(--accent); color: white; border: none; border-radius: 8px;
-      padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
-      cursor: pointer; transition: opacity 0.2s;
-    }
-    #btn-reload:hover { opacity: 0.85; }
+/* ── Header ── */
+.app-header{
+  background:var(--header-bg);
+  padding:14px 24px;
+  display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid #bfb89a;
+}
+.app-header .logo{font-size:28px;}
+.app-header h1{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
+.app-header p{font-size:.78rem;color:#5a5040;margin-top:2px;}
 
-    #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 16px; color: var(--muted); }
-    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Loading / Error ── */
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px;color:var(--muted);}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#error-msg{display:none;max-width:440px;margin:60px auto;background:#fff8f7;border:1px solid #f0d5d0;border-radius:10px;padding:24px;text-align:center;}
+#error-msg h3{color:var(--danger);margin-bottom:8px;font-family:'Playfair Display',serif;}
+#error-msg p{color:var(--muted);font-size:.85rem;line-height:1.6;}
 
-    #error-msg { display: none; max-width: 480px; margin: 60px auto; background: #fff8f7; border: 1px solid #f0d5d0; border-radius: 12px; padding: 28px; text-align: center; }
-    #error-msg h3 { color: var(--danger); margin-bottom: 10px; font-family: 'Playfair Display', serif; }
-    #error-msg p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+/* ── Dashboard ── */
+#dashboard{display:none;}
+.dash-wrap{max-width:1400px;margin:0 auto;padding:16px 20px 32px;}
 
-    #dashboard { display: none; }
-    main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+/* ── Reload bar ── */
+.reload-bar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;}
+#last-update{font-size:.75rem;color:var(--muted);}
+#btn-reload{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:opacity .2s;}
+#btn-reload:hover{opacity:.85;}
 
-    .section-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--text); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+/* ── KPI row ── */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;
+  animation:fadeUp .4s ease both;
+}
+.kpi-card:nth-child(1){animation-delay:.05s}
+.kpi-card:nth-child(2){animation-delay:.10s}
+.kpi-card:nth-child(3){animation-delay:.15s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); animation: fadeUp 0.4s ease both; }
-    .kpi-card:nth-child(1){animation-delay:.05s} .kpi-card:nth-child(2){animation-delay:.10s}
-    .kpi-card:nth-child(3){animation-delay:.15s} .kpi-card:nth-child(4){animation-delay:.20s}
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-    .kpi-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
-    .kpi-value.green { color: var(--accent); } .kpi-value.sand { color: var(--accent2); }
-    .kpi-value.red   { color: var(--danger); } .kpi-value.blue { color: var(--accent3); }
+.kpi-main{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;color:var(--text);}
+.kpi-sub{font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+.kpi-comp{font-size:.72rem;margin:2px 0;}
+.kpi-comp.up{color:#27ae60;} .kpi-comp.dn{color:var(--danger);} .kpi-comp.neu{color:var(--muted);}
+.kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
 
-    .chart-full { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
-    .chart-full h3 { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 600; margin-bottom: 14px; }
-    .chart-full canvas { max-height: 230px; }
+/* ── Charts row ── */
+.charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;}
+.chart-card h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;}
+.chart-card canvas{max-height:200px;}
 
-    .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media(max-width:680px){ .two-cols { grid-template-columns: 1fr; } }
+/* ── Bottom row ── */
+.bottom-row{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;}
+.panel h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 
-    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); overflow-x: auto; animation: fadeUp 0.5s ease both; }
-    .table-card h3 { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 600; margin-bottom: 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-    thead th { text-align: left; font-weight: 500; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; padding: 7px 10px; border-bottom: 1px solid var(--border); }
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: var(--bg); }
-    td { padding: 9px 10px; }
+/* Saldo table */
+.saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.saldo-table tr{border-bottom:1px solid #f0ece4;}
+.saldo-table tr:last-child{border:none;}
+.saldo-table td{padding:5px 4px;vertical-align:middle;}
+.saldo-table .td-label{color:var(--text);}
+.saldo-bar-wrap{position:relative;height:22px;background:#f5f0e8;border-radius:3px;overflow:hidden;}
+.saldo-bar-inner{position:absolute;top:0;height:100%;border-radius:3px;transition:width .4s;}
+.saldo-bar-val{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:600;color:#fff;z-index:1;}
 
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
-    .badge-red    { background: #fdecea; color: var(--danger); }
-    .badge-yellow { background: #fef9ec; color: #b38a2a; }
-    .badge-green  { background: #eef4eb; color: var(--accent); }
+/* Donut */
+.donut-wrap{max-width:200px;margin:0 auto;}
+.donut-wrap canvas{max-height:170px;}
+.profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
-    .tab-row { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
-    .tab-btn { background: none; border: none; padding: 5px 13px; font-family: 'DM Sans', sans-serif; font-size: 0.80rem; color: var(--muted); cursor: pointer; border-radius: 6px; transition: all .2s; }
-    .tab-btn.active { background: var(--accent); color: white; }
-    .tab-panel { display: none; } .tab-panel.active { display: block; }
-    .donut-wrap { max-width: 210px; margin: 0 auto; }
-    .donut-wrap canvas { max-height: 170px; }
+/* Motivos table */
+.motivos-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.motivos-table tr{border-bottom:1px solid #f0ece4;}
+.motivos-table tr:last-child{border:none;}
+.motivos-table td{padding:5px 4px;}
+.motivos-table .motivo-bar{height:6px;background:#c8bc96;border-radius:3px;margin-top:3px;}
 
-    footer { text-align: center; color: var(--muted); font-size: 0.73rem; padding: 24px; border-top: 1px solid var(--border); margin-top: 8px; }
-  </style>
+/* Responsive */
+@media(max-width:900px){
+  .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
+}
+</style>
 </head>
 <body>
-<header>
-  <h1>Consultório · Dashboard</h1>
-  <div class="header-right">
+
+<div class="app-header">
+  <div class="logo">🌻</div>
+  <div>
+    <h1>VISÃO GERAL</h1>
+    <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
+<div id="error-msg">
+  <h3>Não foi possível carregar os dados</h3>
+  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong> e tente novamente.</p>
+</div>
+
+<div id="dashboard">
+<div class="dash-wrap">
+
+  <div class="reload-bar">
     <span id="last-update">—</span>
     <button id="btn-reload" onclick="loadData()">↻ Atualizar</button>
   </div>
-</header>
 
-<main>
-  <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
-  <div id="error-msg">
-    <h3>Não foi possível carregar os dados</h3>
-    <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong> e tente novamente.</p>
-  </div>
-
-  <div id="dashboard">
-    <p class="section-title">Mês atual</p>
-    <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Faturamento</div><div class="kpi-value green" id="kpi-fat">—</div></div>
-      <div class="kpi-card"><div class="kpi-label">Pacientes Ativos</div><div class="kpi-value" id="kpi-pac">—</div></div>
-      <div class="kpi-card"><div class="kpi-label">% Faltas</div><div class="kpi-value red" id="kpi-falta">—</div></div>
-      <div class="kpi-card"><div class="kpi-label">Sessões realizadas</div><div class="kpi-value sand" id="kpi-sessoes">—</div></div>
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-main" id="kpi-fat">—</div>
+      <div class="kpi-comp dn" id="kpi-fat-mom">—</div>
+      <div class="kpi-comp dn" id="kpi-fat-yoy">—</div>
+      <div class="kpi-label">Valor Recebido</div>
     </div>
-
-    <p class="section-title">Histórico</p>
-    <div class="chart-full"><h3>Faturamento mensal</h3><canvas id="chart-fat"></canvas></div>
-    <div class="chart-full"><h3>Pacientes únicos por mês</h3><canvas id="chart-pac"></canvas></div>
-
-    <p class="section-title">Pacientes & Faltas</p>
-    <div class="two-cols">
-      <div class="table-card">
-        <h3>Saldo de atendimentos <small style="font-family:'DM Sans';font-weight:400;color:var(--muted);font-size:.75rem">(ativos)</small></h3>
-        <table><thead><tr><th>Paciente</th><th>Horário</th><th>Saldo</th></tr></thead>
-        <tbody id="tabela-saldo"></tbody></table>
-      </div>
-      <div class="table-card">
-        <h3>Motivos de falta</h3>
-        <table><thead><tr><th>Motivo</th><th>Qtd</th></tr></thead>
-        <tbody id="tabela-motivos"></tbody></table>
-      </div>
+    <div class="kpi-card">
+      <div class="kpi-main" id="kpi-pac">—</div>
+      <div class="kpi-comp dn" id="kpi-pac-mom">—</div>
+      <div class="kpi-comp dn" id="kpi-pac-yoy">—</div>
+      <div class="kpi-label">Pacientes</div>
     </div>
-
-    <p class="section-title">Perfil dos pacientes ativos</p>
-    <div class="table-card">
-      <div class="tab-row">
-        <button class="tab-btn active" onclick="switchTab('genero',this)">Gênero</button>
-        <button class="tab-btn" onclick="switchTab('faixa',this)">Faixa Etária</button>
-        <button class="tab-btn" onclick="switchTab('modal',this)">Modalidade</button>
-      </div>
-      <div class="tab-panel active" id="tab-genero"><div class="donut-wrap"><canvas id="chart-genero"></canvas></div></div>
-      <div class="tab-panel" id="tab-faixa"><div class="donut-wrap"><canvas id="chart-faixa"></canvas></div></div>
-      <div class="tab-panel" id="tab-modal"><div class="donut-wrap"><canvas id="chart-modal"></canvas></div></div>
+    <div class="kpi-card">
+      <div class="kpi-main" id="kpi-falta">—</div>
+      <div class="kpi-comp dn" id="kpi-falta-mom">—</div>
+      <div class="kpi-label">Faltas</div>
     </div>
   </div>
-</main>
-<footer>Dados lidos do Google Sheets · Atualizado a cada carregamento</footer>
+
+  <!-- Charts row -->
+  <div class="charts-row">
+    <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
+    <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
+    <div class="chart-card"><h3>Quantidade de Faltas</h3><canvas id="chart-falta"></canvas></div>
+  </div>
+
+  <!-- Bottom row -->
+  <div class="bottom-row">
+    <!-- Saldo -->
+    <div class="panel">
+      <h3>Sessões Restantes | Pacote</h3>
+      <div id="saldo-list"></div>
+    </div>
+
+    <!-- Donut -->
+    <div class="panel">
+      <h3>
+        Quantidade de Pacientes
+        <select class="profile-select" id="profile-select" onchange="updateDonut()">
+          <option value="genero">Gênero</option>
+          <option value="faixa">Faixa Etária</option>
+          <option value="modal">Modalidade</option>
+        </select>
+      </h3>
+      <div class="donut-wrap"><canvas id="chart-donut"></canvas></div>
+    </div>
+
+    <!-- Motivos -->
+    <div class="panel">
+      <h3>Faltas | Motivos</h3>
+      <div id="motivos-list"></div>
+    </div>
+  </div>
+
+</div>
+</div>
 
 <script>
-const SHEET_ID = "1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI";
-const GID      = "0";
-const COLORS   = ['#6b7f5e','#c4a882','#8fa3c7','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
-Chart.defaults.font.family = "'DM Sans', sans-serif";
-Chart.defaults.color = '#888';
-let charts = {};
+const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI", GID="0";
+const COLORS=['#8b9e6e','#c4a882','#7a9fb5','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
+Chart.defaults.font.family="'DM Sans',sans-serif";
+Chart.defaults.color='#888';
+let charts={}, _rows=[], _ativosArr=[];
 
-function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function dC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function switchTab(name, btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  btn.classList.add('active');
-}
-
+// ── CSV parser ──────────────────────────────────────────────────────────────
 function parseCSV(text){
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  const lines=text.trim().split('\n');
+  const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
   return lines.slice(1).map(line=>{
-    const cols=[]; let cur='', inQ=false;
+    const cols=[]; let cur='',inQ=false;
     for(let c of line){
-      if(c==='"'){ inQ=!inQ; }
-      else if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; }
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur);cur='';}
       else cur+=c;
     }
-    cols.push(cur.trim());
+    cols.push(cur);
     const obj={};
-    headers.forEach((h,i)=>{ obj[h]=(cols[i]||'').replace(/^"|"$/g,''); });
+    headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
     return obj;
   });
 }
 
-function parseValor(v){
-  if(!v) return 0;
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function pVal(v){
+  if(!v)return 0;
   return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;
 }
-
-function parseData(v){
-  if(!v) return null;
+function pData(v){
+  if(!v)return null;
   const p=String(v).split('/');
-  if(p.length===3) return new Date(+p[2],+p[1]-1,+p[0]);
-  return new Date(v);
+  if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);
+  return null;
 }
-
 function anoMes(d){
-  if(!d||isNaN(d)) return '';
+  if(!d||isNaN(d))return'';
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
 }
+function mesLabel(ym){
+  if(!ym)return'';
+  const[y,m]=ym.split('-');
+  const nomes=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return nomes[+m-1]+'.'+String(y).slice(2);
+}
+function iniciais(nome){return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');}
+function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
-function iniciais(nome){
-  return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');
+function compStr(atual,ant,prefix=''){
+  if(ant===null||ant===undefined)return{txt:'—',cls:'neu'};
+  if(ant===0&&atual===0)return{txt:'—',cls:'neu'};
+  if(ant===0)return{txt:'▲ +100%'+prefix,cls:'up'};
+  const pct=((atual-ant)/Math.abs(ant)*100).toFixed(1);
+  const up=atual>=ant;
+  return{txt:(up?'▲ +':'▼ ')+pct+'%'+prefix,cls:up?'up':'dn'};
+}
+function setComp(id,atual,ant,prefix){
+  const{txt,cls}=compStr(atual,ant,prefix);
+  const el=document.getElementById(id);
+  el.textContent=txt; el.className='kpi-comp '+cls;
 }
 
-function countBy(arr,fn){
-  const m={};
-  arr.forEach(r=>{ const v=fn(r); if(v){ m[v]=(m[v]||0)+1; } });
-  return m;
-}
-
+// ── Load ─────────────────────────────────────────────────────────────────────
 async function loadData(){
   document.getElementById('loading').style.display='flex';
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
-  try {
+  try{
     const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
     const res=await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
-    const raw=parseCSV(text);
-    const rows=raw.filter(r=>r['Data']&&r['Data'].trim());
-    processAndRender(rows);
+    const raw=parseCSV(text).filter(r=>r['Data']&&r['Data'].trim());
+
+    // Enriquece
+    raw.forEach(r=>{
+      r._data           = pData(r['Data']);
+      r._anoMes         = anoMes(r._data);
+      r._paciente       = (r['Paciente']||'').trim();
+      r._iniciais       = iniciais(r._paciente);
+      r._genero         = (r['Gênero']||'').trim();
+      r._faixaEtaria    = (r['Faixa Etária']||'').trim();
+      r._modalidade     = (r['Modalidade']||'').trim();
+      r._horario        = (r['Horário']||'').trim();
+      r._ativo          = (r['Ativo']||'').trim();
+      r._comparecimento = (r['Comparecimento']||'').trim();
+      r._motivo         = (r['Motivo']||'').trim();
+      r._valorSessao    = pVal(r['Valor da sessão']);
+      r._sessoesCob     = parseFloat(r['Sessões cobradas'])||0;
+      r._compSim        = (r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado')?1:0;
+      r._valorTotal     = r._sessoesCob * r._valorSessao;
+      r._falta          = r._comparecimento==='Não'?1:0;
+    });
+
+    _rows=raw;
+
+    // Ativos
+    const ativosMap={};
+    raw.filter(r=>r._ativo==='Ativo').forEach(r=>{ativosMap[r._paciente]=r;});
+    _ativosArr=Object.values(ativosMap);
+
+    processAndRender();
+
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
     document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  } catch(e){
+  }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
     document.getElementById('error-msg').style.display='block';
   }
 }
 
-function processAndRender(rows){
-  // Enriquece linhas — espelha transformações do notebook Databricks
-  rows.forEach(r=>{
-    r._data            = parseData(r['Data']);
-    r._anoMes          = anoMes(r._data);
-    r._paciente        = (r['Paciente']||'').trim();
-    r._iniciais        = iniciais(r._paciente);
-    r._genero          = (r['Gênero']||'').trim();
-    r._faixaEtaria     = (r['Faixa Etária']||'').trim();
-    r._modalidade      = (r['Modalidade']||'').trim();
-    r._horario         = (r['Horário']||'').trim();
-    r._ativo           = (r['Ativo']||'').trim();
-    r._comparecimento  = (r['Comparecimento']||'').trim();
-    r._motivo          = (r['Motivo']||'').trim();
-    r._valorSessao     = parseValor(r['Valor da sessão']);
-    r._sessoesCobradas = parseFloat(r['Sessões cobradas'])||0;
-    // comparecimento_sim: igual ao Databricks
-    r._compareceuSim   = (r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado') ? 1 : 0;
-    r._valorTotal      = r._sessoesCobradas * r._valorSessao;
-  });
+function processAndRender(){
+  const rows=_rows;
 
-  // Mês atual
+  // Meses ordenados
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
   const mesAtual=meses[meses.length-1]||'';
-  const rowsMes=rows.filter(r=>r._anoMes===mesAtual);
+  const mesAnt  =meses[meses.length-2]||null;
 
-  // KPI: Faturamento
-  const fatMes=rowsMes.reduce((s,r)=>s+r._valorTotal,0);
-  document.getElementById('kpi-fat').textContent='R$ '+fatMes.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // Mês de um ano atrás
+  function mesYoy(ym){
+    if(!ym)return null;
+    const[y,m]=ym.split('-');
+    return (+y-1)+'-'+m;
+  }
+  const mesYoY=mesYoy(mesAtual);
 
-  // KPI: Pacientes ativos
-  const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente)).size;
-  document.getElementById('kpi-pac').textContent=pacAtivos;
+  function aggMes(ym){
+    const r=rows.filter(x=>x._anoMes===ym);
+    return{
+      fat: r.reduce((s,x)=>s+x._valorTotal,0),
+      pac: new Set(r.map(x=>x._paciente)).size,
+      faltas: r.filter(x=>x._falta).length,
+      total: r.length
+    };
+  }
 
-  // KPI: % Faltas mês atual
-  const totalMes=rowsMes.length;
-  const faltasMes=rowsMes.filter(r=>r._comparecimento==='Não').length;
-  document.getElementById('kpi-falta').textContent=totalMes?(faltasMes/totalMes*100).toFixed(1)+'%':'0.0%';
+  const cur  = aggMes(mesAtual);
+  const prev = mesAnt  ? aggMes(mesAnt)  : null;
+  const pyoy = mesYoY  ? aggMes(mesYoY)  : null;
 
-  // KPI: Sessões realizadas mês
-  document.getElementById('kpi-sessoes').textContent=rowsMes.filter(r=>r._compareceuSim===1).length;
+  // ── KPIs ──
+  document.getElementById('kpi-fat').textContent =
+    'R$ '+cur.fat.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
 
-  // Histórico
-  const fatPorMes={}, pacPorMes={};
-  rows.forEach(r=>{
-    const m=r._anoMes; if(!m) return;
-    fatPorMes[m]=(fatPorMes[m]||0)+r._valorTotal;
-    if(!pacPorMes[m]) pacPorMes[m]=new Set();
-    if(r._paciente) pacPorMes[m].add(r._paciente);
-  });
-  const mo=Object.keys(fatPorMes).sort();
-  renderBar('chart-fat', mo, mo.map(m=>fatPorMes[m]), 'Faturamento (R$)', '#6b7f5e');
-  renderBar('chart-pac', mo, mo.map(m=>pacPorMes[m]?pacPorMes[m].size:0), 'Pacientes', '#c4a882');
+  const horas=_ativosArr.reduce((s,r)=>{
+    const h=parseInt((r._horario||'').replace(/\D/g,'').slice(-2))||0; return s+h;
+  },0);
+  document.getElementById('kpi-pac').textContent =
+    cur.pac+' ('+(horas>0?horas+' horas':'—')+')';
 
-  // Saldo de atendimentos — apenas pacientes ativos, lógica fiel ao Databricks
-  const pacientesAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
+  const pctFalta=cur.total?(cur.faltas/cur.total*100).toFixed(0)+'%':'0%';
+  document.getElementById('kpi-falta').textContent=pctFalta;
+
+  // Comparativos
+  if(prev){
+    const momLabel=' vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0];
+    setComp('kpi-fat-mom', cur.fat, prev.fat, momLabel);
+    setComp('kpi-pac-mom', cur.pac, prev.pac, momLabel);
+    const curPct=cur.total?cur.faltas/cur.total:0;
+    const prevPct=prev.total?prev.faltas/prev.total:0;
+    setComp('kpi-falta-mom', curPct, prevPct, momLabel);
+  }
+  if(pyoy){
+    const yoyLabel=' vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0];
+    setComp('kpi-fat-yoy', cur.fat, pyoy.fat, yoyLabel);
+    setComp('kpi-pac-yoy', cur.pac, pyoy.pac, yoyLabel);
+  }
+
+  // ── Gráficos de barra histórico ──
+  const labels=meses.map(mesLabel);
+  const fatArr=meses.map(m=>rows.filter(r=>r._anoMes===m).reduce((s,r)=>s+r._valorTotal,0));
+  const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m).map(r=>r._paciente)).size);
+  const fltArr=meses.map(m=>rows.filter(r=>r._anoMes===m&&r._falta).length);
+
+  renderBar('chart-fat',  labels, fatArr, 'R$', '#c8bc96');
+  renderBar('chart-pac',  labels, pacArr, 'Pac', '#c8bc96');
+  renderBar('chart-falta',labels, fltArr, 'Flt', '#c8bc96');
+
+  // ── Saldo (apenas ativos) ──
+  const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
   const saldoMap={}, horarioMap={};
-  rows.filter(r=>pacientesAtivos.has(r._paciente)).forEach(r=>{
-    const key=r._paciente;
-    if(!saldoMap[key]) saldoMap[key]={iniciais:r._iniciais,sessoes:0,compareceu:0};
-    horarioMap[key]=r._horario||horarioMap[key]||'';
-    saldoMap[key].sessoes    +=r._sessoesCobradas;
-    saldoMap[key].compareceu +=r._compareceuSim;
+  rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
+    const k=r._paciente;
+    if(!saldoMap[k])saldoMap[k]={iniciais:r._iniciais,sessoes:0,comp:0};
+    horarioMap[k]=r._horario||horarioMap[k]||'';
+    saldoMap[k].sessoes+=r._sessoesCob;
+    saldoMap[k].comp+=r._compSim;
   });
   const saldoArr=Object.entries(saldoMap)
-    .map(([k,v])=>({iniciais:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.compareceu}))
+    .map(([k,v])=>({label:horarioMap[k]?horarioMap[k]+' | '+v.iniciais:v.iniciais, saldo:v.sessoes-v.comp}))
     .sort((a,b)=>a.saldo-b.saldo);
-  const tbSaldo=document.getElementById('tabela-saldo');
-  tbSaldo.innerHTML='';
-  saldoArr.forEach(({iniciais,horario,saldo})=>{
-    const cls=saldo<0?'badge-red':saldo===0?'badge-yellow':'badge-green';
-    tbSaldo.innerHTML+=`<tr><td><strong>${iniciais}</strong></td><td style="color:var(--muted);font-size:.8rem">${horario}</td><td><span class="badge ${cls}">${saldo}</span></td></tr>`;
+
+  const maxAbs=Math.max(...saldoArr.map(s=>Math.abs(s.saldo)),1);
+  const sl=document.getElementById('saldo-list');
+  sl.innerHTML='';
+  saldoArr.forEach(({label,saldo})=>{
+    const pct=Math.abs(saldo)/maxAbs*100;
+    const color=saldo<=-4?'#9b1c1c':saldo<=-2?'#c0392b':saldo<=-1?'#e07070':saldo===0?'#f0956a':'#8b9e6e';
+    sl.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="width:110px;font-size:.75rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+      <div style="flex:1;position:relative;height:22px;background:#f5f0e8;border-radius:3px;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;height:100%;width:${pct}%;background:${color};border-radius:3px;"></div>
+        <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:600;color:${pct>30?'#fff':color};">${saldo}</span>
+      </div>
+    </div>`;
   });
 
-  // Motivos de falta
+  // ── Donut ──
+  updateDonut();
+
+  // ── Motivos ──
   const motivoCount={};
-  rows.filter(r=>r._comparecimento==='Não').forEach(r=>{
+  rows.filter(r=>r._falta).forEach(r=>{
     const m=r._motivo||'Sem justificativa';
     motivoCount[m]=(motivoCount[m]||0)+1;
   });
-  const tbMotivo=document.getElementById('tabela-motivos');
-  tbMotivo.innerHTML='';
-  Object.entries(motivoCount).sort((a,b)=>b[1]-a[1]).forEach(([mot,qty])=>{
-    tbMotivo.innerHTML+=`<tr><td>${mot}</td><td><strong>${qty}</strong></td></tr>`;
+  const motivoArr=Object.entries(motivoCount).sort((a,b)=>b[1]-a[1]);
+  const maxM=motivoArr[0]?motivoArr[0][1]:1;
+  const ml=document.getElementById('motivos-list');
+  ml.innerHTML=`<table class="motivos-table">
+    <thead><tr><td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Motivo</td><td style="text-align:right;font-size:.7rem;color:var(--muted);padding-bottom:6px;">Qtd</td></tr></thead><tbody>`;
+  motivoArr.forEach(([m,q])=>{
+    const w=(q/maxM*100).toFixed(0);
+    ml.innerHTML+=`<tr>
+      <td style="padding:4px 0;">
+        <div>${m}</div>
+        <div class="motivo-bar" style="width:${w}%"></div>
+      </td>
+      <td style="text-align:right;font-weight:600;vertical-align:top;padding:4px 0 0 8px;">${q}</td>
+    </tr>`;
   });
-
-  // Donuts — última entrada de cada paciente ativo
-  const ativos={};
-  rows.filter(r=>r._ativo==='Ativo').forEach(r=>{ ativos[r._paciente]=r; });
-  const ativosArr=Object.values(ativos);
-  renderDonut('chart-genero', countBy(ativosArr, r=>r._genero));
-  renderDonut('chart-faixa',  countBy(ativosArr, r=>r._faixaEtaria));
-  renderDonut('chart-modal',  countBy(ativosArr, r=>r._modalidade));
+  ml.innerHTML+='</tbody></table>';
 }
 
-function renderBar(id,labels,data,label,color){
-  destroyChart(id);
+function updateDonut(){
+  const sel=document.getElementById('profile-select').value;
+  const fn=sel==='genero'?r=>r._genero:sel==='faixa'?r=>r._faixaEtaria:r=>r._modalidade;
+  const data=countBy(_ativosArr,fn);
+  dC('chart-donut');
+  const labels=Object.keys(data), vals=Object.values(data);
+  const total=vals.reduce((a,b)=>a+b,0);
+  charts['chart-donut']=new Chart(document.getElementById('chart-donut').getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
+    options:{
+      responsive:true,cutout:'62%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>{
+          const pct=(ctx.parsed/total*100).toFixed(2);
+          return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+        }}}
+      }
+    },
+    plugins:[{
+      id:'centerLabels',
+      afterDraw(chart){
+        const{ctx,data}=chart;
+        const meta=chart.getDatasetMeta(0);
+        meta.data.forEach((arc,i)=>{
+          const{startAngle,endAngle,outerRadius,innerRadius}=arc;
+          const mid=(startAngle+endAngle)/2;
+          const r=(outerRadius+innerRadius)/2;
+          const x=arc.x+Math.cos(mid)*r;
+          const y=arc.y+Math.sin(mid)*r;
+          const pct=(data.datasets[0].data[i]/total*100).toFixed(2);
+          ctx.save();
+          ctx.fillStyle='#fff';
+          ctx.font='bold 10px DM Sans';
+          ctx.textAlign='center';
+          ctx.textBaseline='middle';
+          if((endAngle-startAngle)>0.3){
+            ctx.fillText(data.labels[i],x,y-6);
+            ctx.fillText(data.datasets[0].data[i]+' ('+pct+'%)',x,y+6);
+          }
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderBar(id,labels,data,yLabel,color){
+  dC(id);
   charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
     type:'bar',
-    data:{labels,datasets:[{label,data,backgroundColor:color+'99',borderColor:color,borderWidth:1.5,borderRadius:4}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0ece6'},ticks:{font:{size:10}}}}}
-  });
-}
-
-function renderDonut(id,countMap){
-  destroyChart(id);
-  const labels=Object.keys(countMap),data=Object.values(countMap);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
-    type:'doughnut',
-    data:{labels,datasets:[{data,backgroundColor:COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12,boxWidth:10}}}}
+    data:{labels,datasets:[{data,backgroundColor:color,borderColor:'#a89e78',borderWidth:0,borderRadius:2}]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>{
+          if(yLabel==='R$') return ' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:0});
+          return ' '+ctx.parsed.y;
+        }}},
+        datalabels:false
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45}},
+        y:{grid:{color:'#f0ece6'},ticks:{font:{size:9}}}
+      }
+    }
   });
 }
 

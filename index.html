@@ -265,11 +265,23 @@ function processAndRender(){
   function mesYoy(ym){if(!ym)return null;const[y,m]=ym.split('-');return(+y-1)+'-'+m;}
   const mesYoY=mesYoy(mesAtual);
 
-  function aggMes(ym){
-    const r=rows.filter(x=>x._anoMes===ym);
+  const hoje=new Date();
+  const diaHoje=hoje.getDate();
+
+  function aggMes(ym, ateDia=null){
+    let r=rows.filter(x=>x._anoMes===ym);
+    // Se ateDia definido, filtra só até aquele dia do mês
+    if(ateDia!==null) r=r.filter(x=>x._data&&x._data.getDate()<=ateDia);
     return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.map(x=>x._paciente)).size,faltas:r.filter(x=>x._falta).length,total:r.length};
   }
+
+  // Mês atual: todos os dados (mês em curso)
   const cur=aggMes(mesAtual);
+  // Comparações de faturamento: limitadas ao mesmo dia do mês para ser justo
+  const curFatAteDia=aggMes(mesAtual, diaHoje).fat;
+  const prevFatAteDia=mesAnt?aggMes(mesAnt, diaHoje).fat:null;
+  const pyoyFatAteDia=mesYoY?aggMes(mesYoY, diaHoje).fat:null;
+  // Pacientes e faltas: comparação normal (mês completo vs mês completo)
   const prev=mesAnt?aggMes(mesAnt):null;
   const pyoy=mesYoY?aggMes(mesYoY):null;
 
@@ -288,13 +300,14 @@ function processAndRender(){
   const momSuffix=mesAnt?'vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0]:'';
   const yoySuffix=mesYoY?'vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0]:'';
   if(prev){
-    setComp('kpi-fat-mom',cur.fat,prev.fat,momSuffix);
+    // Faturamento: até o dia de hoje em cada mês
+    setComp('kpi-fat-mom',curFatAteDia,prevFatAteDia,momSuffix);
     setComp('kpi-pac-mom',cur.pac,prev.pac,momSuffix);
     const cp=cur.total?cur.faltas/cur.total:0,pp=prev.total?prev.faltas/prev.total:0;
     setComp('kpi-falta-mom',cp,pp,momSuffix);
   }
   if(pyoy){
-    setComp('kpi-fat-yoy',cur.fat,pyoy.fat,yoySuffix);
+    setComp('kpi-fat-yoy',curFatAteDia,pyoyFatAteDia,yoySuffix);
     setComp('kpi-pac-yoy',cur.pac,pyoy.pac,yoySuffix);
   }
 

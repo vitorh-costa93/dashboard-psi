@@ -216,13 +216,14 @@ function setComp(id,atual,ant,suffix){
 }
 
 // Diferença absoluta em pontos percentuais (para KPIs que já são %)
+// Lógica invertida: diminuir é bom (verde), aumentar é ruim (vermelho)
 function setCompPP(id,atual,ant,suffix){
   const el=document.getElementById(id);
   if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
   const diff=(atual-ant).toFixed(1);
-  const up=atual>=ant;
-  el.textContent=(up?'▲ +':'▼ ')+diff+' p.p. '+suffix;
-  el.className='kpi-comp '+(up?'up':'dn');
+  const subiu=atual>ant;
+  el.textContent=(subiu?'▲ +':'▼ ')+diff+' '+suffix;
+  el.className='kpi-comp '+(subiu?'dn':'up');
 }
 
 async function loadData(){

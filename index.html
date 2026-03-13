@@ -200,7 +200,7 @@ function parseCSV(text){
 function pVal(v){if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
 function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
 function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
-function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.'+String(y).slice(2);}
+function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
 function iniciais(nome){return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
@@ -222,7 +222,7 @@ function setCompPP(id,atual,ant,suffix){
   if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
   const diff=(atual-ant).toFixed(1);
   const subiu=atual>ant;
-  el.textContent=(subiu?'▲ +':'▼ ')+diff+' '+suffix;
+  el.textContent=(subiu?'▲ +':'▼ ')+diff+'% '+suffix;
   el.className='kpi-comp '+(subiu?'dn':'up');
 }
 

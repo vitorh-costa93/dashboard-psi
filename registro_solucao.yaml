@@ -1,0 +1,44 @@
+name: Registro de Solução/Projeto
+description: Formulário para documentar uma nova solução implementada.
+title: "[Projeto]: "
+labels: ["documentação"]
+body:
+  - type: input
+    id: cliente
+    attributes:
+      label: 🏢 Cliente
+      description: Qual o nome do cliente onde esta solução foi aplicada?
+      placeholder: Ex. Empresa X
+    validations:
+      required: true
+      
+  - type: textarea
+    id: resumo
+    attributes:
+      label: 🎯 Resumo do Projeto
+      description: Explique brevemente qual era o problema do cliente e o que foi feito.
+    validations:
+      required: true
+      
+  - type: textarea
+    id: codigos
+    attributes:
+      label: 💻 Códigos e Lógica da Solução
+      description: Explique a linha de raciocínio de como chegou lá. Cole os trechos de código abaixo.
+      placeholder: Use crases (```) no início e no fim do código para formatá-lo, se necessário.
+    validations:
+      required: true
+      
+  - type: textarea
+    id: resultados
+    attributes:
+      label: 📈 Resultados Obtidos
+      description: Quais foram os ganhos, métricas ou problemas resolvidos após a implementação?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: prints
+    attributes:
+      label: 🖼️ Prints do Resultado Final
+      description: Arraste e solte suas imagens/screenshots aqui dentro desta caixa.

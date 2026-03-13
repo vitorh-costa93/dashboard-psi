@@ -8,28 +8,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#f5f2eb; --card:#ffffff; --header-bg:#d6ccb0;
-  --text:#2a2a2a; --muted:#888; --light:#f9f7f2;
-  --accent:#8b9e6e; --accent2:#c4a882; --accent3:#7a9fb5;
-  --danger:#c0392b; --warn:#e67e22;
-  --border:#e0d9cc; --shadow:0 1px 8px rgba(0,0,0,0.07);
-  --bar:#c8bc96; --bar-dark:#9e9272;
+  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
+  --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
+  --accent:#8b9e6e;--accent2:#c4a882;--accent3:#7a9fb5;
+  --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
 
-/* ── Header ── */
-.app-header{
-  background:var(--header-bg);
-  padding:14px 24px;
-  display:flex;align-items:center;gap:14px;
-  border-bottom:1px solid #bfb89a;
-}
+.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;}
 .app-header .logo{font-size:28px;}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
 .app-header p{font-size:.78rem;color:#5a5040;margin-top:2px;}
 
-/* ── Loading / Error ── */
 #loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px;color:var(--muted);}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -37,68 +28,57 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 #error-msg h3{color:var(--danger);margin-bottom:8px;font-family:'Playfair Display',serif;}
 #error-msg p{color:var(--muted);font-size:.85rem;line-height:1.6;}
 
-/* ── Dashboard ── */
 #dashboard{display:none;}
 .dash-wrap{max-width:1400px;margin:0 auto;padding:16px 20px 32px;}
 
-/* ── Reload bar ── */
 .reload-bar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;}
 #last-update{font-size:.75rem;color:var(--muted);}
 #btn-reload{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:opacity .2s;}
 #btn-reload:hover{opacity:.85;}
 
-/* ── KPI row ── */
+/* ── KPIs ── */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.kpi-card{
-  background:var(--card);border:1px solid var(--border);border-radius:10px;
-  padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;
-  animation:fadeUp .4s ease both;
-}
-.kpi-card:nth-child(1){animation-delay:.05s}
-.kpi-card:nth-child(2){animation-delay:.10s}
-.kpi-card:nth-child(3){animation-delay:.15s}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
+.kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-.kpi-main{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;color:var(--text);}
-.kpi-sub{font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+.kpi-main{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;}
 .kpi-comp{font-size:.72rem;margin:2px 0;}
-.kpi-comp.up{color:#27ae60;} .kpi-comp.dn{color:var(--danger);} .kpi-comp.neu{color:var(--muted);}
+.kpi-comp.up{color:#27ae60;}.kpi-comp.dn{color:var(--danger);}.kpi-comp.neu{color:var(--muted);}
 .kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
 
-/* ── Charts row ── */
+/* ── Gráficos — 3 colunas iguais ── */
 .charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;min-width:0;}
 .chart-card h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;}
-.chart-card canvas{max-height:200px;}
+.chart-card canvas{width:100%!important;max-height:200px;}
 
-/* ── Bottom row ── */
-.bottom-row{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;}
+/* ── Bottom row — 3 colunas iguais ── */
+.bottom-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
 .panel h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 
-/* Saldo table */
+/* ── Saldo — formato badge como v1 ── */
 .saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
-.saldo-table tr{border-bottom:1px solid #f0ece4;}
+.saldo-table tr{border-bottom:1px solid var(--border);}
 .saldo-table tr:last-child{border:none;}
-.saldo-table td{padding:5px 4px;vertical-align:middle;}
-.saldo-table .td-label{color:var(--text);}
-.saldo-bar-wrap{position:relative;height:22px;background:#f5f0e8;border-radius:3px;overflow:hidden;}
-.saldo-bar-inner{position:absolute;top:0;height:100%;border-radius:3px;transition:width .4s;}
-.saldo-bar-val{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:600;color:#fff;z-index:1;}
+.saldo-table td{padding:7px 8px;vertical-align:middle;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:500;}
+.badge-red{background:#fdecea;color:var(--danger);}
+.badge-yellow{background:#fef9ec;color:#b38a2a;}
+.badge-green{background:#eef4eb;color:var(--accent);}
 
-/* Donut */
-.donut-wrap{max-width:200px;margin:0 auto;}
-.donut-wrap canvas{max-height:170px;}
+/* ── Donut ── */
+.donut-wrap{position:relative;max-width:220px;margin:0 auto;}
+.donut-wrap canvas{max-height:200px;}
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
-/* Motivos table */
-.motivos-table{width:100%;border-collapse:collapse;font-size:.78rem;}
-.motivos-table tr{border-bottom:1px solid #f0ece4;}
-.motivos-table tr:last-child{border:none;}
-.motivos-table td{padding:5px 4px;}
-.motivos-table .motivo-bar{height:6px;background:#c8bc96;border-radius:3px;margin-top:3px;}
+/* ── Motivos — tabela compacta ── */
+.motivos-wrap{display:flex;flex-direction:column;gap:4px;}
+.motivo-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f0e8;font-size:.78rem;}
+.motivo-row:last-child{border:none;}
+.motivo-nome{color:var(--text);flex:1;margin-right:8px;}
+.motivo-qty{font-weight:600;color:var(--text);min-width:24px;text-align:right;}
 
-/* Responsive */
 @media(max-width:900px){
   .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
 }
@@ -117,7 +97,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
 <div id="error-msg">
   <h3>Não foi possível carregar os dados</h3>
-  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong> e tente novamente.</p>
+  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.</p>
 </div>
 
 <div id="dashboard">
@@ -132,36 +112,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-main" id="kpi-fat">—</div>
-      <div class="kpi-comp dn" id="kpi-fat-mom">—</div>
-      <div class="kpi-comp dn" id="kpi-fat-yoy">—</div>
+      <div class="kpi-comp" id="kpi-fat-mom">—</div>
+      <div class="kpi-comp" id="kpi-fat-yoy">—</div>
       <div class="kpi-label">Valor Recebido</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-main" id="kpi-pac">—</div>
-      <div class="kpi-comp dn" id="kpi-pac-mom">—</div>
-      <div class="kpi-comp dn" id="kpi-pac-yoy">—</div>
+      <div class="kpi-comp" id="kpi-pac-mom">—</div>
+      <div class="kpi-comp" id="kpi-pac-yoy">—</div>
       <div class="kpi-label">Pacientes</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-main" id="kpi-falta">—</div>
-      <div class="kpi-comp dn" id="kpi-falta-mom">—</div>
+      <div class="kpi-comp" id="kpi-falta-mom">—</div>
+      <div class="kpi-comp" style="visibility:hidden">—</div>
       <div class="kpi-label">Faltas</div>
     </div>
   </div>
 
-  <!-- Charts row -->
+  <!-- Gráficos -->
   <div class="charts-row">
     <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
     <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
     <div class="chart-card"><h3>Quantidade de Faltas</h3><canvas id="chart-falta"></canvas></div>
   </div>
 
-  <!-- Bottom row -->
+  <!-- Bottom -->
   <div class="bottom-row">
-    <!-- Saldo -->
+
+    <!-- Saldo formato badge -->
     <div class="panel">
       <h3>Sessões Restantes | Pacote</h3>
-      <div id="saldo-list"></div>
+      <table class="saldo-table">
+        <thead><tr>
+          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
+          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
+          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
+        </tr></thead>
+        <tbody id="tabela-saldo"></tbody>
+      </table>
     </div>
 
     <!-- Donut -->
@@ -177,122 +166,87 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       <div class="donut-wrap"><canvas id="chart-donut"></canvas></div>
     </div>
 
-    <!-- Motivos -->
+    <!-- Motivos compacto -->
     <div class="panel">
-      <h3>Faltas | Motivos</h3>
-      <div id="motivos-list"></div>
+      <h3>Faltas | % por Paciente (ativos)</h3>
+      <div class="motivos-wrap" id="motivos-list"></div>
     </div>
-  </div>
 
+  </div>
 </div>
 </div>
 
 <script>
-const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI", GID="0";
-const COLORS=['#8b9e6e','#c4a882','#7a9fb5','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
+const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
+const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
-let charts={}, _rows=[], _ativosArr=[];
+let charts={},_rows=[],_ativosArr=[];
 
 function dC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-// ── CSV parser ──────────────────────────────────────────────────────────────
 function parseCSV(text){
   const lines=text.trim().split('\n');
   const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
   return lines.slice(1).map(line=>{
-    const cols=[]; let cur='',inQ=false;
-    for(let c of line){
-      if(c==='"'){inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur);cur='';}
-      else cur+=c;
-    }
+    const cols=[];let cur='',inQ=false;
+    for(let c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur);cur='';}else cur+=c;}
     cols.push(cur);
-    const obj={};
-    headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
+    const obj={};headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
     return obj;
   });
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-function pVal(v){
-  if(!v)return 0;
-  return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;
-}
-function pData(v){
-  if(!v)return null;
-  const p=String(v).split('/');
-  if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);
-  return null;
-}
-function anoMes(d){
-  if(!d||isNaN(d))return'';
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-}
-function mesLabel(ym){
-  if(!ym)return'';
-  const[y,m]=ym.split('-');
-  const nomes=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  return nomes[+m-1]+'.'+String(y).slice(2);
-}
+function pVal(v){if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
+function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
+function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.'+String(y).slice(2);}
 function iniciais(nome){return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
-function compStr(atual,ant,prefix=''){
-  if(ant===null||ant===undefined)return{txt:'—',cls:'neu'};
-  if(ant===0&&atual===0)return{txt:'—',cls:'neu'};
-  if(ant===0)return{txt:'▲ +100%'+prefix,cls:'up'};
+function setComp(id,atual,ant,suffix){
+  const el=document.getElementById(id);
+  if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
+  if(ant===0&&atual===0){el.textContent='—';el.className='kpi-comp neu';return;}
+  if(ant===0){el.textContent='▲ +100% '+suffix;el.className='kpi-comp up';return;}
   const pct=((atual-ant)/Math.abs(ant)*100).toFixed(1);
   const up=atual>=ant;
-  return{txt:(up?'▲ +':'▼ ')+pct+'%'+prefix,cls:up?'up':'dn'};
-}
-function setComp(id,atual,ant,prefix){
-  const{txt,cls}=compStr(atual,ant,prefix);
-  const el=document.getElementById(id);
-  el.textContent=txt; el.className='kpi-comp '+cls;
+  el.textContent=(up?'▲ +':'▼ ')+pct+'% '+suffix;
+  el.className='kpi-comp '+(up?'up':'dn');
 }
 
-// ── Load ─────────────────────────────────────────────────────────────────────
 async function loadData(){
   document.getElementById('loading').style.display='flex';
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
   try{
     const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
-    const res=await fetch(url);
-    if(!res.ok)throw new Error('HTTP '+res.status);
+    const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     const raw=parseCSV(text).filter(r=>r['Data']&&r['Data'].trim());
-
-    // Enriquece
     raw.forEach(r=>{
-      r._data           = pData(r['Data']);
-      r._anoMes         = anoMes(r._data);
-      r._paciente       = (r['Paciente']||'').trim();
-      r._iniciais       = iniciais(r._paciente);
-      r._genero         = (r['Gênero']||'').trim();
-      r._faixaEtaria    = (r['Faixa Etária']||'').trim();
-      r._modalidade     = (r['Modalidade']||'').trim();
-      r._horario        = (r['Horário']||'').trim();
-      r._ativo          = (r['Ativo']||'').trim();
-      r._comparecimento = (r['Comparecimento']||'').trim();
-      r._motivo         = (r['Motivo']||'').trim();
-      r._valorSessao    = pVal(r['Valor da sessão']);
-      r._sessoesCob     = parseFloat(r['Sessões cobradas'])||0;
-      r._compSim        = (r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado')?1:0;
-      r._valorTotal     = r._sessoesCob * r._valorSessao;
-      r._falta          = r._comparecimento==='Não'?1:0;
+      r._data           =pData(r['Data']);
+      r._anoMes         =anoMes(r._data);
+      r._paciente       =(r['Paciente']||'').trim();
+      r._iniciais       =iniciais(r._paciente);
+      r._genero         =(r['Gênero']||'').trim();
+      r._faixaEtaria    =(r['Faixa Etária']||'').trim();
+      r._modalidade     =(r['Modalidade']||'').trim();
+      r._horario        =(r['Horário']||'').trim();
+      r._ativo          =(r['Ativo']||'').trim();
+      r._comparecimento =(r['Comparecimento']||'').trim();
+      r._motivo         =(r['Motivo']||'').trim();
+      r._valorSessao    =pVal(r['Valor da sessão']);
+      r._sessoesCob     =parseFloat(r['Sessões cobradas'])||0;
+      r._compSim        =(r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado')?1:0;
+      r._valorTotal     =r._sessoesCob*r._valorSessao;
+      r._falta          =r._comparecimento==='Não'?1:0;
     });
-
     _rows=raw;
-
-    // Ativos
     const ativosMap={};
     raw.filter(r=>r._ativo==='Ativo').forEach(r=>{ativosMap[r._paciente]=r;});
     _ativosArr=Object.values(ativosMap);
-
     processAndRender();
-
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
     document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -305,75 +259,57 @@ async function loadData(){
 
 function processAndRender(){
   const rows=_rows;
-
-  // Meses ordenados
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
   const mesAtual=meses[meses.length-1]||'';
-  const mesAnt  =meses[meses.length-2]||null;
-
-  // Mês de um ano atrás
-  function mesYoy(ym){
-    if(!ym)return null;
-    const[y,m]=ym.split('-');
-    return (+y-1)+'-'+m;
-  }
+  const mesAnt=meses[meses.length-2]||null;
+  function mesYoy(ym){if(!ym)return null;const[y,m]=ym.split('-');return(+y-1)+'-'+m;}
   const mesYoY=mesYoy(mesAtual);
 
   function aggMes(ym){
     const r=rows.filter(x=>x._anoMes===ym);
-    return{
-      fat: r.reduce((s,x)=>s+x._valorTotal,0),
-      pac: new Set(r.map(x=>x._paciente)).size,
-      faltas: r.filter(x=>x._falta).length,
-      total: r.length
-    };
+    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.map(x=>x._paciente)).size,faltas:r.filter(x=>x._falta).length,total:r.length};
   }
+  const cur=aggMes(mesAtual);
+  const prev=mesAnt?aggMes(mesAnt):null;
+  const pyoy=mesYoY?aggMes(mesYoY):null;
 
-  const cur  = aggMes(mesAtual);
-  const prev = mesAnt  ? aggMes(mesAnt)  : null;
-  const pyoy = mesYoY  ? aggMes(mesYoY)  : null;
+  // ── KPI: Faturamento ──
+  document.getElementById('kpi-fat').textContent='R$ '+cur.fat.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
 
-  // ── KPIs ──
-  document.getElementById('kpi-fat').textContent =
-    'R$ '+cur.fat.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  // ── KPI: Pacientes — qtd distinta de horários dos ativos ──
+  const horariosDistintos=new Set(_ativosArr.map(r=>r._horario).filter(Boolean)).size;
+  document.getElementById('kpi-pac').textContent=cur.pac+' ('+horariosDistintos+' horas)';
 
-  const horas=_ativosArr.reduce((s,r)=>{
-    const h=parseInt((r._horario||'').replace(/\D/g,'').slice(-2))||0; return s+h;
-  },0);
-  document.getElementById('kpi-pac').textContent =
-    cur.pac+' ('+(horas>0?horas+' horas':'—')+')';
-
+  // ── KPI: Faltas ──
   const pctFalta=cur.total?(cur.faltas/cur.total*100).toFixed(0)+'%':'0%';
   document.getElementById('kpi-falta').textContent=pctFalta;
 
   // Comparativos
+  const momSuffix=mesAnt?'vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0]:'';
+  const yoySuffix=mesYoY?'vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0]:'';
   if(prev){
-    const momLabel=' vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0];
-    setComp('kpi-fat-mom', cur.fat, prev.fat, momLabel);
-    setComp('kpi-pac-mom', cur.pac, prev.pac, momLabel);
-    const curPct=cur.total?cur.faltas/cur.total:0;
-    const prevPct=prev.total?prev.faltas/prev.total:0;
-    setComp('kpi-falta-mom', curPct, prevPct, momLabel);
+    setComp('kpi-fat-mom',cur.fat,prev.fat,momSuffix);
+    setComp('kpi-pac-mom',cur.pac,prev.pac,momSuffix);
+    const cp=cur.total?cur.faltas/cur.total:0,pp=prev.total?prev.faltas/prev.total:0;
+    setComp('kpi-falta-mom',cp,pp,momSuffix);
   }
   if(pyoy){
-    const yoyLabel=' vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0];
-    setComp('kpi-fat-yoy', cur.fat, pyoy.fat, yoyLabel);
-    setComp('kpi-pac-yoy', cur.pac, pyoy.pac, yoyLabel);
+    setComp('kpi-fat-yoy',cur.fat,pyoy.fat,yoySuffix);
+    setComp('kpi-pac-yoy',cur.pac,pyoy.pac,yoySuffix);
   }
 
-  // ── Gráficos de barra histórico ──
+  // ── Gráficos histórico ──
   const labels=meses.map(mesLabel);
   const fatArr=meses.map(m=>rows.filter(r=>r._anoMes===m).reduce((s,r)=>s+r._valorTotal,0));
   const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m).map(r=>r._paciente)).size);
   const fltArr=meses.map(m=>rows.filter(r=>r._anoMes===m&&r._falta).length);
+  renderBar('chart-fat',labels,fatArr,'R$','#c8bc96');
+  renderBar('chart-pac',labels,pacArr,'Pac','#c8bc96');
+  renderBar('chart-falta',labels,fltArr,'Flt','#c8bc96');
 
-  renderBar('chart-fat',  labels, fatArr, 'R$', '#c8bc96');
-  renderBar('chart-pac',  labels, pacArr, 'Pac', '#c8bc96');
-  renderBar('chart-falta',labels, fltArr, 'Flt', '#c8bc96');
-
-  // ── Saldo (apenas ativos) ──
+  // ── Saldo (badge, formato v1) ──
   const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
-  const saldoMap={}, horarioMap={};
+  const saldoMap={},horarioMap={};
   rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente;
     if(!saldoMap[k])saldoMap[k]={iniciais:r._iniciais,sessoes:0,comp:0};
@@ -382,49 +318,48 @@ function processAndRender(){
     saldoMap[k].comp+=r._compSim;
   });
   const saldoArr=Object.entries(saldoMap)
-    .map(([k,v])=>({label:horarioMap[k]?horarioMap[k]+' | '+v.iniciais:v.iniciais, saldo:v.sessoes-v.comp}))
+    .map(([k,v])=>({iniciais:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.comp}))
     .sort((a,b)=>a.saldo-b.saldo);
-
-  const maxAbs=Math.max(...saldoArr.map(s=>Math.abs(s.saldo)),1);
-  const sl=document.getElementById('saldo-list');
-  sl.innerHTML='';
-  saldoArr.forEach(({label,saldo})=>{
-    const pct=Math.abs(saldo)/maxAbs*100;
-    const color=saldo<=-4?'#9b1c1c':saldo<=-2?'#c0392b':saldo<=-1?'#e07070':saldo===0?'#f0956a':'#8b9e6e';
-    sl.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <div style="width:110px;font-size:.75rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
-      <div style="flex:1;position:relative;height:22px;background:#f5f0e8;border-radius:3px;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;height:100%;width:${pct}%;background:${color};border-radius:3px;"></div>
-        <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:600;color:${pct>30?'#fff':color};">${saldo}</span>
-      </div>
-    </div>`;
+  const tb=document.getElementById('tabela-saldo');tb.innerHTML='';
+  saldoArr.forEach(({iniciais,horario,saldo})=>{
+    const cls=saldo<0?'badge-red':saldo===0?'badge-yellow':'badge-green';
+    tb.innerHTML+=`<tr>
+      <td><strong>${iniciais}</strong></td>
+      <td style="color:var(--muted);font-size:.77rem;">${horario}</td>
+      <td><span class="badge ${cls}">${saldo}</span></td>
+    </tr>`;
   });
 
   // ── Donut ──
   updateDonut();
 
-  // ── Motivos ──
-  const motivoCount={};
-  rows.filter(r=>r._falta).forEach(r=>{
-    const m=r._motivo||'Sem justificativa';
-    motivoCount[m]=(motivoCount[m]||0)+1;
+  // ── % Faltas por paciente ativo ──
+  // faltas = Comparecimento === 'Não'
+  // total  = Comparecimento !== '' (não nulo)
+  const faltasPac={};
+  rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
+    const k=r._paciente;
+    const ini=r._iniciais||k;
+    if(!faltasPac[k])faltasPac[k]={iniciais:ini,faltas:0,total:0};
+    if(r._comparecimento!=='')faltasPac[k].total+=1;
+    if(r._falta)faltasPac[k].faltas+=1;
   });
-  const motivoArr=Object.entries(motivoCount).sort((a,b)=>b[1]-a[1]);
-  const maxM=motivoArr[0]?motivoArr[0][1]:1;
-  const ml=document.getElementById('motivos-list');
-  ml.innerHTML=`<table class="motivos-table">
-    <thead><tr><td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Motivo</td><td style="text-align:right;font-size:.7rem;color:var(--muted);padding-bottom:6px;">Qtd</td></tr></thead><tbody>`;
-  motivoArr.forEach(([m,q])=>{
-    const w=(q/maxM*100).toFixed(0);
-    ml.innerHTML+=`<tr>
-      <td style="padding:4px 0;">
-        <div>${m}</div>
-        <div class="motivo-bar" style="width:${w}%"></div>
-      </td>
-      <td style="text-align:right;font-weight:600;vertical-align:top;padding:4px 0 0 8px;">${q}</td>
-    </tr>`;
+  const faltaPacArr=Object.entries(faltasPac)
+    .filter(([,v])=>v.total>0)
+    .map(([,v])=>({iniciais:v.iniciais,pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
+    .sort((a,b)=>b.pct-a.pct);
+  const ml=document.getElementById('motivos-list');ml.innerHTML='';
+  faltaPacArr.forEach(({iniciais,pct,faltas,total})=>{
+    const pctFmt=pct.toFixed(1)+'%';
+    const barColor=pct>=30?'#c0392b':pct>=15?'#e07070':'#c8bc96';
+    ml.innerHTML+=`<div class="motivo-row" title="${faltas} faltas de ${total} atendimentos">
+      <span class="motivo-nome">${iniciais}</span>
+      <div style="flex:1;height:6px;background:#f0ece6;border-radius:3px;margin:0 8px;align-self:center;">
+        <div style="width:${Math.min(pct,100)}%;height:100%;background:${barColor};border-radius:3px;"></div>
+      </div>
+      <span class="motivo-qty">${pctFmt}</span>
+    </div>`;
   });
-  ml.innerHTML+='</tbody></table>';
 }
 
 function updateDonut(){
@@ -432,44 +367,57 @@ function updateDonut(){
   const fn=sel==='genero'?r=>r._genero:sel==='faixa'?r=>r._faixaEtaria:r=>r._modalidade;
   const data=countBy(_ativosArr,fn);
   dC('chart-donut');
-  const labels=Object.keys(data), vals=Object.values(data);
+  const labels=Object.keys(data),vals=Object.values(data);
   const total=vals.reduce((a,b)=>a+b,0);
   charts['chart-donut']=new Chart(document.getElementById('chart-donut').getContext('2d'),{
     type:'doughnut',
-    data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
+    data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
-      responsive:true,cutout:'62%',
+      responsive:true,cutout:'55%',
+      layout:{padding:50},
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>{
-          const pct=(ctx.parsed/total*100).toFixed(2);
-          return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
-        }}}
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/total*100).toFixed(2)}%)`}}
       }
     },
     plugins:[{
-      id:'centerLabels',
+      id:'outerLabels',
       afterDraw(chart){
         const{ctx,data}=chart;
         const meta=chart.getDatasetMeta(0);
+        ctx.save();
         meta.data.forEach((arc,i)=>{
-          const{startAngle,endAngle,outerRadius,innerRadius}=arc;
-          const mid=(startAngle+endAngle)/2;
-          const r=(outerRadius+innerRadius)/2;
-          const x=arc.x+Math.cos(mid)*r;
-          const y=arc.y+Math.sin(mid)*r;
+          const angle=(arc.startAngle+arc.endAngle)/2;
+          const or=arc.outerRadius;
+          // Ponto na borda do arco
+          const xEdge=arc.x+Math.cos(angle)*or;
+          const yEdge=arc.y+Math.sin(angle)*or;
+          // Linha para fora
+          const lineLen=14;
+          const xLine=arc.x+Math.cos(angle)*(or+lineLen);
+          const yLine=arc.y+Math.sin(angle)*(or+lineLen);
+          // Texto
+          const xText=arc.x+Math.cos(angle)*(or+lineLen+4);
+          const yText=arc.y+Math.sin(angle)*(or+lineLen+4);
+          const isRight=Math.cos(angle)>=0;
           const pct=(data.datasets[0].data[i]/total*100).toFixed(2);
-          ctx.save();
-          ctx.fillStyle='#fff';
+          const label=data.labels[i];
+          const qty=data.datasets[0].data[i];
+
+          ctx.strokeStyle=COLORS[i%COLORS.length];
+          ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.moveTo(xEdge,yEdge);ctx.lineTo(xLine,yLine);ctx.stroke();
+
+          ctx.fillStyle='#2a2a2a';
           ctx.font='bold 10px DM Sans';
-          ctx.textAlign='center';
+          ctx.textAlign=isRight?'left':'right';
           ctx.textBaseline='middle';
-          if((endAngle-startAngle)>0.3){
-            ctx.fillText(data.labels[i],x,y-6);
-            ctx.fillText(data.datasets[0].data[i]+' ('+pct+'%)',x,y+6);
-          }
-          ctx.restore();
+          ctx.fillText(label,xText,yText-7);
+          ctx.font='10px DM Sans';
+          ctx.fillStyle='#888';
+          ctx.fillText(`${qty} (${pct}%)`,xText,yText+7);
         });
+        ctx.restore();
       }
     }]
   });
@@ -479,16 +427,12 @@ function renderBar(id,labels,data,yLabel,color){
   dC(id);
   charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
     type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:color,borderColor:'#a89e78',borderWidth:0,borderRadius:2}]},
+    data:{labels,datasets:[{data,backgroundColor:color,borderRadius:2}]},
     options:{
-      responsive:true,
+      responsive:true,maintainAspectRatio:true,
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>{
-          if(yLabel==='R$') return ' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:0});
-          return ' '+ctx.parsed.y;
-        }}},
-        datalabels:false
+        tooltip:{callbacks:{label:ctx=>yLabel==='R$'?' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:0}):(` ${ctx.parsed.y}`)}}
       },
       scales:{
         x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45}},

@@ -125,7 +125,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <div class="kpi-card">
       <div class="kpi-main" id="kpi-falta">—</div>
       <div class="kpi-comp" id="kpi-falta-mom">—</div>
-      <div class="kpi-comp" style="visibility:hidden">—</div>
+      <div class="kpi-comp" id="kpi-falta-yoy">—</div>
       <div class="kpi-label">Faltas</div>
     </div>
   </div>
@@ -277,11 +277,14 @@ function processAndRender(){
 
   // Mês atual: todos os dados (mês em curso)
   const cur=aggMes(mesAtual);
-  // Comparações de faturamento: limitadas ao mesmo dia do mês para ser justo
-  const curFatAteDia=aggMes(mesAtual, diaHoje).fat;
-  const prevFatAteDia=mesAnt?aggMes(mesAnt, diaHoje).fat:null;
-  const pyoyFatAteDia=mesYoY?aggMes(mesYoY, diaHoje).fat:null;
-  // Pacientes e faltas: comparação normal (mês completo vs mês completo)
+  // Comparações limitadas ao mesmo dia do mês para ser justo
+  const curAteDia=aggMes(mesAtual, diaHoje);
+  const prevAteDia=mesAnt?aggMes(mesAnt, diaHoje):null;
+  const pyoyAteDia=mesYoY?aggMes(mesYoY, diaHoje):null;
+  const curFatAteDia=curAteDia.fat;
+  const prevFatAteDia=prevAteDia?prevAteDia.fat:null;
+  const pyoyFatAteDia=pyoyAteDia?pyoyAteDia.fat:null;
+  // Pacientes: comparação normal (mês completo)
   const prev=mesAnt?aggMes(mesAnt):null;
   const pyoy=mesYoY?aggMes(mesYoY):null;
 
@@ -292,23 +295,26 @@ function processAndRender(){
   const horariosDistintos=new Set(_ativosArr.map(r=>r._horario).filter(Boolean)).size;
   document.getElementById('kpi-pac').textContent=cur.pac+' ('+horariosDistintos+' horas)';
 
-  // ── KPI: Faltas ──
-  const pctFalta=cur.total?(cur.faltas/cur.total*100).toFixed(0)+'%':'0%';
+  // ── KPI: Faltas — até o dia de hoje ──
+  const pctFalta=curAteDia.total?(curAteDia.faltas/curAteDia.total*100).toFixed(0)+'%':'0%';
   document.getElementById('kpi-falta').textContent=pctFalta;
 
   // Comparativos
   const momSuffix=mesAnt?'vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0]:'';
   const yoySuffix=mesYoY?'vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0]:'';
-  if(prev){
-    // Faturamento: até o dia de hoje em cada mês
+  if(prevAteDia){
     setComp('kpi-fat-mom',curFatAteDia,prevFatAteDia,momSuffix);
-    setComp('kpi-pac-mom',cur.pac,prev.pac,momSuffix);
-    const cp=cur.total?cur.faltas/cur.total:0,pp=prev.total?prev.faltas/prev.total:0;
+    setComp('kpi-pac-mom',cur.pac,prev?prev.pac:null,momSuffix);
+    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total:0;
+    const pp=prevAteDia.total?prevAteDia.faltas/prevAteDia.total:0;
     setComp('kpi-falta-mom',cp,pp,momSuffix);
   }
-  if(pyoy){
+  if(pyoyAteDia){
     setComp('kpi-fat-yoy',curFatAteDia,pyoyFatAteDia,yoySuffix);
-    setComp('kpi-pac-yoy',cur.pac,pyoy.pac,yoySuffix);
+    setComp('kpi-pac-yoy',cur.pac,pyoy?pyoy.pac:null,yoySuffix);
+    const cp=curAteDia.total?curAteDia.faltas/curAteDia.total:0;
+    const yp=pyoyAteDia.total?pyoyAteDia.faltas/pyoyAteDia.total:0;
+    setComp('kpi-falta-yoy',cp,yp,yoySuffix);
   }
 
   // ── Gráficos histórico ──
@@ -386,7 +392,7 @@ function updateDonut(){
     type:'doughnut',
     data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
-      responsive:true,cutout:'55%',
+      responsive:true,cutout:'68%',
       layout:{padding:{left:10,right:10,top:40,bottom:40}},
       plugins:{
         legend:{display:false},

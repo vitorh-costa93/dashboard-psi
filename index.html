@@ -352,21 +352,21 @@ function processAndRender(){
   const faltasPac={};
   rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente;
-    const ini=r._iniciais||k;
-    if(!faltasPac[k])faltasPac[k]={iniciais:ini,faltas:0,total:0};
+    if(!faltasPac[k])faltasPac[k]={iniciais:r._iniciais||k,horario:r._horario||'',faltas:0,total:0};
+    faltasPac[k].horario=r._horario||faltasPac[k].horario;
     if(r._comparecimento!=='')faltasPac[k].total+=1;
     if(r._falta)faltasPac[k].faltas+=1;
   });
   const faltaPacArr=Object.entries(faltasPac)
     .filter(([,v])=>v.total>0)
-    .map(([,v])=>({iniciais:v.iniciais,pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
+    .map(([,v])=>({label:(v.horario?v.horario+' | ':'')+v.iniciais,pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
     .sort((a,b)=>b.pct-a.pct);
   const ml=document.getElementById('motivos-list');ml.innerHTML='';
-  faltaPacArr.forEach(({iniciais,pct,faltas,total})=>{
+  faltaPacArr.forEach(({label,pct,faltas,total})=>{
     const pctFmt=pct.toFixed(1)+'%';
     const barColor=pct>=30?'#c0392b':pct>=15?'#e07070':'#c8bc96';
     ml.innerHTML+=`<div class="motivo-row" title="${faltas} faltas de ${total} atendimentos">
-      <span class="motivo-nome">${iniciais}</span>
+      <span class="motivo-nome">${label}</span>
       <div style="flex:1;height:6px;background:#f0ece6;border-radius:3px;margin:0 8px;align-self:center;">
         <div style="width:${Math.min(pct,100)}%;height:100%;background:${barColor};border-radius:3px;"></div>
       </div>
@@ -387,7 +387,7 @@ function updateDonut(){
     data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
     options:{
       responsive:true,cutout:'55%',
-      layout:{padding:50},
+      layout:{padding:{left:20,right:20,top:30,bottom:30}},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/total*100).toFixed(2)}%)`}}

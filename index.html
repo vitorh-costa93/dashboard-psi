@@ -271,13 +271,17 @@ async function loadData(){
 function processAndRender(){
   const rows=_rows;
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
-  const mesAtual=meses[meses.length-1]||'';
-  const mesAnt=meses[meses.length-2]||null;
-  function mesYoy(ym){if(!ym)return null;const[y,m]=ym.split('-');return(+y-1)+'-'+m;}
-  const mesYoY=mesYoy(mesAtual);
 
+  // Mês atual determinado pelo relógio do navegador, não pelos dados
   const hoje=new Date();
   const diaHoje=hoje.getDate();
+  const mesAtual=anoMes(hoje);
+
+  // Mês anterior e YoY a partir do calendário real
+  function mesAnterior(ym){const[y,m]=ym.split('-');const d=new Date(+y,+m-2,1);return anoMes(d);}
+  function mesYoy(ym){if(!ym)return null;const[y,m]=ym.split('-');return(+y-1)+'-'+m;}
+  const mesAnt=mesAnterior(mesAtual);
+  const mesYoY=mesYoy(mesAtual);
 
   function aggMes(ym, ateDia=null){
     let r=rows.filter(x=>x._anoMes===ym);

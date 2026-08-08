@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   // Endpoints permitidos (whitelist de segurança)
   const allowed = [
     'models/gemini-2.0-flash:generateContent',
+    'models/gemini-3.1-flash-lite-image:generateContent',
     'models/gemini-2.0-flash-preview-image-generation:generateContent',
     'models/imagen-3.0-generate-002:predict',
   ];

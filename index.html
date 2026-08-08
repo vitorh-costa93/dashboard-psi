@@ -92,6 +92,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Páginas ── */
 .page{display:none;}
 .page.active{display:block;}
+.pront-layout{display:flex;min-height:calc(100vh - 100px);}
 
 /* ── Aba atividades ── */
 
@@ -260,6 +261,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div class="nav-tabs">
   <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
   <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Atividades</button>
+  <button class="nav-tab" id="tab-btn-prontuarios" onclick="switchTab('prontuarios')">📋 Prontuários</button>
 </div>
 
 <!-- ── PÁGINA DASHBOARD ── -->
@@ -509,6 +511,81 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 </div><!-- /page-atividades -->
+
+<!-- ── PÁGINA PRONTUÁRIOS ── -->
+<div class="page" id="page-prontuarios">
+<div class="pront-layout">
+
+  <!-- Sidebar pacientes -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Pacientes</div>
+    <div id="pront-pac-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </aside>
+
+  <div class="main-content" style="max-width:860px;">
+
+    <!-- Seletor de sessão -->
+    <div class="generator-card" id="pront-form-card">
+      <h3>📝 Registrar sessão</h3>
+      <div class="gen-row" style="grid-template-columns:1fr 1fr;">
+        <div class="gen-field">
+          <label>Paciente | Horário</label>
+          <select class="filter-select" id="pront-pac" onchange="selecionarPaciente()" style="width:100%;">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Data da sessão</label>
+          <input type="date" id="pront-data" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--light);" />
+        </div>
+      </div>
+
+      <div class="gen-field" style="margin-bottom:10px;">
+        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Relato da sessão</label>
+        <textarea class="prompt-area" id="pront-relato" placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..." style="min-height:120px;"></textarea>
+      </div>
+
+      <!-- Gravação de áudio -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="btn-secondary" id="btn-gravar" onclick="toggleGravacao()" style="display:flex;align-items:center;gap:6px;">
+          🎙 Gravar áudio
+        </button>
+        <span id="rec-status" style="font-size:.78rem;color:var(--muted);"></span>
+        <audio id="audio-preview" controls style="display:none;height:32px;flex:1;min-width:200px;"></audio>
+      </div>
+
+      <div class="gen-actions">
+        <button class="btn-primary" onclick="salvarSessao()">💾 Salvar sessão</button>
+        <button class="btn-secondary" onclick="limparFormPront()">✕ Limpar</button>
+      </div>
+    </div>
+
+    <!-- Prontuário do paciente selecionado -->
+    <div id="pront-view" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;" id="pront-view-titulo">—</h2>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-pdf" onclick="exportarProntPDF()" style="font-size:.78rem;padding:7px 14px;">⬇ PDF</button>
+          <button class="btn-save" onclick="exportarProntDOCX()" style="font-size:.78rem;padding:7px 14px;">📄 Word</button>
+        </div>
+      </div>
+
+      <div class="table-card" style="padding:0;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead>
+            <tr style="background:var(--header-bg);">
+              <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;width:110px;">Data</th>
+              <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;">Relato da sessão</th>
+            </tr>
+          </thead>
+          <tbody id="pront-tabela"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /page-prontuarios -->
 
 <script>
 const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
@@ -822,6 +899,275 @@ function renderBar(id,labels,data,yLabel,color){
   });
 }
 
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO PRONTUÁRIOS
+// ══════════════════════════════════════════════════════════
+const PRONT_KEY = 'psi_prontuarios_v1';
+let _prontuarios = {}; // { paciente_key: [{data, relato, criadoEm}] }
+let _pacAtual = null;
+let _mediaRecorder = null;
+let _audioChunks = [];
+let _gravando = false;
+
+function initProntuarios() {
+  try {
+    const raw = localStorage.getItem(PRONT_KEY);
+    _prontuarios = raw ? JSON.parse(raw) : {};
+  } catch { _prontuarios = {}; }
+
+  // Popula dropdown com pacientes ativos do dashboard
+  const sel = document.getElementById('pront-pac');
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  if (_ativosArr && _ativosArr.length > 0) {
+    _ativosArr.sort((a,b) => a._horario.localeCompare(b._horario)).forEach(r => {
+      const label = (r._horario ? r._horario + ' | ' : '') + r._iniciais;
+      const key   = r._paciente;
+      sel.innerHTML += `<option value="${key}">${label}</option>`;
+    });
+  }
+
+  // Define data de hoje como padrão
+  const hoje = new Date();
+  document.getElementById('pront-data').value =
+    hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+
+  renderPacientesLista();
+}
+
+function renderPacientesLista() {
+  const container = document.getElementById('pront-pac-list');
+  const pacs = Object.keys(_prontuarios);
+  if (pacs.length === 0) {
+    container.innerHTML = '<p style="font-size:.75rem;color:var(--muted);">Nenhum prontuário ainda.</p>';
+    return;
+  }
+  container.innerHTML = '';
+  pacs.forEach(k => {
+    const sessoes = _prontuarios[k].length;
+    const label   = _prontuarios[k][0]?.label || k;
+    const ativo   = k === _pacAtual;
+    container.innerHTML += `<button onclick="verProntuario('${k}')"
+      style="width:100%;text-align:left;background:${ativo?'var(--accent)':'none'};
+      color:${ativo?'#fff':'var(--text)'};border:1px solid var(--border);border-radius:7px;
+      padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;">
+      <div style="font-weight:500;">${label}</div>
+      <div style="font-size:.68rem;opacity:.7;">${sessoes} sessão${sessoes!==1?'ões':''}</div>
+    </button>`;
+  });
+}
+
+function selecionarPaciente() {
+  const key = document.getElementById('pront-pac').value;
+  if (key && _prontuarios[key]) {
+    verProntuario(key);
+  }
+}
+
+function verProntuario(key) {
+  _pacAtual = key;
+  const sessoes = _prontuarios[key] || [];
+  const label   = sessoes[0]?.label || key;
+
+  document.getElementById('pront-view').style.display = 'block';
+  document.getElementById('pront-view-titulo').textContent = '📋 ' + label;
+  document.getElementById('pront-pac').value = key;
+
+  const tbody = document.getElementById('pront-tabela');
+  tbody.innerHTML = '';
+  [...sessoes].sort((a,b) => b.data.localeCompare(a.data)).forEach((s,i) => {
+    const [y,m,d] = s.data.split('-');
+    const dataFmt = `${d}/${m}/${y}`;
+    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border);${i%2===0?'background:#fafaf8':''}">
+      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${dataFmt}</td>
+      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">
+        ${s.relato.replace(/\n/g,'<br>')}
+        <div style="margin-top:6px;">
+          <button onclick="deletarSessao('${key}',${i})"
+            style="font-size:.68rem;color:var(--danger);background:none;border:none;cursor:pointer;">✕ excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  renderPacientesLista();
+}
+
+function salvarSessao() {
+  const key    = document.getElementById('pront-pac').value;
+  const data   = document.getElementById('pront-data').value;
+  const relato = document.getElementById('pront-relato').value.trim();
+
+  if (!key)    { toast('Selecione um paciente.'); return; }
+  if (!data)   { toast('Selecione a data da sessão.'); return; }
+  if (!relato) { toast('Digite o relato da sessão.'); return; }
+
+  // Label amigável
+  const opt   = document.getElementById('pront-pac');
+  const label = opt.options[opt.selectedIndex].text;
+
+  if (!_prontuarios[key]) _prontuarios[key] = [];
+
+  // Evita duplicata na mesma data
+  const jaExiste = _prontuarios[key].find(s => s.data === data);
+  if (jaExiste) {
+    if (!confirm('Já existe um registro para essa data. Substituir?')) return;
+    _prontuarios[key] = _prontuarios[key].filter(s => s.data !== data);
+  }
+
+  _prontuarios[key].push({ data, relato, label, criadoEm: new Date().toISOString() });
+  persistPront();
+  verProntuario(key);
+  limparFormPront();
+  toast('✅ Sessão salva!');
+}
+
+function deletarSessao(key, idx) {
+  if (!confirm('Excluir este registro?')) return;
+  const sessoes = [..._prontuarios[key]].sort((a,b) => b.data.localeCompare(a.data));
+  const dataAlvo = sessoes[idx].data;
+  _prontuarios[key] = _prontuarios[key].filter(s => s.data !== dataAlvo);
+  if (_prontuarios[key].length === 0) delete _prontuarios[key];
+  persistPront();
+  if (_prontuarios[_pacAtual]) verProntuario(_pacAtual);
+  else { document.getElementById('pront-view').style.display='none'; _pacAtual=null; }
+  renderPacientesLista();
+  toast('Registro excluído.');
+}
+
+function limparFormPront() {
+  document.getElementById('pront-relato').value = '';
+  const hoje = new Date();
+  document.getElementById('pront-data').value =
+    hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  document.getElementById('audio-preview').style.display='none';
+  document.getElementById('rec-status').textContent='';
+}
+
+function persistPront() {
+  localStorage.setItem(PRONT_KEY, JSON.stringify(_prontuarios));
+}
+
+// ── Gravação de áudio ─────────────────────────────────────────────────────────
+async function toggleGravacao() {
+  if (_gravando) {
+    _mediaRecorder.stop();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _audioChunks = [];
+    _mediaRecorder = new MediaRecorder(stream);
+    _mediaRecorder.ondataavailable = e => _audioChunks.push(e.data);
+    _mediaRecorder.onstop = () => {
+      const blob = new Blob(_audioChunks, { type: 'audio/webm' });
+      const url  = URL.createObjectURL(blob);
+      const audio = document.getElementById('audio-preview');
+      audio.src = url;
+      audio.style.display = 'block';
+      document.getElementById('rec-status').textContent = 'Áudio gravado — ouça antes de salvar';
+      document.getElementById('btn-gravar').innerHTML = '🎙 Gravar áudio';
+      _gravando = false;
+      stream.getTracks().forEach(t => t.stop());
+      // Transcrição via Web Speech API (se disponível)
+      toast('Áudio salvo! Adicione o relato manualmente ou use o áudio como referência.');
+    };
+    _mediaRecorder.start();
+    _gravando = true;
+    document.getElementById('btn-gravar').innerHTML = '⏹ Parar gravação';
+    document.getElementById('rec-status').textContent = '● Gravando...';
+  } catch(e) {
+    toast('Microfone não disponível: ' + e.message);
+  }
+}
+
+// ── Exportar PDF ──────────────────────────────────────────────────────────────
+function exportarProntPDF() {
+  const key = _pacAtual;
+  if (!key || !_prontuarios[key]) return;
+  const sessoes = [..._prontuarios[key]].sort((a,b) => a.data.localeCompare(b.data));
+  const label   = sessoes[0]?.label || key;
+
+  const linhas = sessoes.map(s => {
+    const [y,m,d] = s.data.split('-');
+    return `<tr>
+      <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;vertical-align:top;color:#555;font-size:12px;">${d}/${m}/${y}</td>
+      <td style="padding:8px 12px;border:1px solid #ddd;line-height:1.6;font-size:12px;">${s.relato.replace(/\n/g,'<br>')}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+    <title>Prontuário — ${label}</title>
+    <style>
+      body{font-family:'Georgia',serif;margin:40px;color:#2a2a2a;}
+      h1{font-size:16px;margin-bottom:4px;}
+      p{font-size:11px;color:#888;margin-bottom:20px;}
+      table{width:100%;border-collapse:collapse;}
+      th{background:#d6ccb0;padding:8px 12px;text-align:left;font-size:11px;border:1px solid #ddd;}
+      @media print{body{margin:20px;}}
+    </style>
+  </head><body>
+    <h1>🌻 Prontuário — ${label}</h1>
+    <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478 &nbsp;|&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+    <table>
+      <thead><tr><th style="width:100px;">Data</th><th>Relato da sessão</th></tr></thead>
+      <tbody>${linhas}</tbody>
+    </table>
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── Exportar DOCX ─────────────────────────────────────────────────────────────
+function exportarProntDOCX() {
+  const key = _pacAtual;
+  if (!key || !_prontuarios[key]) return;
+  const sessoes = [..._prontuarios[key]].sort((a,b) => a.data.localeCompare(b.data));
+  const label   = sessoes[0]?.label || key;
+
+  // Gera HTML que o Word consegue abrir como tabela
+  const linhas = sessoes.map(s => {
+    const [y,m,d] = s.data.split('-');
+    return `<tr>
+      <td style="border:1px solid #ccc;padding:6pt;width:80pt;vertical-align:top;">${d}/${m}/${y}</td>
+      <td style="border:1px solid #ccc;padding:6pt;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+    xmlns:w='urn:schemas-microsoft-com:office:word'
+    xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='utf-8'><title>Prontuário</title>
+  <style>
+    body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;}
+    h1{font-size:14pt;color:#3a3020;}
+    p{font-size:9pt;color:#888;}
+    table{width:100%;border-collapse:collapse;margin-top:16pt;}
+    th{background:#d6ccb0;padding:6pt;font-size:10pt;border:1px solid #ccc;text-align:left;}
+  </style></head>
+  <body>
+    <h1>🌻 Prontuário — ${label}</h1>
+    <p>Psicóloga Jaquline C. Vieira | CRP 06/191478 | Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+    <table>
+      <thead><tr>
+        <th style="width:80pt;">Data</th>
+        <th>Relato da sessão</th>
+      </tr></thead>
+      <tbody>${linhas}</tbody>
+    </table>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `prontuario_${label.replace(/[^a-zA-Z0-9]/g,'_')}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
 window.onload=loadData;
 
 
@@ -831,10 +1177,13 @@ function switchTab(name) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('tab-btn-' + name).classList.add('active');
-  // Inicializa atividades ao entrar na aba
   if (name === 'atividades' && !window._ativInit) {
     window._ativInit = true;
     initAtividades();
+  }
+  if (name === 'prontuarios' && !window._prontInit) {
+    window._prontInit = true;
+    initProntuarios();
   }
 }
 
@@ -874,13 +1223,6 @@ function getKey() {
 
 // ── Gerar atividade ──────────────────────────────────────────────────────────
 async function gerarAtividade() {
-  const key = getKey();
-  if (!key) {
-    document.getElementById('api-warning').classList.add('show');
-    return;
-  }
-  document.getElementById('api-warning').classList.remove('show');
-
   const tipo  = document.getElementById('g-tipo').value;
   const faixa = document.getElementById('g-faixa').value;
   const tema  = document.getElementById('g-tema').value;
@@ -888,27 +1230,25 @@ async function gerarAtividade() {
 
   if (!desc) { toast('Descreva o que você quer criar.'); return; }
 
-  setGenerating(true, 'Montando o prompt...');
+  // Monta prompt localmente sem Gemini
+  const tipoPrompt = tipo === 'Colorir'
+    ? 'coloring page, black and white line art, thick clean outlines, no shading, white background, printable'
+    : tipo === 'Rotina'
+    ? 'visual routine chart with numbered steps, clear icons, children illustration style, colorful'
+    : 'therapeutic children illustration, warm colors, friendly characters';
+
+  const prompt = `${tipoPrompt}, ${desc}, for ${faixa||'children'} age group, theme: ${tema||'therapy'}, child-friendly, professional therapeutic material, high quality`;
+  _lastPrompt = prompt;
+
+  setGenerating(true, 'Gerando imagem...');
 
   try {
-    // Passo 1: Gemini Flash monta o prompt ideal para geração de imagem
-    const promptIdeal = await montarPrompt(key, tipo, faixa, tema, desc);
-    _lastPrompt = promptIdeal;
-
-    setGenerating(true, 'Gerando imagem...');
-
-    // Passo 2: Imagen 3 gera a imagem
-    const imgB64 = await gerarImagem(key, promptIdeal);
-
-    _currentImg = { b64: imgB64, prompt: promptIdeal };
-
-    // Mostra preview
+    const imgB64 = await gerarImagem(prompt);
+    _currentImg = { b64: imgB64, prompt };
     mostrarPreview(imgB64);
     setGenerating(false, '');
-
-    document.getElementById('btn-regen').disabled      = false;
+    document.getElementById('btn-regen').disabled       = false;
     document.getElementById('btn-edit-prompt').disabled = false;
-
   } catch(e) {
     console.error(e);
     setGenerating(false, '');
@@ -916,43 +1256,7 @@ async function gerarAtividade() {
   }
 }
 
-async function montarPrompt(key, tipo, faixa, tema, desc) {
-  const system = `Você é especialista em criar prompts para geração de imagens terapêuticas para crianças.
-Gere um prompt em inglês, detalhado, otimizado para o modelo Imagen 3 do Google.
-O prompt deve resultar em uma imagem adequada para uso em psicoterapia infantil.
-Responda APENAS com o prompt, sem explicações, sem aspas, sem prefixos.`;
-
-  const user = `Tipo: ${tipo||'atividade terapêutica'}
-Faixa etária: ${faixa||'infantil'}
-Tema clínico: ${tema||'geral'}
-Descrição da psicóloga: ${desc}
-
-Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique "coloring page, black and white line art, thick outlines, no shading, white background". Se for rotina, crie sequência visual clara com etapas numeradas.`;
-
-  const res = await fetch('/api/gemini', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      type: 'gemini',
-      body: {
-        endpoint: 'models/gemini-2.0-flash:generateContent',
-        body: {
-          contents: [{parts:[{text: system+'\n\n'+user}]}],
-          generationConfig: {maxOutputTokens: 400, temperature: 0.7}
-        }
-      }
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err?.error?.message || 'Erro no Gemini');
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || desc;
-}
-
-async function gerarImagem(key, prompt) {
-  // Usa FLUX.1-schnell via Hugging Face (gratuito)
+async function gerarImagem(prompt) {
   const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -960,20 +1264,20 @@ async function gerarImagem(key, prompt) {
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
-    throw new Error(err?.error || 'Erro ao gerar imagem no Hugging Face');
+    throw new Error(err?.error || 'Erro ao gerar imagem');
   }
   const data = await res.json();
   if (!data.b64) throw new Error('Nenhuma imagem retornada');
   return data.b64;
 }
 
-// Fallback: Gemini 2.0 Flash com geração de imagem experimental
+// placeholder para não quebrar referências
 async function gerarImagemFallback(prompt) {
   const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
-      endpoint: 'models/gemini-2.0-flash-preview-image-generation:generateContent',
+      endpoint: 'placeholder',
       body: {
         contents: [{parts:[{text: prompt}]}],
         generationConfig: {responseModalities:['IMAGE','TEXT']}
@@ -994,7 +1298,7 @@ async function regenerar() {
   if (!_lastPrompt) return;
   setGenerating(true, 'Regenerando...');
   try {
-    const b64 = await gerarImagem(getKey(), _lastPrompt);
+    const b64 = await gerarImagem(_lastPrompt);
     _currentImg = { b64, prompt: _lastPrompt };
     mostrarPreview(b64);
     setGenerating(false, '');

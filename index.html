@@ -949,30 +949,8 @@ Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique 
 }
 
 async function gerarImagem(key, prompt) {
-  const res = await fetch('/api/gemini', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      endpoint: 'models/imagen-3.0-generate-002:predict',
-      body: {
-        instances: [{prompt}],
-        parameters: {sampleCount:1, aspectRatio:'1:1', safetyFilterLevel:'block_few'}
-      }
-    })
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    if(err?.error?.status === 'PERMISSION_DENIED' || err?.error?.code === 403) {
-      return await gerarImagemFallback(prompt);
-    }
-    throw new Error(err?.error?.message || 'Erro no Imagen 3 — tente o fallback');
-  }
-
-  const data = await res.json();
-  const b64  = data.predictions?.[0]?.bytesBase64Encoded;
-  if (!b64) throw new Error('Imagen 3 não retornou imagem — verifique se está disponível na sua região');
-  return b64;
+  // Usa Gemini 2.0 Flash (gratuito) para geração de imagens
+  return await gerarImagemFallback(prompt);
 }
 
 // Fallback: Gemini 2.0 Flash com geração de imagem experimental

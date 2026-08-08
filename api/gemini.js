@@ -14,8 +14,8 @@ export default async function handler(req, res) {
   // Endpoints permitidos (whitelist de segurança)
   const allowed = [
     'models/gemini-2.0-flash:generateContent',
-    'models/imagen-3.0-generate-002:predict',
     'models/gemini-2.0-flash-preview-image-generation:generateContent',
+    'models/imagen-3.0-generate-002:predict',
   ];
 
   if (!allowed.includes(endpoint)) {
@@ -36,7 +36,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message });
   }
 }
-
-
-
-

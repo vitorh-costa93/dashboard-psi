@@ -402,16 +402,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <!-- Main -->
   <div class="main">
 
-    <!-- Config API key -->
-    <div class="config-inline">
-      <label>🔑 Google AI Studio API Key:</label>
-      <input type="password" id="api-key" placeholder="Cole sua chave aqui..." oninput="saveKey()"/>
-      <a href="https://aistudio.google.com/apikey" target="_blank" style="font-size:.72rem;color:var(--accent);">Obter chave →</a>
-    </div>
-    <div class="api-warning" id="api-warning">
-      Configure sua API key do Google AI Studio acima para gerar imagens.
-      <a href="https://aistudio.google.com/apikey" target="_blank">Clique aqui para obter gratuitamente.</a>
-    </div>
+<!-- API key gerenciada pelo Vercel -->
+    <input type="hidden" id="api-key" value="via-vercel"/>
+    <div class="api-warning" id="api-warning" style="display:none;"></div>
 
     <!-- Gerador -->
     <div class="generator-card">
@@ -850,7 +843,6 @@ function switchTab(name) {
 // ── Storage key ──────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'psi_atividades_v1';
 const KEY_APIKEY  = 'psi_gemini_key';
-const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6KL4F1MEBoC3EVSnbVbxDaQjktdYiuSf1q2rXsJesHpgQ';
 
 let _atividades   = [];   // [{id, titulo, tipo, faixa, tema, imgUrl, imgB64, prompt, criadoEm}]
 let _currentImg   = null; // {url, b64, prompt}
@@ -861,9 +853,7 @@ let _lastPrompt   = '';
 // ── Init ─────────────────────────────────────────────────────────────────────
 function initAtividades() {
   // Restaura API key
-  const k = localStorage.getItem(KEY_APIKEY) || DEFAULT_GEMINI_KEY;
-  if (k) document.getElementById('api-key').value = k;
-  localStorage.setItem(KEY_APIKEY, k);
+  // Chave gerenciada pelo Vercel — campo oculto
 
   // Carrega atividades
   try {
@@ -939,17 +929,17 @@ Descrição da psicóloga: ${desc}
 
 Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique "coloring page, black and white line art, thick outlines, no shading, white background". Se for rotina, crie sequência visual clara com etapas numeradas.`;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      endpoint: 'models/gemini-2.0-flash:generateContent',
+      body: {
         contents: [{parts:[{text: system+'\n\n'+user}]}],
         generationConfig: {maxOutputTokens: 400, temperature: 0.7}
-      })
-    }
-  );
+      }
+    })
+  });
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err?.error?.message || 'Erro no Gemini');
@@ -959,23 +949,22 @@ Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique 
 }
 
 async function gerarImagem(key, prompt) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`,
-    {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      endpoint: 'models/imagen-3.0-generate-002:predict',
+      body: {
         instances: [{prompt}],
         parameters: {sampleCount:1, aspectRatio:'1:1', safetyFilterLevel:'block_few'}
-      })
-    }
-  );
+      }
+    })
+  });
 
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
-    // Fallback: tenta com o Gemini 2.0 Flash (experimental image gen)
     if(err?.error?.status === 'PERMISSION_DENIED' || err?.error?.code === 403) {
-      return await gerarImagemFallback(key, prompt);
+      return await gerarImagemFallback(prompt);
     }
     throw new Error(err?.error?.message || 'Erro no Imagen 3 — tente o fallback');
   }
@@ -987,21 +976,21 @@ async function gerarImagem(key, prompt) {
 }
 
 // Fallback: Gemini 2.0 Flash com geração de imagem experimental
-async function gerarImagemFallback(key, prompt) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
+async function gerarImagemFallback(prompt) {
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      endpoint: 'models/gemini-2.0-flash-preview-image-generation:generateContent',
+      body: {
         contents: [{parts:[{text: prompt}]}],
         generationConfig: {responseModalities:['IMAGE','TEXT']}
-      })
-    }
-  );
+      }
+    })
+  });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
-    throw new Error(err?.error?.message || 'Geração de imagem indisponível nessa região. Tente com uma VPN ou use a API da OpenAI DALL-E.');
+    throw new Error(err?.error?.message || 'Geração de imagem indisponível nessa região.');
   }
   const data = await res.json();
   const imgPart = data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);

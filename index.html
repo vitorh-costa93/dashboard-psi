@@ -949,8 +949,26 @@ Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique 
 }
 
 async function gerarImagem(key, prompt) {
-  // Usa Gemini 2.0 Flash (gratuito) para geração de imagens
-  return await gerarImagemFallback(prompt);
+  // Usa Nano Banana 2 Lite (gemini-3.1-flash-lite-image)
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      endpoint: 'models/gemini-3.1-flash-lite-image:generateContent',
+      body: {
+        contents: [{parts:[{text: prompt}]}],
+        generationConfig: {responseModalities:['IMAGE','TEXT']}
+      }
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err?.error?.message || 'Erro ao gerar imagem');
+  }
+  const data = await res.json();
+  const imgPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+  if (!imgPart) throw new Error('Nenhuma imagem retornada pelo modelo');
+  return imgPart.inlineData.data;
 }
 
 // Fallback: Gemini 2.0 Flash com geração de imagem experimental

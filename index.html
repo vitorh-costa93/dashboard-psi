@@ -82,6 +82,167 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 @media(max-width:900px){
   .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
 }
+
+/* ── Nav tabs ── */
+.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;}
+.nav-tab{padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:hover:not(.active){color:var(--text);}
+
+/* ── Páginas ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── Aba atividades ── */
+
+:root{
+  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
+  --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
+  --accent:#8b9e6e;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
+  --danger:#c0392b;--sand:#c4a882;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
+
+/* ── Header ── */
+.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
+.app-header .logo{font-size:26px;}
+.app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
+.app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
+
+/* ── Nav tabs ── */
+.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;}
+.nav-tab{padding:11px 20px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:hover:not(.active){color:var(--text);}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - 100px);}
+
+/* ── Sidebar ── */
+.sidebar{width:230px;min-width:230px;background:var(--card);border-right:1px solid var(--border);padding:16px 14px;position:sticky;top:100px;height:calc(100vh - 100px);overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+.sidebar-title{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.filter-label{font-size:.67rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:10px;margin-bottom:4px;display:block;}
+.filter-select{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
+.filter-select:focus{outline:none;border-color:var(--accent);}
+.btn-clear-filter{width:100%;margin-top:8px;background:none;border:1px solid var(--border);border-radius:6px;padding:7px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
+.btn-clear-filter:hover{border-color:var(--danger);color:var(--danger);}
+.count-badge{font-size:.7rem;color:var(--accent);text-align:center;margin-top:8px;min-height:16px;}
+
+/* ── Main content ── */
+.main{flex:1;min-width:0;padding:20px 22px;}
+
+/* ── View tabs ── */
+.view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.view-bar h2{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text);}
+.view-tabs{display:flex;gap:4px;}
+.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
+.view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ── Gerador ── */
+.generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px;}
+.generator-card h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
+
+.gen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.gen-field label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;}
+.gen-field select, .gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
+.gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent);}
+
+.prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
+.prompt-area:focus{outline:none;border-color:var(--accent);}
+
+.gen-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
+.btn-primary:hover{opacity:.88;}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-secondary{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:7px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{background:var(--accent);color:#fff;}
+.btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
+.gen-status{font-size:.78rem;color:var(--muted);font-style:italic;}
+
+/* ── Preview ── */
+.preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px;display:none;}
+.preview-card h3{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:600;margin-bottom:14px;}
+.preview-img-wrap{border:2px dashed var(--border);border-radius:8px;overflow:hidden;background:#fafaf8;min-height:280px;display:flex;align-items:center;justify-content:center;}
+.preview-img-wrap img{max-width:100%;max-height:480px;object-fit:contain;display:block;}
+.preview-placeholder{color:var(--muted);font-size:.82rem;text-align:center;padding:40px;}
+.preview-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.btn-save{background:var(--sand);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;}
+.btn-save:hover{opacity:.88;}
+.btn-pdf{background:#3a3020;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
+.btn-pdf:hover{opacity:.88;}
+.btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;}
+
+/* Título da atividade */
+.title-field{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.85rem;margin-bottom:10px;}
+.title-field:focus{outline:none;border-color:var(--accent);}
+
+/* ── Biblioteca ── */
+.biblioteca-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.biblioteca-empty .icon{font-size:40px;margin-bottom:12px;}
+.biblioteca-empty p{font-size:.85rem;line-height:1.6;}
+
+.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.list-view{display:flex;flex-direction:column;gap:8px;}
+
+/* Card da atividade — grid */
+.ativ-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.ativ-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.ativ-card-img{width:100%;height:150px;object-fit:cover;background:#f0ece4;}
+.ativ-card-img-placeholder{width:100%;height:150px;background:linear-gradient(135deg,#e8e2d8,#d6ccb0);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.ativ-card-body{padding:10px 12px;}
+.ativ-card-title{font-size:.82rem;font-weight:500;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ativ-card-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.tag{font-size:.65rem;padding:2px 7px;border-radius:10px;background:var(--light);color:var(--muted);border:1px solid var(--border);}
+.tag.tipo{background:#eef4eb;color:#5a7a46;border-color:#c8dbb8;}
+.tag.faixa{background:#fef9ec;color:#8a6820;border-color:#e8d898;}
+.tag.tema{background:#f0edf8;color:#6a4fa0;border-color:#ccc0e8;}
+.ativ-card-actions{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
+.btn-xs{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+.btn-xs.pdf{border-color:#3a3020;color:#3a3020;}
+.btn-xs.del{border-color:var(--danger);color:var(--danger);}
+
+/* Card da atividade — list */
+.ativ-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
+.ativ-row-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:#f0ece4;flex-shrink:0;}
+.ativ-row-thumb-placeholder{width:48px;height:48px;border-radius:6px;background:linear-gradient(135deg,#e8e2d8,#d6ccb0);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ativ-row-info{flex:1;min-width:0;}
+.ativ-row-title{font-size:.82rem;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ativ-row-actions{display:flex;gap:6px;flex-shrink:0;}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18);animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:14px;}
+.modal img{width:100%;border-radius:8px;margin-bottom:14px;}
+.modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#2a2a2a;color:#fff;border-radius:8px;padding:10px 18px;font-size:.82rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ── API Key warning ── */
+.api-warning{background:#fff8ec;border:1px solid #f0d898;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.8rem;color:#7a5a10;display:none;}
+.api-warning.show{display:block;}
+.api-warning a{color:var(--accent);text-decoration:underline;}
+
+/* ── Config ── */
+.config-inline{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.config-inline label{font-size:.75rem;color:var(--muted);}
+.config-inline input{border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;min-width:200px;}
+.config-inline input:focus{outline:none;border-color:var(--accent);}
+.config-inline input[type=password]{letter-spacing:.1em;}
+
+@media(max-width:780px){
+  .sidebar{display:none;}
+  .gen-row{grid-template-columns:1fr 1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -89,11 +250,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div class="app-header">
   <div class="logo">🌻</div>
   <div>
-    <h1>VISÃO GERAL</h1>
+    <h1>CONSULTÓRIO</h1>
     <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
   </div>
 </div>
 
+
+<!-- Nav tabs -->
+<div class="nav-tabs">
+  <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Atividades</button>
+</div>
+
+<!-- ── PÁGINA DASHBOARD ── -->
+<div class="page active" id="page-dashboard">
 <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
 <div id="error-msg">
   <h3>Não foi possível carregar os dados</h3>
@@ -175,6 +345,177 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 </div>
+
+</div><!-- /page-dashboard -->
+
+<!-- ── PÁGINA ATIVIDADES ── -->
+<div class="page" id="page-atividades">
+<div>
+    <h1>CONSULTÓRIO</h1>
+    <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar filtros biblioteca -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Filtrar biblioteca</div>
+
+    <label class="filter-label">Tipo</label>
+    <select class="filter-select" id="f-tipo" onchange="renderBiblioteca()">
+      <option value="">Todos</option>
+      <option>Colorir</option>
+      <option>Rotina</option>
+      <option>Psicoeducação</option>
+      <option>Dinâmica</option>
+      <option>Outro</option>
+    </select>
+
+    <label class="filter-label">Faixa Etária</label>
+    <select class="filter-select" id="f-faixa" onchange="renderBiblioteca()">
+      <option value="">Todas</option>
+      <option>0–3 anos</option>
+      <option>4–6 anos</option>
+      <option>7–10 anos</option>
+      <option>11–14 anos</option>
+      <option>Adolescente</option>
+      <option>Adulto</option>
+    </select>
+
+    <label class="filter-label">Tema Clínico</label>
+    <select class="filter-select" id="f-tema" onchange="renderBiblioteca()">
+      <option value="">Todos</option>
+      <option>Ansiedade</option>
+      <option>TDAH</option>
+      <option>Luto</option>
+      <option>Autoestima</option>
+      <option>Regulação emocional</option>
+      <option>Relacionamentos</option>
+      <option>Outro</option>
+    </select>
+
+    <button class="btn-clear-filter" onclick="clearFilters()">✕ Limpar filtros</button>
+    <div class="count-badge" id="count-badge"></div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Config API key -->
+    <div class="config-inline">
+      <label>🔑 Google AI Studio API Key:</label>
+      <input type="password" id="api-key" placeholder="Cole sua chave aqui..." oninput="saveKey()"/>
+      <a href="https://aistudio.google.com/apikey" target="_blank" style="font-size:.72rem;color:var(--accent);">Obter chave →</a>
+    </div>
+    <div class="api-warning" id="api-warning">
+      Configure sua API key do Google AI Studio acima para gerar imagens.
+      <a href="https://aistudio.google.com/apikey" target="_blank">Clique aqui para obter gratuitamente.</a>
+    </div>
+
+    <!-- Gerador -->
+    <div class="generator-card">
+      <h3>✨ Criar nova atividade</h3>
+
+      <div class="gen-row">
+        <div class="gen-field">
+          <label>Tipo de atividade</label>
+          <select id="g-tipo">
+            <option value="">Selecione...</option>
+            <option>Colorir</option>
+            <option>Rotina</option>
+            <option>Psicoeducação</option>
+            <option>Dinâmica</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Faixa etária</label>
+          <select id="g-faixa">
+            <option value="">Selecione...</option>
+            <option>0–3 anos</option>
+            <option>4–6 anos</option>
+            <option>7–10 anos</option>
+            <option>11–14 anos</option>
+            <option>Adolescente</option>
+            <option>Adulto</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Tema clínico</label>
+          <select id="g-tema">
+            <option value="">Selecione...</option>
+            <option>Ansiedade</option>
+            <option>TDAH</option>
+            <option>Luto</option>
+            <option>Autoestima</option>
+            <option>Regulação emocional</option>
+            <option>Relacionamentos</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gen-field" style="margin-bottom:10px;">
+        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o que você quer</label>
+        <textarea class="prompt-area" id="g-desc" placeholder="Ex: Rotina matinal para menino de 7 anos com TDAH, com 6 etapas ilustradas em estilo de livro infantil com cores vibrantes..."></textarea>
+      </div>
+
+      <div class="gen-actions">
+        <button class="btn-primary" id="btn-gen" onclick="gerarAtividade()">
+          <span>✦</span> Gerar imagem
+        </button>
+        <button class="btn-secondary" id="btn-regen" onclick="regenerar()" disabled>↻ Regenerar</button>
+        <button class="btn-secondary" id="btn-edit-prompt" onclick="editarPrompt()" disabled>✎ Editar prompt</button>
+        <span class="gen-status" id="gen-status"></span>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-card" id="preview-card">
+      <h3>Pré-visualização</h3>
+      <input type="text" class="title-field" id="g-titulo" placeholder="Título da atividade (ex: Rotina Matinal — Lucas, 7 anos)"/>
+      <div class="preview-img-wrap" id="preview-wrap">
+        <div class="preview-placeholder">A imagem gerada aparecerá aqui</div>
+      </div>
+      <div class="preview-actions">
+        <button class="btn-save" onclick="salvarAtividade()">💾 Salvar na biblioteca</button>
+        <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
+        <button class="btn-danger" onclick="descartarPreview()">Descartar</button>
+      </div>
+    </div>
+
+    <!-- Biblioteca -->
+    <div class="view-bar">
+      <h2>📚 Biblioteca de atividades <span id="lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
+      <div class="view-tabs">
+        <button class="view-tab active" id="vt-grid" onclick="setView('grid')">⊞ Grade</button>
+        <button class="view-tab" id="vt-list" onclick="setView('list')">☰ Lista</button>
+      </div>
+    </div>
+
+    <div id="biblioteca-container"></div>
+
+  </div>
+</div>
+
+<!-- Modal visualização -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" style="position:relative;">
+    <button class="btn-modal-close" onclick="closeModalBtn()">✕</button>
+    <h3 id="modal-title">—</h3>
+    <img id="modal-img" src="" alt=""/>
+    <div class="modal-tags" id="modal-tags"></div>
+    <div class="modal-actions">
+      <button class="btn-pdf" onclick="exportarPDFModal()">⬇ Exportar PDF</button>
+      <button class="btn-danger" onclick="deletarModal()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+</div><!-- /page-atividades -->
 
 <script>
 const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
@@ -489,6 +830,414 @@ function renderBar(id,labels,data,yLabel,color){
 }
 
 window.onload=loadData;
+
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-btn-' + name).classList.add('active');
+  // Inicializa atividades ao entrar na aba
+  if (name === 'atividades' && !window._ativInit) {
+    window._ativInit = true;
+    initAtividades();
+  }
+}
+
+
+// ── MÓDULO ATIVIDADES ──
+// ── Storage key ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'psi_atividades_v1';
+const KEY_APIKEY  = 'psi_gemini_key';
+const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6KL4F1MEBoC3EVSnbVbxDaQjktdYiuSf1q2rXsJesHpgQ';
+
+let _atividades   = [];   // [{id, titulo, tipo, faixa, tema, imgUrl, imgB64, prompt, criadoEm}]
+let _currentImg   = null; // {url, b64, prompt}
+let _currentView  = 'grid';
+let _modalId      = null;
+let _lastPrompt   = '';
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+function initAtividades() {
+  // Restaura API key
+  const k = localStorage.getItem(KEY_APIKEY) || DEFAULT_GEMINI_KEY;
+  if (k) document.getElementById('api-key').value = k;
+  localStorage.setItem(KEY_APIKEY, k);
+
+  // Carrega atividades
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    _atividades = raw ? JSON.parse(raw) : [];
+  } catch { _atividades = []; }
+
+  renderBiblioteca();
+};
+
+function saveKey() {
+  localStorage.setItem(KEY_APIKEY, document.getElementById('api-key').value.trim());
+}
+
+function getKey() {
+  return document.getElementById('api-key').value.trim();
+}
+
+// ── Gerar atividade ──────────────────────────────────────────────────────────
+async function gerarAtividade() {
+  const key = getKey();
+  if (!key) {
+    document.getElementById('api-warning').classList.add('show');
+    return;
+  }
+  document.getElementById('api-warning').classList.remove('show');
+
+  const tipo  = document.getElementById('g-tipo').value;
+  const faixa = document.getElementById('g-faixa').value;
+  const tema  = document.getElementById('g-tema').value;
+  const desc  = document.getElementById('g-desc').value.trim();
+
+  if (!desc) { toast('Descreva o que você quer criar.'); return; }
+
+  setGenerating(true, 'Montando o prompt...');
+
+  try {
+    // Passo 1: Gemini Flash monta o prompt ideal para geração de imagem
+    const promptIdeal = await montarPrompt(key, tipo, faixa, tema, desc);
+    _lastPrompt = promptIdeal;
+
+    setGenerating(true, 'Gerando imagem...');
+
+    // Passo 2: Imagen 3 gera a imagem
+    const imgB64 = await gerarImagem(key, promptIdeal);
+
+    _currentImg = { b64: imgB64, prompt: promptIdeal };
+
+    // Mostra preview
+    mostrarPreview(imgB64);
+    setGenerating(false, '');
+
+    document.getElementById('btn-regen').disabled      = false;
+    document.getElementById('btn-edit-prompt').disabled = false;
+
+  } catch(e) {
+    console.error(e);
+    setGenerating(false, '');
+    toast('Erro ao gerar: ' + (e.message || 'tente novamente'));
+  }
+}
+
+async function montarPrompt(key, tipo, faixa, tema, desc) {
+  const system = `Você é especialista em criar prompts para geração de imagens terapêuticas para crianças.
+Gere um prompt em inglês, detalhado, otimizado para o modelo Imagen 3 do Google.
+O prompt deve resultar em uma imagem adequada para uso em psicoterapia infantil.
+Responda APENAS com o prompt, sem explicações, sem aspas, sem prefixos.`;
+
+  const user = `Tipo: ${tipo||'atividade terapêutica'}
+Faixa etária: ${faixa||'infantil'}
+Tema clínico: ${tema||'geral'}
+Descrição da psicóloga: ${desc}
+
+Gere um prompt para criar essa imagem. Se for atividade de colorir, especifique "coloring page, black and white line art, thick outlines, no shading, white background". Se for rotina, crie sequência visual clara com etapas numeradas.`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents: [{parts:[{text: system+'\n\n'+user}]}],
+        generationConfig: {maxOutputTokens: 400, temperature: 0.7}
+      })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err?.error?.message || 'Erro no Gemini');
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || desc;
+}
+
+async function gerarImagem(key, prompt) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`,
+    {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        instances: [{prompt}],
+        parameters: {sampleCount:1, aspectRatio:'1:1', safetyFilterLevel:'block_few'}
+      })
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    // Fallback: tenta com o Gemini 2.0 Flash (experimental image gen)
+    if(err?.error?.status === 'PERMISSION_DENIED' || err?.error?.code === 403) {
+      return await gerarImagemFallback(key, prompt);
+    }
+    throw new Error(err?.error?.message || 'Erro no Imagen 3 — tente o fallback');
+  }
+
+  const data = await res.json();
+  const b64  = data.predictions?.[0]?.bytesBase64Encoded;
+  if (!b64) throw new Error('Imagen 3 não retornou imagem — verifique se está disponível na sua região');
+  return b64;
+}
+
+// Fallback: Gemini 2.0 Flash com geração de imagem experimental
+async function gerarImagemFallback(key, prompt) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents: [{parts:[{text: prompt}]}],
+        generationConfig: {responseModalities:['IMAGE','TEXT']}
+      })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err?.error?.message || 'Geração de imagem indisponível nessa região. Tente com uma VPN ou use a API da OpenAI DALL-E.');
+  }
+  const data = await res.json();
+  const imgPart = data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+  if (!imgPart) throw new Error('Nenhuma imagem retornada pelo modelo');
+  return imgPart.inlineData.data;
+}
+
+async function regenerar() {
+  if (!_lastPrompt) return;
+  setGenerating(true, 'Regenerando...');
+  try {
+    const b64 = await gerarImagem(getKey(), _lastPrompt);
+    _currentImg = { b64, prompt: _lastPrompt };
+    mostrarPreview(b64);
+    setGenerating(false, '');
+  } catch(e) {
+    setGenerating(false, '');
+    toast('Erro: ' + (e.message || 'tente novamente'));
+  }
+}
+
+function editarPrompt() {
+  const novo = prompt('Edite o prompt antes de regenerar:', _lastPrompt);
+  if (novo !== null && novo.trim()) {
+    _lastPrompt = novo.trim();
+    document.getElementById('g-desc').value = novo.trim();
+    regenerar();
+  }
+}
+
+function mostrarPreview(b64) {
+  const wrap = document.getElementById('preview-wrap');
+  wrap.innerHTML = `<img src="data:image/png;base64,${b64}" alt="Atividade gerada" style="max-width:100%;"/>`;
+  document.getElementById('preview-card').style.display = 'block';
+  document.getElementById('preview-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function descartarPreview() {
+  document.getElementById('preview-card').style.display = 'none';
+  _currentImg = null;
+  document.getElementById('btn-regen').disabled = true;
+  document.getElementById('btn-edit-prompt').disabled = true;
+}
+
+function setGenerating(on, msg) {
+  const btn = document.getElementById('btn-gen');
+  btn.disabled = on;
+  btn.innerHTML = on ? `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Gerando...` : '<span>✦</span> Gerar imagem';
+  document.getElementById('gen-status').textContent = msg;
+}
+
+// ── Salvar ───────────────────────────────────────────────────────────────────
+function salvarAtividade() {
+  if (!_currentImg) return;
+  const titulo = document.getElementById('g-titulo').value.trim() || 'Atividade sem título';
+  const ativ = {
+    id:       Date.now().toString(),
+    titulo,
+    tipo:     document.getElementById('g-tipo').value   || 'Outro',
+    faixa:    document.getElementById('g-faixa').value  || '—',
+    tema:     document.getElementById('g-tema').value   || '—',
+    imgB64:   _currentImg.b64,
+    prompt:   _currentImg.prompt,
+    criadoEm: new Date().toLocaleDateString('pt-BR'),
+  };
+  _atividades.unshift(ativ);
+  persist();
+  descartarPreview();
+  document.getElementById('g-titulo').value = '';
+  renderBiblioteca();
+  toast('✅ Atividade salva na biblioteca!');
+}
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(_atividades));
+}
+
+// ── PDF ──────────────────────────────────────────────────────────────────────
+function exportarPDF(b64, titulo) {
+  const imgSrc = b64
+    ? `data:image/png;base64,${b64}`
+    : document.querySelector('#preview-wrap img')?.src;
+  if (!imgSrc) { toast('Nenhuma imagem para exportar.'); return; }
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8"/>
+    <title>${titulo||'Atividade'}</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;}
+      img{max-width:100%;max-height:100vh;object-fit:contain;display:block;}
+      @media print{body{margin:0;}img{width:100%;height:auto;}}
+    </style>
+  </head><body>
+    <img src="${imgSrc}" onload="window.print();"/>
+  </body></html>`);
+  win.document.close();
+}
+
+function exportarPDFModal() {
+  const ativ = _atividades.find(a=>a.id===_modalId);
+  if (ativ) exportarPDF(ativ.imgB64, ativ.titulo);
+}
+
+// ── Biblioteca ───────────────────────────────────────────────────────────────
+function clearFilters() {
+  ['f-tipo','f-faixa','f-tema'].forEach(id=>{document.getElementById(id).selectedIndex=0;});
+  renderBiblioteca();
+}
+
+function setView(v) {
+  _currentView = v;
+  document.getElementById('vt-grid').className = 'view-tab'+(v==='grid'?' active':'');
+  document.getElementById('vt-list').className = 'view-tab'+(v==='list'?' active':'');
+  renderBiblioteca();
+}
+
+function renderBiblioteca() {
+  const fTipo  = document.getElementById('f-tipo').value;
+  const fFaixa = document.getElementById('f-faixa').value;
+  const fTema  = document.getElementById('f-tema').value;
+
+  let filtered = _atividades;
+  if (fTipo)  filtered = filtered.filter(a=>a.tipo===fTipo);
+  if (fFaixa) filtered = filtered.filter(a=>a.faixa===fFaixa);
+  if (fTema)  filtered = filtered.filter(a=>a.tema===fTema);
+
+  const n = [fTipo,fFaixa,fTema].filter(Boolean).length;
+  document.getElementById('count-badge').textContent = n>0?n+' filtro'+(n>1?'s':'')+' ativo'+(n>1?'s':''):'';
+  document.getElementById('lib-count').textContent = filtered.length>0?`(${filtered.length})` : '';
+
+  const container = document.getElementById('biblioteca-container');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="biblioteca-empty">
+      <div class="icon">🎨</div>
+      <p>${_atividades.length===0
+        ? 'Nenhuma atividade ainda.<br>Crie a primeira usando o gerador acima!'
+        : 'Nenhuma atividade encontrada com esses filtros.'}</p>
+    </div>`;
+    return;
+  }
+
+  if (_currentView === 'grid') {
+    container.innerHTML = `<div class="grid-view">${filtered.map(cardGrid).join('')}</div>`;
+  } else {
+    container.innerHTML = `<div class="list-view">${filtered.map(cardList).join('')}</div>`;
+  }
+}
+
+function cardGrid(a) {
+  const img = a.imgB64
+    ? `<img class="ativ-card-img" src="data:image/png;base64,${a.imgB64}" alt="${a.titulo}"/>`
+    : `<div class="ativ-card-img-placeholder">🎨</div>`;
+  return `<div class="ativ-card" onclick="openModal('${a.id}')">
+    ${img}
+    <div class="ativ-card-body">
+      <div class="ativ-card-title">${a.titulo}</div>
+      <div class="ativ-card-tags">
+        <span class="tag tipo">${a.tipo}</span>
+        <span class="tag faixa">${a.faixa}</span>
+        <span class="tag tema">${a.tema}</span>
+      </div>
+    </div>
+    <div class="ativ-card-actions" onclick="event.stopPropagation()">
+      <button class="btn-xs pdf" onclick="exportarPDF('${a.imgB64}','${a.titulo}')">⬇ PDF</button>
+      <button class="btn-xs del" onclick="deletar('${a.id}')">Excluir</button>
+    </div>
+  </div>`;
+}
+
+function cardList(a) {
+  const img = a.imgB64
+    ? `<img class="ativ-row-thumb" src="data:image/png;base64,${a.imgB64}" alt="${a.titulo}"/>`
+    : `<div class="ativ-row-thumb-placeholder">🎨</div>`;
+  return `<div class="ativ-row">
+    ${img}
+    <div class="ativ-row-info" onclick="openModal('${a.id}')" style="cursor:pointer;">
+      <div class="ativ-row-title">${a.titulo}</div>
+      <div class="ativ-card-tags">
+        <span class="tag tipo">${a.tipo}</span>
+        <span class="tag faixa">${a.faixa}</span>
+        <span class="tag tema">${a.tema}</span>
+      </div>
+    </div>
+    <div class="ativ-row-actions">
+      <button class="btn-xs pdf" onclick="exportarPDF('${a.imgB64}','${a.titulo}')">⬇ PDF</button>
+      <button class="btn-xs del" onclick="deletar('${a.id}')">Excluir</button>
+    </div>
+  </div>`;
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  const a = _atividades.find(x=>x.id===id);
+  if (!a) return;
+  _modalId = id;
+  document.getElementById('modal-title').textContent = a.titulo;
+  document.getElementById('modal-img').src = `data:image/png;base64,${a.imgB64}`;
+  document.getElementById('modal-tags').innerHTML =
+    `<span class="tag tipo">${a.tipo}</span>
+     <span class="tag faixa">${a.faixa}</span>
+     <span class="tag tema">${a.tema}</span>
+     <span class="tag" style="margin-left:auto;font-size:.62rem;color:var(--muted);">${a.criadoEm}</span>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalBtn();
+}
+function closeModalBtn() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  _modalId = null;
+}
+
+function deletarModal() {
+  if (_modalId) { deletar(_modalId); closeModalBtn(); }
+}
+
+// ── Deletar ──────────────────────────────────────────────────────────────────
+function deletar(id) {
+  if (!confirm('Excluir esta atividade da biblioteca?')) return;
+  _atividades = _atividades.filter(a=>a.id!==id);
+  persist();
+  renderBiblioteca();
+  toast('Atividade excluída.');
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, dur=3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
 </script>
 </body>
 </html>

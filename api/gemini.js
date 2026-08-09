@@ -9,34 +9,37 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Tipo inválido' });
   }
 
-  const cfToken = process.env.CF_TOKEN;
-  const cfAccount = process.env.CF_ACCOUNT_ID;
-
-  if (!cfToken || !cfAccount) {
-    return res.status(500).json({ error: 'CF_TOKEN ou CF_ACCOUNT_ID não configurados no Vercel' });
+  const apiKey = process.env.OPENAI_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'OPENAI_KEY não configurada no Vercel' });
   }
 
   try {
-    const r = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${cfAccount}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${cfToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      }
-    );
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'b64_json',
+      }),
+    });
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
-      return res.status(r.status).json({ error: err?.errors?.[0]?.message || 'Erro no Cloudflare Workers AI' });
+      return res.status(r.status).json({ error: err?.error?.message || 'Erro no DALL-E 3' });
     }
 
-    // Cloudflare retorna a imagem como binário (PNG)
-    const buffer = await r.arrayBuffer();
-    const b64 = Buffer.from(buffer).toString('base64');
+    const data = await r.json();
+    const b64  = data.data?.[0]?.b64_json;
+    if (!b64) return res.status(500).json({ error: 'Nenhuma imagem retornada' });
+
     return res.status(200).json({ b64 });
   } catch (e) {
     return res.status(500).json({ error: e.message });

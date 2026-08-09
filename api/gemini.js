@@ -22,29 +22,27 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-image-2',
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
       }),
     });
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
-      return res.status(r.status).json({ error: err?.error?.message || 'Erro no DALL-E 3' });
+      const msg = err?.error?.message || 'Erro no GPT Image 2';
+      return res.status(r.status).json({ error: msg });
     }
 
     const data = await r.json();
 
-    // A API pode retornar b64_json diretamente ou uma url — cobrimos os dois casos
+    // GPT Image 2 retorna b64_json por padrão; cobrimos fallback para url também
     let b64 = data.data?.[0]?.b64_json;
 
     if (!b64) {
       const imgUrl = data.data?.[0]?.url;
       if (!imgUrl) return res.status(500).json({ error: 'Nenhuma imagem retornada' });
-
-      // Baixa a imagem da URL e converte para base64
       const imgRes = await fetch(imgUrl);
       const buffer = await imgRes.arrayBuffer();
       b64 = Buffer.from(buffer).toString('base64');

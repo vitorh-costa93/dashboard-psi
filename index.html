@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -12,14 +13,34 @@
   --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
   --accent:#8b9e6e;--accent2:#c4a882;--accent3:#7a9fb5;
   --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
+  --sand:#c4a882;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
 
-.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;}
-.app-header .logo{font-size:28px;}
-.app-header h1{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
-.app-header p{font-size:.78rem;color:#5a5040;margin-top:2px;}
+/* ── Header ── */
+.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
+.app-header .logo{font-size:26px;}
+.app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
+.app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
+
+/* ── Nav tabs ── */
+.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow-x:auto;}
+.nav-tab{padding:11px 18px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:hover:not(.active){color:var(--text);}
+
+/* ── Sub-tabs (dentro de Atividades) ── */
+.sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.sub-tab{padding:8px 16px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.sub-tab:hover:not(.active){color:var(--text);}
+.sub-page{display:none;}
+.sub-page.active{display:block;}
+
+/* ── Páginas ── */
+.page{display:none;}
+.page.active{display:block;}
 
 #loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px;color:var(--muted);}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
@@ -57,7 +78,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
 .panel h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 
-/* ── Saldo — formato badge como v1 ── */
+/* ── Saldo — formato badge ── */
 .saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
 .saldo-table tr{border-bottom:1px solid var(--border);}
 .saldo-table tr:last-child{border:none;}
@@ -72,7 +93,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .donut-wrap canvas{width:100%!important;}
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
-/* ── Motivos — tabela compacta ── */
+/* ── Motivos ── */
 .motivos-wrap{display:flex;flex-direction:column;gap:4px;}
 .motivo-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f0e8;font-size:.78rem;}
 .motivo-row:last-child{border:none;}
@@ -83,70 +104,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
 }
 
-/* ── Nav tabs ── */
-.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;}
-.nav-tab{padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.nav-tab:hover:not(.active){color:var(--text);}
+/* ══════════════════════════════════════════════════════════
+   LAYOUT COMUM: Atividades / Prontuários
+   ══════════════════════════════════════════════════════════ */
+.section-wrap{max-width:1100px;margin:0 auto;padding:16px 20px 40px;}
 
-/* ── Páginas ── */
-.page{display:none;}
-.page.active{display:block;}
-
-
-/* ── Aba atividades ── */
-
-:root{
-  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
-  --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
-  --accent:#8b9e6e;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
-  --danger:#c0392b;--sand:#c4a882;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
-
-/* ── Header ── */
-.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
-.app-header .logo{font-size:26px;}
-.app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
-.app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
-
-/* ── Nav tabs ── */
-.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;}
-.nav-tab{padding:11px 20px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.nav-tab:hover:not(.active){color:var(--text);}
-
-/* ── Layout ── */
-.layout{display:flex;min-height:calc(100vh - 100px);}
-
-/* ── Sidebar ── */
-.sidebar{width:230px;min-width:230px;background:var(--card);border-right:1px solid var(--border);padding:16px 14px;position:sticky;top:100px;height:calc(100vh - 100px);overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
-.sidebar-title{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.filter-label{font-size:.67rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:10px;margin-bottom:4px;display:block;}
-.filter-select{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
-.filter-select:focus{outline:none;border-color:var(--accent);}
-.btn-clear-filter{width:100%;margin-top:8px;background:none;border:1px solid var(--border);border-radius:6px;padding:7px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
-.btn-clear-filter:hover{border-color:var(--danger);color:var(--danger);}
-.count-badge{font-size:.7rem;color:var(--accent);text-align:center;margin-top:8px;min-height:16px;}
-
-/* ── Main content ── */
-.main{flex:1;min-width:0;padding:20px 22px;}
-
-/* ── View tabs ── */
-.view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.view-bar h2{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text);}
-.view-tabs{display:flex;gap:4px;}
-.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
-.view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-
-/* ── Gerador ── */
-.generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px;}
+.generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;}
 .generator-card h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
 
 .gen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
 .gen-field label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;}
-.gen-field select, .gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
+.gen-field select,.gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
 .gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent);}
 
 .prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
@@ -161,8 +129,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
 .gen-status{font-size:.78rem;color:var(--muted);font-style:italic;}
 
-/* ── Preview ── */
-.preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px;display:none;}
+.preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;display:none;}
 .preview-card h3{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:600;margin-bottom:14px;}
 .preview-img-wrap{border:2px dashed var(--border);border-radius:8px;overflow:hidden;background:#fafaf8;min-height:280px;display:flex;align-items:center;justify-content:center;}
 .preview-img-wrap img{max-width:100%;max-height:480px;object-fit:contain;display:block;}
@@ -174,19 +141,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-pdf:hover{opacity:.88;}
 .btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;}
 
-/* Título da atividade */
 .title-field{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.85rem;margin-bottom:10px;}
 .title-field:focus{outline:none;border-color:var(--accent);}
+
+/* ── Barra de busca inline (sempre visível, abaixo do form) ── */
+.search-bar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;}
+.search-bar-title{font-size:.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.search-filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-filters-row .filter-select{flex:1;min-width:130px;}
+.filter-select{border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
+.filter-select:focus{outline:none;border-color:var(--accent);}
+.btn-clear-filter{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-clear-filter:hover{border-color:var(--danger);color:var(--danger);}
+.search-count{font-size:.7rem;color:var(--accent);margin-top:8px;min-height:14px;}
 
 /* ── Biblioteca ── */
 .biblioteca-empty{text-align:center;padding:60px 20px;color:var(--muted);}
 .biblioteca-empty .icon{font-size:40px;margin-bottom:12px;}
 .biblioteca-empty p{font-size:.85rem;line-height:1.6;}
 
-.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.view-bar h2{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text);}
+.view-tabs{display:flex;gap:4px;}
+.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
+.view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
 .list-view{display:flex;flex-direction:column;gap:8px;}
 
-/* Card da atividade — grid */
 .ativ-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s;}
 .ativ-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .ativ-card-img{width:100%;height:150px;object-fit:cover;background:#f0ece4;}
@@ -204,7 +186,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-xs.pdf{border-color:#3a3020;color:#3a3020;}
 .btn-xs.del{border-color:var(--danger);color:var(--danger);}
 
-/* Card da atividade — list */
 .ativ-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
 .ativ-row-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:#f0ece4;flex-shrink:0;}
 .ativ-row-thumb-placeholder{width:48px;height:48px;border-radius:6px;background:linear-gradient(135deg,#e8e2d8,#d6ccb0);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
@@ -215,7 +196,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
-.modal{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18);animation:modalIn .2s ease;}
+.modal{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18);animation:modalIn .2s ease;position:relative;max-height:90vh;overflow-y:auto;}
 @keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .modal h3{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:14px;}
 .modal img{width:100%;border-radius:8px;margin-bottom:14px;}
@@ -224,63 +205,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
 
 /* ── Toast ── */
-.toast{position:fixed;bottom:24px;right:24px;background:#2a2a2a;color:#fff;border-radius:8px;padding:10px 18px;font-size:.82rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast{position:fixed;bottom:24px;right:24px;left:24px;background:#2a2a2a;color:#fff;border-radius:8px;padding:10px 18px;font-size:.82rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;}
 .toast.show{opacity:1;}
+@media(min-width:600px){.toast{left:auto;max-width:360px;}}
 
-/* ── API Key warning ── */
-.api-warning{background:#fff8ec;border:1px solid #f0d898;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.8rem;color:#7a5a10;display:none;}
-.api-warning.show{display:block;}
-.api-warning a{color:var(--accent);text-decoration:underline;}
-
-/* ── Config ── */
-.config-inline{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.config-inline label{font-size:.75rem;color:var(--muted);}
-.config-inline input{border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;min-width:200px;}
-.config-inline input:focus{outline:none;border-color:var(--accent);}
-.config-inline input[type=password]{letter-spacing:.1em;}
-
-@media(max-width:780px){
-  .sidebar{display:none;}
-  .gen-row{grid-template-columns:1fr 1fr;}
-}
-
-/* ── Prontuários ── */
-
-.pront-form-wrap{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:20px;box-shadow:var(--shadow);
-}
-.pront-section-title{
-  font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;
-  color:var(--text);margin-bottom:16px;padding-bottom:8px;
-  border-bottom:1px solid var(--border);
-}
+/* ══════════════════════════════════════════════════════════
+   PRONTUÁRIOS
+   ══════════════════════════════════════════════════════════ */
+.pront-form-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
+.pront-section-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .pront-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.pront-fields-grid{grid-template-columns:1fr;}}
 .pront-field{display:flex;flex-direction:column;gap:5px;}
 .pront-label{font-size:.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-.pront-input{
-  width:100%;border:1px solid var(--border);border-radius:7px;
-  padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.83rem;
-  color:var(--text);background:var(--light);
-  -webkit-appearance:none;appearance:none;
-}
+.pront-input{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--text);background:var(--light);-webkit-appearance:none;appearance:none;}
 .pront-input:focus{outline:none;border-color:var(--accent);}
 .pront-textarea{min-height:110px;resize:vertical;line-height:1.55;}
 .pront-audio-bar{display:flex;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap;}
 .pront-form-actions{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
 
-/* Card de paciente na sidebar */
-.pac-card{
-  width:100%;text-align:left;background:none;border:1px solid var(--border);
-  border-radius:7px;padding:9px 10px;font-family:'DM Sans',sans-serif;
-  font-size:.78rem;cursor:pointer;transition:all .15s;color:var(--text);
-}
+.pac-card{width:100%;text-align:left;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;color:var(--text);}
 .pac-card:hover{border-color:var(--accent);background:#f4f8f0;}
 .pac-card.ativo{background:var(--accent);color:#fff;border-color:var(--accent);}
 .pac-card .pac-nome{font-weight:500;margin-bottom:2px;}
 .pac-card .pac-meta{font-size:.68rem;opacity:.75;}
 
+.pront-lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.pront-lib-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;}
+.pront-lib-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+.pront-lib-card.ativo{border-color:var(--accent);background:#f4f8f0;}
+
+/* ── PPT sub-tab ── */
+.ppt-preview{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-top:16px;}
+.ppt-slide-preview{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--light);}
+.ppt-slide-preview h4{font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:8px;color:var(--text);}
+.ppt-slide-preview ul{padding-left:18px;font-size:.8rem;line-height:1.7;color:var(--text);}
+
+/* ── Loading inline pequeno ── */
+.inline-loading{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;padding:20px;justify-content:center;}
+.inline-spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+
+@media(max-width:780px){
+  .gen-row{grid-template-columns:1fr 1fr;}
+  .search-filters-row{flex-direction:column;align-items:stretch;}
+}
 </style>
 </head>
 <body>
@@ -289,12 +257,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div class="logo">🌻</div>
   <div>
     <h1>CONSULTÓRIO</h1>
-    <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+    <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
   </div>
 </div>
 
-
-<!-- Nav tabs -->
 <div class="nav-tabs">
   <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
   <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Atividades</button>
@@ -317,7 +283,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <button id="btn-reload" onclick="loadData()">↻ Atualizar</button>
   </div>
 
-  <!-- KPIs -->
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-main" id="kpi-fat">—</div>
@@ -339,17 +304,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     </div>
   </div>
 
-  <!-- Gráficos -->
   <div class="charts-row">
     <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
     <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
     <div class="chart-card"><h3>Quantidade de Faltas</h3><canvas id="chart-falta"></canvas></div>
   </div>
 
-  <!-- Bottom -->
   <div class="bottom-row">
-
-    <!-- Saldo formato badge -->
     <div class="panel">
       <h3>Sessões Restantes | Pacote</h3>
       <table class="saldo-table">
@@ -362,7 +323,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       </table>
     </div>
 
-    <!-- Donut -->
     <div class="panel">
       <h3>
         Quantidade de Pacientes
@@ -375,74 +335,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       <div class="donut-wrap"><canvas id="chart-donut"></canvas></div>
     </div>
 
-    <!-- Motivos compacto -->
     <div class="panel">
       <h3>Faltas | % por Paciente (ativos)</h3>
       <div class="motivos-wrap" id="motivos-list"></div>
     </div>
-
   </div>
 </div>
 </div>
-
 </div><!-- /page-dashboard -->
 
 <!-- ── PÁGINA ATIVIDADES ── -->
 <div class="page" id="page-atividades">
-<div class="layout">
+<div class="section-wrap">
 
-  <!-- Sidebar filtros biblioteca -->
-  <aside class="sidebar">
-    <div class="sidebar-title">Filtrar biblioteca</div>
+  <div class="sub-tabs">
+    <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">🖼 Gerar Imagens</button>
+    <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">📊 Gerar Apresentação</button>
+  </div>
 
-    <label class="filter-label">Tipo</label>
-    <select class="filter-select" id="f-tipo" onchange="renderBiblioteca()">
-      <option value="">Todos</option>
-      <option>Colorir</option>
-      <option>Rotina</option>
-      <option>Psicoeducação</option>
-      <option>Dinâmica</option>
-      <option>Outro</option>
-    </select>
+  <!-- ═══ SUB-ABA: IMAGENS ═══ -->
+  <div class="sub-page active" id="subpage-imagens">
 
-    <label class="filter-label">Faixa Etária</label>
-    <select class="filter-select" id="f-faixa" onchange="renderBiblioteca()">
-      <option value="">Todas</option>
-      <option>0–3 anos</option>
-      <option>4–6 anos</option>
-      <option>7–10 anos</option>
-      <option>11–14 anos</option>
-      <option>Adolescente</option>
-      <option>Adulto</option>
-    </select>
-
-    <label class="filter-label">Tema Clínico</label>
-    <select class="filter-select" id="f-tema" onchange="renderBiblioteca()">
-      <option value="">Todos</option>
-      <option>Ansiedade</option>
-      <option>TDAH</option>
-      <option>Luto</option>
-      <option>Autoestima</option>
-      <option>Regulação emocional</option>
-      <option>Relacionamentos</option>
-      <option>Outro</option>
-    </select>
-
-    <button class="btn-clear-filter" onclick="clearFilters()">✕ Limpar filtros</button>
-    <div class="count-badge" id="count-badge"></div>
-  </aside>
-
-  <!-- Main -->
-  <div class="main">
-
-<!-- API key gerenciada pelo Vercel -->
-    <input type="hidden" id="api-key" value="via-vercel"/>
-    <div class="api-warning" id="api-warning" style="display:none;"></div>
-
-    <!-- Gerador -->
     <div class="generator-card">
       <h3>✨ Criar nova atividade</h3>
-
       <div class="gen-row">
         <div class="gen-field">
           <label>Tipo de atividade</label>
@@ -481,29 +396,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
           </select>
         </div>
       </div>
-
       <div class="gen-field" style="margin-bottom:10px;">
         <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o que você quer</label>
         <textarea class="prompt-area" id="g-desc" placeholder="Ex: Rotina matinal para menino de 7 anos com TDAH, com 6 etapas ilustradas em estilo de livro infantil com cores vibrantes..."></textarea>
       </div>
-
       <div class="gen-actions">
-        <button class="btn-primary" id="btn-gen" onclick="gerarAtividade()">
-          <span>✦</span> Gerar imagem
-        </button>
+        <button class="btn-primary" id="btn-gen" onclick="gerarAtividade()"><span>✦</span> Gerar imagem</button>
         <button class="btn-secondary" id="btn-regen" onclick="regenerar()" disabled>↻ Regenerar</button>
         <button class="btn-secondary" id="btn-edit-prompt" onclick="editarPrompt()" disabled>✎ Editar prompt</button>
         <span class="gen-status" id="gen-status"></span>
       </div>
     </div>
 
-    <!-- Preview -->
     <div class="preview-card" id="preview-card">
       <h3>Pré-visualização</h3>
       <input type="text" class="title-field" id="g-titulo" placeholder="Título da atividade (ex: Rotina Matinal — Lucas, 7 anos)"/>
-      <div class="preview-img-wrap" id="preview-wrap">
-        <div class="preview-placeholder">A imagem gerada aparecerá aqui</div>
-      </div>
+      <div class="preview-img-wrap" id="preview-wrap"><div class="preview-placeholder">A imagem gerada aparecerá aqui</div></div>
       <div class="preview-actions">
         <button class="btn-save" onclick="salvarAtividade()">💾 Salvar na biblioteca</button>
         <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
@@ -511,7 +419,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       </div>
     </div>
 
-    <!-- Biblioteca -->
+    <!-- Busca sempre visível, abaixo do form -->
+    <div class="search-bar-wrap">
+      <div class="search-bar-title">🔍 Buscar na biblioteca</div>
+      <div class="search-filters-row">
+        <select class="filter-select" id="f-tipo" onchange="renderBiblioteca()">
+          <option value="">Todos os tipos</option>
+          <option>Colorir</option>
+          <option>Rotina</option>
+          <option>Psicoeducação</option>
+          <option>Dinâmica</option>
+          <option>Outro</option>
+        </select>
+        <select class="filter-select" id="f-faixa" onchange="renderBiblioteca()">
+          <option value="">Todas as faixas</option>
+          <option>0–3 anos</option>
+          <option>4–6 anos</option>
+          <option>7–10 anos</option>
+          <option>11–14 anos</option>
+          <option>Adolescente</option>
+          <option>Adulto</option>
+        </select>
+        <select class="filter-select" id="f-tema" onchange="renderBiblioteca()">
+          <option value="">Todos os temas</option>
+          <option>Ansiedade</option>
+          <option>TDAH</option>
+          <option>Luto</option>
+          <option>Autoestima</option>
+          <option>Regulação emocional</option>
+          <option>Relacionamentos</option>
+          <option>Outro</option>
+        </select>
+        <button class="btn-clear-filter" onclick="clearFilters()">✕ Limpar</button>
+      </div>
+      <div class="search-count" id="count-badge"></div>
+    </div>
+
     <div class="view-bar">
       <h2>📚 Biblioteca de atividades <span id="lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
       <div class="view-tabs">
@@ -519,15 +462,191 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
         <button class="view-tab" id="vt-list" onclick="setView('list')">☰ Lista</button>
       </div>
     </div>
-
     <div id="biblioteca-container"></div>
 
-  </div>
-</div>
+  </div><!-- /subpage-imagens -->
 
-<!-- Modal visualização -->
+  <!-- ═══ SUB-ABA: DOCUMENTOS (PPT) ═══ -->
+  <div class="sub-page" id="subpage-docs">
+
+    <div class="generator-card">
+      <h3>📊 Criar apresentação</h3>
+      <div class="gen-row">
+        <div class="gen-field">
+          <label>Público</label>
+          <select id="ppt-publico">
+            <option value="">Selecione...</option>
+            <option>Criança</option>
+            <option>Adolescente</option>
+            <option>Adulto</option>
+            <option>Família / Responsáveis</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Tema</label>
+          <select id="ppt-tema">
+            <option value="">Selecione...</option>
+            <option>Ansiedade</option>
+            <option>TDAH</option>
+            <option>Luto</option>
+            <option>Autoestima</option>
+            <option>Regulação emocional</option>
+            <option>Relacionamentos</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Nº aproximado de slides</label>
+          <select id="ppt-slides">
+            <option value="4-6">4 a 6</option>
+            <option value="6-8" selected>6 a 8</option>
+          </select>
+        </div>
+      </div>
+      <div class="gen-field" style="margin-bottom:10px;">
+        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o conteúdo da apresentação</label>
+        <textarea class="prompt-area" id="ppt-desc" placeholder="Ex: Apresentação explicando o que é ansiedade para uma criança de 8 anos, com exemplos do dia a dia e técnicas simples de respiração..."></textarea>
+      </div>
+      <div class="gen-actions">
+        <button class="btn-primary" id="btn-gen-ppt" onclick="gerarPPT()"><span>✦</span> Gerar conteúdo</button>
+        <span class="gen-status" id="ppt-status"></span>
+      </div>
+    </div>
+
+    <!-- Preview dos slides gerados -->
+    <div class="ppt-preview" id="ppt-preview" style="display:none;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:14px;" id="ppt-preview-titulo">—</h3>
+      <div id="ppt-slides-list"></div>
+      <div class="preview-actions" style="margin-top:14px;">
+        <input type="text" class="title-field" id="ppt-titulo-salvar" placeholder="Nome para salvar na biblioteca" style="margin-bottom:0;flex:1;min-width:200px;"/>
+      </div>
+      <div class="preview-actions">
+        <button class="btn-save" onclick="salvarPPTBiblioteca()">💾 Salvar na biblioteca</button>
+        <button class="btn-pdf" onclick="exportarPPTX()">⬇ Baixar .pptx</button>
+        <button class="btn-danger" onclick="descartarPPT()">Descartar</button>
+      </div>
+    </div>
+
+    <!-- Busca sempre visível -->
+    <div class="search-bar-wrap">
+      <div class="search-bar-title">🔍 Buscar apresentações</div>
+      <div class="search-filters-row">
+        <select class="filter-select" id="f-ppt-publico" onchange="renderPPTBiblioteca()">
+          <option value="">Todos os públicos</option>
+          <option>Criança</option>
+          <option>Adolescente</option>
+          <option>Adulto</option>
+          <option>Família / Responsáveis</option>
+        </select>
+        <select class="filter-select" id="f-ppt-tema" onchange="renderPPTBiblioteca()">
+          <option value="">Todos os temas</option>
+          <option>Ansiedade</option>
+          <option>TDAH</option>
+          <option>Luto</option>
+          <option>Autoestima</option>
+          <option>Regulação emocional</option>
+          <option>Relacionamentos</option>
+          <option>Outro</option>
+        </select>
+        <button class="btn-clear-filter" onclick="clearPPTFilters()">✕ Limpar</button>
+      </div>
+      <div class="search-count" id="ppt-count-badge"></div>
+    </div>
+
+    <div class="view-bar">
+      <h2>📊 Biblioteca de apresentações <span id="ppt-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
+    </div>
+    <div id="ppt-biblioteca-container"></div>
+
+  </div><!-- /subpage-docs -->
+
+</div>
+</div><!-- /page-atividades -->
+
+<!-- ── PÁGINA PRONTUÁRIOS ── -->
+<div class="page" id="page-prontuarios">
+<div class="section-wrap">
+
+  <!-- Formulário de registro -->
+  <div class="pront-form-wrap">
+    <h3 class="pront-section-title">📝 Registrar sessão</h3>
+    <div class="pront-fields-grid">
+      <div class="pront-field">
+        <label class="pront-label">Paciente | Horário</label>
+        <select class="pront-input" id="pront-pac" onchange="selecionarPaciente()">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+      <div class="pront-field">
+        <label class="pront-label">Data da sessão</label>
+        <input type="date" class="pront-input" id="pront-data"/>
+      </div>
+    </div>
+    <div class="pront-field" style="margin-top:12px;">
+      <label class="pront-label">Relato da sessão</label>
+      <textarea class="pront-input pront-textarea" id="pront-relato" placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..."></textarea>
+    </div>
+    <div class="pront-audio-bar">
+      <button class="btn-secondary" id="btn-gravar" onclick="toggleGravacao()" style="display:flex;align-items:center;gap:6px;font-size:.8rem;">🎙 Gravar relato</button>
+      <span id="rec-status" style="font-size:.76rem;color:var(--muted);font-style:italic;"></span>
+    </div>
+    <div class="pront-form-actions">
+      <button class="btn-primary" onclick="salvarSessao()">💾 Salvar sessão</button>
+      <button class="btn-secondary" onclick="limparFormPront()" style="font-size:.8rem;">✕ Limpar</button>
+    </div>
+  </div>
+
+  <!-- Busca sempre visível, abaixo do form -->
+  <div class="search-bar-wrap" style="margin-top:16px;">
+    <div class="search-bar-title">🔍 Buscar paciente</div>
+    <div class="search-filters-row">
+      <select class="filter-select" id="pront-busca" onchange="buscarPacienteProntuario()" style="flex:1;">
+        <option value="">Todos os pacientes com prontuário...</option>
+      </select>
+      <button class="btn-clear-filter" onclick="limparBuscaProntuario()">✕ Limpar</button>
+    </div>
+  </div>
+
+  <!-- Biblioteca de pacientes em grade -->
+  <div class="view-bar" style="margin-top:16px;">
+    <h2>📋 Prontuários <span id="pront-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
+  </div>
+  <div class="pront-lib-grid" id="pront-pac-grid"></div>
+
+  <!-- Visualizador do prontuário selecionado -->
+  <div id="pront-view" style="display:none;margin-top:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <h2 class="pront-section-title" id="pront-view-titulo" style="margin:0;border:none;padding:0;">—</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-pdf" onclick="exportarProntPDF()" style="font-size:.76rem;padding:6px 14px;">⬇ PDF</button>
+        <button class="btn-save" onclick="exportarProntDOCX()" style="font-size:.76rem;padding:6px 14px;">📄 Word</button>
+      </div>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+        <thead>
+          <tr style="background:var(--header-bg);">
+            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;width:110px;">Data</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;">Relato da sessão</th>
+            <th style="padding:10px 14px;width:70px;"></th>
+          </tr>
+        </thead>
+        <tbody id="pront-tabela"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="pront-empty" style="text-align:center;padding:50px 20px;color:var(--muted);">
+    <div style="font-size:36px;margin-bottom:12px;">📋</div>
+    <p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>
+  </div>
+
+</div>
+</div><!-- /page-prontuarios -->
+
+<!-- Modal visualização atividade -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal" style="position:relative;">
+  <div class="modal">
     <button class="btn-modal-close" onclick="closeModalBtn()">✕</button>
     <h3 id="modal-title">—</h3>
     <img id="modal-img" src="" alt=""/>
@@ -541,90 +660,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-</div><!-- /page-atividades -->
-
-<!-- ── PÁGINA PRONTUÁRIOS ── -->
-<div class="page" id="page-prontuarios">
-<div class="pront-layout">
-
-  <!-- Sidebar: biblioteca de pacientes -->
-  <aside class="sidebar">
-    <div class="sidebar-title">Prontuários</div>
-    <div id="pront-pac-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
-  </aside>
-
-  <div class="main-content" style="max-width:860px;">
-
-    <!-- Formulário de registro -->
-    <div class="pront-form-wrap">
-      <h3 class="pront-section-title">📝 Registrar sessão</h3>
-
-      <div class="pront-fields-grid">
-        <div class="pront-field">
-          <label class="pront-label">Paciente | Horário</label>
-          <select class="pront-input" id="pront-pac" onchange="selecionarPaciente()">
-            <option value="">Selecione...</option>
-          </select>
-        </div>
-        <div class="pront-field">
-          <label class="pront-label">Data da sessão</label>
-          <input type="date" class="pront-input" id="pront-data"/>
-        </div>
-      </div>
-
-      <div class="pront-field" style="margin-top:12px;">
-        <label class="pront-label">Relato da sessão</label>
-        <textarea class="pront-input pront-textarea" id="pront-relato"
-          placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..."></textarea>
-      </div>
-
-      <!-- Gravação -->
-      <div class="pront-audio-bar">
-        <button class="btn-secondary" id="btn-gravar" onclick="toggleGravacao()" style="display:flex;align-items:center;gap:6px;font-size:.8rem;">
-          🎙 Gravar relato
-        </button>
-        <span id="rec-status" style="font-size:.76rem;color:var(--muted);font-style:italic;"></span>
-      </div>
-
-      <div class="pront-form-actions">
-        <button class="btn-primary" onclick="salvarSessao()">💾 Salvar sessão</button>
-        <button class="btn-secondary" onclick="limparFormPront()" style="font-size:.8rem;">✕ Limpar</button>
-      </div>
-    </div>
-
-    <!-- Visualizador do prontuário selecionado -->
-    <div id="pront-view" style="display:none;margin-top:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-        <h2 class="pront-section-title" id="pront-view-titulo" style="margin:0;border:none;padding:0;">—</h2>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-pdf" onclick="exportarProntPDF()" style="font-size:.76rem;padding:6px 14px;">⬇ PDF</button>
-          <button class="btn-save" onclick="exportarProntDOCX()" style="font-size:.76rem;padding:6px 14px;">📄 Word</button>
-        </div>
-      </div>
-      <div class="table-card" style="padding:0;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
-          <thead>
-            <tr style="background:var(--header-bg);">
-              <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;width:110px;">Data</th>
-              <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;">Relato da sessão</th>
-              <th style="padding:10px 14px;width:60px;"></th>
-            </tr>
-          </thead>
-          <tbody id="pront-tabela"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div id="pront-empty" style="text-align:center;padding:60px 20px;color:var(--muted);display:none;">
-      <div style="font-size:36px;margin-bottom:12px;">📋</div>
-      <p style="font-size:.85rem;line-height:1.6;">Selecione um paciente na sidebar<br>ou registre uma nova sessão acima.</p>
-    </div>
-
-  </div>
-</div>
-</div><!-- /page-prontuarios -->
-
 
 <script>
 const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
@@ -938,398 +973,42 @@ function renderBar(id,labels,data,yLabel,color){
   });
 }
 
+// ══════════════════════════════════════════════════════════
+// SUB-TABS (dentro de Atividades)
+// ══════════════════════════════════════════════════════════
+function switchSubTab(name) {
+  document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('subpage-' + name).classList.add('active');
+  document.getElementById('subtab-btn-' + name).classList.add('active');
+  if (name === 'docs' && !window._pptInit) {
+    window._pptInit = true;
+    renderPPTBiblioteca();
+  }
+}
 
 // ══════════════════════════════════════════════════════════
-// MÓDULO PRONTUÁRIOS
+// MÓDULO ATIVIDADES (persistido no Supabase)
 // ══════════════════════════════════════════════════════════
-const PRONT_KEY = 'psi_prontuarios_v1';
-// Estrutura: { [paciente_key]: { label, sessoes: [{data, relato, criadoEm}] } }
-let _prontuarios = {};
-let _pacAtual    = null;
-let _recognition = null;
-let _gravando    = false;
+let _atividades  = [];
+let _currentImg  = null;
+let _currentView = 'grid';
+let _modalId     = null;
+let _lastPrompt  = '';
 
-function initProntuarios() {
+async function initAtividades() {
+  document.getElementById('biblioteca-container').innerHTML =
+    '<div class="inline-loading"><div class="inline-spinner"></div> Carregando biblioteca...</div>';
   try {
-    const raw = localStorage.getItem(PRONT_KEY);
-    _prontuarios = raw ? JSON.parse(raw) : {};
-  } catch { _prontuarios = {}; }
-
-  // Popula dropdown com pacientes ativos vindos do dashboard
-  const sel = document.getElementById('pront-pac');
-  sel.innerHTML = '<option value="">Selecione...</option>';
-  if (_ativosArr && _ativosArr.length > 0) {
-    const diasOrdem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
-    function ordemDia(horario) {
-      const h = (horario||'').toLowerCase();
-      for (const [dia, ord] of Object.entries(diasOrdem)) {
-        if (h.startsWith(dia)) return ord;
-      }
-      return 99;
-    }
-    function ordemHora(horario) {
-      const m = (horario||'').match(/(\d{1,2})h(\d{0,2})/);
-      if (!m) return 9999;
-      return parseInt(m[1])*60 + (parseInt(m[2])||0);
-    }
-    [..._ativosArr]
-      .sort((a,b) => {
-        const dA = ordemDia(a._horario), dB = ordemDia(b._horario);
-        if (dA !== dB) return dA - dB;
-        return ordemHora(a._horario) - ordemHora(b._horario);
-      })
-      .forEach(r => {
-        const label = (r._horario ? r._horario + ' | ' : '') + r._iniciais;
-        sel.innerHTML += `<option value="${r._paciente}" data-label="${label}">${label}</option>`;
-      });
+    const res = await fetch('/api/data?table=atividades');
+    _atividades = res.ok ? await res.json() : [];
+  } catch(e) {
+    console.error(e);
+    _atividades = [];
   }
-
-  // Data de hoje como padrão
-  setDataHoje();
-  renderSidebar();
-  mostrarEmpty();
-}
-
-function setDataHoje() {
-  const h = new Date();
-  document.getElementById('pront-data').value =
-    h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');
-}
-
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function renderSidebar() {
-  const container = document.getElementById('pront-pac-list');
-  const keys = Object.keys(_prontuarios);
-
-  if (keys.length === 0) {
-    container.innerHTML = '<p style="font-size:.75rem;color:var(--muted);line-height:1.5;">Nenhum prontuário ainda.<br>Registre a primeira sessão acima.</p>';
-    return;
-  }
-
-  container.innerHTML = '';
-  keys
-    .sort((a,b) => (_prontuarios[a].label||a).localeCompare(_prontuarios[b].label||b))
-    .forEach(k => {
-      const p = _prontuarios[k];
-      const n = p.sessoes.length;
-      const ativo = k === _pacAtual;
-      container.innerHTML += `<button class="pac-card ${ativo?'ativo':''}" onclick="verProntuario('${k}')">
-        <div class="pac-nome">${p.label || k}</div>
-        <div class="pac-meta">${n} sessão${n !== 1 ? 'ões' : ''} registrada${n !== 1 ? 's' : ''}</div>
-      </button>`;
-    });
-}
-
-// ── Salvar sessão ─────────────────────────────────────────────────────────────
-function salvarSessao() {
-  const key    = document.getElementById('pront-pac').value;
-  const data   = document.getElementById('pront-data').value;
-  const relato = document.getElementById('pront-relato').value.trim();
-
-  if (!key)    { toast('Selecione um paciente.'); return; }
-  if (!data)   { toast('Selecione a data da sessão.'); return; }
-  if (!relato) { toast('Digite ou grave o relato da sessão.'); return; }
-
-  // Label amigável — pega do atributo data-label para evitar undefined
-  const sel   = document.getElementById('pront-pac');
-  const opt   = sel.options[sel.selectedIndex];
-  const label = (opt && opt.value) ? (opt.getAttribute('data-label') || opt.text) : '';
-  if (!label) { toast('Selecione um paciente válido.'); return; }
-
-  // Cria arquivo do paciente se não existir
-  if (!_prontuarios[key]) {
-    _prontuarios[key] = { label, sessoes: [] };
-  }
-
-  // Linha já existe para essa data? substitui após confirmação
-  const idx = _prontuarios[key].sessoes.findIndex(s => s.data === data);
-  if (idx >= 0) {
-    if (!confirm('Já existe um registro para essa data. Substituir?')) return;
-    _prontuarios[key].sessoes.splice(idx, 1);
-  }
-
-  // Adiciona nova linha
-  _prontuarios[key].sessoes.push({ data, relato, criadoEm: new Date().toISOString() });
-  // Ordena por data
-  _prontuarios[key].sessoes.sort((a,b) => a.data.localeCompare(b.data));
-
-  persistPront();
-  limparFormPront();
-  renderSidebar();
-  verProntuario(key); // abre o arquivo do paciente
-  toast('✅ Sessão salva!');
-}
-
-// ── Ver prontuário ────────────────────────────────────────────────────────────
-function verProntuario(key) {
-  _pacAtual = key;
-  const p = _prontuarios[key];
-  if (!p) return;
-
-  document.getElementById('pront-view').style.display  = 'block';
-  document.getElementById('pront-empty').style.display = 'none';
-  document.getElementById('pront-view-titulo').textContent = '📋 ' + p.label;
-
-  // Preenche o seletor com o paciente atual para facilitar nova entrada
-  document.getElementById('pront-pac').value = key;
-
-  const tbody = document.getElementById('pront-tabela');
-  tbody.innerHTML = '';
-  [...p.sessoes].reverse().forEach((s, i) => {
-    const [y,m,d] = s.data.split('-');
-    const dataFmt = `${d}/${m}/${y}`;
-    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
-      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${dataFmt}</td>
-      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
-      <td style="padding:10px 14px;vertical-align:top;text-align:right;">
-        <button onclick="deletarSessao('${key}','${s.data}')"
-          title="Excluir registro"
-          style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button>
-      </td>
-    </tr>`;
-  });
-
-  renderSidebar();
-}
-
-function selecionarPaciente() {
-  const key = document.getElementById('pront-pac').value;
-  if (!key) {
-    document.getElementById('pront-view').style.display  = 'none';
-    document.getElementById('pront-empty').style.display = 'block';
-    _pacAtual = null;
-    return;
-  }
-  if (_prontuarios[key]) {
-    verProntuario(key);
-  } else {
-    // Paciente ainda sem prontuário — mostra empty personalizado
-    _pacAtual = key;
-    document.getElementById('pront-view').style.display  = 'none';
-    document.getElementById('pront-empty').style.display = 'block';
-    document.getElementById('pront-empty').innerHTML =
-      '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
-      '<p style="font-size:.85rem;line-height:1.6;">Nenhuma sessão registrada para este paciente ainda.<br>Preencha o relato acima e clique em <strong>Salvar sessão</strong>.</p>';
-  }
-}
-
-function mostrarEmpty() {
-  document.getElementById('pront-view').style.display  = 'none';
-  document.getElementById('pront-empty').style.display = 'block';
-}
-
-function limparFormPront() {
-  document.getElementById('pront-pac').value       = '';
-  document.getElementById('pront-relato').value    = '';
-  document.getElementById('rec-status').textContent = '';
-  _pacAtual = null;
-  setDataHoje();
-  // Esconde visualizador e mostra empty state
-  document.getElementById('pront-view').style.display  = 'none';
-  document.getElementById('pront-empty').style.display = 'block';
-  renderSidebar();
-}
-
-function deletarSessao(key, data) {
-  if (!confirm('Excluir este registro?')) return;
-  _prontuarios[key].sessoes = _prontuarios[key].sessoes.filter(s => s.data !== data);
-  if (_prontuarios[key].sessoes.length === 0) {
-    delete _prontuarios[key];
-    _pacAtual = null;
-    mostrarEmpty();
-  } else {
-    verProntuario(key);
-  }
-  persistPront();
-  renderSidebar();
-  toast('Registro excluído.');
-}
-
-function persistPront() {
-  localStorage.setItem(PRONT_KEY, JSON.stringify(_prontuarios));
-}
-
-// ── Gravação → transcrição ────────────────────────────────────────────────────
-async function toggleGravacao() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    toast('Reconhecimento de voz não suportado. Use Chrome ou Safari.');
-    return;
-  }
-
-  if (_gravando) { _recognition.stop(); return; }
-
-  _recognition = new SR();
-  _recognition.lang            = 'pt-BR';
-  _recognition.continuous      = true;
-  _recognition.interimResults  = true;
-  _recognition.maxAlternatives = 1;
-
-  const relato    = document.getElementById('pront-relato');
-  const textoBase = relato.value;
-  let   acumulado = '';
-
-  _recognition.onstart = () => {
-    _gravando = true;
-    document.getElementById('btn-gravar').innerHTML = '⏹ Parar gravação';
-    document.getElementById('rec-status').textContent = '● Gravando — fale agora...';
-  };
-
-  _recognition.onresult = e => {
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      e.results[i].isFinal ? (final += e.results[i][0].transcript + ' ') : (interim += e.results[i][0].transcript);
-    }
-    acumulado += final;
-    const sep = textoBase && acumulado ? '\n' : '';
-    relato.value = textoBase + sep + acumulado + interim;
-    if (interim) document.getElementById('rec-status').textContent = '● ' + interim;
-  };
-
-  _recognition.onerror = e => {
-    _gravando = false;
-    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar relato';
-    document.getElementById('rec-status').textContent = '';
-    toast('Erro no microfone: ' + e.error);
-  };
-
-  _recognition.onend = () => {
-    _gravando = false;
-    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar relato';
-    document.getElementById('rec-status').textContent = acumulado ? '✅ Transcrição concluída' : '';
-    if (acumulado) relato.value = textoBase + (textoBase ? '\n' : '') + acumulado.trim();
-  };
-
-  _recognition.start();
-}
-
-// ── Exportar PDF ──────────────────────────────────────────────────────────────
-function exportarProntPDF() {
-  const p = _pacAtual && _prontuarios[_pacAtual];
-  if (!p) return;
-  const linhas = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s => {
-    const [y,m,d] = s.data.split('-');
-    return `<tr>
-      <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;vertical-align:top;color:#555;font-size:12px;">${d}/${m}/${y}</td>
-      <td style="padding:8px 12px;border:1px solid #ddd;line-height:1.6;font-size:12px;">${s.relato.replace(/\n/g,'<br>')}</td>
-    </tr>`;
-  }).join('');
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-    <title>Prontuário — ${p.label}</title>
-    <style>
-      body{font-family:'Georgia',serif;margin:40px;color:#2a2a2a;}
-      h1{font-size:16px;margin-bottom:4px;}
-      .sub{font-size:11px;color:#888;margin-bottom:20px;}
-      table{width:100%;border-collapse:collapse;}
-      th{background:#d6ccb0;padding:8px 12px;text-align:left;font-size:11px;border:1px solid #ddd;}
-      @media print{body{margin:20px;}}
-    </style>
-  </head><body>
-    <h1>🌻 Prontuário — ${p.label}</h1>
-    <p class="sub">Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478 &nbsp;|&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
-    <table>
-      <thead><tr><th style="width:100px;">Data</th><th>Relato da sessão</th></tr></thead>
-      <tbody>${linhas}</tbody>
-    </table>
-    <script>window.onload=()=>{window.print();}<\/script>
-  </body></html>`);
-  win.document.close();
-}
-
-// ── Exportar Word ─────────────────────────────────────────────────────────────
-function exportarProntDOCX() {
-  const p = _pacAtual && _prontuarios[_pacAtual];
-  if (!p) return;
-  const linhas = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s => {
-    const [y,m,d] = s.data.split('-');
-    return `<tr>
-      <td style="border:1px solid #ccc;padding:6pt;width:80pt;vertical-align:top;">${d}/${m}/${y}</td>
-      <td style="border:1px solid #ccc;padding:6pt;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
-    </tr>`;
-  }).join('');
-
-  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
-    xmlns:w='urn:schemas-microsoft-com:office:word'
-    xmlns='http://www.w3.org/TR/REC-html40'>
-  <head><meta charset='utf-8'><title>Prontuário</title>
-  <style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;}
-  h1{font-size:14pt;color:#3a3020;}p{font-size:9pt;color:#888;}
-  table{width:100%;border-collapse:collapse;margin-top:16pt;}
-  th{background:#d6ccb0;padding:6pt;font-size:10pt;border:1px solid #ccc;text-align:left;}</style>
-  </head><body>
-    <h1>🌻 Prontuário — ${p.label}</h1>
-    <p>Psicóloga Jaquline C. Vieira | CRP 06/191478 | Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
-    <table>
-      <thead><tr><th style="width:80pt;">Data</th><th>Relato da sessão</th></tr></thead>
-      <tbody>${linhas}</tbody>
-    </table>
-  </body></html>`;
-
-  const blob = new Blob([html], { type: 'application/msword' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `prontuario_${(p.label||_pacAtual).replace(/[^a-zA-Z0-9]/g,'_')}.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-window.onload=loadData;
-
-
-// ── Tab switching ──────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('tab-btn-' + name).classList.add('active');
-  if (name === 'atividades' && !window._ativInit) {
-    window._ativInit = true;
-    initAtividades();
-  }
-  if (name === 'prontuarios' && !window._prontInit) {
-    window._prontInit = true;
-    initProntuarios();
-  }
-}
-
-
-// ── MÓDULO ATIVIDADES ──
-// ── Storage key ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'psi_atividades_v1';
-const KEY_APIKEY  = 'psi_gemini_key';
-
-let _atividades   = [];   // [{id, titulo, tipo, faixa, tema, imgUrl, imgB64, prompt, criadoEm}]
-let _currentImg   = null; // {url, b64, prompt}
-let _currentView  = 'grid';
-let _modalId      = null;
-let _lastPrompt   = '';
-
-// ── Init ─────────────────────────────────────────────────────────────────────
-function initAtividades() {
-  // Restaura API key
-  // Chave gerenciada pelo Vercel — campo oculto
-
-  // Carrega atividades
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    _atividades = raw ? JSON.parse(raw) : [];
-  } catch { _atividades = []; }
-
   renderBiblioteca();
-};
-
-function saveKey() {
-  localStorage.setItem(KEY_APIKEY, document.getElementById('api-key').value.trim());
 }
 
-function getKey() {
-  return document.getElementById('api-key').value.trim();
-}
-
-// ── Gerar atividade ──────────────────────────────────────────────────────────
 async function gerarAtividade() {
   const tipo  = document.getElementById('g-tipo').value;
   const faixa = document.getElementById('g-faixa').value;
@@ -1338,7 +1017,6 @@ async function gerarAtividade() {
 
   if (!desc) { toast('Descreva o que você quer criar.'); return; }
 
-  // Monta prompt localmente sem Gemini
   const tipoPrompt = tipo === 'Colorir'
     ? 'coloring page, black and white line art, thick clean outlines, no shading, white background, printable'
     : tipo === 'Rotina'
@@ -1349,7 +1027,6 @@ async function gerarAtividade() {
   _lastPrompt = prompt;
 
   setGenerating(true, 'Gerando imagem...');
-
   try {
     const imgB64 = await gerarImagem(prompt);
     _currentImg = { b64: imgB64, prompt };
@@ -1379,29 +1056,6 @@ async function gerarImagem(prompt) {
   return data.b64;
 }
 
-// placeholder para não quebrar referências
-async function gerarImagemFallback(prompt) {
-  const res = await fetch('/api/gemini', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      endpoint: 'placeholder',
-      body: {
-        contents: [{parts:[{text: prompt}]}],
-        generationConfig: {responseModalities:['IMAGE','TEXT']}
-      }
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err?.error?.message || 'Geração de imagem indisponível nessa região.');
-  }
-  const data = await res.json();
-  const imgPart = data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
-  if (!imgPart) throw new Error('Nenhuma imagem retornada pelo modelo');
-  return imgPart.inlineData.data;
-}
-
 async function regenerar() {
   if (!_lastPrompt) return;
   setGenerating(true, 'Regenerando...');
@@ -1420,14 +1074,13 @@ function editarPrompt() {
   const novo = prompt('Edite o prompt antes de regenerar:', _lastPrompt);
   if (novo !== null && novo.trim()) {
     _lastPrompt = novo.trim();
-    document.getElementById('g-desc').value = novo.trim();
     regenerar();
   }
 }
 
 function mostrarPreview(b64) {
-  const wrap = document.getElementById('preview-wrap');
-  wrap.innerHTML = `<img src="data:image/png;base64,${b64}" alt="Atividade gerada" style="max-width:100%;"/>`;
+  document.getElementById('preview-wrap').innerHTML =
+    `<img src="data:image/png;base64,${b64}" alt="Atividade gerada" style="max-width:100%;"/>`;
   document.getElementById('preview-card').style.display = 'block';
   document.getElementById('preview-card').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -1435,44 +1088,66 @@ function mostrarPreview(b64) {
 function descartarPreview() {
   document.getElementById('preview-card').style.display = 'none';
   _currentImg = null;
-  document.getElementById('btn-regen').disabled = true;
+  document.getElementById('btn-regen').disabled       = true;
   document.getElementById('btn-edit-prompt').disabled = true;
+  document.getElementById('g-titulo').value = '';
 }
 
 function setGenerating(on, msg) {
   const btn = document.getElementById('btn-gen');
   btn.disabled = on;
-  btn.innerHTML = on ? `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Gerando...` : '<span>✦</span> Gerar imagem';
+  btn.innerHTML = on
+    ? `<span class="inline-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Gerando...`
+    : '<span>✦</span> Gerar imagem';
   document.getElementById('gen-status').textContent = msg;
 }
 
-// ── Salvar ───────────────────────────────────────────────────────────────────
-function salvarAtividade() {
+async function salvarAtividade() {
   if (!_currentImg) return;
   const titulo = document.getElementById('g-titulo').value.trim() || 'Atividade sem título';
-  const ativ = {
-    id:       Date.now().toString(),
+  const payload = {
     titulo,
-    tipo:     document.getElementById('g-tipo').value   || 'Outro',
-    faixa:    document.getElementById('g-faixa').value  || '—',
-    tema:     document.getElementById('g-tema').value   || '—',
-    imgB64:   _currentImg.b64,
+    tipo:     document.getElementById('g-tipo').value  || 'Outro',
+    faixa:    document.getElementById('g-faixa').value || '—',
+    tema:     document.getElementById('g-tema').value  || '—',
+    img_b64:  _currentImg.b64,
     prompt:   _currentImg.prompt,
-    criadoEm: new Date().toLocaleDateString('pt-BR'),
+    criado_em: new Date().toISOString(),
   };
-  _atividades.unshift(ativ);
-  persist();
-  descartarPreview();
+
+  try {
+    const res = await fetch('/api/data?table=atividades', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Falha ao salvar');
+    const saved = await res.json();
+    _atividades.unshift(Array.isArray(saved) ? saved[0] : saved);
+
+    // Limpa TUDO — formulário completo, não só o preview
+    limparFormAtividade();
+    renderBiblioteca();
+    toast('✅ Atividade salva na biblioteca!');
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao salvar: ' + e.message);
+  }
+}
+
+function limparFormAtividade() {
+  document.getElementById('g-tipo').value  = '';
+  document.getElementById('g-faixa').value = '';
+  document.getElementById('g-tema').value  = '';
+  document.getElementById('g-desc').value  = '';
   document.getElementById('g-titulo').value = '';
-  renderBiblioteca();
-  toast('✅ Atividade salva na biblioteca!');
+  document.getElementById('preview-card').style.display = 'none';
+  _currentImg  = null;
+  _lastPrompt  = '';
+  document.getElementById('btn-regen').disabled       = true;
+  document.getElementById('btn-edit-prompt').disabled = true;
 }
 
-function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(_atividades));
-}
-
-// ── PDF ──────────────────────────────────────────────────────────────────────
 function exportarPDF(b64, titulo) {
   const imgSrc = b64
     ? `data:image/png;base64,${b64}`
@@ -1480,27 +1155,17 @@ function exportarPDF(b64, titulo) {
   if (!imgSrc) { toast('Nenhuma imagem para exportar.'); return; }
 
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8"/>
-    <title>${titulo||'Atividade'}</title>
-    <style>
-      *{margin:0;padding:0;box-sizing:border-box;}
-      body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;}
-      img{max-width:100%;max-height:100vh;object-fit:contain;display:block;}
-      @media print{body{margin:0;}img{width:100%;height:auto;}}
-    </style>
-  </head><body>
-    <img src="${imgSrc}" onload="window.print();"/>
-  </body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${titulo||'Atividade'}</title>
+    <style>*{margin:0;padding:0;box-sizing:border-box;}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;}img{max-width:100%;max-height:100vh;object-fit:contain;display:block;}@media print{body{margin:0;}img{width:100%;height:auto;}}</style>
+  </head><body><img src="${imgSrc}" onload="window.print();"/></body></html>`);
   win.document.close();
 }
 
 function exportarPDFModal() {
-  const ativ = _atividades.find(a=>a.id===_modalId);
-  if (ativ) exportarPDF(ativ.imgB64, ativ.titulo);
+  const ativ = _atividades.find(a => a.id === _modalId);
+  if (ativ) exportarPDF(ativ.img_b64, ativ.titulo);
 }
 
-// ── Biblioteca ───────────────────────────────────────────────────────────────
 function clearFilters() {
   ['f-tipo','f-faixa','f-tema'].forEach(id=>{document.getElementById(id).selectedIndex=0;});
   renderBiblioteca();
@@ -1528,27 +1193,20 @@ function renderBiblioteca() {
   document.getElementById('lib-count').textContent = filtered.length>0?`(${filtered.length})` : '';
 
   const container = document.getElementById('biblioteca-container');
-
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="biblioteca-empty">
-      <div class="icon">🎨</div>
-      <p>${_atividades.length===0
-        ? 'Nenhuma atividade ainda.<br>Crie a primeira usando o gerador acima!'
-        : 'Nenhuma atividade encontrada com esses filtros.'}</p>
-    </div>`;
+    container.innerHTML = `<div class="biblioteca-empty"><div class="icon">🎨</div><p>${_atividades.length===0
+      ? 'Nenhuma atividade ainda.<br>Crie a primeira usando o gerador acima!'
+      : 'Nenhuma atividade encontrada com esses filtros.'}</p></div>`;
     return;
   }
-
-  if (_currentView === 'grid') {
-    container.innerHTML = `<div class="grid-view">${filtered.map(cardGrid).join('')}</div>`;
-  } else {
-    container.innerHTML = `<div class="list-view">${filtered.map(cardList).join('')}</div>`;
-  }
+  container.innerHTML = _currentView === 'grid'
+    ? `<div class="grid-view">${filtered.map(cardGrid).join('')}</div>`
+    : `<div class="list-view">${filtered.map(cardList).join('')}</div>`;
 }
 
 function cardGrid(a) {
-  const img = a.imgB64
-    ? `<img class="ativ-card-img" src="data:image/png;base64,${a.imgB64}" alt="${a.titulo}"/>`
+  const img = a.img_b64
+    ? `<img class="ativ-card-img" src="data:image/png;base64,${a.img_b64}" alt="${a.titulo}"/>`
     : `<div class="ativ-card-img-placeholder">🎨</div>`;
   return `<div class="ativ-card" onclick="openModal('${a.id}')">
     ${img}
@@ -1561,15 +1219,15 @@ function cardGrid(a) {
       </div>
     </div>
     <div class="ativ-card-actions" onclick="event.stopPropagation()">
-      <button class="btn-xs pdf" onclick="exportarPDF('${a.imgB64}','${a.titulo}')">⬇ PDF</button>
-      <button class="btn-xs del" onclick="deletar('${a.id}')">Excluir</button>
+      <button class="btn-xs pdf" onclick="exportarPDF('${a.img_b64}','${a.titulo}')">⬇ PDF</button>
+      <button class="btn-xs del" onclick="deletarAtividade('${a.id}')">Excluir</button>
     </div>
   </div>`;
 }
 
 function cardList(a) {
-  const img = a.imgB64
-    ? `<img class="ativ-row-thumb" src="data:image/png;base64,${a.imgB64}" alt="${a.titulo}"/>`
+  const img = a.img_b64
+    ? `<img class="ativ-row-thumb" src="data:image/png;base64,${a.img_b64}" alt="${a.titulo}"/>`
     : `<div class="ativ-row-thumb-placeholder">🎨</div>`;
   return `<div class="ativ-row">
     ${img}
@@ -1582,55 +1240,616 @@ function cardList(a) {
       </div>
     </div>
     <div class="ativ-row-actions">
-      <button class="btn-xs pdf" onclick="exportarPDF('${a.imgB64}','${a.titulo}')">⬇ PDF</button>
-      <button class="btn-xs del" onclick="deletar('${a.id}')">Excluir</button>
+      <button class="btn-xs pdf" onclick="exportarPDF('${a.img_b64}','${a.titulo}')">⬇ PDF</button>
+      <button class="btn-xs del" onclick="deletarAtividade('${a.id}')">Excluir</button>
     </div>
   </div>`;
 }
 
-// ── Modal ────────────────────────────────────────────────────────────────────
 function openModal(id) {
   const a = _atividades.find(x=>x.id===id);
   if (!a) return;
   _modalId = id;
   document.getElementById('modal-title').textContent = a.titulo;
-  document.getElementById('modal-img').src = `data:image/png;base64,${a.imgB64}`;
+  document.getElementById('modal-img').src = `data:image/png;base64,${a.img_b64}`;
   document.getElementById('modal-tags').innerHTML =
-    `<span class="tag tipo">${a.tipo}</span>
-     <span class="tag faixa">${a.faixa}</span>
-     <span class="tag tema">${a.tema}</span>
-     <span class="tag" style="margin-left:auto;font-size:.62rem;color:var(--muted);">${a.criadoEm}</span>`;
+    `<span class="tag tipo">${a.tipo}</span><span class="tag faixa">${a.faixa}</span><span class="tag tema">${a.tema}</span>`;
   document.getElementById('modal-overlay').classList.add('open');
 }
+function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modal-overlay').classList.remove('open'); _modalId = null; }
+function deletarModal() { if (_modalId) { deletarAtividade(_modalId); closeModalBtn(); } }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModalBtn();
-}
-function closeModalBtn() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  _modalId = null;
-}
-
-function deletarModal() {
-  if (_modalId) { deletar(_modalId); closeModalBtn(); }
-}
-
-// ── Deletar ──────────────────────────────────────────────────────────────────
-function deletar(id) {
+async function deletarAtividade(id) {
   if (!confirm('Excluir esta atividade da biblioteca?')) return;
-  _atividades = _atividades.filter(a=>a.id!==id);
-  persist();
-  renderBiblioteca();
-  toast('Atividade excluída.');
+  try {
+    await fetch(`/api/data?table=atividades&id=${id}`, { method: 'DELETE' });
+    _atividades = _atividades.filter(a=>a.id!==id);
+    renderBiblioteca();
+    toast('Atividade excluída.');
+  } catch(e) {
+    toast('Erro ao excluir: ' + e.message);
+  }
 }
 
-// ── Toast ────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// MÓDULO PPT (apresentações geradas por IA)
+// ══════════════════════════════════════════════════════════
+let _pptData        = null; // { titulo, slides: [{titulo, conteudo}] }
+let _pptMeta         = {};
+let _apresentacoes   = [];
+
+async function gerarPPT() {
+  const publico = document.getElementById('ppt-publico').value;
+  const tema    = document.getElementById('ppt-tema').value;
+  const desc    = document.getElementById('ppt-desc').value.trim();
+
+  if (!desc) { toast('Descreva o conteúdo da apresentação.'); return; }
+
+  const btn = document.getElementById('btn-gen-ppt');
+  btn.disabled = true;
+  document.getElementById('ppt-status').textContent = 'Gerando conteúdo com IA...';
+
+  try {
+    const res = await fetch('/api/ppt-content', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ descricao: desc, publico, tema })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error || 'Erro ao gerar conteúdo');
+    }
+    const data = await res.json();
+    _pptData = data;
+    _pptMeta = { publico, tema };
+
+    document.getElementById('ppt-preview-titulo').textContent = '📊 ' + data.titulo;
+    document.getElementById('ppt-titulo-salvar').value = data.titulo;
+    const list = document.getElementById('ppt-slides-list');
+    list.innerHTML = data.slides.map((s,i) => `
+      <div class="ppt-slide-preview">
+        <h4>Slide ${i+1}: ${s.titulo}</h4>
+        <ul>${s.conteudo.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+    `).join('');
+
+    document.getElementById('ppt-preview').style.display = 'block';
+    document.getElementById('ppt-preview').scrollIntoView({behavior:'smooth', block:'start'});
+    document.getElementById('ppt-status').textContent = '';
+  } catch(e) {
+    console.error(e);
+    document.getElementById('ppt-status').textContent = '';
+    toast('Erro: ' + e.message);
+  }
+  btn.disabled = false;
+}
+
+function descartarPPT() {
+  _pptData = null;
+  document.getElementById('ppt-preview').style.display = 'none';
+  limparFormPPT();
+}
+
+function limparFormPPT() {
+  document.getElementById('ppt-publico').value = '';
+  document.getElementById('ppt-tema').value    = '';
+  document.getElementById('ppt-desc').value    = '';
+  document.getElementById('ppt-titulo-salvar').value = '';
+}
+
+async function salvarPPTBiblioteca() {
+  if (!_pptData) return;
+  const titulo = document.getElementById('ppt-titulo-salvar').value.trim() || _pptData.titulo;
+
+  const payload = {
+    titulo,
+    publico: _pptMeta.publico || '—',
+    tema:    _pptMeta.tema    || '—',
+    slides_json: JSON.stringify(_pptData.slides),
+    criado_em: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch('/api/data?table=prontuarios&sub=apresentacoes', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    // Usa a mesma tabela 'atividades' com um campo tipo='apresentacao' para simplificar schema único
+  } catch(e) {}
+
+  // Salva via endpoint genérico de atividades, usando tipo especial
+  try {
+    const res2 = await fetch('/api/data?table=atividades', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        titulo,
+        tipo: 'Apresentação',
+        faixa: _pptMeta.publico || '—',
+        tema: _pptMeta.tema || '—',
+        prompt: JSON.stringify(_pptData.slides),
+        criado_em: new Date().toISOString(),
+      })
+    });
+    if (!res2.ok) throw new Error('Falha ao salvar apresentação');
+    const saved = await res2.json();
+    _apresentacoes.unshift(Array.isArray(saved) ? saved[0] : saved);
+    descartarPPT();
+    renderPPTBiblioteca();
+    toast('✅ Apresentação salva na biblioteca!');
+  } catch(e) {
+    toast('Erro ao salvar: ' + e.message);
+  }
+}
+
+function exportarPPTX() {
+  if (!_pptData) return;
+  gerarArquivoPPTX(_pptData, _pptData.titulo);
+}
+
+function gerarArquivoPPTX(pptData, nomeArquivo) {
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: 'CUSTOM', width: 10, height: 5.63 });
+  pptx.layout = 'CUSTOM';
+
+  // Slide de título
+  const slideTitulo = pptx.addSlide();
+  slideTitulo.background = { color: 'D6CCB0' };
+  slideTitulo.addText(pptData.titulo, {
+    x: 0.5, y: 2, w: 9, h: 1.5,
+    fontSize: 32, bold: true, color: '3A3020',
+    fontFace: 'Georgia', align: 'center',
+  });
+  slideTitulo.addText('🌻 Psicóloga Jaqueline C. Vieira', {
+    x: 0.5, y: 3.5, w: 9, h: 0.5,
+    fontSize: 14, color: '5A5040', align: 'center',
+  });
+
+  // Slides de conteúdo
+  pptData.slides.forEach(s => {
+    const slide = pptx.addSlide();
+    slide.background = { color: 'F5F2EB' };
+    slide.addText(s.titulo, {
+      x: 0.5, y: 0.4, w: 9, h: 0.8,
+      fontSize: 24, bold: true, color: '3A3020', fontFace: 'Georgia',
+    });
+    slide.addText(
+      s.conteudo.map(p => ({ text: p, options: { bullet: true, breakLine: true } })),
+      { x: 0.6, y: 1.4, w: 8.8, h: 3.8, fontSize: 18, color: '2A2A2A', valign: 'top' }
+    );
+  });
+
+  pptx.writeFile({ fileName: `${(nomeArquivo||'apresentacao').replace(/[^a-zA-Z0-9]/g,'_')}.pptx` });
+}
+
+function clearPPTFilters() {
+  ['f-ppt-publico','f-ppt-tema'].forEach(id=>{document.getElementById(id).selectedIndex=0;});
+  renderPPTBiblioteca();
+}
+
+async function renderPPTBiblioteca() {
+  const container = document.getElementById('ppt-biblioteca-container');
+  container.innerHTML = '<div class="inline-loading"><div class="inline-spinner"></div> Carregando...</div>';
+
+  try {
+    const res = await fetch('/api/data?table=atividades');
+    const all = res.ok ? await res.json() : [];
+    _apresentacoes = all.filter(a => a.tipo === 'Apresentação');
+  } catch(e) {
+    _apresentacoes = [];
+  }
+
+  const fPub  = document.getElementById('f-ppt-publico').value;
+  const fTema = document.getElementById('f-ppt-tema').value;
+  let filtered = _apresentacoes;
+  if (fPub)  filtered = filtered.filter(a => a.faixa === fPub);
+  if (fTema) filtered = filtered.filter(a => a.tema  === fTema);
+
+  const n = [fPub,fTema].filter(Boolean).length;
+  document.getElementById('ppt-count-badge').textContent = n>0?n+' filtro'+(n>1?'s':'')+' ativo'+(n>1?'s':''):'';
+  document.getElementById('ppt-lib-count').textContent = filtered.length>0?`(${filtered.length})`:'';
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="biblioteca-empty"><div class="icon">📊</div><p>${_apresentacoes.length===0
+      ? 'Nenhuma apresentação ainda.<br>Gere a primeira usando o formulário acima!'
+      : 'Nenhuma apresentação encontrada com esses filtros.'}</p></div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="grid-view">${filtered.map(a => `
+    <div class="ativ-card" style="cursor:default;">
+      <div class="ativ-card-img-placeholder">📊</div>
+      <div class="ativ-card-body">
+        <div class="ativ-card-title">${a.titulo}</div>
+        <div class="ativ-card-tags">
+          <span class="tag tipo">${a.faixa}</span>
+          <span class="tag tema">${a.tema}</span>
+        </div>
+      </div>
+      <div class="ativ-card-actions">
+        <button class="btn-xs pdf" onclick='baixarPPTSalvo(${JSON.stringify(a.prompt)}, ${JSON.stringify(a.titulo)})'>⬇ .pptx</button>
+        <button class="btn-xs del" onclick="deletarApresentacao('${a.id}')">Excluir</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function baixarPPTSalvo(slidesJson, titulo) {
+  try {
+    const slides = JSON.parse(slidesJson);
+    gerarArquivoPPTX({ titulo, slides }, titulo);
+  } catch(e) {
+    toast('Erro ao gerar arquivo: ' + e.message);
+  }
+}
+
+async function deletarApresentacao(id) {
+  if (!confirm('Excluir esta apresentação?')) return;
+  try {
+    await fetch(`/api/data?table=atividades&id=${id}`, { method: 'DELETE' });
+    renderPPTBiblioteca();
+    toast('Apresentação excluída.');
+  } catch(e) {
+    toast('Erro: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO PRONTUÁRIOS (persistido no Supabase)
+// ══════════════════════════════════════════════════════════
+let _prontuarios = {}; // { paciente_key: { label, sessoes: [{id, data, relato}] } }
+let _pacAtual    = null;
+let _recognition = null;
+let _gravando    = false;
+
+async function initProntuarios() {
+  document.getElementById('pront-pac-grid').innerHTML =
+    '<div class="inline-loading"><div class="inline-spinner"></div> Carregando prontuários...</div>';
+
+  // Popula dropdown de registro com pacientes ativos do dashboard, ordenado por dia+horário
+  const sel = document.getElementById('pront-pac');
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  if (_ativosArr && _ativosArr.length > 0) {
+    const diasOrdem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
+    function ordemDia(h){ h=(h||'').toLowerCase(); for(const[d,o] of Object.entries(diasOrdem)) if(h.startsWith(d)) return o; return 99; }
+    function ordemHora(h){ const m=(h||'').match(/(\d{1,2})h(\d{0,2})/); return m ? parseInt(m[1])*60+(parseInt(m[2])||0) : 9999; }
+    [..._ativosArr]
+      .sort((a,b)=>{ const dA=ordemDia(a._horario), dB=ordemDia(b._horario); return dA!==dB ? dA-dB : ordemHora(a._horario)-ordemHora(b._horario); })
+      .forEach(r => {
+        const label = (r._horario ? r._horario + ' | ' : '') + r._iniciais;
+        sel.innerHTML += `<option value="${r._paciente}" data-label="${label}">${label}</option>`;
+      });
+  }
+
+  setDataHoje();
+  await carregarProntuarios();
+}
+
+async function carregarProntuarios() {
+  try {
+    const res = await fetch('/api/data?table=prontuarios');
+    const rows = res.ok ? await res.json() : [];
+
+    _prontuarios = {};
+    rows.forEach(r => {
+      if (!_prontuarios[r.paciente_key]) {
+        _prontuarios[r.paciente_key] = { label: r.paciente_label, sessoes: [] };
+      }
+      _prontuarios[r.paciente_key].sessoes.push({ id: r.id, data: r.data_sessao, relato: r.relato });
+    });
+    Object.values(_prontuarios).forEach(p => p.sessoes.sort((a,b)=>a.data.localeCompare(b.data)));
+  } catch(e) {
+    console.error(e);
+    _prontuarios = {};
+  }
+
+  popularBuscaProntuario();
+  renderGridPacientes();
+  if (Object.keys(_prontuarios).length === 0) mostrarEmpty();
+}
+
+function popularBuscaProntuario() {
+  const sel = document.getElementById('pront-busca');
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">Todos os pacientes com prontuário...</option>';
+  Object.keys(_prontuarios)
+    .sort((a,b)=>(_prontuarios[a].label||a).localeCompare(_prontuarios[b].label||b))
+    .forEach(k => {
+      sel.innerHTML += `<option value="${k}">${_prontuarios[k].label || k}</option>`;
+    });
+  sel.value = atual;
+}
+
+function buscarPacienteProntuario() {
+  const key = document.getElementById('pront-busca').value;
+  if (key) verProntuario(key);
+  else { document.getElementById('pront-view').style.display='none'; mostrarEmpty(); }
+}
+
+function limparBuscaProntuario() {
+  document.getElementById('pront-busca').value = '';
+  document.getElementById('pront-view').style.display = 'none';
+  mostrarEmpty();
+  _pacAtual = null;
+  renderGridPacientes();
+}
+
+function setDataHoje() {
+  const h = new Date();
+  document.getElementById('pront-data').value =
+    h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');
+}
+
+function renderGridPacientes() {
+  const container = document.getElementById('pront-pac-grid');
+  const keys = Object.keys(_prontuarios);
+  document.getElementById('pront-lib-count').textContent = keys.length>0?`(${keys.length})`:'';
+
+  if (keys.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = keys
+    .sort((a,b)=>(_prontuarios[a].label||a).localeCompare(_prontuarios[b].label||b))
+    .map(k => {
+      const p = _prontuarios[k];
+      const n = p.sessoes.length;
+      const ativo = k === _pacAtual;
+      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${k}')">
+        <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${p.label || k}</div>
+        <div style="font-size:.72rem;color:var(--muted);">${n} sessão${n!==1?'ões':''} registrada${n!==1?'s':''}</div>
+      </div>`;
+    }).join('');
+}
+
+async function salvarSessao() {
+  const key    = document.getElementById('pront-pac').value;
+  const data   = document.getElementById('pront-data').value;
+  const relato = document.getElementById('pront-relato').value.trim();
+
+  if (!key)    { toast('Selecione um paciente.'); return; }
+  if (!data)   { toast('Selecione a data da sessão.'); return; }
+  if (!relato) { toast('Digite ou grave o relato da sessão.'); return; }
+
+  const sel   = document.getElementById('pront-pac');
+  const opt   = sel.options[sel.selectedIndex];
+  const label = (opt && opt.value) ? (opt.getAttribute('data-label') || opt.text) : '';
+  if (!label) { toast('Selecione um paciente válido.'); return; }
+
+  // Verifica duplicata local
+  const existente = _prontuarios[key]?.sessoes.find(s => s.data === data);
+  if (existente) {
+    if (!confirm('Já existe um registro para essa data. Substituir?')) return;
+    try {
+      await fetch(`/api/data?table=prontuarios&id=${existente.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ relato })
+      });
+    } catch(e) { toast('Erro ao atualizar: ' + e.message); return; }
+  } else {
+    try {
+      const res = await fetch('/api/data?table=prontuarios', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          paciente_key: key,
+          paciente_label: label,
+          data_sessao: data,
+          relato,
+          criado_em: new Date().toISOString(),
+        })
+      });
+      if (!res.ok) throw new Error('Falha ao salvar');
+    } catch(e) { toast('Erro ao salvar: ' + e.message); return; }
+  }
+
+  await carregarProntuarios();
+  limparFormPront();
+  verProntuario(key);
+  toast('✅ Sessão salva!');
+}
+
+function verProntuario(key) {
+  _pacAtual = key;
+  const p = _prontuarios[key];
+  if (!p) return;
+
+  document.getElementById('pront-view').style.display  = 'block';
+  document.getElementById('pront-empty').style.display = 'none';
+  document.getElementById('pront-view-titulo').textContent = '📋 ' + p.label;
+  document.getElementById('pront-pac').value   = key;
+  document.getElementById('pront-busca').value = key;
+
+  const tbody = document.getElementById('pront-tabela');
+  tbody.innerHTML = '';
+  [...p.sessoes].reverse().forEach((s, i) => {
+    const [y,m,d] = s.data.split('-');
+    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
+      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
+      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
+      <td style="padding:10px 14px;vertical-align:top;text-align:right;">
+        <button onclick="deletarSessao('${s.id}','${key}')" title="Excluir registro"
+          style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button>
+      </td>
+    </tr>`;
+  });
+
+  renderGridPacientes();
+}
+
+function selecionarPaciente() {
+  const key = document.getElementById('pront-pac').value;
+  if (!key) return;
+  if (_prontuarios[key]) {
+    verProntuario(key);
+  } else {
+    _pacAtual = key;
+    document.getElementById('pront-view').style.display  = 'none';
+    document.getElementById('pront-empty').style.display = 'block';
+    document.getElementById('pront-empty').innerHTML =
+      '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
+      '<p style="font-size:.85rem;line-height:1.6;">Nenhuma sessão registrada para este paciente ainda.<br>Preencha o relato acima e clique em <strong>Salvar sessão</strong>.</p>';
+  }
+}
+
+function mostrarEmpty() {
+  document.getElementById('pront-view').style.display  = 'none';
+  document.getElementById('pront-empty').style.display = 'block';
+  document.getElementById('pront-empty').innerHTML =
+    '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
+    '<p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>';
+}
+
+function limparFormPront() {
+  document.getElementById('pront-pac').value       = '';
+  document.getElementById('pront-relato').value    = '';
+  document.getElementById('rec-status').textContent = '';
+  setDataHoje();
+}
+
+async function deletarSessao(id, key) {
+  if (!confirm('Excluir este registro?')) return;
+  try {
+    await fetch(`/api/data?table=prontuarios&id=${id}`, { method: 'DELETE' });
+    await carregarProntuarios();
+    if (_prontuarios[key]) verProntuario(key);
+    else { _pacAtual = null; mostrarEmpty(); document.getElementById('pront-view').style.display='none'; }
+    toast('Registro excluído.');
+  } catch(e) {
+    toast('Erro ao excluir: ' + e.message);
+  }
+}
+
+// ── Gravação → transcrição via Web Speech API ─────────────────────────────────
+async function toggleGravacao() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Reconhecimento de voz não suportado. Use Chrome ou Safari.'); return; }
+  if (_gravando) { _recognition.stop(); return; }
+
+  _recognition = new SR();
+  _recognition.lang            = 'pt-BR';
+  _recognition.continuous      = true;
+  _recognition.interimResults  = true;
+  _recognition.maxAlternatives = 1;
+
+  const relato    = document.getElementById('pront-relato');
+  const textoBase = relato.value;
+  let   acumulado = '';
+
+  _recognition.onstart = () => {
+    _gravando = true;
+    document.getElementById('btn-gravar').innerHTML = '⏹ Parar gravação';
+    document.getElementById('rec-status').textContent = '● Gravando — fale agora...';
+  };
+  _recognition.onresult = e => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      e.results[i].isFinal ? (final += e.results[i][0].transcript + ' ') : (interim += e.results[i][0].transcript);
+    }
+    acumulado += final;
+    const sep = textoBase && acumulado ? '\n' : '';
+    relato.value = textoBase + sep + acumulado + interim;
+    if (interim) document.getElementById('rec-status').textContent = '● ' + interim;
+  };
+  _recognition.onerror = e => {
+    _gravando = false;
+    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar relato';
+    document.getElementById('rec-status').textContent = '';
+    toast('Erro no microfone: ' + e.error);
+  };
+  _recognition.onend = () => {
+    _gravando = false;
+    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar relato';
+    document.getElementById('rec-status').textContent = acumulado ? '✅ Transcrição concluída' : '';
+    if (acumulado) relato.value = textoBase + (textoBase ? '\n' : '') + acumulado.trim();
+  };
+  _recognition.start();
+}
+
+// ── Exportar PDF ──────────────────────────────────────────────────────────────
+function exportarProntPDF() {
+  const p = _pacAtual && _prontuarios[_pacAtual];
+  if (!p) return;
+  const linhas = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s => {
+    const [y,m,d] = s.data.split('-');
+    return `<tr>
+      <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;vertical-align:top;color:#555;font-size:12px;">${d}/${m}/${y}</td>
+      <td style="padding:8px 12px;border:1px solid #ddd;line-height:1.6;font-size:12px;">${s.relato.replace(/\n/g,'<br>')}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Prontuário — ${p.label}</title>
+    <style>body{font-family:'Georgia',serif;margin:40px;color:#2a2a2a;}h1{font-size:16px;margin-bottom:4px;}.sub{font-size:11px;color:#888;margin-bottom:20px;}table{width:100%;border-collapse:collapse;}th{background:#d6ccb0;padding:8px 12px;text-align:left;font-size:11px;border:1px solid #ddd;}@media print{body{margin:20px;}}</style>
+  </head><body>
+    <h1>🌻 Prontuário — ${p.label}</h1>
+    <p class="sub">Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478 &nbsp;|&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+    <table><thead><tr><th style="width:100px;">Data</th><th>Relato da sessão</th></tr></thead><tbody>${linhas}</tbody></table>
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── Exportar Word ─────────────────────────────────────────────────────────────
+function exportarProntDOCX() {
+  const p = _pacAtual && _prontuarios[_pacAtual];
+  if (!p) return;
+  const linhas = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s => {
+    const [y,m,d] = s.data.split('-');
+    return `<tr>
+      <td style="border:1px solid #ccc;padding:6pt;width:80pt;vertical-align:top;">${d}/${m}/${y}</td>
+      <td style="border:1px solid #ccc;padding:6pt;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='utf-8'><title>Prontuário</title>
+  <style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;}h1{font-size:14pt;color:#3a3020;}p{font-size:9pt;color:#888;}table{width:100%;border-collapse:collapse;margin-top:16pt;}th{background:#d6ccb0;padding:6pt;font-size:10pt;border:1px solid #ccc;text-align:left;}</style>
+  </head><body>
+    <h1>🌻 Prontuário — ${p.label}</h1>
+    <p>Psicóloga Jaqueline C. Vieira | CRP 06/191478 | Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+    <table><thead><tr><th style="width:80pt;">Data</th><th>Relato da sessão</th></tr></thead><tbody>${linhas}</tbody></table>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `prontuario_${(p.label||_pacAtual).replace(/[^a-zA-Z0-9]/g,'_')}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════
+// Toast + Tab switching (comum)
+// ══════════════════════════════════════════════════════════
 function toast(msg, dur=3000) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), dur);
 }
+
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-btn-' + name).classList.add('active');
+  if (name === 'atividades' && !window._ativInit) {
+    window._ativInit = true;
+    initAtividades();
+  }
+  if (name === 'prontuarios' && !window._prontInit) {
+    window._prontInit = true;
+    initProntuarios();
+  }
+}
+
+window.onload = loadData;
 </script>
 </body>
 </html>

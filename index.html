@@ -959,11 +959,28 @@ function initProntuarios() {
   const sel = document.getElementById('pront-pac');
   sel.innerHTML = '<option value="">Selecione...</option>';
   if (_ativosArr && _ativosArr.length > 0) {
+    const diasOrdem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
+    function ordemDia(horario) {
+      const h = (horario||'').toLowerCase();
+      for (const [dia, ord] of Object.entries(diasOrdem)) {
+        if (h.startsWith(dia)) return ord;
+      }
+      return 99;
+    }
+    function ordemHora(horario) {
+      const m = (horario||'').match(/(\d{1,2})h(\d{0,2})/);
+      if (!m) return 9999;
+      return parseInt(m[1])*60 + (parseInt(m[2])||0);
+    }
     [..._ativosArr]
-      .sort((a,b) => a._horario.localeCompare(b._horario))
+      .sort((a,b) => {
+        const dA = ordemDia(a._horario), dB = ordemDia(b._horario);
+        if (dA !== dB) return dA - dB;
+        return ordemHora(a._horario) - ordemHora(b._horario);
+      })
       .forEach(r => {
         const label = (r._horario ? r._horario + ' | ' : '') + r._iniciais;
-        sel.innerHTML += `<option value="${r._paciente}">${label}</option>`;
+        sel.innerHTML += `<option value="${r._paciente}" data-label="${label}">${label}</option>`;
       });
   }
 
@@ -1013,9 +1030,11 @@ function salvarSessao() {
   if (!data)   { toast('Selecione a data da sessão.'); return; }
   if (!relato) { toast('Digite ou grave o relato da sessão.'); return; }
 
-  // Label amigável do <option> selecionado
+  // Label amigável — pega do atributo data-label para evitar undefined
   const sel   = document.getElementById('pront-pac');
-  const label = sel.options[sel.selectedIndex].text;
+  const opt   = sel.options[sel.selectedIndex];
+  const label = (opt && opt.value) ? (opt.getAttribute('data-label') || opt.text) : '';
+  if (!label) { toast('Selecione um paciente válido.'); return; }
 
   // Cria arquivo do paciente se não existir
   if (!_prontuarios[key]) {
@@ -1064,7 +1083,8 @@ function verProntuario(key) {
       <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
       <td style="padding:10px 14px;vertical-align:top;text-align:right;">
         <button onclick="deletarSessao('${key}','${s.data}')"
-          style="font-size:.68rem;color:var(--danger);background:none;border:none;cursor:pointer;white-space:nowrap;">✕</button>
+          title="Excluir registro"
+          style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button>
       </td>
     </tr>`;
   });
@@ -1074,8 +1094,23 @@ function verProntuario(key) {
 
 function selecionarPaciente() {
   const key = document.getElementById('pront-pac').value;
-  if (key && _prontuarios[key]) verProntuario(key);
-  else { document.getElementById('pront-view').style.display='none'; mostrarEmpty(); }
+  if (!key) {
+    document.getElementById('pront-view').style.display  = 'none';
+    document.getElementById('pront-empty').style.display = 'block';
+    _pacAtual = null;
+    return;
+  }
+  if (_prontuarios[key]) {
+    verProntuario(key);
+  } else {
+    // Paciente ainda sem prontuário — mostra empty personalizado
+    _pacAtual = key;
+    document.getElementById('pront-view').style.display  = 'none';
+    document.getElementById('pront-empty').style.display = 'block';
+    document.getElementById('pront-empty').innerHTML =
+      '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
+      '<p style="font-size:.85rem;line-height:1.6;">Nenhuma sessão registrada para este paciente ainda.<br>Preencha o relato acima e clique em <strong>Salvar sessão</strong>.</p>';
+  }
 }
 
 function mostrarEmpty() {
@@ -1084,10 +1119,15 @@ function mostrarEmpty() {
 }
 
 function limparFormPront() {
-  document.getElementById('pront-pac').value    = '';
-  document.getElementById('pront-relato').value = '';
+  document.getElementById('pront-pac').value       = '';
+  document.getElementById('pront-relato').value    = '';
   document.getElementById('rec-status').textContent = '';
+  _pacAtual = null;
   setDataHoje();
+  // Esconde visualizador e mostra empty state
+  document.getElementById('pront-view').style.display  = 'none';
+  document.getElementById('pront-empty').style.display = 'block';
+  renderSidebar();
 }
 
 function deletarSessao(key, data) {

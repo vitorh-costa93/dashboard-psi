@@ -352,12 +352,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <!-- ── PÁGINA ATIVIDADES ── -->
 <div class="page" id="page-atividades">
-<div>
-    <h1>CONSULTÓRIO</h1>
-    <p>Psicóloga Jaquline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
-  </div>
-</div>
-
 <div class="layout">
 
   <!-- Sidebar filtros biblioteca -->
@@ -906,8 +900,6 @@ function renderBar(id,labels,data,yLabel,color){
 const PRONT_KEY = 'psi_prontuarios_v1';
 let _prontuarios = {}; // { paciente_key: [{data, relato, criadoEm}] }
 let _pacAtual = null;
-let _mediaRecorder = null;
-let _audioChunks = [];
 let _gravando = false;
 
 function initProntuarios() {
@@ -1048,36 +1040,76 @@ function persistPront() {
   localStorage.setItem(PRONT_KEY, JSON.stringify(_prontuarios));
 }
 
-// ── Gravação de áudio ─────────────────────────────────────────────────────────
+// ── Gravação de áudio com transcrição via Web Speech API ─────────────────────
+let _recognition = null;
+
 async function toggleGravacao() {
-  if (_gravando) {
-    _mediaRecorder.stop();
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast('Reconhecimento de voz não suportado neste navegador. Use Chrome ou Safari.');
     return;
   }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    _audioChunks = [];
-    _mediaRecorder = new MediaRecorder(stream);
-    _mediaRecorder.ondataavailable = e => _audioChunks.push(e.data);
-    _mediaRecorder.onstop = () => {
-      const blob = new Blob(_audioChunks, { type: 'audio/webm' });
-      const url  = URL.createObjectURL(blob);
-      const audio = document.getElementById('audio-preview');
-      audio.src = url;
-      audio.style.display = 'block';
-      document.getElementById('rec-status').textContent = 'Áudio gravado — ouça antes de salvar';
-      document.getElementById('btn-gravar').innerHTML = '🎙 Gravar áudio';
-      _gravando = false;
-      stream.getTracks().forEach(t => t.stop());
-      // Transcrição via Web Speech API (se disponível)
-      toast('Áudio salvo! Adicione o relato manualmente ou use o áudio como referência.');
-    };
-    _mediaRecorder.start();
+
+  if (_gravando) {
+    _recognition.stop();
+    return;
+  }
+
+  _recognition = new SpeechRecognition();
+  _recognition.lang = 'pt-BR';
+  _recognition.continuous = true;
+  _recognition.interimResults = true;
+  _recognition.maxAlternatives = 1;
+
+  const relato = document.getElementById('pront-relato');
+  const textoBase = relato.value;
+  let transcricaoAtual = '';
+
+  _recognition.onstart = () => {
     _gravando = true;
     document.getElementById('btn-gravar').innerHTML = '⏹ Parar gravação';
-    document.getElementById('rec-status').textContent = '● Gravando...';
+    document.getElementById('rec-status').textContent = '● Gravando — fale agora...';
+  };
+
+  _recognition.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        final += e.results[i][0].transcript + ' ';
+      } else {
+        interim += e.results[i][0].transcript;
+      }
+    }
+    transcricaoAtual += final;
+    // Mostra transcrição em tempo real no campo
+    relato.value = textoBase + (textoBase && transcricaoAtual ? '\n' : '') + transcricaoAtual + interim;
+    document.getElementById('rec-status').textContent = interim ? '● ' + interim : '● Gravando...';
+  };
+
+  _recognition.onerror = (e) => {
+    toast('Erro no microfone: ' + e.error);
+    _gravando = false;
+    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar áudio';
+    document.getElementById('rec-status').textContent = '';
+  };
+
+  _recognition.onend = () => {
+    _gravando = false;
+    document.getElementById('btn-gravar').innerHTML = '🎙 Gravar áudio';
+    document.getElementById('rec-status').textContent = transcricaoAtual
+      ? '✅ Transcrição concluída'
+      : '';
+    // Garante texto final salvo
+    if (transcricaoAtual) {
+      relato.value = textoBase + (textoBase ? '\n' : '') + transcricaoAtual.trim();
+    }
+  };
+
+  try {
+    _recognition.start();
   } catch(e) {
-    toast('Microfone não disponível: ' + e.message);
+    toast('Não foi possível iniciar: ' + e.message);
   }
 }
 

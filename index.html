@@ -1648,8 +1648,9 @@ async function salvarSessao() {
   }
 
   await carregarProntuarios();
-  limparFormPront();
   verProntuario(key);
+  document.getElementById('pront-busca').value = key;
+  limparFormPront();
   toast('✅ Sessão salva!');
 }
 
@@ -1661,8 +1662,6 @@ function verProntuario(key) {
   document.getElementById('pront-view').style.display  = 'block';
   document.getElementById('pront-empty').style.display = 'none';
   document.getElementById('pront-view-titulo').textContent = '📋 ' + p.label;
-  document.getElementById('pront-pac').value   = key;
-  document.getElementById('pront-busca').value = key;
 
   const tbody = document.getElementById('pront-tabela');
   tbody.innerHTML = '';

@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       // Upsert de pacientes por nome. Isso garante um ID permanente mesmo
       // quando o dia/horário do paciente muda na planilha.
       if (table === 'pacientes' || action === 'upsert') {
-        const r = await supaFetch(table, {
+        const r = await supaFetch(`${table}?on_conflict=nome`, {
           method: 'POST',
           headers: {
             'Prefer': 'resolution=merge-duplicates,return=representation',

@@ -27,6 +27,8 @@ create table if not exists pacientes (
   criado_em timestamptz default now()
 );
 
+create unique index if not exists idx_pacientes_nome_unique on pacientes(nome);
+
 create table if not exists prontuarios (
   id uuid primary key default gen_random_uuid(),
   paciente_key text not null,

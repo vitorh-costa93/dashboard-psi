@@ -277,6 +277,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .post-slides{display:flex;flex-direction:column;gap:7px;}
 .post-slide{padding:9px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:.78rem;}
 .post-history{margin-top:16px;}
+.post-brand-note{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45;display:flex;gap:7px;align-items:flex-start;}
+.post-brand-note::before{content:'✓';font-weight:700;color:#6d8d82;}
+.post-logo-preview{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;}
+.post-logo-preview img{height:42px;width:auto;object-fit:contain;}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 </style>
 </head>
@@ -292,7 +296,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <div class="nav-tabs">
   <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
-  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Atividades</button>
+  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Espaço de criação</button>
   <button class="nav-tab" id="tab-btn-prontuarios" onclick="switchTab('prontuarios')">📋 Prontuários</button>
 </div>
 
@@ -385,7 +389,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div class="sub-tabs">
     <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">🖼 Gerar Imagens</button>
     <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">📊 Gerar Apresentação</button>
-    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">📱 Posts</button>
+    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">📱 Posts & Tendências</button>
   </div>
 
   <!-- ═══ SUB-ABA: IMAGENS ═══ -->
@@ -600,11 +604,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <div class="generator-card">
       <h3>📱 Radar de conteúdo</h3>
       <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">
-        Encontra assuntos recentes relacionados a psicologia, infância, adolescência e parentalidade
-        e transforma as oportunidades em ideias de conteúdo. Nada é publicado automaticamente.
+        Acompanha assuntos recentes e relevantes para a psicologia ao longo de todo o ciclo vital — infância, adolescência, vida adulta, envelhecimento, família e parentalidade — e transforma oportunidades em ideias de conteúdo. Nada é publicado automaticamente.
       </p>
       <div class="gen-actions">
-        <button class="btn-primary" id="btn-trends" onclick="buscarTendencias()">🔎 Buscar tendências</button>
+        <button class="btn-primary" id="btn-trends" onclick="buscarTendencias(true)">🔎 Atualizar tendências</button>
         <span class="gen-status" id="trends-status"></span>
       </div>
     </div>
@@ -629,7 +632,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
         <div class="gen-field">
           <label>Público</label>
           <select id="post-publico" class="filter-select" style="width:100%;">
-            <option>Pais e responsáveis</option><option>Crianças</option><option>Adolescentes</option><option>Adultos</option>
+            <option>Pais e responsáveis</option><option>Crianças</option><option>Adolescentes</option><option>Adultos</option><option>Idosos</option><option>Famílias</option><option>Ciclo vital</option>
           </select>
         </div>
         <div class="gen-field">
@@ -637,6 +640,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
           <input id="post-contexto" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Opcional"/>
         </div>
       </div>
+      <div class="post-brand-preview" id="post-brand-preview"></div>
+      <div class="post-brand-note">A arte final recebe a identidade visual da Jaqueline automaticamente. O fundo verde enviado é apenas uma referência da logo; a versão aplicada é adaptada para o fundo da arte.</div>
       <div class="gen-actions">
         <button class="btn-primary" id="btn-post-generate" onclick="gerarPost()">✦ Gerar conteúdo</button>
         <span class="gen-status" id="post-status"></span>
@@ -1032,89 +1037,91 @@ function processAndRender(){
 }
 
 function calcularAlertas() {
-  const el = document.getElementById('alerts-content');
-  if (!el) return;
+  const el=document.getElementById('alerts-content');
+  if(!el)return;
 
-  const hoje = new Date();
-  hoje.setHours(0,0,0,0);
-  const inicioSemana = new Date(hoje);
-  const diaSemana = hoje.getDay(); // 0 dom
-  const desloc = diaSemana === 0 ? -6 : 1 - diaSemana;
-  inicioSemana.setDate(hoje.getDate() + desloc);
-  const fimSemana = new Date(inicioSemana);
-  fimSemana.setDate(inicioSemana.getDate() + 6);
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const inicioSemana=new Date(hoje);
+  const diaSemana=hoje.getDay();
+  const desloc=diaSemana===0?-6:1-diaSemana;
+  inicioSemana.setDate(hoje.getDate()+desloc);
+  const fimSemana=new Date(inicioSemana); fimSemana.setDate(inicioSemana.getDate()+6);
 
-  const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
-  const inicioUltimaSemana = new Date(ultimoDia);
-  inicioUltimaSemana.setDate(ultimoDia.getDate()-6);
-  const ultimaSemana = hoje >= inicioUltimaSemana;
+  const ultimoDia=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+  const inicioUltimaSemana=new Date(ultimoDia); inicioUltimaSemana.setDate(ultimoDia.getDate()-6);
+  const ultimaSemana=hoje>=inicioUltimaSemana;
 
-  const ativos = {};
-  _rows.filter(r => r._ativo === 'Ativo').forEach(r => {
-    const k = r._paciente;
-    if (!k) return;
-    if (!ativos[k]) ativos[k] = { iniciais:r._iniciais || k, horario:r._horario || '', sessoes:0, comp:0 };
-    ativos[k].horario = r._horario || ativos[k].horario;
-    ativos[k].sessoes += r._sessoesCob;
-    ativos[k].comp += r._compSim;
+  const historicoCompras={};
+  _rows.forEach(r=>{
+    const k=r._paciente;
+    if(!k || r._sessoesCob<=0)return;
+    if(!historicoCompras[k])historicoCompras[k]=[];
+    historicoCompras[k].push({qtd:r._sessoesCob,data:r._data||new Date(0)});
   });
 
-  const diaIdx = {dom:0,domingo:0,seg:1,segunda:1,ter:2,terça:2,terca:2,qua:3,quarta:3,qui:4,quinta:4,sex:5,sexta:5,sab:6,sábado:6,sabado:6};
-  function horarioDia(h) {
+  const ativos={};
+  _rows.filter(r=>r._ativo==='Ativo').forEach(r=>{
+    const k=r._paciente; if(!k)return;
+    if(!ativos[k]) ativos[k]={iniciais:r._iniciais||k,horario:r._horario||'',sessoes:0,comp:0,compras:historicoCompras[k]||[]};
+    ativos[k].horario=r._horario||ativos[k].horario;
+    ativos[k].sessoes+=r._sessoesCob;
+    ativos[k].comp+=r._compSim;
+  });
+
+  function pacoteHabitual(compras){
+    if(!compras.length)return 0;
+    const freq=new Map();
+    compras.forEach(x=>freq.set(x.qtd,(freq.get(x.qtd)||0)+1));
+    const max=Math.max(...freq.values());
+    const candidatas=[...freq.entries()].filter(([,n])=>n===max).map(([q])=>q);
+    // Em empate, usamos o pacote mais recente entre os candidatos.
+    const recentes=compras.filter(x=>candidatas.includes(x.qtd)).sort((a,b)=>b.data-a.data);
+    return recentes[0]?.qtd||0;
+  }
+
+  const diaIdx={dom:0,domingo:0,seg:1,segunda:1,ter:2,terça:2,terca:2,qua:3,quarta:3,qui:4,quinta:4,sex:5,sexta:5,sab:6,sábado:6,sabado:6};
+  function horarioDia(h){
     const x=(h||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    for (const [k,v] of Object.entries(diaIdx)) if (x.startsWith(k)) return v;
+    for(const[k,v]of Object.entries(diaIdx))if(x.startsWith(k))return v;
     return null;
   }
-  function proximaOcorrencia(h) {
-    const idx=horarioDia(h);
-    if (idx===null) return null;
-    const d=new Date(hoje);
-    let diff=idx-d.getDay();
-    if (diff<=0) diff+=7;
-    d.setDate(d.getDate()+diff);
-    return d;
+  function proximaOcorrencia(h){
+    const idx=horarioDia(h); if(idx===null)return null;
+    const d=new Date(hoje); let diff=idx-d.getDay(); if(diff<=0)diff+=7;
+    d.setDate(d.getDate()+diff); return d;
   }
-  function fmt(d) {
-    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-  }
+  function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
-  const renovacoes=[];
-  const dividas=[];
-  Object.values(ativos).forEach(p => {
+  const renovacoes=[],dividas=[];
+  Object.values(ativos).forEach(p=>{
+    const pacote=pacoteHabitual(p.compras);
+    // Quem normalmente compra uma única sessão não entra no alerta de renovação.
+    if(pacote<=1)return;
     const saldo=p.sessoes-p.comp;
     const prox=proximaOcorrencia(p.horario);
-    if (prox && saldo >= 0) {
-      const renovacao=new Date(prox);
-      renovacao.setDate(renovacao.getDate()+saldo*7);
-      if (renovacao>=inicioSemana && renovacao<=fimSemana) {
-        renovacoes.push({label:`${p.iniciais} | ${p.horario}`, data:renovacao});
-      }
+    if(prox && saldo>=0){
+      const renovacao=new Date(prox); renovacao.setDate(renovacao.getDate()+saldo*7);
+      if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
     }
-    if (ultimaSemana && saldo < 0) {
-      dividas.push({label:`${p.iniciais} | ${p.horario}`, qtd:Math.abs(saldo)});
-    }
+    // Pendências só aparecem na última semana do mês.
+    if(ultimaSemana&&saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo)});
   });
 
-  renovacoes.sort((a,b)=>a.data-b.data);
-  dividas.sort((a,b)=>b.qtd-a.qtd);
-
+  renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);
   let html='';
-  if (renovacoes.length) {
-    html += `<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>`;
-    html += renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
-    html += '</div>';
+  if(renovacoes.length){
+    html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
+    html+=renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
+    html+='</div>';
   }
-  if (ultimaSemana && dividas.length) {
-    html += `<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>`;
-    html += dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} sessão${x.qtd!==1?'ões':''}</span></div>`).join('');
-    html += '</div>';
+  if(ultimaSemana&&dividas.length){
+    html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
+    html+=dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} sessão${x.qtd!==1?'ões':''}</span></div>`).join('');
+    html+='</div>';
   }
-  if (!html) {
-    html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
-  }
+  if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
   el.innerHTML=html;
 }
-
 
 function updateDonut(){
   const sel=document.getElementById('profile-select').value;
@@ -1740,19 +1747,35 @@ async function deletarApresentacao(id) {
 // ══════════════════════════════════════════════════════════
 let _postAtual=null;
 let _postTrends=[];
+function escHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 async function initPosts(){
   await carregarPostsSalvos();
+  const brand=document.getElementById('post-brand-preview');
+  if(brand){
+    brand.innerHTML='<div class="post-logo-preview"><img src="/assets/logo-jaqueline-dark.png" alt="Logo Jaqueline Vieira"/><span style="font-size:.72rem;color:var(--muted)">Logo aplicada automaticamente às artes</span></div>';
+  }
+  buscarTendencias(false);
 }
 
-async function buscarTendencias(){
+async function buscarTendencias(force=false){
   const btn=document.getElementById('btn-trends'), status=document.getElementById('trends-status');
-  btn.disabled=true; status.textContent='Buscando assuntos recentes...';
+  btn.disabled=true;
   try{
+    if(!force){
+      const cached=JSON.parse(localStorage.getItem('psi_trend_radar')||'null');
+      if(cached && cached.at && (Date.now()-cached.at)<6*60*60*1000 && Array.isArray(cached.suggestions)){
+        _postTrends=cached.suggestions; renderTendencias();
+        status.textContent='Radar atualizado recentemente';
+        btn.disabled=false; return;
+      }
+    }
+    status.textContent='Buscando assuntos recentes...';
     const r=await fetch('/api/trends');
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||'Erro ao buscar tendências');
     _postTrends=data.suggestions||[];
+    localStorage.setItem('psi_trend_radar',JSON.stringify({at:Date.now(),suggestions:_postTrends}));
     renderTendencias();
     status.textContent=`Atualizado ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
   }catch(e){
@@ -1769,15 +1792,16 @@ function renderTendencias(){
   }
   el.innerHTML=`<div class="post-grid">${_postTrends.map((x,i)=>`
     <div class="post-suggestion">
-      <h4>${x.titulo}</h4>
+      <h4>${escHtml(x.titulo)}</h4>
       <div class="post-meta">
-        <span class="post-tag">${x.formato||'Carrossel'}</span>
-        <span class="post-tag">Potencial ${x.potencial||'Médio'}</span>
+        <span class="post-tag">${escHtml(x.faixa||'Ciclo vital')}</span>
+        <span class="post-tag">${escHtml(x.formato||'Carrossel')}</span>
+        <span class="post-tag">Potencial ${escHtml(x.potencial||'Médio')}</span>
       </div>
-      <p style="font-size:.8rem;line-height:1.5;">${x.resumo||''}</p>
-      <p style="font-size:.76rem;color:var(--muted);margin-top:7px;"><strong>Por que agora:</strong> ${x.por_que||''}</p>
-      <p style="font-size:.76rem;line-height:1.45;margin-top:7px;"><strong>Ângulo:</strong> ${x.angulo||''}</p>
-      <div class="post-source">Fonte: ${x.fonte?.source||''} · ${x.fonte?.title||''}</div>
+      <p style="font-size:.8rem;line-height:1.5;">${escHtml(x.resumo||'')}</p>
+      <p style="font-size:.76rem;color:var(--muted);margin-top:7px;"><strong>Por que agora:</strong> ${escHtml(x.por_que||'')}</p>
+      <p style="font-size:.76rem;line-height:1.45;margin-top:7px;"><strong>Ângulo:</strong> ${escHtml(x.angulo||'')}</p>
+      <div class="post-source">Fonte: ${escHtml(x.fonte?.source||'')} · ${escHtml(x.fonte?.title||'')}</div>
       <div class="gen-actions"><button class="btn-secondary" onclick="usarSugestaoPost(${i})">✦ Criar este post</button></div>
     </div>`).join('')}</div>`;
 }
@@ -1787,7 +1811,8 @@ function usarSugestaoPost(i){
   if(!x)return;
   document.getElementById('post-tema').value=x.titulo||'';
   document.getElementById('post-formato').value=x.formato||'Carrossel';
-  document.getElementById('post-contexto').value=x.resumo||'';
+  document.getElementById('post-contexto').value=x.resumo||x.por_que||'';
+  document.getElementById('post-publico').value = x.faixa==='Infância' ? 'Crianças' : x.faixa==='Adolescência' ? 'Adolescentes' : x.faixa==='Adultos' ? 'Adultos' : x.faixa==='Idosos' ? 'Idosos' : x.faixa==='Família' ? 'Famílias' : 'Ciclo vital';
   document.getElementById('post-preview-card').style.display='none';
   gerarPost();
 }
@@ -1803,13 +1828,15 @@ async function gerarPost(){
       body:JSON.stringify({
         tema,formato:document.getElementById('post-formato').value,
         publico:document.getElementById('post-publico').value,
-        contexto:document.getElementById('post-contexto').value.trim()
+        contexto:document.getElementById('post-contexto').value.trim(),
+        faixa:(_postTrends.find(x=>x.titulo===tema)?.faixa)||document.getElementById('post-publico').value
       })
     });
     const data=await r.json();if(!r.ok)throw new Error(data.error||'Erro');
+    const trendSelecionada=_postTrends.find(x=>x.titulo===tema);
     _postAtual={...data,tema,formato:document.getElementById('post-formato').value,
-      publico:document.getElementById('post-publico').value,img_b64:null,
-      fonte_tendencia:(_postTrends.find(x=>x.titulo===tema)?.fonte?.link)||''};
+      publico:document.getElementById('post-publico').value,faixa:trendSelecionada?.faixa||document.getElementById('post-publico').value,img_b64:null,
+      fonte_tendencia:trendSelecionada?.fonte?.link||''};
     renderPostPreview();
     status.textContent='Conteúdo gerado — revise antes de salvar.';
   }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
@@ -1827,6 +1854,42 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+async function aplicarLogoPost(b64){
+  return new Promise((resolve,reject)=>{
+    const base=new Image();
+    const logo=new Image();
+    base.onload=()=>{
+      logo.onload=()=>{
+        const canvas=document.createElement('canvas');
+        canvas.width=base.naturalWidth||1024; canvas.height=base.naturalHeight||1024;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(base,0,0,canvas.width,canvas.height);
+        const targetW=Math.min(canvas.width*0.23,230);
+        const targetH=targetW*(logo.naturalHeight/logo.naturalWidth);
+        const pad=Math.max(14,Math.round(canvas.width*0.018));
+        const boxPad=Math.round(pad*0.75);
+        const boxW=targetW+boxPad*2; const boxH=targetH+boxPad*2;
+        const x=canvas.width-boxW-pad; const y=canvas.height-boxH-pad;
+        ctx.save();
+        ctx.fillStyle='rgba(255,255,255,0.90)';
+        const radius=Math.min(18,boxPad);
+        ctx.beginPath();
+        ctx.moveTo(x+radius,y);ctx.lineTo(x+boxW-radius,y);ctx.quadraticCurveTo(x+boxW,y,x+boxW,y+radius);
+        ctx.lineTo(x+boxW,y+boxH-radius);ctx.quadraticCurveTo(x+boxW,y+boxH,x+boxW-radius,y+boxH);
+        ctx.lineTo(x+radius,y+boxH);ctx.quadraticCurveTo(x,y+boxH,x,y+boxH-radius);
+        ctx.lineTo(x,y+radius);ctx.quadraticCurveTo(x,y,x+radius,y);ctx.closePath();ctx.fill();
+        ctx.drawImage(logo,x+boxPad,y+boxPad,targetW,targetH);
+        ctx.restore();
+        resolve(canvas.toDataURL('image/png').split(',')[1]);
+      };
+      logo.onerror=reject;
+      logo.src='/assets/logo-jaqueline-dark.png';
+    };
+    base.onerror=reject;
+    base.src='data:image/png;base64,'+b64;
+  });
+}
+
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
   const formato=_postAtual.formato||'Carrossel';
@@ -1835,13 +1898,20 @@ async function gerarArtePost(){
 Theme: ${_postAtual.tema}. Title: ${_postAtual.titulo||''}. 
 Audience: ${_postAtual.publico||'pais e responsáveis'}.
 Visual direction: elegant, warm, trustworthy, minimal, contemporary, no childish clichés unless the subject requires it.
-Do not include logos, phone numbers, medical claims or fake credentials.
+Do not include logos, phone numbers, medical claims or fake credentials. Leave a visually calm area near the lower-right corner for the brand lockup that will be applied after generation.
 For carousel, create a clean cover-style visual suitable for a social post.
 Content summary: ${texto}`;
   try{
     document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte...</div>';
-    _postAtual.img_b64=await gerarImagem(prompt);
-    document.getElementById('post-img-wrap').innerHTML=`<img src="data:image/png;base64,${_postAtual.img_b64}" alt="Arte do post"/>`;
+    const rawB64=await gerarImagem(prompt);
+    try {
+      _postAtual.img_b64=await aplicarLogoPost(rawB64);
+    } catch(logoError) {
+      console.warn('Não foi possível aplicar a logo; usando a arte sem composição.',logoError);
+      _postAtual.img_b64=rawB64;
+      toast('Arte gerada. A logo não pôde ser aplicada nesta tentativa.');
+    }
+    document.getElementById('post-img-wrap').innerHTML=`<img src="data:image/png;base64,${_postAtual.img_b64}" alt="Arte do post com identidade visual"/>`;
     _postAtual.prompt=prompt;
   }catch(e){toast('Erro ao gerar arte: '+e.message);}
 }
@@ -1854,7 +1924,7 @@ async function salvarPost(){
       formato:_postAtual.formato,publico:_postAtual.publico,
       legenda:_postAtual.legenda||'',hashtags:(_postAtual.hashtags||[]).join(' '),
       cta:_postAtual.cta||'',img_b64:_postAtual.img_b64||null,prompt:_postAtual.prompt||'',
-      fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:document.getElementById('post-contexto').value||'',
+      fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+ (document.getElementById('post-contexto').value||''),
       status:'rascunho',criado_em:new Date().toISOString()
     };
     const r=await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -1983,6 +2053,11 @@ async function carregarProntuarios() {
 
     renderGridPacientes();
     renderBuscaProntuario();
+    if(Object.keys(_prontuarios).length && document.getElementById('pront-view').style.display!=='block') {
+      document.getElementById('pront-empty').style.display='none';
+    } else if(!Object.keys(_prontuarios).length) {
+      mostrarEmpty();
+    }
   } catch(e) {
     console.error(e);
     _prontuarios = {};
@@ -2002,6 +2077,118 @@ function renderBuscaProntuario() {
     });
 }
 
+
+function renderGridPacientes() {
+  const container = document.getElementById('pront-pac-grid');
+  if (!container) return;
+  const entries = Object.entries(_prontuarios);
+  document.getElementById('pront-lib-count').textContent = entries.length ? `(${entries.length})` : '';
+  if (!entries.length) { container.innerHTML = ''; mostrarEmpty(); return; }
+  container.innerHTML = entries
+    .sort((a,b)=>(a[1].label||a[0]).localeCompare(b[1].label||b[0]))
+    .map(([id,p]) => {
+      const n=p.sessoes.length;
+      const ativo=id===_pacAtual;
+      const inativo=p.ativo===false;
+      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${id}')">
+        <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${p.label||p.nome}</div>
+        <div style="font-size:.72rem;color:var(--muted);">${n} sessão${n!==1?'ões':''} registrada${n!==1?'s':''}${inativo?' · inativo':''}</div>
+      </div>`;
+    }).join('');
+}
+
+function buscarPacienteProntuario(){
+  const key=document.getElementById('pront-busca').value;
+  if(key) verProntuario(key); else { _pacAtual=null; mostrarEmpty(); renderGridPacientes(); }
+}
+function limparBuscaProntuario(){
+  document.getElementById('pront-busca').value='';
+  _pacAtual=null; mostrarEmpty(); renderGridPacientes();
+}
+function mostrarEmpty(){
+  const view=document.getElementById('pront-view'); const empty=document.getElementById('pront-empty');
+  if(view)view.style.display='none';
+  if(empty){empty.style.display='block';empty.innerHTML='<div style="font-size:36px;margin-bottom:12px;">📋</div><p style="font-size:.85rem;line-height:1.6;">Selecione um prontuário abaixo ou registre uma nova sessão acima.</p>';}
+}
+function setDataHoje(){
+  const h=new Date(); const el=document.getElementById('pront-data');
+  if(el) el.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');
+}
+
+async function salvarSessao(){
+  const pid=document.getElementById('pront-pac').value;
+  const data=document.getElementById('pront-data').value;
+  const relato=document.getElementById('pront-relato').value.trim();
+  if(!pid){toast('Selecione um paciente.');return;}
+  if(!data){toast('Selecione a data da sessão.');return;}
+  if(!relato){toast('Digite ou grave o relato da sessão.');return;}
+  const p=_pacientesById[pid];
+  if(!p){toast('Paciente não encontrado. Atualize o dashboard e tente novamente.');return;}
+  const sel=document.getElementById('pront-pac'); const opt=sel.options[sel.selectedIndex];
+  const label=(opt?.getAttribute('data-label')||opt?.text||p.ultimo_label||p.nome||'').trim();
+  if(!label){toast('Paciente sem identificação válida.');return;}
+  const existente=_prontuarios[pid]?.sessoes.find(s=>s.data===data);
+  try{
+    if(existente){
+      if(!confirm('Já existe um registro para essa data. Substituir?')) return;
+      const r=await fetch(`/api/data?table=prontuarios&id=${encodeURIComponent(existente.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({relato,paciente_id:pid,paciente_label:label})});
+      if(!r.ok)throw new Error('Falha ao atualizar o registro');
+    }else{
+      const r=await fetch('/api/data?table=prontuarios',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paciente_id:pid,paciente_key:p.ultima_chave||p.nome,paciente_label:label,data_sessao:data,relato,criado_em:new Date().toISOString()})});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||e.error||'Falha ao salvar');}
+    }
+    await carregarProntuarios();
+    // Após salvar, o formulário e a seleção voltam ao estado inicial para o próximo registro.
+    limparFormPront();
+    document.getElementById('pront-busca').value='';
+    _pacAtual=null;
+    renderGridPacientes();
+    mostrarEmpty();
+    toast('✅ Sessão salva! O formulário está pronto para o próximo registro.');
+  }catch(e){console.error(e);toast('Erro ao salvar: '+e.message);}
+}
+
+function verProntuario(id){
+  _pacAtual=id; const p=_prontuarios[id]; if(!p)return;
+  document.getElementById('pront-view').style.display='block';
+  document.getElementById('pront-empty').style.display='none';
+  document.getElementById('pront-view-titulo').textContent='📋 '+(p.label||p.nome||'Prontuário')+(p.ativo===false?' · inativo':'');
+  const tbody=document.getElementById('pront-tabela'); tbody.innerHTML='';
+  [...p.sessoes].sort((a,b)=>b.data.localeCompare(a.data)).forEach((s,i)=>{
+    const [y,m,d]=s.data.split('-');
+    tbody.innerHTML+=`<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
+      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
+      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${String(s.relato||'').replace(/\n/g,'<br>')}</td>
+      <td style="padding:10px 14px;vertical-align:top;text-align:right;"><button onclick="deletarSessao('${s.id}','${id}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
+    </tr>`;
+  });
+  document.getElementById('pront-busca').value=id;
+  renderGridPacientes();
+}
+function selecionarPaciente(){
+  const id=document.getElementById('pront-pac').value;
+  if(!id){_pacAtual=null;mostrarEmpty();renderGridPacientes();return;}
+  if(_prontuarios[id]) verProntuario(id);
+  else { _pacAtual=id; document.getElementById('pront-view').style.display='none'; document.getElementById('pront-empty').style.display='block'; document.getElementById('pront-empty').innerHTML='<div style="font-size:36px;margin-bottom:12px;">📋</div><p style="font-size:.85rem;line-height:1.6;">Nenhuma sessão registrada para este paciente ainda.<br>Preencha o relato acima e clique em <strong>Salvar sessão</strong>.</p>'; renderGridPacientes(); }
+}
+function limparFormPront(){
+  document.getElementById('pront-pac').value='';
+  document.getElementById('pront-relato').value='';
+  document.getElementById('rec-status').textContent='';
+  document.getElementById('btn-gravar').innerHTML='🎙 Gravar relato';
+  setDataHoje();
+  _gravando=false;
+}
+async function deletarSessao(id,pid){
+  if(!confirm('Excluir este registro?'))return;
+  try{
+    const r=await fetch(`/api/data?table=prontuarios&id=${encodeURIComponent(id)}`,{method:'DELETE'});
+    if(!r.ok)throw new Error('Falha ao excluir');
+    await carregarProntuarios();
+    if(_prontuarios[pid]) verProntuario(pid); else { _pacAtual=null; mostrarEmpty(); }
+    toast('Registro excluído.');
+  }catch(e){toast('Erro ao excluir: '+e.message);}
+}
 
 // ── Gravação → transcrição// ── Gravação → transcrição via Web Speech API ─────────────────────────────────
 async function toggleGravacao() {

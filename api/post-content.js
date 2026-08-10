@@ -18,7 +18,7 @@ Retorne APENAS JSON válido:
   "hashtags":["#..."],
   "cta":"..."
 }
-Para carrossel, gere 5 a 8 slides. Para post, use 1 item. Para Story/Reel, use uma estrutura curta e prática.`;
+Para carrossel, gere EXATAMENTE 7 slides. Cada slide deve ser curto, legível em uma única imagem e ter continuidade visual/conceitual com os demais. Para post, use 1 item. Para Story/Reel, use uma estrutura curta e prática.`;
   const user=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato||'Carrossel'}\nPúblico: ${publico||'público geral'}\nContexto/tendência: ${contexto||'nenhum'}`;
   try{
     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-4.1-mini',temperature:.65,messages:[{role:'system',content:system},{role:'user',content:user}],response_format:{type:'json_object'}})});

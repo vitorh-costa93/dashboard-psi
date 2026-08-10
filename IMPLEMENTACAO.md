@@ -88,3 +88,10 @@ O radar acompanha assuntos públicos recentes; ele não acessa mensagens, dados 
 5. Confira se os prontuários já existentes aparecem na biblioteca.
 6. Abra `Dashboard` e confira os alertas de renovação.
 7. Abra `Espaço de criação > Posts` e use `Buscar tendências`.
+
+
+### Carrossel e identidade visual
+- Carrosséis geram exatamente 7 artes, uma por slide.
+- A logo é transparente e é recolorida automaticamente para um tom de destaque extraído da arte, em vez de usar uma cor fixa.
+- As 7 artes podem ser baixadas individualmente e são armazenadas em `posts.imagens_b64` (JSONB).
+- Execute novamente o `supabase schema.sql`; os `ALTER TABLE ... IF NOT EXISTS` são seguros para instalações existentes.

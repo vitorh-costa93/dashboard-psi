@@ -249,6 +249,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   .gen-row{grid-template-columns:1fr 1fr;}
   .search-filters-row{flex-direction:column;align-items:stretch;}
 }
+
+
+/* ── Alertas inteligentes ── */
+.alerts-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:12px;}
+.alerts-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:10px;}
+.alert-group{margin-top:10px;}
+.alert-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.alert-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;background:var(--light);margin-bottom:5px;font-size:.8rem;}
+.alert-item:last-child{margin-bottom:0;}
+.alert-badge{font-size:.68rem;padding:3px 7px;border-radius:12px;white-space:nowrap;}
+.alert-green{background:#eef4eb;color:#557548;}
+.alert-red{background:#fdecea;color:var(--danger);}
+.alert-yellow{background:#fef9ec;color:#9a7724;}
+.alert-empty{color:var(--muted);font-size:.78rem;font-style:italic;padding:5px 0;}
+
+/* ── Posts ── */
+.post-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.post-suggestion{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:16px;box-shadow:var(--shadow);}
+.post-suggestion h4{font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:7px;}
+.post-meta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+.post-tag{font-size:.67rem;padding:3px 8px;border-radius:12px;background:var(--light);color:var(--muted);}
+.post-source{font-size:.7rem;color:var(--muted);line-height:1.45;margin-top:8px;}
+.post-editor{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.post-editor .full{grid-column:1/-1;}
+.post-preview{background:var(--light);border:1px solid var(--border);border-radius:8px;padding:14px;white-space:pre-wrap;line-height:1.55;font-size:.82rem;}
+.post-slides{display:flex;flex-direction:column;gap:7px;}
+.post-slide{padding:9px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:.78rem;}
+.post-history{margin-top:16px;}
+@media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 </style>
 </head>
 <body>
@@ -304,6 +333,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     </div>
   </div>
 
+  <div class="alerts-panel" id="dashboard-alerts">
+    <div class="alerts-title">🔔 Atenção</div>
+    <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
+  </div>
+
   <div class="charts-row">
     <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
     <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
@@ -351,6 +385,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div class="sub-tabs">
     <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">🖼 Gerar Imagens</button>
     <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">📊 Gerar Apresentação</button>
+    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">📱 Posts</button>
   </div>
 
   <!-- ═══ SUB-ABA: IMAGENS ═══ -->
@@ -560,6 +595,84 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
   </div><!-- /subpage-docs -->
 
+  <!-- ═══ SUB-ABA: POSTS ═══ -->
+  <div class="sub-page" id="subpage-posts">
+    <div class="generator-card">
+      <h3>📱 Radar de conteúdo</h3>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">
+        Encontra assuntos recentes relacionados a psicologia, infância, adolescência e parentalidade
+        e transforma as oportunidades em ideias de conteúdo. Nada é publicado automaticamente.
+      </p>
+      <div class="gen-actions">
+        <button class="btn-primary" id="btn-trends" onclick="buscarTendencias()">🔎 Buscar tendências</button>
+        <span class="gen-status" id="trends-status"></span>
+      </div>
+    </div>
+
+    <div id="trends-container">
+      <div class="biblioteca-empty"><div class="icon">💡</div><p>Clique em "Buscar tendências" para encontrar ideias recentes.</p></div>
+    </div>
+
+    <div class="generator-card" style="margin-top:16px;">
+      <h3>✦ Criar post</h3>
+      <div class="post-editor">
+        <div class="gen-field">
+          <label>Tema</label>
+          <input id="post-tema" class="gen-field-input" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Ex.: ansiedade na volta às aulas"/>
+        </div>
+        <div class="gen-field">
+          <label>Formato</label>
+          <select id="post-formato" class="filter-select" style="width:100%;">
+            <option>Carrossel</option><option>Post</option><option>Story</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Público</label>
+          <select id="post-publico" class="filter-select" style="width:100%;">
+            <option>Pais e responsáveis</option><option>Crianças</option><option>Adolescentes</option><option>Adultos</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Contexto</label>
+          <input id="post-contexto" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Opcional"/>
+        </div>
+      </div>
+      <div class="gen-actions">
+        <button class="btn-primary" id="btn-post-generate" onclick="gerarPost()">✦ Gerar conteúdo</button>
+        <span class="gen-status" id="post-status"></span>
+      </div>
+    </div>
+
+    <div class="preview-card" id="post-preview-card">
+      <h3 id="post-preview-title">Prévia do post</h3>
+      <div class="post-editor">
+        <div>
+          <label class="pront-label">Texto / slides</label>
+          <div id="post-slides" class="post-slides"></div>
+        </div>
+        <div>
+          <label class="pront-label">Legenda</label>
+          <div id="post-legenda" class="post-preview"></div>
+          <div style="margin-top:10px;"><label class="pront-label">Hashtags</label><div id="post-hashtags" class="post-preview"></div></div>
+          <div style="margin-top:10px;"><label class="pront-label">CTA</label><div id="post-cta" class="post-preview"></div></div>
+        </div>
+      </div>
+      <div class="preview-img-wrap" id="post-img-wrap" style="margin-top:14px;min-height:220px;">
+        <div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>
+      </div>
+      <div class="preview-actions">
+        <button class="btn-primary" onclick="gerarArtePost()">🎨 Gerar arte</button>
+        <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
+        <button class="btn-secondary" onclick="limparPost()">✕ Limpar</button>
+      </div>
+    </div>
+
+    <div class="generator-card post-history">
+      <h3>📚 Posts salvos</h3>
+      <div id="posts-history"><div class="alert-empty">Nenhum post salvo ainda.</div></div>
+    </div>
+  </div><!-- /subpage-posts -->
+
 </div>
 </div><!-- /page-atividades -->
 
@@ -667,6 +780,8 @@ const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
 let charts={},_rows=[],_ativosArr=[];
+let _pacientesMap = {}; // nome -> {id, nome, ativo, ultima_chave, ultimo_label}
+
 
 function dC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
@@ -742,6 +857,12 @@ async function loadData(){
     const ativosMap={};
     raw.filter(r=>r._ativo==='Ativo').forEach(r=>{ativosMap[r._paciente]=r;});
     _ativosArr=Object.values(ativosMap);
+    await sincronizarPacientesPlanilha(raw);
+    if (window._prontInit) {
+      await carregarPacientes();
+      preencherDropdownProntuarios();
+      await carregarProntuarios();
+    }
     processAndRender();
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
@@ -751,6 +872,34 @@ async function loadData(){
     document.getElementById('loading').style.display='none';
     document.getElementById('error-msg').style.display='block';
   }
+}
+
+
+async function sincronizarPacientesPlanilha(rows) {
+  const map = {};
+  rows.forEach(r => {
+    const nome=(r._paciente||'').trim();
+    if(!nome)return;
+    const label=(r._horario ? r._horario+' | ' : '')+(r._iniciais||nome);
+    if(!map[nome]) map[nome]={nome,ativo:false,ultima_chave:nome,ultimo_label:label};
+    if(r._ativo==='Ativo') {
+      map[nome].ativo=true;
+      map[nome].ultimo_label=label;
+    } else if(!map[nome].ativo) {
+      map[nome].ultimo_label=label;
+    }
+  });
+  const payload=Object.values(map);
+  if(!payload.length)return;
+  try{
+    const up=await fetch('/api/data?table=pacientes&action=upsert',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    if(!up.ok)throw new Error('Falha ao sincronizar pacientes');
+    const saved=await up.json();
+    _pacientesMap={};
+    (Array.isArray(saved)?saved:[saved]).forEach(p=>{_pacientesMap[p.nome]=p;});
+  }catch(e){console.warn('Não foi possível sincronizar pacientes:',e);}
 }
 
 function processAndRender(){
@@ -879,7 +1028,93 @@ function processAndRender(){
       <span class="motivo-qty">${pctFmt}</span>
     </div>`;
   });
+  calcularAlertas();
 }
+
+function calcularAlertas() {
+  const el = document.getElementById('alerts-content');
+  if (!el) return;
+
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  const inicioSemana = new Date(hoje);
+  const diaSemana = hoje.getDay(); // 0 dom
+  const desloc = diaSemana === 0 ? -6 : 1 - diaSemana;
+  inicioSemana.setDate(hoje.getDate() + desloc);
+  const fimSemana = new Date(inicioSemana);
+  fimSemana.setDate(inicioSemana.getDate() + 6);
+
+  const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
+  const inicioUltimaSemana = new Date(ultimoDia);
+  inicioUltimaSemana.setDate(ultimoDia.getDate()-6);
+  const ultimaSemana = hoje >= inicioUltimaSemana;
+
+  const ativos = {};
+  _rows.filter(r => r._ativo === 'Ativo').forEach(r => {
+    const k = r._paciente;
+    if (!k) return;
+    if (!ativos[k]) ativos[k] = { iniciais:r._iniciais || k, horario:r._horario || '', sessoes:0, comp:0 };
+    ativos[k].horario = r._horario || ativos[k].horario;
+    ativos[k].sessoes += r._sessoesCob;
+    ativos[k].comp += r._compSim;
+  });
+
+  const diaIdx = {dom:0,domingo:0,seg:1,segunda:1,ter:2,terça:2,terca:2,qua:3,quarta:3,qui:4,quinta:4,sex:5,sexta:5,sab:6,sábado:6,sabado:6};
+  function horarioDia(h) {
+    const x=(h||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    for (const [k,v] of Object.entries(diaIdx)) if (x.startsWith(k)) return v;
+    return null;
+  }
+  function proximaOcorrencia(h) {
+    const idx=horarioDia(h);
+    if (idx===null) return null;
+    const d=new Date(hoje);
+    let diff=idx-d.getDay();
+    if (diff<=0) diff+=7;
+    d.setDate(d.getDate()+diff);
+    return d;
+  }
+  function fmt(d) {
+    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  }
+
+  const renovacoes=[];
+  const dividas=[];
+  Object.values(ativos).forEach(p => {
+    const saldo=p.sessoes-p.comp;
+    const prox=proximaOcorrencia(p.horario);
+    if (prox && saldo >= 0) {
+      const renovacao=new Date(prox);
+      renovacao.setDate(renovacao.getDate()+saldo*7);
+      if (renovacao>=inicioSemana && renovacao<=fimSemana) {
+        renovacoes.push({label:`${p.iniciais} | ${p.horario}`, data:renovacao});
+      }
+    }
+    if (ultimaSemana && saldo < 0) {
+      dividas.push({label:`${p.iniciais} | ${p.horario}`, qtd:Math.abs(saldo)});
+    }
+  });
+
+  renovacoes.sort((a,b)=>a.data-b.data);
+  dividas.sort((a,b)=>b.qtd-a.qtd);
+
+  let html='';
+  if (renovacoes.length) {
+    html += `<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>`;
+    html += renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
+    html += '</div>';
+  }
+  if (ultimaSemana && dividas.length) {
+    html += `<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>`;
+    html += dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} sessão${x.qtd!==1?'ões':''}</span></div>`).join('');
+    html += '</div>';
+  }
+  if (!html) {
+    html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
+  }
+  el.innerHTML=html;
+}
+
 
 function updateDonut(){
   const sel=document.getElementById('profile-select').value;
@@ -984,6 +1219,10 @@ function switchSubTab(name) {
   if (name === 'docs' && !window._pptInit) {
     window._pptInit = true;
     renderPPTBiblioteca();
+  }
+  if (name === 'posts' && !window._postsInit) {
+    window._postsInit = true;
+    initPosts();
   }
 }
 
@@ -1497,10 +1736,160 @@ async function deletarApresentacao(id) {
 }
 
 // ══════════════════════════════════════════════════════════
+// MÓDULO POSTS
+// ══════════════════════════════════════════════════════════
+let _postAtual=null;
+let _postTrends=[];
+
+async function initPosts(){
+  await carregarPostsSalvos();
+}
+
+async function buscarTendencias(){
+  const btn=document.getElementById('btn-trends'), status=document.getElementById('trends-status');
+  btn.disabled=true; status.textContent='Buscando assuntos recentes...';
+  try{
+    const r=await fetch('/api/trends');
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||'Erro ao buscar tendências');
+    _postTrends=data.suggestions||[];
+    renderTendencias();
+    status.textContent=`Atualizado ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  }catch(e){
+    status.textContent='';
+    toast('Não foi possível buscar tendências: '+e.message);
+  }finally{btn.disabled=false;}
+}
+
+function renderTendencias(){
+  const el=document.getElementById('trends-container');
+  if(!_postTrends.length){
+    el.innerHTML='<div class="biblioteca-empty"><div class="icon">🌿</div><p>Nenhuma oportunidade relevante encontrada agora.</p></div>';
+    return;
+  }
+  el.innerHTML=`<div class="post-grid">${_postTrends.map((x,i)=>`
+    <div class="post-suggestion">
+      <h4>${x.titulo}</h4>
+      <div class="post-meta">
+        <span class="post-tag">${x.formato||'Carrossel'}</span>
+        <span class="post-tag">Potencial ${x.potencial||'Médio'}</span>
+      </div>
+      <p style="font-size:.8rem;line-height:1.5;">${x.resumo||''}</p>
+      <p style="font-size:.76rem;color:var(--muted);margin-top:7px;"><strong>Por que agora:</strong> ${x.por_que||''}</p>
+      <p style="font-size:.76rem;line-height:1.45;margin-top:7px;"><strong>Ângulo:</strong> ${x.angulo||''}</p>
+      <div class="post-source">Fonte: ${x.fonte?.source||''} · ${x.fonte?.title||''}</div>
+      <div class="gen-actions"><button class="btn-secondary" onclick="usarSugestaoPost(${i})">✦ Criar este post</button></div>
+    </div>`).join('')}</div>`;
+}
+
+function usarSugestaoPost(i){
+  const x=_postTrends[i];
+  if(!x)return;
+  document.getElementById('post-tema').value=x.titulo||'';
+  document.getElementById('post-formato').value=x.formato||'Carrossel';
+  document.getElementById('post-contexto').value=x.resumo||'';
+  document.getElementById('post-preview-card').style.display='none';
+  gerarPost();
+}
+
+async function gerarPost(){
+  const tema=document.getElementById('post-tema').value.trim();
+  if(!tema){toast('Informe um tema.');return;}
+  const status=document.getElementById('post-status'),btn=document.getElementById('btn-post-generate');
+  btn.disabled=true;status.textContent='Gerando conteúdo...';
+  try{
+    const r=await fetch('/api/post-content',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        tema,formato:document.getElementById('post-formato').value,
+        publico:document.getElementById('post-publico').value,
+        contexto:document.getElementById('post-contexto').value.trim()
+      })
+    });
+    const data=await r.json();if(!r.ok)throw new Error(data.error||'Erro');
+    _postAtual={...data,tema,formato:document.getElementById('post-formato').value,
+      publico:document.getElementById('post-publico').value,img_b64:null,
+      fonte_tendencia:(_postTrends.find(x=>x.titulo===tema)?.fonte?.link)||''};
+    renderPostPreview();
+    status.textContent='Conteúdo gerado — revise antes de salvar.';
+  }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
+  finally{btn.disabled=false;}
+}
+
+function renderPostPreview(){
+  if(!_postAtual)return;
+  document.getElementById('post-preview-title').textContent=_postAtual.titulo||'Prévia do post';
+  document.getElementById('post-slides').innerHTML=(_postAtual.slides||[]).map((x,i)=>`<div class="post-slide"><strong>${i+1}.</strong> ${x}</div>`).join('');
+  document.getElementById('post-legenda').textContent=_postAtual.legenda||'';
+  document.getElementById('post-hashtags').textContent=(_postAtual.hashtags||[]).join(' ');
+  document.getElementById('post-cta').textContent=_postAtual.cta||'';
+  document.getElementById('post-preview-card').style.display='block';
+  document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function gerarArtePost(){
+  if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
+  const formato=_postAtual.formato||'Carrossel';
+  const texto=(_postAtual.slides||[]).join(' | ');
+  const prompt=`Create a professional Instagram ${formato} visual for a Brazilian psychologist. 
+Theme: ${_postAtual.tema}. Title: ${_postAtual.titulo||''}. 
+Audience: ${_postAtual.publico||'pais e responsáveis'}.
+Visual direction: elegant, warm, trustworthy, minimal, contemporary, no childish clichés unless the subject requires it.
+Do not include logos, phone numbers, medical claims or fake credentials.
+For carousel, create a clean cover-style visual suitable for a social post.
+Content summary: ${texto}`;
+  try{
+    document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte...</div>';
+    _postAtual.img_b64=await gerarImagem(prompt);
+    document.getElementById('post-img-wrap').innerHTML=`<img src="data:image/png;base64,${_postAtual.img_b64}" alt="Arte do post"/>`;
+    _postAtual.prompt=prompt;
+  }catch(e){toast('Erro ao gerar arte: '+e.message);}
+}
+
+async function salvarPost(){
+  if(!_postAtual){toast('Gere um post primeiro.');return;}
+  try{
+    const payload={
+      titulo:_postAtual.titulo||_postAtual.tema,tema:_postAtual.tema,
+      formato:_postAtual.formato,publico:_postAtual.publico,
+      legenda:_postAtual.legenda||'',hashtags:(_postAtual.hashtags||[]).join(' '),
+      cta:_postAtual.cta||'',img_b64:_postAtual.img_b64||null,prompt:_postAtual.prompt||'',
+      fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:document.getElementById('post-contexto').value||'',
+      status:'rascunho',criado_em:new Date().toISOString()
+    };
+    const r=await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok)throw new Error('Falha ao salvar');
+    await carregarPostsSalvos();
+    limparPost();
+    toast('✅ Post salvo como rascunho.');
+  }catch(e){toast('Erro ao salvar post: '+e.message);}
+}
+
+async function carregarPostsSalvos(){
+  const el=document.getElementById('posts-history');if(!el)return;
+  try{
+    const r=await fetch('/api/data?table=posts');const rows=r.ok?await r.json():[];
+    if(!rows.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
+    el.innerHTML=rows.slice(0,12).map(p=>`<div class="alert-item">
+      <span><strong>${p.titulo}</strong><br><small>${p.formato||'Post'} · ${new Date(p.criado_em).toLocaleDateString('pt-BR')}</small></span>
+      <span class="alert-badge alert-yellow">${p.status||'rascunho'}</span>
+    </div>`).join('');
+  }catch(e){el.innerHTML='<div class="alert-empty">Salve o schema novo para ativar o histórico de posts.</div>';}
+}
+
+function limparPost(){
+  _postAtual=null;
+  ['post-tema','post-contexto'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('post-preview-card').style.display='none';
+  document.getElementById('post-img-wrap').innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';
+}
+
+// ══════════════════════════════════════════════════════════
 // MÓDULO PRONTUÁRIOS (persistido no Supabase)
 // ══════════════════════════════════════════════════════════
-let _prontuarios = {}; // { paciente_key: { label, sessoes: [{id, data, relato}] } }
+let _prontuarios = {}; // { paciente_id: { label, nome, ativo, sessoes: [...] } }
 let _pacAtual    = null;
+let _pacientesById = {};
 let _recognition = null;
 let _gravando    = false;
 
@@ -1508,222 +1897,113 @@ async function initProntuarios() {
   document.getElementById('pront-pac-grid').innerHTML =
     '<div class="inline-loading"><div class="inline-spinner"></div> Carregando prontuários...</div>';
 
-  // Popula dropdown de registro com pacientes ativos do dashboard, ordenado por dia+horário
-  const sel = document.getElementById('pront-pac');
-  sel.innerHTML = '<option value="">Selecione...</option>';
-  if (_ativosArr && _ativosArr.length > 0) {
-    const diasOrdem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
-    function ordemDia(h){ h=(h||'').toLowerCase(); for(const[d,o] of Object.entries(diasOrdem)) if(h.startsWith(d)) return o; return 99; }
-    function ordemHora(h){ const m=(h||'').match(/(\d{1,2})h(\d{0,2})/); return m ? parseInt(m[1])*60+(parseInt(m[2])||0) : 9999; }
-    [..._ativosArr]
-      .sort((a,b)=>{ const dA=ordemDia(a._horario), dB=ordemDia(b._horario); return dA!==dB ? dA-dB : ordemHora(a._horario)-ordemHora(b._horario); })
-      .forEach(r => {
-        const label = (r._horario ? r._horario + ' | ' : '') + r._iniciais;
-        sel.innerHTML += `<option value="${r._paciente}" data-label="${label}">${label}</option>`;
-      });
-  }
-
+  await carregarPacientes();
+  preencherDropdownProntuarios();
   setDataHoje();
   await carregarProntuarios();
+}
+
+async function carregarPacientes() {
+  try {
+    const res = await fetch('/api/data?table=pacientes');
+    if (!res.ok) throw new Error('Tabela de pacientes indisponível');
+    const rows = await res.json();
+    _pacientesById = {};
+    rows.forEach(p => { _pacientesById[p.id] = p; });
+  } catch(e) {
+    console.warn(e);
+    _pacientesById = {};
+    // Fallback temporário: permite usar o dashboard mesmo antes do schema novo.
+    (_ativosArr || []).forEach(r => {
+      _pacientesById['legacy:'+r._paciente] = {
+        id:'legacy:'+r._paciente, nome:r._paciente, ativo:true,
+        ultima_chave:r._paciente,
+        ultimo_label:(r._horario ? r._horario+' | ' : '')+(r._iniciais||r._paciente)
+      };
+    });
+  }
+}
+
+function preencherDropdownProntuarios() {
+  const sel = document.getElementById('pront-pac');
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  const ativos = Object.values(_pacientesById).filter(p => p.ativo);
+  const ordem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
+  function dia(h){h=(h||'').toLowerCase();for(const[d,o] of Object.entries(ordem))if(h.startsWith(d))return o;return 99;}
+  function hora(h){const m=(h||'').match(/(\d{1,2})h(\d{0,2})/);return m?+m[1]*60+(+m[2]||0):9999;}
+  ativos.sort((a,b)=>dia(a.ultimo_label)-dia(b.ultimo_label)||hora(a.ultimo_label)-hora(b.ultimo_label))
+    .forEach(p => {
+      const label=p.ultimo_label || p.nome;
+      sel.innerHTML += `<option value="${p.id}" data-patient-key="${p.ultima_chave||p.nome}" data-label="${label}">${label}</option>`;
+    });
 }
 
 async function carregarProntuarios() {
   try {
     const res = await fetch('/api/data?table=prontuarios');
     const rows = res.ok ? await res.json() : [];
-
     _prontuarios = {};
+
+    const migracoes = [];
     rows.forEach(r => {
-      if (!_prontuarios[r.paciente_key]) {
-        _prontuarios[r.paciente_key] = { label: r.paciente_label, sessoes: [] };
+      let pid = r.paciente_id;
+      if (!pid) {
+        const p = Object.values(_pacientesById).find(x =>
+          x.nome === r.paciente_key || x.ultima_chave === r.paciente_key
+        );
+        if (p && !String(p.id).startsWith('legacy:')) {
+          pid = p.id;
+          migracoes.push({id:r.id, paciente_id:pid});
+        }
       }
-      _prontuarios[r.paciente_key].sessoes.push({ id: r.id, data: r.data_sessao, relato: r.relato });
+      pid = pid || 'legacy:'+r.paciente_key;
+      if (!_prontuarios[pid]) {
+        const p = _pacientesById[pid];
+        _prontuarios[pid] = {
+          label: r.paciente_label,
+          nome: p?.nome || r.paciente_key,
+          ativo: p ? !!p.ativo : false,
+          sessoes:[]
+        };
+      }
+      _prontuarios[pid].sessoes.push({
+        id:r.id, data:r.data_sessao, relato:r.relato,
+        paciente_key:r.paciente_key
+      });
     });
-    Object.values(_prontuarios).forEach(p => p.sessoes.sort((a,b)=>a.data.localeCompare(b.data)));
+    Object.values(_prontuarios).forEach(p=>p.sessoes.sort((a,b)=>a.data.localeCompare(b.data)));
+
+    // Migra registros antigos silenciosamente para o ID permanente.
+    for (const m of migracoes) {
+      await fetch(`/api/data?table=prontuarios&id=${encodeURIComponent(m.id)}`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({paciente_id:m.paciente_id})
+      }).catch(()=>{});
+    }
+
+    renderGridPacientes();
+    renderBuscaProntuario();
   } catch(e) {
     console.error(e);
     _prontuarios = {};
+    renderGridPacientes();
+    renderBuscaProntuario();
   }
-
-  popularBuscaProntuario();
-  renderGridPacientes();
-  if (Object.keys(_prontuarios).length === 0) mostrarEmpty();
 }
 
-function popularBuscaProntuario() {
-  const sel = document.getElementById('pront-busca');
-  const atual = sel.value;
-  sel.innerHTML = '<option value="">Todos os pacientes com prontuário...</option>';
-  Object.keys(_prontuarios)
-    .sort((a,b)=>(_prontuarios[a].label||a).localeCompare(_prontuarios[b].label||b))
-    .forEach(k => {
-      sel.innerHTML += `<option value="${k}">${_prontuarios[k].label || k}</option>`;
+function renderBuscaProntuario() {
+  const sel=document.getElementById('pront-busca');
+  if (!sel) return;
+  sel.innerHTML='<option value="">Todos os pacientes com prontuário...</option>';
+  Object.entries(_prontuarios)
+    .sort((a,b)=>(a[1].label||a[0]).localeCompare(b[1].label||b[0]))
+    .forEach(([id,p])=>{
+      sel.innerHTML += `<option value="${id}">${p.label||p.nome}${p.ativo===false?' · inativo':''}</option>`;
     });
-  sel.value = atual;
 }
 
-function buscarPacienteProntuario() {
-  const key = document.getElementById('pront-busca').value;
-  if (key) verProntuario(key);
-  else { document.getElementById('pront-view').style.display='none'; mostrarEmpty(); }
-}
 
-function limparBuscaProntuario() {
-  document.getElementById('pront-busca').value = '';
-  document.getElementById('pront-view').style.display = 'none';
-  mostrarEmpty();
-  _pacAtual = null;
-  renderGridPacientes();
-}
-
-function setDataHoje() {
-  const h = new Date();
-  document.getElementById('pront-data').value =
-    h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');
-}
-
-function renderGridPacientes() {
-  const container = document.getElementById('pront-pac-grid');
-  const keys = Object.keys(_prontuarios);
-  document.getElementById('pront-lib-count').textContent = keys.length>0?`(${keys.length})`:'';
-
-  if (keys.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
-
-  container.innerHTML = keys
-    .sort((a,b)=>(_prontuarios[a].label||a).localeCompare(_prontuarios[b].label||b))
-    .map(k => {
-      const p = _prontuarios[k];
-      const n = p.sessoes.length;
-      const ativo = k === _pacAtual;
-      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${k}')">
-        <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${p.label || k}</div>
-        <div style="font-size:.72rem;color:var(--muted);">${n} sessão${n!==1?'ões':''} registrada${n!==1?'s':''}</div>
-      </div>`;
-    }).join('');
-}
-
-async function salvarSessao() {
-  const key    = document.getElementById('pront-pac').value;
-  const data   = document.getElementById('pront-data').value;
-  const relato = document.getElementById('pront-relato').value.trim();
-
-  if (!key)    { toast('Selecione um paciente.'); return; }
-  if (!data)   { toast('Selecione a data da sessão.'); return; }
-  if (!relato) { toast('Digite ou grave o relato da sessão.'); return; }
-
-  const sel   = document.getElementById('pront-pac');
-  const opt   = sel.options[sel.selectedIndex];
-  const label = (opt && opt.value) ? (opt.getAttribute('data-label') || opt.text) : '';
-  if (!label) { toast('Selecione um paciente válido.'); return; }
-
-  // Verifica duplicata local
-  const existente = _prontuarios[key]?.sessoes.find(s => s.data === data);
-  if (existente) {
-    if (!confirm('Já existe um registro para essa data. Substituir?')) return;
-    try {
-      await fetch(`/api/data?table=prontuarios&id=${existente.id}`, {
-        method: 'PATCH',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ relato })
-      });
-    } catch(e) { toast('Erro ao atualizar: ' + e.message); return; }
-  } else {
-    try {
-      const res = await fetch('/api/data?table=prontuarios', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          paciente_key: key,
-          paciente_label: label,
-          data_sessao: data,
-          relato,
-          criado_em: new Date().toISOString(),
-        })
-      });
-      if (!res.ok) throw new Error('Falha ao salvar');
-    } catch(e) { toast('Erro ao salvar: ' + e.message); return; }
-  }
-
-  await carregarProntuarios();
-  verProntuario(key);
-  document.getElementById('pront-busca').value = key;
-  limparFormPront();
-  toast('✅ Sessão salva!');
-}
-
-function verProntuario(key) {
-  _pacAtual = key;
-  const p = _prontuarios[key];
-  if (!p) return;
-
-  document.getElementById('pront-view').style.display  = 'block';
-  document.getElementById('pront-empty').style.display = 'none';
-  document.getElementById('pront-view-titulo').textContent = '📋 ' + p.label;
-
-  const tbody = document.getElementById('pront-tabela');
-  tbody.innerHTML = '';
-  [...p.sessoes].reverse().forEach((s, i) => {
-    const [y,m,d] = s.data.split('-');
-    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
-      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
-      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${s.relato.replace(/\n/g,'<br>')}</td>
-      <td style="padding:10px 14px;vertical-align:top;text-align:right;">
-        <button onclick="deletarSessao('${s.id}','${key}')" title="Excluir registro"
-          style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button>
-      </td>
-    </tr>`;
-  });
-
-  renderGridPacientes();
-}
-
-function selecionarPaciente() {
-  const key = document.getElementById('pront-pac').value;
-  if (!key) return;
-  if (_prontuarios[key]) {
-    verProntuario(key);
-  } else {
-    _pacAtual = key;
-    document.getElementById('pront-view').style.display  = 'none';
-    document.getElementById('pront-empty').style.display = 'block';
-    document.getElementById('pront-empty').innerHTML =
-      '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
-      '<p style="font-size:.85rem;line-height:1.6;">Nenhuma sessão registrada para este paciente ainda.<br>Preencha o relato acima e clique em <strong>Salvar sessão</strong>.</p>';
-  }
-}
-
-function mostrarEmpty() {
-  document.getElementById('pront-view').style.display  = 'none';
-  document.getElementById('pront-empty').style.display = 'block';
-  document.getElementById('pront-empty').innerHTML =
-    '<div style="font-size:36px;margin-bottom:12px;">📋</div>' +
-    '<p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>';
-}
-
-function limparFormPront() {
-  document.getElementById('pront-pac').value       = '';
-  document.getElementById('pront-relato').value    = '';
-  document.getElementById('rec-status').textContent = '';
-  setDataHoje();
-}
-
-async function deletarSessao(id, key) {
-  if (!confirm('Excluir este registro?')) return;
-  try {
-    await fetch(`/api/data?table=prontuarios&id=${id}`, { method: 'DELETE' });
-    await carregarProntuarios();
-    if (_prontuarios[key]) verProntuario(key);
-    else { _pacAtual = null; mostrarEmpty(); document.getElementById('pront-view').style.display='none'; }
-    toast('Registro excluído.');
-  } catch(e) {
-    toast('Erro ao excluir: ' + e.message);
-  }
-}
-
-// ── Gravação → transcrição via Web Speech API ─────────────────────────────────
+// ── Gravação → transcrição// ── Gravação → transcrição via Web Speech API ─────────────────────────────────
 async function toggleGravacao() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { toast('Reconhecimento de voz não suportado. Use Chrome ou Safari.'); return; }

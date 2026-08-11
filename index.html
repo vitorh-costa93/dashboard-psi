@@ -1925,77 +1925,55 @@ function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
   const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
-function hexToRgb(hex){
-  const m=(hex||'').replace('#','').match(/^([0-9a-f]{6})$/i); if(!m)return [155,91,70];
-  return [parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16)];
-}
-function luminancia(rgb){
-  const v=rgb.map(x=>{x/=255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)});
-  return .2126*v[0]+.7152*v[1]+.0722*v[2];
-}
-function corTexto(cor){
-  const l=luminancia(hexToRgb(cor)); return l>.52?'#3f332d':'#fffaf4';
-}
-function wrapText(ctx,text,maxWidth){
-  const words=String(text||'').split(/\s+/); const lines=[]; let line='';
-  for(const word of words){
-    const test=line?line+' '+word:word;
-    if(ctx.measureText(test).width<=maxWidth||!line){line=test;continue;}
-    lines.push(line); line=word;
-  }
-  if(line)lines.push(line); return lines;
-}
-function desenharTextoArte(b64, slideText, titulo, isCarousel, index, total, cor){
-  return new Promise((resolve,reject)=>{
-    const img=new Image(); img.onload=async()=>{
-      try{ await document.fonts.ready; }catch(_e){}
-      const canvas=document.createElement('canvas'); canvas.width=img.naturalWidth||1024; canvas.height=img.naturalHeight||1024;
-      const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const accent=cor||'#9b5b46', fg=corTexto(accent), margin=Math.round(canvas.width*.085), maxW=Math.round(canvas.width*.76);
-      // Mantém uma área editorial limpa e consistente para o texto, sem depender do gerador de imagens para tipografia.
-      if(isCarousel && index===0){
-        ctx.fillStyle=accent; ctx.font=`700 ${Math.round(canvas.width*.070)}px "Playfair Display", serif`;
-        const titleLines=wrapText(ctx,titulo,maxW); let y=Math.round(canvas.height*.25);
-        titleLines.slice(0,4).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.082);});
-        ctx.fillStyle=fg; ctx.font=`500 ${Math.round(canvas.width*.031)}px "DM Sans", sans-serif`;
-        const sub=wrapText(ctx,slideText,maxW); y+=Math.round(canvas.width*.025); sub.slice(0,6).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.042);});
-      }else{
-        ctx.fillStyle=accent; ctx.font=`700 ${Math.round(canvas.width*.048)}px "Playfair Display", serif`;
-        const lines=wrapText(ctx,slideText,maxW); let y=Math.round(canvas.height*.28);
-        // O conteúdo é o único texto editorial nos slides internos; o título nunca é repetido.
-        lines.slice(0,9).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.060);});
-      }
-      if(isCarousel){
-        ctx.save(); ctx.fillStyle=accent; ctx.font=`600 ${Math.round(canvas.width*.026)}px "DM Sans", sans-serif`; ctx.textAlign='left'; ctx.textBaseline='bottom';
-        ctx.fillText(`${index+1}/${total}`,margin,canvas.height-margin); ctx.restore();
-      }
-      resolve(canvas.toDataURL('image/png').split(',')[1]);
-    }; img.onerror=reject; img.src='data:image/png;base64,'+b64;
-  });
-}
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
-  const formato=_postAtual.formato||'Carrossel', isCarousel=formato.toLowerCase()==='carrossel', rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides:[];
-  const slides=isCarousel?rawSlides.slice(0,7):rawSlides.filter(Boolean).slice(0,4);
+  const formato=_postAtual.formato||'Carrossel', isCarousel=formato.toLowerCase()==='carrossel', rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides:[], slides=isCarousel?rawSlides.slice(0,7):[rawSlides.filter(Boolean).slice(0,4).join(' • ')||_postAtual.gancho||''];
   if(isCarousel && slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
-  if(!isCarousel && !slides.length){toast('Não há conteúdo suficiente para gerar a arte.');return;}
   try{
     const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
+    // A identidade visual é definida uma única vez para todo o carrossel.
+    // A primeira arte determina a cor de destaque; todos os demais slides
+    // reutilizam exatamente a mesma cor para a logo e a mesma família tipográfica.
     let identidadeCor=null;
+    const identidadeTipografia="Use exactly the same typography across every slide: Playfair Display for titles/headlines and DM Sans for body text, with the same weights, hierarchy and letter spacing. Do not change font families between slides.";
     for(let i=0;i<slides.length;i++){
-      wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundo ${i+1} de ${slides.length}...</div>`;
-      // A IA gera somente o fundo/elementos visuais. Todo texto, tipografia, paginação e logo são aplicados pelo aplicativo.
-      const prompt=`Create ONE single clean visual background for an Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Visual concept related to this slide: ${slides[i]}. ${isCarousel&&i===0?`This is the cover; create a strong but calm editorial composition suitable for the title: ${_postAtual.titulo||''}.`:''} Elegant editorial psychology brand, warm cream/off-white base, organic shapes, refined composition, restrained earthy palette, professional and welcoming. NO text, NO letters, NO words, NO typography, NO logo, NO names, NO credentials, NO page numbers, NO UI, NO watermark. Leave generous negative space for text overlay, preferably center-left or center area, and a calm lower-right area for a brand lockup. The application will add all typography and branding afterward. High visual coherence across a 7-slide carousel; do not invent written content.`;
+      document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${slides.length}...</div>`;
+      const tituloCapa = isCarousel && i===0 ? `The post title is: "${_postAtual.titulo||''}". Show this title prominently on this cover only.` : `Do NOT show or repeat the post title on this slide. This is an internal carousel slide and should focus only on its specific content.`;
+      const pagina = isCarousel ? `Do NOT create any page number, slide number, "1/7", "2/7" or similar indicator; the application adds it afterward.` : '';
+      const prompt=`Create ONE single Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Slide content: ${slides[i]}. ${tituloCapa} ${pagina} Visual identity: elegant editorial psychology brand, warm cream/off-white base, organic shapes, refined typography, restrained earthy palette, professional and welcoming, no childish clichés unless appropriate. ${identidadeTipografia} This is a ${isCarousel?'carousel':'single-post'} and must have a coherent visual system. Keep text concise and legible in Portuguese. Do not include logos, names, credentials, phone numbers, page numbers or fake claims; leave a calm lower-right area for the brand lockup. ${isCarousel?'Do not repeat the cover title on internal slides. Each internal slide must visually and conceptually develop only its own point.':''} Content only, no mockup, no Instagram UI.`;
       const raw=await gerarImagem(prompt);
       if(!identidadeCor) identidadeCor=await extrairCorAcento(raw);
       const finalB64=await aplicarLogoPost(raw,identidadeCor,isCarousel?{current:i+1,total:slides.length}:null);
-      const composed=await desenharTextoArte(finalB64,slides[i],_postAtual.titulo||'',isCarousel,i,slides.length,identidadeCor);
-      _postAtual.imagens_b64.push(composed); _postAtual.logo_cor=identidadeCor; renderArtesPost();
+      _postAtual.imagens_b64.push(finalB64);
+      _postAtual.logo_cor=identidadeCor;
+      renderArtesPost();
     }
-    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
-    _postAtual.prompt='Fundo gerado por IA; tipografia, paginação e identidade visual aplicadas deterministicamente pelo aplicativo.';
+    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;_postAtual.prompt='Gerado como carrossel de '+slides.length+' slides; cada slide foi gerado individualmente.';
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
+}
+
+async function exportarArtesPost(){
+  const imgs=_postAtual?.imagens_b64||[];
+  if(!imgs.length){toast('Gere a arte antes de exportar.');return;}
+  try{
+    const files=imgs.map((b,i)=>{
+      const bytes=atob(b),arr=new Uint8Array(bytes.length);
+      for(let j=0;j<bytes.length;j++) arr[j]=bytes.charCodeAt(j);
+      return new File([arr],`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});
+    });
+    // Web Share usa os arquivos PNG originais, sem redimensionar ou recomprimir.
+    if(navigator.share && navigator.canShare && navigator.canShare({files})){
+      await navigator.share({title:_postAtual?.titulo||'Post — Jaqueline Vieira',text:'Arte para Instagram',files});
+      return;
+    }
+    // Fallback para navegadores sem compartilhamento de arquivos.
+    imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});
+    toast('Seu navegador não oferece compartilhamento de arquivos; as artes foram baixadas em PNG na resolução original.');
+  }catch(e){
+    if(e?.name==='AbortError') return;
+    toast('Não foi possível abrir o compartilhamento: '+e.message);
+  }
 }
 
 async function salvarPost(){

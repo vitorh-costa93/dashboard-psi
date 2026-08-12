@@ -317,12 +317,10 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 }
 html{background:var(--bg);}
 body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;letter-spacing:-.005em;}
-.app-header{background:var(--header-bg);padding:16px 30px;gap:18px;border-bottom:1px solid rgba(104,114,87,.18);box-shadow:none;}
-.brand-mark{width:72px;height:72px;display:flex;align-items:center;justify-content:center;flex:0 0 72px;}
-.brand-mark img{width:72px;height:72px;object-fit:contain;opacity:.9;}
-.brand-copy h1{font-family:'Newsreader',serif;font-size:1.42rem;font-weight:600;letter-spacing:.01em;color:var(--deep);}
-.brand-copy p{font-size:.67rem;letter-spacing:.08em;color:#777c70;margin-top:3px;text-transform:uppercase;}
-.nav-tabs{background:rgba(251,250,246,.94);border-bottom:1px solid var(--border);padding:0 30px;top:82px;}
+.app-header{background:var(--header-bg);min-height:92px;padding:13px 30px;border-bottom:1px solid rgba(104,114,87,.18);box-shadow:none;display:flex;align-items:center;}
+.brand-mark{width:155px;height:66px;display:flex;align-items:center;justify-content:flex-start;flex:0 0 155px;}
+.brand-mark img{width:155px;height:auto;max-height:66px;object-fit:contain;object-position:left center;opacity:.94;display:block;}
+.nav-tabs{background:rgba(251,250,246,.94);border-bottom:1px solid var(--border);padding:0 30px;top:92px;}
 .nav-tab{padding:13px 18px;font-size:.78rem;color:#85897f;font-weight:500;border-bottom:1px solid transparent;}
 .nav-tab.active{color:var(--deep);border-bottom:2px solid var(--accent);font-weight:600;}
 .nav-tab:hover:not(.active){color:var(--ink);}
@@ -378,14 +376,12 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink
 .ativ-card:hover,.post-suggestion:hover{transform:translateY(-1px);border-color:#c8cfba;}
 @media(max-width:900px){
   .section-wrap,.dash-wrap{padding:22px 16px 38px;}
-  .app-header{padding:15px 18px;}
+  .app-header{min-height:76px;padding:11px 18px;}
   .nav-tabs{padding:0 14px;top:76px;}
 }
 @media(max-width:600px){
-  .brand-mark,.brand-mark img{width:54px;height:54px;}
-  .brand-mark{flex-basis:54px;}
-  .brand-copy h1{font-size:1.22rem;}
-  .brand-copy p{font-size:.58rem;}
+  .brand-mark{width:125px;height:53px;flex-basis:125px;}
+  .brand-mark img{width:125px;max-height:53px;height:auto;}
   .nav-tab{padding:11px 13px;}
 }
 </style>
@@ -393,11 +389,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink
 <body>
 
 <div class="app-header">
-  <div class="brand-mark"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira — Psicóloga"/></div>
-  <div class="brand-copy">
-    <h1>Jaqueline Vieira</h1>
-    <p>PSICÓLOGA &nbsp;·&nbsp; CRP 06/191478</p>
-  </div>
+  <div class="brand-mark"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira — Psicóloga, CRP 06/191478"/></div>
 </div>
 
 <div class="nav-tabs">
@@ -2003,22 +1995,67 @@ function extrairCorAcento(b64){
     };img.onerror=()=>resolve(BRAND_SAGE);img.src='data:image/png;base64,'+b64;
   });
 }
-async function aplicarLogoPost(b64, corPreferida, pageInfo=null){
+function analisarZonaLogo(b64, pos){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas'),size=64;c.width=size;c.height=size;const ctx=c.getContext('2d');
+      const w=img.naturalWidth||1024,h=img.naturalHeight||1024;
+      const boxW=Math.round(w*.24), boxH=Math.round(h*.16), pad=Math.round(Math.min(w,h)*.025);
+      let x=pad,y=pad;
+      if(pos==='tr'){x=w-boxW-pad;y=pad;}
+      if(pos==='br'){x=w-boxW-pad;y=h-boxH-pad;}
+      if(pos==='bl'){x=pad;y=h-boxH-pad;}
+      ctx.drawImage(img,x,y,boxW,boxH);
+      const d=ctx.getImageData(0,0,size,size).data;
+      let lumSum=0, lumSq=0, n=0;
+      for(let i=0;i<d.length;i+=4){const lum=(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2])/255;lumSum+=lum;lumSq+=lum*lum;n++;}
+      const avg=lumSum/n, variance=Math.max(0,lumSq/n-avg*avg);
+      // Preferimos zonas claras ou escuras e homogêneas: facilitam o contraste e deixam a logo mais elegante.
+      const homogeneity=Math.max(0,1-Math.sqrt(variance)*4);
+      resolve({avg,homogeneity});
+    };
+    img.onerror=()=>resolve({avg:.6,homogeneity:.5});
+    img.src='data:image/png;base64,'+b64;
+  });
+}
+async function escolherLayoutLogo(imagens, isCarousel){
+  const candidatos=['tr','br','tl','bl'];
+  // Esquerda é penalizada porque o texto editorial costuma ocupar essa região.
+  const penalidade={tr:0,br:0,tl:.28,bl:.22};
+  let melhor=null;
+  for(const pos of candidatos){
+    const zonas=await Promise.all(imagens.map(b=>analisarZonaLogo(b,pos)));
+    const mediaLum=zonas.reduce((a,z)=>a+z.avg,0)/zonas.length;
+    const mediaHom=zonas.reduce((a,z)=>a+z.homogeneity,0)/zonas.length;
+    const variacaoLum=Math.max(...zonas.map(z=>z.avg))-Math.min(...zonas.map(z=>z.avg));
+    const score=(mediaHom*0.5)+(Math.abs(mediaLum-.5)*0.35)+(0.15*(1-variacaoLum))-penalidade[pos];
+    if(!melhor||score>melhor.score)melhor={pos,score,mediaLum,mediaHom};
+  }
+  // A cor é escolhida pela luminância do conjunto, e não por matiz aleatória:
+  // fundo claro -> logo escura; fundo escuro -> logo clara.
+  const logoColor=melhor.mediaLum>=.55?BRAND_DEEP:'#F7F4EA';
+  return {position:melhor.pos,color:logoColor};
+}
+async function aplicarLogoPost(b64, corPreferida, pageInfo=null, logoLayout=null){
   return new Promise((resolve,reject)=>{
     const base=new Image(),logo=new Image();
     base.onload=()=>{logo.onload=()=>{
       const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');
       ctx.drawImage(base,0,0,canvas.width,canvas.height);
-      const targetW=Math.min(canvas.width*.23,230),targetH=targetW*(logo.naturalHeight/logo.naturalWidth),pad=Math.max(14,Math.round(canvas.width*.018));
-      const x=canvas.width-targetW-pad,y=canvas.height-targetH-pad;
+      const targetW=Math.min(canvas.width*.23,230),targetH=targetW*(logo.naturalHeight/logo.naturalWidth),pad=Math.max(14,Math.round(canvas.width*.025));
+      const pos=logoLayout?.position||'br';
+      let x=pad,y=pad;
+      if(pos==='tr'){x=canvas.width-targetW-pad;y=pad;}
+      if(pos==='br'){x=canvas.width-targetW-pad;y=canvas.height-targetH-pad;}
+      if(pos==='bl'){x=pad;y=canvas.height-targetH-pad;}
       const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;const octx=off.getContext('2d');octx.drawImage(logo,0,0);
-      const px=octx.getImageData(0,0,off.width,off.height),hex=corPreferida||'#9b5b46',rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
+      const px=octx.getImageData(0,0,off.width,off.height),hex=corPreferida||BRAND_DEEP,rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
       for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rr;px.data[i+1]=gg;px.data[i+2]=bb;}}octx.putImageData(px,0,0);
-      // Mantém a transparência real da logo: nenhuma caixa/fundo é desenhada atrás dela.
+      // Logo transparente, sem caixa, sem fundo e na MESMA posição em todos os slides do mesmo post.
       ctx.drawImage(off,x,y,targetW,targetH);
-
       resolve(canvas.toDataURL('image/png').split(',')[1]);
-    };logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';};base.onerror=reject;base.src='data:image/png;base64,'+b64;
+    };logo.onerror=reject;logo.src=(corPreferida==='#F7F4EA'?'/assets/logo-jaqueline-white.png':'/assets/logo-jaqueline-dark.png');};base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
 }
 function renderArtesPost(){
@@ -2086,13 +2123,22 @@ async function gerarArtePost(){
     const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
     let identidadeCor=BRAND_SAGE;
+    const fundos=[];
     for(let i=0;i<slides.length;i++){
       wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundo ${i+1} de ${slides.length}...</div>`;
-      // A IA gera somente o fundo/elementos visuais. Todo texto, tipografia, paginação e logo são aplicados pelo aplicativo.
-      const prompt=`Create ONE single clean visual background for an Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Visual concept related to this slide: ${slides[i]}. ${isCarousel&&i===0?`This is the cover; create a strong but calm editorial composition suitable for the title: ${_postAtual.titulo||''}.`:''} Elegant editorial psychology brand using the Jaqueline Vieira visual system: warm cream/off-white #F4F1E8, sage green #899776, deep sage #687257, warm sand #D8CDB8 and restrained terracotta #C5654E. Organic shapes, generous negative space, refined editorial composition, quiet luxury, professional and welcoming. NO text, NO letters, NO words, NO typography, NO logo, NO names, NO credentials, NO page numbers, NO UI, NO watermark. Leave generous negative space for text overlay, preferably center-left or center area, and a calm lower-right area for a brand lockup. The application will add all typography and branding afterward. High visual coherence across a 7-slide carousel; do not invent written content.`;
-      const raw=await gerarImagem(prompt);
-      if(i===0) identidadeCor=await corDeMarcaParaArte(raw);
-      const finalB64=await aplicarLogoPost(raw,identidadeCor,isCarousel?{current:i+1,total:slides.length}:null);
+      const prompt=`Create ONE single clean visual background for an Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Visual concept related to this slide: ${slides[i]}. ${isCarousel&&i===0?`This is the cover; create a strong but calm editorial composition suitable for the title: ${_postAtual.titulo||''}.`:''} Elegant editorial psychology brand using the Jaqueline Vieira visual system: warm cream/off-white #F4F1E8, sage green #899776, deep sage #687257, warm sand #D8CDB8 and restrained terracotta #C5654E. Organic shapes, generous negative space, refined editorial composition, quiet luxury, professional and welcoming. NO text, NO letters, NO words, NO typography, NO logo, NO names, NO credentials, NO page numbers, NO UI, NO watermark. Leave generous negative space for text overlay and allow the composition to work with branding in any corner; do not reserve a fixed logo corner. The application will choose the safest common logo position and contrast after all slides are generated. High visual coherence across a 7-slide carousel; do not invent written content.`;
+      fundos.push(await gerarImagem(prompt));
+    }
+    // O layout da marca é decidido com base em TODAS as imagens do post.
+    // Assim, um carrossel sempre usa a mesma posição e a mesma cor da logo,
+    // escolhidas pela melhor combinação de espaço, homogeneidade e contraste.
+    const logoLayout=await escolherLayoutLogo(fundos,isCarousel);
+    identidadeCor=logoLayout.color;
+    _postAtual.logo_posicao=logoLayout.position;
+    _postAtual.logo_contraste=logoLayout.color;
+    for(let i=0;i<fundos.length;i++){
+      wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Aplicando identidade visual ${i+1} de ${fundos.length}...</div>`;
+      const finalB64=await aplicarLogoPost(fundos[i],identidadeCor,isCarousel?{current:i+1,total:slides.length}:null,logoLayout);
       const composed=await desenharTextoArte(finalB64,slides[i],_postAtual.titulo||'',isCarousel,i,slides.length,identidadeCor);
       _postAtual.imagens_b64.push(composed); _postAtual.logo_cor=identidadeCor; renderArtesPost();
     }
@@ -2110,7 +2156,7 @@ async function salvarPost(){
       legenda:_postAtual.legenda||'',hashtags:(_postAtual.hashtags||[]).join(' '),
       cta:_postAtual.cta||'',img_b64:_postAtual.img_b64||null,imagens_b64:_postAtual.imagens_b64||[],logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
       fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+ (document.getElementById('post-contexto').value||''),
-      status:'rascunho',criado_em:new Date().toISOString()
+      status:'rascunho',logo_posicao:_postAtual.logo_posicao||'',logo_contraste:_postAtual.logo_contraste||'',criado_em:new Date().toISOString()
     };
     const r=await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(!r.ok)throw new Error('Falha ao salvar');

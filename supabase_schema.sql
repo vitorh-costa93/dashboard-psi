@@ -12,7 +12,13 @@ create table if not exists atividades (
   tema text,
   img_b64 text,
   imagens_b64 jsonb,
+  slides jsonb,
   logo_cor text,
+  logo_posicao text,
+  logo_contraste numeric,
+  texto_posicao text,
+  texto_cor text,
+  texto_contraste numeric,
   prompt text,
   criado_em timestamptz default now()
 );
@@ -61,7 +67,13 @@ create table if not exists posts (
   cta text,
   img_b64 text,
   imagens_b64 jsonb,
+  slides jsonb,
   logo_cor text,
+  logo_posicao text,
+  logo_contraste numeric,
+  texto_posicao text,
+  texto_cor text,
+  texto_contraste numeric,
   prompt text,
   fonte_tendencia text,
   tendencia text,
@@ -74,6 +86,14 @@ create index if not exists idx_posts_criado_em on posts(criado_em desc);
 
 alter table posts add column if not exists imagens_b64 jsonb;
 alter table posts add column if not exists logo_cor text;
+alter table posts add column if not exists slides jsonb;
+alter table posts add column if not exists logo_posicao text;
+alter table posts add column if not exists logo_contraste numeric;
+alter table posts add column if not exists texto_posicao text;
+alter table posts add column if not exists texto_cor text;
+alter table posts add column if not exists texto_contraste numeric;
+alter table posts add column if not exists fonte_tendencia text;
+
 
 create table if not exists trend_radar (
   id uuid primary key default gen_random_uuid(),

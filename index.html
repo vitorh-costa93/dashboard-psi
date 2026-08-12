@@ -6,7 +6,7 @@
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --bg:#F5F2EB;--card:#fff;--header-bg:#D6CCB0;
@@ -16,12 +16,12 @@
   --sand:#c4a882;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
 
 /* ── Header ── */
 .app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
 .app-header .logo{font-size:26px;}
-.app-header h1{font-family:'Newsreader',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
+.app-header h1{font-family:'Spectral',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
 .app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
 
 /* ── Nav tabs ── */
@@ -46,7 +46,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 #error-msg{display:none;max-width:440px;margin:60px auto;background:#fff8f7;border:1px solid #f0d5d0;border-radius:10px;padding:24px;text-align:center;}
-#error-msg h3{color:var(--danger);margin-bottom:8px;font-family:'Newsreader',serif;}
+#error-msg h3{color:var(--danger);margin-bottom:8px;font-family:'Spectral',serif;}
 #error-msg p{color:var(--muted);font-size:.85rem;line-height:1.6;}
 
 #dashboard{display:none;}
@@ -54,7 +54,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 
 .reload-bar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;}
 #last-update{font-size:.75rem;color:var(--muted);}
-#btn-reload{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;transition:opacity .2s;}
+#btn-reload{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:opacity .2s;}
 #btn-reload:hover{opacity:.85;}
 
 /* ── KPIs ── */
@@ -62,7 +62,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
 .kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.kpi-main{font-family:'Newsreader',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;}
+.kpi-main{font-family:'Spectral',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;}
 .kpi-comp{font-size:.72rem;margin:2px 0;}
 .kpi-comp.up{color:#27ae60;}.kpi-comp.dn{color:var(--danger);}.kpi-comp.neu{color:var(--muted);}
 .kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
@@ -91,7 +91,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 /* ── Donut ── */
 .donut-wrap{position:relative;max-width:280px;margin:0 auto;}
 .donut-wrap canvas{width:100%!important;}
-.profile-select{font-family:'Source Sans 3',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
+.profile-select{font-family:'IBM Plex Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
 /* ── Motivos ── */
 .motivos-wrap{display:flex;flex-direction:column;gap:4px;}
@@ -110,38 +110,38 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .section-wrap{max-width:1100px;margin:0 auto;padding:16px 20px 40px;}
 
 .generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;}
-.generator-card h3{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
+.generator-card h3{font-family:'Spectral',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
 
 .gen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
 .gen-field label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;}
-.gen-field select,.gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
+.gen-field select,.gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
 .gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent);}
 
-.prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'Source Sans 3',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
+.prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
 .prompt-area:focus{outline:none;border-color:var(--accent);}
 
 .gen-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
-.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
 .btn-primary:hover{opacity:.88;}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
-.btn-secondary{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:7px;padding:8px 16px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
+.btn-secondary{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:7px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
 .btn-secondary:hover{background:var(--accent);color:#fff;}
 .btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
 .gen-status{font-size:.78rem;color:var(--muted);font-style:italic;}
 
 .preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;display:none;}
-.preview-card h3{font-family:'Newsreader',serif;font-size:.92rem;font-weight:600;margin-bottom:14px;}
+.preview-card h3{font-family:'Spectral',serif;font-size:.92rem;font-weight:600;margin-bottom:14px;}
 .preview-img-wrap{border:2px dashed var(--border);border-radius:8px;overflow:hidden;background:#fafaf8;min-height:280px;display:flex;align-items:center;justify-content:center;}
 .preview-img-wrap img{max-width:100%;max-height:480px;object-fit:contain;display:block;}
 .preview-placeholder{color:var(--muted);font-size:.82rem;text-align:center;padding:40px;}
 .preview-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
-.btn-save{background:var(--sand);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;}
+.btn-save{background:var(--sand);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;}
 .btn-save:hover{opacity:.88;}
-.btn-pdf{background:#3a3020;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
+.btn-pdf{background:#3a3020;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
 .btn-pdf:hover{opacity:.88;}
-.btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;}
+.btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;cursor:pointer;}
 
-.title-field{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'Source Sans 3',sans-serif;font-size:.85rem;margin-bottom:10px;}
+.title-field{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;margin-bottom:10px;}
 .title-field:focus{outline:none;border-color:var(--accent);}
 
 /* ── Barra de busca inline (sempre visível, abaixo do form) ── */
@@ -149,9 +149,9 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .search-bar-title{font-size:.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
 .search-filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .search-filters-row .filter-select{flex:1;min-width:130px;}
-.filter-select{border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
+.filter-select{border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
 .filter-select:focus{outline:none;border-color:var(--accent);}
-.btn-clear-filter{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'Source Sans 3',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-clear-filter{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
 .btn-clear-filter:hover{border-color:var(--danger);color:var(--danger);}
 .search-count{font-size:.7rem;color:var(--accent);margin-top:8px;min-height:14px;}
 
@@ -161,9 +161,9 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .biblioteca-empty p{font-size:.85rem;line-height:1.6;}
 
 .view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-.view-bar h2{font-family:'Newsreader',serif;font-size:1rem;font-weight:600;color:var(--text);}
+.view-bar h2{font-family:'Spectral',serif;font-size:1rem;font-weight:600;color:var(--text);}
 .view-tabs{display:flex;gap:4px;}
-.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'Source Sans 3',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
+.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
 .view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 .grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
@@ -198,7 +198,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .modal-overlay.open{display:flex;}
 .modal{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18);animation:modalIn .2s ease;position:relative;max-height:90vh;overflow-y:auto;}
 @keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-.modal h3{font-family:'Newsreader',serif;font-size:1.05rem;margin-bottom:14px;}
+.modal h3{font-family:'Spectral',serif;font-size:1.05rem;margin-bottom:14px;}
 .modal img{width:100%;border-radius:8px;margin-bottom:14px;}
 .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
 .modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
@@ -213,18 +213,18 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
    PRONTUÁRIOS
    ══════════════════════════════════════════════════════════ */
 .pront-form-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
-.pront-section-title{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.pront-section-title{font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .pront-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.pront-fields-grid{grid-template-columns:1fr;}}
 .pront-field{display:flex;flex-direction:column;gap:5px;}
 .pront-label{font-size:.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-.pront-input{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'Source Sans 3',sans-serif;font-size:.83rem;color:var(--text);background:var(--light);-webkit-appearance:none;appearance:none;}
+.pront-input{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:.83rem;color:var(--text);background:var(--light);-webkit-appearance:none;appearance:none;}
 .pront-input:focus{outline:none;border-color:var(--accent);}
 .pront-textarea{min-height:110px;resize:vertical;line-height:1.55;}
 .pront-audio-bar{display:flex;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap;}
 .pront-form-actions{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
 
-.pac-card{width:100%;text-align:left;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 10px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;color:var(--text);}
+.pac-card{width:100%;text-align:left;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;color:var(--text);}
 .pac-card:hover{border-color:var(--accent);background:#f4f8f0;}
 .pac-card.ativo{background:var(--accent);color:#fff;border-color:var(--accent);}
 .pac-card .pac-nome{font-weight:500;margin-bottom:2px;}
@@ -238,7 +238,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 /* ── PPT sub-tab ── */
 .ppt-preview{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-top:16px;}
 .ppt-slide-preview{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--light);}
-.ppt-slide-preview h4{font-family:'Newsreader',serif;font-size:.88rem;margin-bottom:8px;color:var(--text);}
+.ppt-slide-preview h4{font-family:'Spectral',serif;font-size:.88rem;margin-bottom:8px;color:var(--text);}
 .ppt-slide-preview ul{padding-left:18px;font-size:.8rem;line-height:1.7;color:var(--text);}
 
 /* ── Loading inline pequeno ── */
@@ -253,7 +253,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 
 /* ── Alertas inteligentes ── */
 .alerts-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:12px;}
-.alerts-title{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;margin-bottom:10px;}
+.alerts-title{font-family:'Spectral',serif;font-size:.95rem;font-weight:600;margin-bottom:10px;}
 .alert-group{margin-top:10px;}
 .alert-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px;}
 .alert-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;background:var(--light);margin-bottom:5px;font-size:.8rem;}
@@ -267,7 +267,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 /* ── Posts ── */
 .post-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .post-suggestion{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:16px;box-shadow:var(--shadow);}
-.post-suggestion h4{font-family:'Newsreader',serif;font-size:.95rem;margin-bottom:7px;}
+.post-suggestion h4{font-family:'Spectral',serif;font-size:.95rem;margin-bottom:7px;}
 .post-meta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
 .post-tag{font-size:.67rem;padding:3px 8px;border-radius:12px;background:var(--light);color:var(--muted);}
 .post-source{font-size:.7rem;color:var(--muted);line-height:1.45;margin-top:8px;}
@@ -284,11 +284,22 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .post-export-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
 .post-export-bar span{font-size:.72rem;color:var(--muted);}
 .post-art-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
-.post-art-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
-.post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
-.post-art-card .post-art-caption{padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.post-art-card .post-art-download{font-size:.7rem;color:var(--accent);text-decoration:none;}
-.post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
+.post-art-card{border:1px solid #d9d4c6;border-radius:14px;background:var(--card);overflow:hidden;box-shadow:0 5px 18px rgba(79,88,69,.06);transition:transform .18s ease,box-shadow .18s ease;}
+.post-art-card:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(79,88,69,.09);}
+.post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;background:#f4f1e8;}
+.post-art-card .post-art-caption{padding:9px 12px;font-size:.73rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fbfaf6;}
+.post-art-card .post-art-download{font-size:.7rem;color:var(--deep);text-decoration:none;font-weight:600;}
+.post-art-progress{font-size:.76rem;color:var(--muted);margin-top:10px;}
+.post-draft-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+.post-draft-chip{font-size:.66rem;letter-spacing:.04em;text-transform:uppercase;color:#687257;background:#eef0e7;border:1px solid #d8dccd;border-radius:999px;padding:4px 8px;}
+.post-open-hint{font-size:.68rem;color:#8a8d82;margin-top:6px;}
+
+.post-history .alert-item{cursor:pointer;transition:background .18s ease,border-color .18s ease;position:relative;}
+.post-history .alert-item:hover{background:#f7f5ee;border-color:#cfd2c2;}
+.post-history .alert-item::after{content:'Abrir';font-size:.68rem;color:var(--deep);font-weight:600;margin-left:auto;padding-left:10px;}
+.post-history .alert-item strong{font-family:'Spectral',serif;font-size:.92rem;font-weight:600;color:var(--deep);}
+.post-history .alert-item small{font-size:.7rem;color:var(--muted);}
+.post-history .alert-item{display:flex;align-items:center;gap:12px;}
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 
@@ -309,14 +320,14 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
   --accent3:#c5654e;
   --danger:#a85d52;
   --border:#ddd8ca;
-  --shadow:0 2px 12px rgba(76,79,62,.055);
+  --shadow:0 4px 18px rgba(76,79,62,.055);
   --sand:#c9bca3;
   --deep:#687257;
   --cream:#f4f1e8;
   --ink:#4f5845;
 }
 html{background:var(--bg);}
-body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;letter-spacing:-.005em;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;letter-spacing:-.005em;}
 .app-header{background:var(--header-bg);min-height:92px;padding:13px 30px;border-bottom:1px solid rgba(104,114,87,.18);box-shadow:none;display:flex;align-items:center;}
 .brand-mark{width:155px;height:66px;display:flex;align-items:center;justify-content:flex-start;flex:0 0 155px;}
 .brand-mark img{width:155px;height:auto;max-height:66px;object-fit:contain;object-position:left center;opacity:.94;display:block;}
@@ -339,10 +350,10 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink
 .kpi-comp.up{color:#718460}.kpi-comp.dn{color:#a85d52}
 .charts-row,.bottom-row{gap:16px;}
 .chart-card{padding:18px 16px 14px;}
-.chart-card h3,.panel h3{font-family:'Source Sans 3',sans-serif;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:#747a6d;font-weight:600;}
+.chart-card h3,.panel h3{font-family:'IBM Plex Sans',sans-serif;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:#747a6d;font-weight:600;}
 .panel{padding:18px 16px;}
 .alerts-panel{padding:18px 20px;margin-bottom:16px;}
-.alerts-title{font-family:'Newsreader',serif;font-size:1rem;color:var(--deep);}
+.alerts-title{font-family:'Spectral',serif;font-size:1rem;color:var(--deep);}
 .alert-item{border-radius:5px;background:#f1eee5;padding:9px 11px;}
 .alert-badge{border-radius:4px;}
 .generator-card,.preview-card{padding:24px;margin-bottom:18px;}
@@ -652,7 +663,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink
 
     <!-- Preview dos slides gerados -->
     <div class="ppt-preview" id="ppt-preview" style="display:none;">
-      <h3 style="font-family:'Newsreader',serif;font-size:.95rem;margin-bottom:14px;" id="ppt-preview-titulo">—</h3>
+      <h3 style="font-family:'Spectral',serif;font-size:.95rem;margin-bottom:14px;" id="ppt-preview-titulo">—</h3>
       <div id="ppt-slides-list"></div>
       <div class="preview-actions" style="margin-top:14px;">
         <input type="text" class="title-field" id="ppt-titulo-salvar" placeholder="Nome para salvar na biblioteca" style="margin-bottom:0;flex:1;min-width:200px;"/>
@@ -1941,25 +1952,97 @@ async function gerarPost(){
   finally{btn.disabled=false;}
 }
 
+function normalizarImagensPost(row){
+  if(!row)return[];
+  if(Array.isArray(row.imagens_b64))return row.imagens_b64.filter(Boolean);
+  if(typeof row.imagens_b64==='string'){
+    try{
+      const parsed=JSON.parse(row.imagens_b64);
+      if(Array.isArray(parsed))return parsed.filter(Boolean);
+    }catch(_e){}
+  }
+  if(row.img_b64)return[row.img_b64];
+  return[];
+}
+function normalizarHashtags(v){
+  if(Array.isArray(v))return v;
+  if(!v)return[];
+  return String(v).split(/\s+/).filter(Boolean);
+}
 function renderPostPreview(){
   if(!_postAtual)return;
-  document.getElementById('post-preview-title').textContent=_postAtual.titulo||'Prévia do post';
-  document.getElementById('post-slides').innerHTML=(_postAtual.slides||[]).map((x,i)=>`<div class="post-slide"><strong>${i+1}.</strong> ${x}</div>`).join('');
+  _postAtual.imagens_b64=normalizarImagensPost(_postAtual);
+  _postAtual.hashtags=normalizarHashtags(_postAtual.hashtags);
+  _postAtual.slides=Array.isArray(_postAtual.slides)?_postAtual.slides.filter(Boolean):[];
+  document.getElementById('post-preview-title').textContent=_postAtual.titulo||_postAtual.tema||'Prévia do post';
+  const slides=_postAtual.slides;
+  document.getElementById('post-slides').innerHTML=slides.length
+    ? slides.map((x,i)=>`<div class="post-slide"><strong>${i+1}.</strong> ${x}</div>`).join('')
+    : (_postAtual.imagens_b64?.length ? '<div class="post-preview">Este rascunho foi salvo antes da versão atual do editor. As artes continuam disponíveis abaixo.</div>' : '<div class="post-preview">Sem texto de slides salvo.</div>');
   document.getElementById('post-legenda').textContent=_postAtual.legenda||'';
-  document.getElementById('post-hashtags').textContent=(_postAtual.hashtags||[]).join(' ');
+  document.getElementById('post-hashtags').textContent=_postAtual.hashtags.join(' ');
   document.getElementById('post-cta').textContent=_postAtual.cta||'';
   document.getElementById('post-preview-card').style.display='block';
+  renderArtesPost();
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function abrirPostRascunho(id){
+  if(!id){toast('Rascunho inválido.');return;}
+  try{
+    const r=await fetch('/api/data?table=posts');
+    if(!r.ok)throw new Error('Não foi possível carregar os rascunhos.');
+    const rows=await r.json();
+    const p=rows.find(x=>String(x.id)===String(id));
+    if(!p){toast('Rascunho não encontrado.');return;}
+    _postAtual={
+      ...p,
+      imagens_b64:normalizarImagensPost(p),
+      hashtags:normalizarHashtags(p.hashtags),
+      slides:Array.isArray(p.slides)?p.slides.filter(Boolean):[],
+      tema:p.tema||p.titulo||'',
+      formato:p.formato||'Post',
+      publico:p.publico||'Ciclo vital',
+      logo_cor:p.logo_cor||'',
+      logo_posicao:p.logo_posicao||'',
+      texto_posicao:p.texto_posicao||'',
+    };
+    document.getElementById('post-tema').value=_postAtual.tema||'';
+    document.getElementById('post-contexto').value=_postAtual.tendencia||'';
+    renderPostPreview();
+    toast('Rascunho aberto.');
+  }catch(e){toast('Erro ao abrir rascunho: '+e.message);}
+}
+async function carregarPostsSalvos(){
+  const el=document.getElementById('posts-history');if(!el)return;
+  try{
+    const r=await fetch('/api/data?table=posts');const rows=r.ok?await r.json():[];
+    if(!rows.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
+    el.innerHTML=rows.slice(0,12).map(p=>{
+      const imgs=normalizarImagensPost(p);
+      const label=p.formato||'Post';
+      const dt=p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):'';
+      return `<div class="alert-item" role="button" tabindex="0" onclick="abrirPostRascunho('${String(p.id||'').replace(/'/g,"")}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPostRascunho('${String(p.id||'').replace(/'/g,"")}')}">
+        <span style="min-width:0;flex:1"><strong>${p.titulo||p.tema||'Post sem título'}</strong><br><small>${label} · ${dt}${imgs.length?' · '+imgs.length+' arte'+(imgs.length>1?'s':''):''}</small></span>
+        <span class="alert-badge alert-yellow">${p.status||'rascunho'}</span>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="alert-empty">Não foi possível carregar os rascunhos agora.</div>';}
+}
+function limparPost(){
+  _postAtual=null;
+  ['post-tema','post-contexto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('post-preview-card').style.display='none';
+  document.getElementById('post-img-wrap').innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';
 }
 
 // Paleta única da marca — usada no app (:root) e nas artes geradas.
 // Calibrada a partir das referências visuais da Jaqueline (verde-sálvia editorial).
-const BRAND_SAGE='#8B9E76';       // verde-sálvia principal (igual ao --accent do app)
-const BRAND_DEEP='#5C6B4A';       // verde profundo para texto/logo em fundo claro
-const BRAND_CREAM='#F5F2EB';      // creme quente (igual ao --bg do app)
-const BRAND_SAND='#D6CCB0';       // areia (igual ao --header-bg do app)
-const BRAND_TERRACOTTA='#C17A5A'; // terracota suave, acento pontual
-const BRAND_INK='#3A4030';        // quase-preto esverdeado, alto contraste
+const BRAND_SAGE='#899776';       // verde-sálvia principal (igual ao --accent do app)
+const BRAND_DEEP='#59664A';       // verde profundo para texto/logo em fundo claro
+const BRAND_CREAM='#F5F1E8';      // creme quente (igual ao --bg do app)
+const BRAND_SAND='#D8CDB8';       // areia (igual ao --header-bg do app)
+const BRAND_TERRACOTTA='#C5654E'; // terracota suave, acento pontual
+const BRAND_INK='#3F4838';        // quase-preto esverdeado, alto contraste
 const BRAND_PALETTE=[BRAND_SAGE,BRAND_DEEP,BRAND_TERRACOTTA];
 
 function rgbToHsl(r,g,b){
@@ -1996,233 +2079,219 @@ function imageStats(b64){
     };img.onerror=()=>resolve({avg:.7,q10:.6,q50:.7,q90:.8});img.src='data:image/png;base64,'+b64;
   });
 }
-// ── GRID EDITORIAL FIXO ──────────────────────────────────────────────────────
-// A tela é dividida em 3 faixas horizontais que NUNCA se sobrepõem:
-//   HEADER (0–16%)  → exclusiva da logo + selo de credencial
-//   BODY   (16–88%) → exclusiva do texto (título + conteúdo)
-//   FOOTER (88–100%)→ exclusiva da paginação "n/total"
-// Dentro do BODY, left/right/center só variam a posição horizontal —
-// a altura disponível é sempre a mesma faixa seca, então a logo nunca
-// é invadida e o texto nunca precisa competir por espaço vertical.
-const GRID = { headerH: .13, footerH: .07 }; // logo/paginação nunca competem com o texto do corpo
+// ── COMPOSITOR EDITORIAL DA MARCA ─────────────────────────────────────────────
+// Uma identidade visual é calculada UMA vez para o conjunto inteiro.
+// A IA gera somente os fundos; o aplicativo controla texto, tipografia,
+// paginação e logo. Isso garante consistência e legibilidade.
+const GRID = { headerH:.125, footerH:.065, bodyTop:.17, bodyBottom:.88 };
 
 function zoneRect(zone,w,h){
-  const top = GRID.headerH, bodyH = 1 - GRID.headerH - GRID.footerH;
+  const y=GRID.bodyTop*h;
+  const bodyH=(GRID.bodyBottom-GRID.bodyTop)*h;
   const map={
-    left:   {x:.07, w:.58},
-    right:  {x:.35, w:.58},
-    center: {x:.14, w:.72},
+    left:  {x:.095,w:.63},
+    right: {x:.275,w:.63},
+    center:{x:.155,w:.69}
   };
-  const z = map[zone] || map.left;
-  return { x:z.x*w, y:top*h, w:z.w*w, h:bodyH*h };
+  const z=map[zone]||map.left;
+  return {x:z.x*w,y,w:z.w*w,h:bodyH};
 }
-function logoRect(pos,w,h){
-  // A logo SEMPRE fica dentro da faixa de header — nunca desce ao body.
-  // Apenas 2 posições reais (esquerda/direita); qualquer variante "b*"
-  // recebida de layouts antigos é tratada como sua equivalente no topo.
-  const z=.11, p=.05, headerH=GRID.headerH; // logo cabe com folga dentro da faixa de header
-  const yCentered = Math.max(p*.4, (headerH-z)/2);
-  const isLeft = pos==='tl' || pos==='bl';
-  return { x:(isLeft?p:1-p-z)*w, y:yCentered*h, w:z*w, h:z*h };
+function logoRect(pos,w,h,logoNaturalW,logoNaturalH){
+  // A posição é escolhida uma vez para o conjunto. O aspecto da logo é SEMPRE preservado.
+  const maxW=w*.18, maxH=h*.075, scale=Math.min(maxW/logoNaturalW,maxH/logoNaturalH);
+  const lw=logoNaturalW*scale, lh=logoNaturalH*scale;
+  const marginX=w*.055, marginY=h*.028;
+  const x=pos==='tl' ? marginX : w-marginX-lw;
+  const y=Math.max(marginY,(GRID.headerH*h-lh)/2);
+  return {x,y,w:lw,h:lh};
 }
-function footerRect(w,h){
-  const footerH = GRID.footerH;
-  return { x:.06*w, y:(1-footerH)*h, w:.88*w, h:footerH*h };
-}
+function footerRect(w,h){return {x:.06*w,y:.94*h,w:.88*w,h:.04*h};}
+
 async function avaliarTextoZona(b64,zone){
-  const st=await imageStats(b64); // fallback global; regional check follows below
-  return new Promise(resolve=>{
-    const img=new Image();img.onload=()=>{
-      const r=zoneRect(zone,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=100;c.height=100;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,100,100);
-      const d=ctx.getImageData(0,0,100,100).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
-      l.sort((a,b)=>a-b);const n=l.length||1,q15=l[Math.floor((n-1)*.15)]??st.q10,q50=l[Math.floor((n-1)*.5)]??st.q50,q85=l[Math.floor((n-1)*.85)]??st.q90;
-      resolve({zone,q15,q50,q85});
-    };img.onerror=()=>resolve({zone,q15:st.q10,q50:st.q50,q85:st.q90});img.src='data:image/png;base64,'+b64;
-  });
-}
-async function avaliarLogoZona(b64,pos){
   const st=await imageStats(b64);
   return new Promise(resolve=>{
     const img=new Image();img.onload=()=>{
-      const r=logoRect(pos,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=80;c.height=80;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,80,80);
-      const d=ctx.getImageData(0,0,80,80).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
-      l.sort((a,b)=>a-b);const n=l.length||1,q10=l[Math.floor((n-1)*.1)]??st.q10,q90=l[Math.floor((n-1)*.9)]??st.q90;
-      resolve({pos,q10,q90});
-    };img.onerror=()=>resolve({pos,q10:st.q10,q90:st.q90});img.src='data:image/png;base64,'+b64;
+      const r=zoneRect(zone,img.naturalWidth||1024,img.naturalHeight||1024);
+      const c=document.createElement('canvas');c.width=120;c.height=120;const ctx=c.getContext('2d');
+      ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,120,120);
+      const d=ctx.getImageData(0,0,120,120).data,l=[];
+      for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
+      l.sort((a,b)=>a-b);const n=l.length||1;
+      resolve({zone,q10:l[Math.floor((n-1)*.10)]??st.q10,q25:l[Math.floor((n-1)*.25)]??st.q10,q50:l[Math.floor((n-1)*.50)]??st.q50,q75:l[Math.floor((n-1)*.75)]??st.q90,q90:l[Math.floor((n-1)*.90)]??st.q90});
+    };img.onerror=()=>resolve({zone,q10:st.q10,q25:st.q10,q50:st.q50,q75:st.q90,q90:st.q90});img.src='data:image/png;base64,'+b64;
   });
 }
 async function escolherLayoutEditorial(imagens){
   if(!imagens?.length)throw new Error('Nenhuma imagem para analisar');
-  // A identidade é decidida UMA ÚNICA VEZ para o conjunto inteiro.
-  // Não recalculamos cor, posição ou tipografia slide a slide.
-  const textZones=['left','right','center'];
-  let melhorTexto=null;
-  for(const zone of textZones){
-    const stats=await Promise.all(imagens.map(b=>avaliarTextoZona(b,zone)));
-    const darkBySlide=stats.map(s=>textoKontrastRatio(BRAND_INK,s.q85));
-    const lightBySlide=stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q15));
-    const darkMin=Math.min(...darkBySlide),lightMin=Math.min(...lightBySlide);
-    const darkAvg=darkBySlide.reduce((a,v)=>a+v,0)/darkBySlide.length;
-    const lightAvg=lightBySlide.reduce((a,v)=>a+v,0)/lightBySlide.length;
-    // Mantemos o verde profundo como padrão quando ele passa com segurança.
-    let color=darkMin>=lightMin?BRAND_INK:BRAND_CREAM;
-    let minContrast=Math.max(darkMin,lightMin);
-    // Preferência estética pela versão escura se ambas forem seguras.
-    if(darkMin>=4.5) color=BRAND_INK,minContrast=darkMin;
-    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
-    const score=Math.min(minContrast,14)*.76 + ((zone==='left'?1:zone==='right'?.72:.55)*.24);
-    if(!melhorTexto||score>melhorTexto.score)melhorTexto={zone,color,minContrast,score,darkMin,lightMin};
-  }
-  // Se a cor escolhida não atingir o mínimo em algum slide, o compositor
-  // usa um véu editorial uniforme na área de texto; a cor NÃO muda.
-  const veilNeeded=melhorTexto.minContrast<5.0;
 
-  const logoPositions=['tr','tl'];let melhorLogo=null;
-  for(const pos of logoPositions){
-    const stats=await Promise.all(imagens.map(b=>avaliarLogoZona(b,pos)));
-    const darkMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_DEEP,s.q90)));
-    const lightMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q10)));
-    let color=darkMin>=lightMin?BRAND_DEEP:BRAND_CREAM;
-    let minContrast=Math.max(darkMin,lightMin);
-    // A logo mantém UMA única cor em todo o carrossel.
-    if(darkMin>=4.5) color=BRAND_DEEP,minContrast=darkMin;
-    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
-    const score=Math.min(minContrast,14)*.82 + (pos==='tr'?.18:(pos==='br'?.12:.06));
-    if(!melhorLogo||score>melhorLogo.score)melhorLogo={position:pos,color,minContrast,score,veilNeeded:minContrast<5.0};
+  // 1) Escolhe UMA área de texto para todos os slides.
+  const candidatos=['left','right','center']; let melhor=null;
+  for(const zone of candidatos){
+    const stats=await Promise.all(imagens.map(b=>avaliarTextoZona(b,zone)));
+    const escuro=stats.map(s=>textoKontrastRatio(BRAND_INK,s.q75));
+    const claro=stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q25));
+    const darkMin=Math.min(...escuro), lightMin=Math.min(...claro);
+    const darkMed=escuro.reduce((a,v)=>a+v,0)/escuro.length, lightMed=claro.reduce((a,v)=>a+v,0)/claro.length;
+    // Priorizamos alto contraste no pior slide e, depois, uma composição mais natural.
+    const useDark=darkMin>=4.5 || darkMin>=lightMin;
+    const color=useDark?BRAND_INK:BRAND_CREAM, min=useDark?darkMin:lightMin;
+    const aesthetic=(zone==='left'?1:.88)+(color===BRAND_INK?.08:0);
+    const score=Math.min(min,10)*.88+aesthetic*.12;
+    if(!melhor||score>melhor.score)melhor={zone,color,min,score,darkMin,lightMin};
   }
+
+  // 2) Se o pior slide não chega a contraste seguro, usamos uma base editorial
+  //    uniforme. A cor do texto NÃO muda depois disso.
+  const textVeil=melhor.min<4.5;
+
+  // 3) Logo: calcula uma única posição/cor olhando todas as artes.
+  const logoCandidates=['tl','tr']; let bestLogo=null;
+  for(const pos of logoCandidates){
+    const st=await Promise.all(imagens.map(b=>avaliarTextoZona(b,'center')));
+    // A faixa do header é deliberadamente quieta; escolhemos a identidade principal
+    // e aplicamos uma proteção só se o fundo daquele header não cooperar.
+    const logoDark=Math.min(...st.map(s=>textoKontrastRatio(BRAND_DEEP,s.q75)));
+    const logoLight=Math.min(...st.map(s=>textoKontrastRatio(BRAND_CREAM,s.q25)));
+    const color=logoDark>=4.5?BRAND_DEEP:(logoLight>=4.5?BRAND_CREAM:BRAND_DEEP);
+    const min=Math.max(logoDark,logoLight);
+    const score=Math.min(min,10)*.9+(pos==='tl'?.1:.06);
+    if(!bestLogo||score>bestLogo.score)bestLogo={position:pos,color,min,score,veil:min<4.5};
+  }
+
   return {
-    textZone:melhorTexto.zone,
-    textColor:melhorTexto.color,
-    textContrast:melhorTexto.minContrast,
-    textVeil:veilNeeded,
-    logoPosition:melhorLogo.position,
-    logoColor:melhorLogo.color,
-    logoContrast:melhorLogo.minContrast,
-    logoVeil:melhorLogo.veilNeeded,
-    fontTitle:'Newsreader',
-    fontBody:'Source Sans 3'
+    textZone:melhor.zone,
+    textColor:melhor.color,
+    textContrast:melhor.min,
+    textVeil,
+    logoPosition:bestLogo.position,
+    logoColor:bestLogo.color,
+    logoContrast:bestLogo.min,
+    logoVeil:bestLogo.veil,
+    fontTitle:'Spectral',
+    fontBody:'IBM Plex Sans'
   };
 }
-function drawSoftEditorialVeil(ctx,canvas,rect,color,alpha=0.82){
-  const pad=canvas.width*.035;const x=Math.max(0,rect.x-pad),y=Math.max(0,rect.y-pad),w=Math.min(canvas.width-x,rect.w+pad*2),h=Math.min(canvas.height-y,rect.h+pad*2);
+function drawSoftEditorialVeil(ctx,canvas,rect,color){
+  const pad=canvas.width*.03;
+  const x=Math.max(0,rect.x-pad),y=Math.max(0,rect.y-pad*.6);
+  const w=Math.min(canvas.width-x,rect.w+pad*2),h=Math.min(canvas.height-y,rect.h+pad*1.2);
   const grad=ctx.createLinearGradient(x,y,x+w,y);
-  if(color===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.92)');grad.addColorStop(.72,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}
-  else{grad.addColorStop(0,'rgba(244,241,232,.96)');grad.addColorStop(.72,'rgba(244,241,232,.82)');grad.addColorStop(1,'rgba(244,241,232,0)');}
+  if(color===BRAND_CREAM){
+    grad.addColorStop(0,'rgba(55,64,48,.88)');
+    grad.addColorStop(.72,'rgba(55,64,48,.40)');
+    grad.addColorStop(1,'rgba(55,64,48,0)');
+  }else{
+    grad.addColorStop(0,'rgba(247,243,234,.94)');
+    grad.addColorStop(.72,'rgba(247,243,234,.78)');
+    grad.addColorStop(1,'rgba(247,243,234,0)');
+  }
   ctx.save();ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);ctx.restore();
 }
 async function colorizeLogo(src,color){
-  return new Promise((resolve,reject)=>{const logo=new Image();logo.onload=()=>{const c=document.createElement('canvas');c.width=logo.naturalWidth;c.height=logo.naturalHeight;const x=c.getContext('2d');x.drawImage(logo,0,0);const px=x.getImageData(0,0,c.width,c.height),rgb=hexToRgb(color);for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rgb[0];px.data[i+1]=rgb[1];px.data[i+2]=rgb[2];}}x.putImageData(px,0,0);resolve(c);};logo.onerror=reject;logo.src=src;});
+  return new Promise((resolve,reject)=>{
+    const logo=new Image();logo.onload=()=>{
+      const c=document.createElement('canvas');c.width=logo.naturalWidth;c.height=logo.naturalHeight;
+      const x=c.getContext('2d');x.drawImage(logo,0,0);
+      const px=x.getImageData(0,0,c.width,c.height),rgb=hexToRgb(color);
+      for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rgb[0];px.data[i+1]=rgb[1];px.data[i+2]=rgb[2];}}
+      x.putImageData(px,0,0);resolve({canvas:c,w:logo.naturalWidth,h:logo.naturalHeight});
+    };logo.onerror=reject;logo.src=src;
+  });
 }
-// Mede quantas linhas um bloco de texto ocupa com uma dada fonte,
-// sem desenhar nada — usado para o auto-fit decidir o tamanho ideal.
-function medirLinhas(ctx,text,maxW,fontSpec){
-  ctx.font=fontSpec;
-  return wrapText(ctx,text,maxW);
-}
-
-// Auto-fit: começa no tamanho ideal e reduz até o conjunto
-// título+corpo caber inteiro na altura disponível, sem cortar texto
-// e sem invadir a faixa de header/footer do grid.
+function medirLinhas(ctx,text,maxW,fontSpec){ctx.font=fontSpec;return wrapText(ctx,text,maxW);}
 function ajustarTipografiaParaCaber(ctx,canvas,rect,titulo,content,temTitulo,fontTitleName,fontBodyName){
-  const maxW = rect.w*.84;
-  let titleSize = canvas.width*.065;
-  let bodySize  = canvas.width*.032;
-  let titleGap  = canvas.width*.075;
-  let bodyGap   = canvas.width*.044;
-  const minTitle = canvas.width*.042;
-  const minBody  = canvas.width*.024;
-
-  for(let tries=0; tries<14; tries++){
-    const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
-    const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
-
-    const usedH = (temTitulo ? titleLines.length*titleGap + canvas.width*.018 : 0)
-                + bodyLines.length*bodyGap;
-
-    if (usedH <= rect.h*.92 || (titleSize<=minTitle && bodySize<=minBody)) {
-      return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
-    }
-    // Reduz proporcionalmente e tenta de novo
-    titleSize = Math.max(minTitle, titleSize*.92);
-    bodySize  = Math.max(minBody,  bodySize*.92);
-    titleGap  = titleSize*1.16;
-    bodyGap   = bodySize*1.38;
+  const maxW=rect.w*.88;
+  let titleSize=canvas.width*.074, bodySize=canvas.width*.035;
+  const minTitle=canvas.width*.048, minBody=canvas.width*.026;
+  for(let tries=0;tries<18;tries++){
+    const titleLines=temTitulo?medirLinhas(ctx,titulo,maxW,`700 ${Math.round(titleSize)}px "${fontTitleName}", serif`):[];
+    const bodyLines=medirLinhas(ctx,content,maxW,`500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+    const titleGap=titleSize*1.02, bodyGap=bodySize*1.34;
+    const used=(temTitulo?titleLines.length*titleGap+canvas.width*.028:0)+bodyLines.length*bodyGap;
+    if(used<=rect.h*.74 || (titleSize<=minTitle&&bodySize<=minBody))
+      return {titleSize,bodySize,titleGap,bodyGap,titleLines,bodyLines};
+    titleSize=Math.max(minTitle,titleSize*.93);
+    bodySize=Math.max(minBody,bodySize*.93);
   }
-  // Fallback (não deveria chegar aqui): retorna o último estado calculado
-  const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
-  const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
-  return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
+  const titleLines=temTitulo?medirLinhas(ctx,titulo,maxW,`700 ${Math.round(titleSize)}px "${fontTitleName}", serif`):[];
+  const bodyLines=medirLinhas(ctx,content,maxW,`500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+  return {titleSize,bodySize,titleGap:titleSize*1.02,bodyGap:bodySize*1.34,titleLines,bodyLines};
 }
-
 function desenharTextoArte(b64,slideText,titulo,isCarousel,index,total,editorialLayout){
   return new Promise((resolve,reject)=>{
     const img=new Image();img.onload=async()=>{
       try{await document.fonts.ready;}catch(_e){}
-      const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;
+      const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const L=editorialLayout,rect=zoneRect(L.textZone,canvas.width,canvas.height),fg=L.textColor;
+      if(L.textVeil)drawSoftEditorialVeil(ctx,canvas,rect,fg);
 
-      const L=editorialLayout, rect=zoneRect(L.textZone,canvas.width,canvas.height), fg=L.textColor;
-      if(L.textVeil) drawSoftEditorialVeil(ctx,canvas,rect,fg);
+      const content=String(slideText||'').trim();
+      const temTitulo=isCarousel&&index===0&&!!titulo;
+      const fit=ajustarTipografiaParaCaber(ctx,canvas,rect,titulo||'',content,temTitulo,L.fontTitle,L.fontBody);
+      const xText=rect.x+rect.w*.035;
+      let y=rect.y+rect.h*.10;
 
-      const content = String(slideText||'').trim();
-      const temTitulo = isCarousel && index===0 && !!titulo;
+      // Pequeno acento editorial — sempre igual em todos os slides.
+      ctx.save();ctx.fillStyle=BRAND_TERRACOTTA;ctx.fillRect(xText,y-8,Math.max(26,canvas.width*.028),3);ctx.restore();
+      y+=canvas.width*.02;
 
-      // Auto-fit: nunca corta texto, apenas reduz a fonte até caber
-      // inteiramente dentro da faixa segura do grid (rect).
-      const fit = ajustarTipografiaParaCaber(ctx, canvas, rect, titulo||'', content, temTitulo, L.fontTitle, L.fontBody);
-
-      ctx.fillStyle = fg; ctx.textAlign='left'; ctx.textBaseline='top';
-      let y = rect.y + rect.h*.06;
-      const xText = rect.x + rect.w*.08;
-
-      if (temTitulo) {
-        ctx.font = `700 ${Math.round(fit.titleSize)}px "${L.fontTitle}", serif`;
-        fit.titleLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.titleGap; });
-        y += canvas.width*.018;
+      if(temTitulo){
+        ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
+        ctx.font=`700 ${Math.round(fit.titleSize)}px "${L.fontTitle}", serif`;
+        fit.titleLines.forEach(line=>{ctx.fillText(line,xText,y);y+=fit.titleGap;});
+        y+=canvas.width*.018;
       }
-      ctx.font = `500 ${Math.round(fit.bodySize)}px "${L.fontBody}", sans-serif`;
-      fit.bodyLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.bodyGap; });
+      ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
+      ctx.font=`500 ${Math.round(fit.bodySize)}px "${L.fontBody}", sans-serif`;
+      fit.bodyLines.forEach(line=>{ctx.fillText(line,xText,y);y+=fit.bodyGap;});
 
+      // Um detalhe editorial no final do bloco, somente se houver espaço.
+      const endY=y+canvas.width*.02;
+      if(endY<rect.y+rect.h*.88){
+        ctx.save();ctx.strokeStyle=BRAND_SAND;ctx.lineWidth=Math.max(1,canvas.width*.0015);
+        ctx.beginPath();ctx.moveTo(xText,endY);ctx.lineTo(xText+canvas.width*.045,endY);ctx.stroke();ctx.restore();
+      }
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };img.onerror=reject;img.src='data:image/png;base64,'+b64;
   });
 }
-async function aplicarLogoPost(b64, logoLayout=null, pageInfo=null){
+async function aplicarLogoPost(b64,logoLayout=null,pageInfo=null){
   return new Promise((resolve,reject)=>{
-    const base=new Image();base.onload=async()=>{try{
-      const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(base,0,0,canvas.width,canvas.height);
+    const base=new Image();base.onload=async()=>{
+      try{
+        const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;
+        const ctx=canvas.getContext('2d');ctx.drawImage(base,0,0,canvas.width,canvas.height);
+        const source=await colorizeLogo('/assets/logo-jaqueline-dark.png',logoLayout.logoColor);
+        const r=logoRect(logoLayout.logoPosition,canvas.width,canvas.height,source.w,source.h);
 
-      // ── Logo — sempre dentro da faixa de header (grid fixo) ──
-      const r=logoRect(logoLayout.logoPosition,canvas.width,canvas.height),logo=await colorizeLogo('/assets/logo-jaqueline-dark.png',logoLayout.logoColor);
-      if(logoLayout.logoVeil){
-        const grad=ctx.createLinearGradient(r.x,r.y,r.x+r.w,r.y);
-        if(logoLayout.logoColor===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}
-        else{grad.addColorStop(0,'rgba(244,241,232,.86)');grad.addColorStop(1,'rgba(244,241,232,0)');}
-        ctx.save();ctx.fillStyle=grad;ctx.fillRect(r.x-canvas.width*.012,r.y-canvas.height*.012,r.w+canvas.width*.024,r.h+canvas.height*.024);ctx.restore();
-      }
-      ctx.drawImage(logo,r.x,r.y,r.w,r.h);
+        if(logoLayout.logoVeil){
+          const grad=ctx.createLinearGradient(r.x,r.y,r.x+r.w,r.y);
+          const dark=logoLayout.logoColor===BRAND_CREAM;
+          grad.addColorStop(0,dark?'rgba(58,64,50,.68)':'rgba(246,242,233,.86)');
+          grad.addColorStop(1,dark?'rgba(58,64,50,0)':'rgba(246,242,233,0)');
+          ctx.save();ctx.fillStyle=grad;ctx.fillRect(r.x-canvas.width*.015,r.y-canvas.height*.012,r.w+canvas.width*.03,r.h+canvas.height*.024);ctx.restore();
+        }
+        ctx.drawImage(source.canvas,r.x,r.y,r.w,r.h);
 
-      // ── Paginação "n/total" — sempre dentro da faixa de footer (grid fixo),
-      //    nunca colada ao texto do corpo ──
-      if(pageInfo?.current&&pageInfo?.total){
-        const fr = footerRect(canvas.width, canvas.height);
-        const label = `${pageInfo.current} / ${pageInfo.total}`;
-        ctx.save();
-        ctx.fillStyle = logoLayout.textColor;
-        ctx.globalAlpha = .72;
-        ctx.font = `600 ${Math.max(16,Math.round(canvas.width*.024))}px "Source Sans 3", sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, fr.x, fr.y + fr.h*.5);
-        ctx.restore();
-      }
-
-      resolve(canvas.toDataURL('image/png').split(',')[1]);
-    }catch(e){reject(e)}};base.onerror=reject;base.src='data:image/png;base64,'+b64;
+        if(pageInfo?.current&&pageInfo?.total){
+          const fr=footerRect(canvas.width,canvas.height);
+          ctx.save();ctx.fillStyle=logoLayout.textColor;ctx.globalAlpha=.72;
+          ctx.font=`500 ${Math.max(16,Math.round(canvas.width*.022))}px "IBM Plex Sans",sans-serif`;
+          ctx.textAlign='left';ctx.textBaseline='middle';
+          ctx.fillText(`${String(pageInfo.current).padStart(2,'0')} / ${String(pageInfo.total).padStart(2,'0')}`,fr.x,fr.y+fr.h*.5);
+          ctx.restore();
+        }
+        resolve(canvas.toDataURL('image/png').split(',')[1]);
+      }catch(e){reject(e)}
+    };base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
 }
 function renderArtesPost(){
-  const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+  const wrap=document.getElementById('post-img-wrap');
+  if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';return;}
+  const imgs=_postAtual.imagens_b64;
+  wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}" onclick="event.stopPropagation()">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
@@ -2231,32 +2300,30 @@ async function gerarArtePost(){
   const slides=isCarousel?rawSlides.slice(0,7):[rawSlides.slice(0,4).join(' • ')||_postAtual.gancho||_postAtual.titulo||''];
   if(isCarousel&&slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
   try{
-    const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundos...</div>';_postAtual.imagens_b64=[];
+    const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundos editoriais...</div>';_postAtual.imagens_b64=[];
     const backgrounds=[];
-    const brandGuide=`Use the approved brand palette: sage green ${BRAND_SAGE}, deep sage ${BRAND_DEEP}, warm cream ${BRAND_CREAM}, sand ${BRAND_SAND} and subtle terracotta ${BRAND_TERRACOTTA}. Elegant clinical/editorial aesthetic, calm, human, organic shapes, generous negative space. Do NOT render any text, title, logo, watermark, page number, credentials or fake typography anywhere in the image. Keep the top ~15% and bottom ~8% of the frame visually quiet and uncluttered (no busy detail there) — the application will place a logo and a page number in those exact bands. Leave the vertical center calm for readable overlay text.`;
+    const brandGuide=`Use the approved Jaqueline Vieira palette: sage green ${BRAND_SAGE}, deep sage ${BRAND_DEEP}, warm cream ${BRAND_CREAM}, sand ${BRAND_SAND} and subtle terracotta ${BRAND_TERRACOTTA}. Visual direction: refined clinical editorial, quiet luxury, gentle human warmth, magazine-quality composition. Use ONE clear focal subject or illustration per slide and generous negative space only where the application will place text. Avoid generic pastel templates, excessive blobs, childish icons, stock-photo aesthetics, or empty “AI dashboard” layouts. Do NOT render any text, title, logo, watermark, page number, credentials or fake typography. Keep the top ~12% and bottom ~7% visually quiet. Keep the chosen text zone calm and free of busy details.`;
     for(let i=0;i<slides.length;i++){
       wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Criando composição ${i+1} de ${slides.length}...</div>`;
-      const cover=isCarousel&&i===0?`This is the cover. Create a strong visual area with generous negative space for a title and short introduction.`:`This is an internal slide. Do not create a title area; create a calm visual composition that supports this idea: ${slides[i]}.`;
-      const prompt=`Create ONE single Instagram ${formato} background, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. ${brandGuide} ${cover} Keep the composition coherent with all other slides, but vary imagery and organic forms naturally. No mockup, no Instagram UI.`;
+      const cover=isCarousel&&i===0
+        ?`This is the COVER. Give it the strongest visual hook and a sophisticated editorial composition with one focal image/illustration and a large clean text field.`
+        :`This is an INTERNAL slide. Do not create a title area. Build a visually engaging scene/illustration that supports this idea: ${slides[i]}.`;
+      const prompt=`Create ONE single Instagram ${formato} background, slide ${i+1} of ${slides.length}. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. ${brandGuide} ${cover} Keep visual language coherent with the other slides but do not repeat the same layout or illustration. The post should look authored by a premium psychology practice, not generated by an AI template. No mockup, no Instagram UI.`;
       backgrounds.push(await gerarImagem(prompt));
     }
-    wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Definindo identidade visual única...</div>';
+    wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Construindo identidade tipográfica...</div>';
     const layout=await escolherLayoutEditorial(backgrounds);
     const finais=[];
     for(let i=0;i<backgrounds.length;i++){
       wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Finalizando arte ${i+1} de ${backgrounds.length}...</div>`;
       let composita=await desenharTextoArte(backgrounds[i],slides[i],_postAtual.titulo||'',isCarousel,i,backgrounds.length,layout);
       composita=await aplicarLogoPost(composita,layout,isCarousel?{current:i+1,total:backgrounds.length}:null);
-      finais.push(composita);
-      _postAtual.imagens_b64=finais.slice();renderArtesPost();
+      finais.push(composita);_postAtual.imagens_b64=finais.slice();renderArtesPost();
     }
-    _postAtual.img_b64=finais[0]||null;_postAtual.logo_cor=layout.logoColor;_postAtual.logo_posicao=layout.logoPosition;_postAtual.logo_contraste=layout.logoContrast;_postAtual.texto_posicao=layout.textZone;_postAtual.texto_cor=layout.textColor;_postAtual.texto_contraste=layout.textContrast;_postAtual.prompt='Fundos gerados separadamente; identidade tipográfica, cor, posição do texto, posição da logo e paginação definidas uma única vez para o conjunto inteiro.';
+    _postAtual.img_b64=finais[0]||null;_postAtual.logo_cor=layout.logoColor;_postAtual.logo_posicao=layout.logoPosition;_postAtual.logo_contraste=layout.logoContrast;_postAtual.texto_posicao=layout.textZone;_postAtual.texto_cor=layout.textColor;_postAtual.texto_contraste=layout.textContrast;
+    _postAtual.prompt='Fundos gerados separadamente; identidade de marca definida uma única vez para o conjunto.';
     renderArtesPost();
   }catch(e){console.error(e);toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
-}
-async function exportarArtesPost(){
-  const imgs=_postAtual?.imagens_b64||[];if(!imgs.length){toast('Gere a arte antes de exportar.');return;}
-  try{const files=imgs.map((b,i)=>{const bytes=atob(b),arr=new Uint8Array(bytes.length);for(let j=0;j<bytes.length;j++)arr[j]=bytes.charCodeAt(j);return new File([arr],`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});});if(navigator.share&&navigator.canShare&&navigator.canShare({files})){await navigator.share({title:_postAtual?.titulo||'Post — Jaqueline Vieira',text:'Arte para Instagram',files});return;}imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});toast('Seu navegador não oferece compartilhamento de arquivos; as artes foram baixadas em PNG.');}catch(e){if(e?.name==='AbortError')return;toast('Não foi possível abrir o compartilhamento: '+e.message);}
 }
 
 async function salvarPost(){
@@ -2266,7 +2333,7 @@ async function salvarPost(){
       titulo:_postAtual.titulo||_postAtual.tema,tema:_postAtual.tema,
       formato:_postAtual.formato,publico:_postAtual.publico,
       legenda:_postAtual.legenda||'',hashtags:(_postAtual.hashtags||[]).join(' '),
-      cta:_postAtual.cta||'',img_b64:_postAtual.img_b64||null,imagens_b64:_postAtual.imagens_b64||[],logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
+      cta:_postAtual.cta||'',slides:_postAtual.slides||[],img_b64:_postAtual.img_b64||null,imagens_b64:_postAtual.imagens_b64||[],logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
       fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+ (document.getElementById('post-contexto').value||''),
       status:'rascunho',logo_posicao:_postAtual.logo_posicao||'',logo_contraste:_postAtual.logo_contraste||'',texto_posicao:_postAtual.texto_posicao||'',texto_cor:_postAtual.texto_cor||'',texto_contraste:_postAtual.texto_contraste||'',criado_em:new Date().toISOString()
     };

@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
+  --bg:#F5F2EB;--card:#fff;--header-bg:#D6CCB0;
   --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
-  --accent:#8b9e6e;--accent2:#c4a882;--accent3:#7a9fb5;
+  --accent:#8B9E76;--accent2:#C17A5A;--accent3:#5C6B4A;
   --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
   --sand:#c4a882;
 }
@@ -1952,12 +1952,14 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-const BRAND_SAGE='#899776';
-const BRAND_DEEP='#687257';
-const BRAND_CREAM='#F4F1E8';
-const BRAND_SAND='#D8CDB8';
-const BRAND_TERRACOTTA='#C5654E';
-const BRAND_INK='#4F5845';
+// Paleta única da marca — usada no app (:root) e nas artes geradas.
+// Calibrada a partir das referências visuais da Jaqueline (verde-sálvia editorial).
+const BRAND_SAGE='#8B9E76';       // verde-sálvia principal (igual ao --accent do app)
+const BRAND_DEEP='#5C6B4A';       // verde profundo para texto/logo em fundo claro
+const BRAND_CREAM='#F5F2EB';      // creme quente (igual ao --bg do app)
+const BRAND_SAND='#D6CCB0';       // areia (igual ao --header-bg do app)
+const BRAND_TERRACOTTA='#C17A5A'; // terracota suave, acento pontual
+const BRAND_INK='#3A4030';        // quase-preto esverdeado, alto contraste
 const BRAND_PALETTE=[BRAND_SAGE,BRAND_DEEP,BRAND_TERRACOTTA];
 
 function rgbToHsl(r,g,b){
@@ -1994,15 +1996,38 @@ function imageStats(b64){
     };img.onerror=()=>resolve({avg:.7,q10:.6,q50:.7,q90:.8});img.src='data:image/png;base64,'+b64;
   });
 }
+// ── GRID EDITORIAL FIXO ──────────────────────────────────────────────────────
+// A tela é dividida em 3 faixas horizontais que NUNCA se sobrepõem:
+//   HEADER (0–16%)  → exclusiva da logo + selo de credencial
+//   BODY   (16–88%) → exclusiva do texto (título + conteúdo)
+//   FOOTER (88–100%)→ exclusiva da paginação "n/total"
+// Dentro do BODY, left/right/center só variam a posição horizontal —
+// a altura disponível é sempre a mesma faixa seca, então a logo nunca
+// é invadida e o texto nunca precisa competir por espaço vertical.
+const GRID = { headerH: .13, footerH: .07 }; // logo/paginação nunca competem com o texto do corpo
+
 function zoneRect(zone,w,h){
+  const top = GRID.headerH, bodyH = 1 - GRID.headerH - GRID.footerH;
   const map={
-    left:{x:.065,y:.17,w:.46,h:.60},
-    right:{x:.475,y:.17,w:.46,h:.60},
-    center:{x:.17,y:.19,w:.66,h:.55}
-  };const z=map[zone]||map.left;return {x:z.x*w,y:z.y*h,w:z.w*w,h:z.h*h};
+    left:   {x:.07, w:.58},
+    right:  {x:.35, w:.58},
+    center: {x:.14, w:.72},
+  };
+  const z = map[zone] || map.left;
+  return { x:z.x*w, y:top*h, w:z.w*w, h:bodyH*h };
 }
 function logoRect(pos,w,h){
-  const z=.22,p=.045;const map={tr:{x:1-p-z,y:p},br:{x:1-p-z,y:1-p-z},tl:{x:p,y:p},bl:{x:p,y:1-p-z}};const q=map[pos]||map.tr;return {x:q.x*w,y:q.y*h,w:z*w,h:z*h};
+  // A logo SEMPRE fica dentro da faixa de header — nunca desce ao body.
+  // Apenas 2 posições reais (esquerda/direita); qualquer variante "b*"
+  // recebida de layouts antigos é tratada como sua equivalente no topo.
+  const z=.11, p=.05, headerH=GRID.headerH; // logo cabe com folga dentro da faixa de header
+  const yCentered = Math.max(p*.4, (headerH-z)/2);
+  const isLeft = pos==='tl' || pos==='bl';
+  return { x:(isLeft?p:1-p-z)*w, y:yCentered*h, w:z*w, h:z*h };
+}
+function footerRect(w,h){
+  const footerH = GRID.footerH;
+  return { x:.06*w, y:(1-footerH)*h, w:.88*w, h:footerH*h };
 }
 async function avaliarTextoZona(b64,zone){
   const st=await imageStats(b64); // fallback global; regional check follows below
@@ -2052,7 +2077,7 @@ async function escolherLayoutEditorial(imagens){
   // usa um véu editorial uniforme na área de texto; a cor NÃO muda.
   const veilNeeded=melhorTexto.minContrast<5.0;
 
-  const logoPositions=['tr','br','tl','bl'];let melhorLogo=null;
+  const logoPositions=['tr','tl'];let melhorLogo=null;
   for(const pos of logoPositions){
     const stats=await Promise.all(imagens.map(b=>avaliarLogoZona(b,pos)));
     const darkMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_DEEP,s.q90)));
@@ -2088,22 +2113,75 @@ function drawSoftEditorialVeil(ctx,canvas,rect,color,alpha=0.82){
 async function colorizeLogo(src,color){
   return new Promise((resolve,reject)=>{const logo=new Image();logo.onload=()=>{const c=document.createElement('canvas');c.width=logo.naturalWidth;c.height=logo.naturalHeight;const x=c.getContext('2d');x.drawImage(logo,0,0);const px=x.getImageData(0,0,c.width,c.height),rgb=hexToRgb(color);for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rgb[0];px.data[i+1]=rgb[1];px.data[i+2]=rgb[2];}}x.putImageData(px,0,0);resolve(c);};logo.onerror=reject;logo.src=src;});
 }
+// Mede quantas linhas um bloco de texto ocupa com uma dada fonte,
+// sem desenhar nada — usado para o auto-fit decidir o tamanho ideal.
+function medirLinhas(ctx,text,maxW,fontSpec){
+  ctx.font=fontSpec;
+  return wrapText(ctx,text,maxW);
+}
+
+// Auto-fit: começa no tamanho ideal e reduz até o conjunto
+// título+corpo caber inteiro na altura disponível, sem cortar texto
+// e sem invadir a faixa de header/footer do grid.
+function ajustarTipografiaParaCaber(ctx,canvas,rect,titulo,content,temTitulo,fontTitleName,fontBodyName){
+  const maxW = rect.w*.84;
+  let titleSize = canvas.width*.065;
+  let bodySize  = canvas.width*.032;
+  let titleGap  = canvas.width*.075;
+  let bodyGap   = canvas.width*.044;
+  const minTitle = canvas.width*.042;
+  const minBody  = canvas.width*.024;
+
+  for(let tries=0; tries<14; tries++){
+    const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
+    const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+
+    const usedH = (temTitulo ? titleLines.length*titleGap + canvas.width*.018 : 0)
+                + bodyLines.length*bodyGap;
+
+    if (usedH <= rect.h*.92 || (titleSize<=minTitle && bodySize<=minBody)) {
+      return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
+    }
+    // Reduz proporcionalmente e tenta de novo
+    titleSize = Math.max(minTitle, titleSize*.92);
+    bodySize  = Math.max(minBody,  bodySize*.92);
+    titleGap  = titleSize*1.16;
+    bodyGap   = bodySize*1.38;
+  }
+  // Fallback (não deveria chegar aqui): retorna o último estado calculado
+  const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
+  const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+  return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
+}
+
 function desenharTextoArte(b64,slideText,titulo,isCarousel,index,total,editorialLayout){
   return new Promise((resolve,reject)=>{
     const img=new Image();img.onload=async()=>{
       try{await document.fonts.ready;}catch(_e){}
       const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const L=editorialLayout,rect=zoneRect(L.textZone,canvas.width,canvas.height),fg=L.textColor;
-      if(L.textVeil)drawSoftEditorialVeil(ctx,canvas,rect,fg);
-      ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
-      const content=String(slideText||'').trim();let y=rect.y+rect.h*.08;const maxW=rect.w*.84;
-      if(isCarousel&&index===0&&titulo){
-        ctx.font=`700 ${Math.round(canvas.width*.065)}px "${L.fontTitle}", serif`;
-        wrapText(ctx,titulo,maxW).slice(0,4).forEach(line=>{ctx.fillText(line,rect.x+rect.w*.08,y);y+=canvas.width*.075;});
-        y+=canvas.width*.018;
+
+      const L=editorialLayout, rect=zoneRect(L.textZone,canvas.width,canvas.height), fg=L.textColor;
+      if(L.textVeil) drawSoftEditorialVeil(ctx,canvas,rect,fg);
+
+      const content = String(slideText||'').trim();
+      const temTitulo = isCarousel && index===0 && !!titulo;
+
+      // Auto-fit: nunca corta texto, apenas reduz a fonte até caber
+      // inteiramente dentro da faixa segura do grid (rect).
+      const fit = ajustarTipografiaParaCaber(ctx, canvas, rect, titulo||'', content, temTitulo, L.fontTitle, L.fontBody);
+
+      ctx.fillStyle = fg; ctx.textAlign='left'; ctx.textBaseline='top';
+      let y = rect.y + rect.h*.06;
+      const xText = rect.x + rect.w*.08;
+
+      if (temTitulo) {
+        ctx.font = `700 ${Math.round(fit.titleSize)}px "${L.fontTitle}", serif`;
+        fit.titleLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.titleGap; });
+        y += canvas.width*.018;
       }
-      ctx.font=`500 ${Math.round(canvas.width*.032)}px "${L.fontBody}", sans-serif`;
-      wrapText(ctx,content,maxW).slice(0,9).forEach(line=>{ctx.fillText(line,rect.x+rect.w*.08,y);y+=canvas.width*.044;});
+      ctx.font = `500 ${Math.round(fit.bodySize)}px "${L.fontBody}", sans-serif`;
+      fit.bodyLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.bodyGap; });
+
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };img.onerror=reject;img.src='data:image/png;base64,'+b64;
   });
@@ -2112,14 +2190,32 @@ async function aplicarLogoPost(b64, logoLayout=null, pageInfo=null){
   return new Promise((resolve,reject)=>{
     const base=new Image();base.onload=async()=>{try{
       const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(base,0,0,canvas.width,canvas.height);
+
+      // ── Logo — sempre dentro da faixa de header (grid fixo) ──
       const r=logoRect(logoLayout.logoPosition,canvas.width,canvas.height),logo=await colorizeLogo('/assets/logo-jaqueline-dark.png',logoLayout.logoColor);
       if(logoLayout.logoVeil){
-        const grad=ctx.createLinearGradient(r.x,r.y,r.x+r.w,r.y);if(logoLayout.logoColor===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}else{grad.addColorStop(0,'rgba(244,241,232,.86)');grad.addColorStop(1,'rgba(244,241,232,0)');}ctx.save();ctx.fillStyle=grad;ctx.fillRect(r.x-canvas.width*.012,r.y-canvas.height*.012,r.w+canvas.width*.024,r.h+canvas.height*.024);ctx.restore();
+        const grad=ctx.createLinearGradient(r.x,r.y,r.x+r.w,r.y);
+        if(logoLayout.logoColor===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}
+        else{grad.addColorStop(0,'rgba(244,241,232,.86)');grad.addColorStop(1,'rgba(244,241,232,0)');}
+        ctx.save();ctx.fillStyle=grad;ctx.fillRect(r.x-canvas.width*.012,r.y-canvas.height*.012,r.w+canvas.width*.024,r.h+canvas.height*.024);ctx.restore();
       }
       ctx.drawImage(logo,r.x,r.y,r.w,r.h);
+
+      // ── Paginação "n/total" — sempre dentro da faixa de footer (grid fixo),
+      //    nunca colada ao texto do corpo ──
       if(pageInfo?.current&&pageInfo?.total){
-        const label=`${pageInfo.current}/${pageInfo.total}`;ctx.save();ctx.fillStyle=logoLayout.textColor;ctx.font=`600 ${Math.max(18,Math.round(canvas.width*.026))}px "Source Sans 3", sans-serif`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(label,canvas.width*.045,canvas.height*.045);ctx.restore();
+        const fr = footerRect(canvas.width, canvas.height);
+        const label = `${pageInfo.current} / ${pageInfo.total}`;
+        ctx.save();
+        ctx.fillStyle = logoLayout.textColor;
+        ctx.globalAlpha = .72;
+        ctx.font = `600 ${Math.max(16,Math.round(canvas.width*.024))}px "Source Sans 3", sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, fr.x, fr.y + fr.h*.5);
+        ctx.restore();
       }
+
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     }catch(e){reject(e)}};base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
@@ -2137,7 +2233,7 @@ async function gerarArtePost(){
   try{
     const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundos...</div>';_postAtual.imagens_b64=[];
     const backgrounds=[];
-    const brandGuide=`Use the approved brand palette: sage green #899776, deep sage #687257, warm cream #F4F1E8, sand #D8CDB8 and subtle terracotta #C5654E. Elegant clinical/editorial aesthetic, calm, human, organic shapes, generous negative space. Do NOT render any text, title, logo, watermark, page number, credentials or fake typography. Leave intentional quiet space for the application to add the content later.`;
+    const brandGuide=`Use the approved brand palette: sage green ${BRAND_SAGE}, deep sage ${BRAND_DEEP}, warm cream ${BRAND_CREAM}, sand ${BRAND_SAND} and subtle terracotta ${BRAND_TERRACOTTA}. Elegant clinical/editorial aesthetic, calm, human, organic shapes, generous negative space. Do NOT render any text, title, logo, watermark, page number, credentials or fake typography anywhere in the image. Keep the top ~15% and bottom ~8% of the frame visually quiet and uncluttered (no busy detail there) — the application will place a logo and a page number in those exact bands. Leave the vertical center calm for readable overlay text.`;
     for(let i=0;i<slides.length;i++){
       wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Criando composição ${i+1} de ${slides.length}...</div>`;
       const cover=isCarousel&&i===0?`This is the cover. Create a strong visual area with generous negative space for a title and short introduction.`:`This is an internal slide. Do not create a title area; create a calm visual composition that supports this idea: ${slides[i]}.`;

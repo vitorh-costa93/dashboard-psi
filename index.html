@@ -291,22 +291,119 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
+
+/* ═══════════════════════════════════════════════════════════
+   JAQUELINE VIEIRA — SISTEMA VISUAL
+   Editorial, sereno e profissional. Menos “dashboard de IA”,
+   mais consultório: espaço, hierarquia e poucos elementos.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#f4f1e8;
+  --card:#fbfaf6;
+  --header-bg:#e8e4d8;
+  --text:#4f5845;
+  --muted:#7c8075;
+  --light:#f1eee5;
+  --accent:#899776;
+  --accent2:#d8cdb8;
+  --accent3:#c5654e;
+  --danger:#a85d52;
+  --border:#ddd8ca;
+  --shadow:0 2px 12px rgba(76,79,62,.055);
+  --sand:#c9bca3;
+  --deep:#687257;
+  --cream:#f4f1e8;
+  --ink:#4f5845;
+}
+html{background:var(--bg);}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;letter-spacing:-.005em;}
+.app-header{background:var(--header-bg);padding:18px 30px;gap:16px;border-bottom:1px solid rgba(104,114,87,.18);box-shadow:none;}
+.brand-mark{width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex:0 0 46px;}
+.brand-mark img{width:46px;height:46px;object-fit:contain;opacity:.9;}
+.brand-copy h1{font-family:'Playfair Display',serif;font-size:1.34rem;font-weight:600;letter-spacing:.01em;color:var(--deep);}
+.brand-copy p{font-size:.67rem;letter-spacing:.08em;color:#777c70;margin-top:3px;text-transform:uppercase;}
+.nav-tabs{background:rgba(251,250,246,.94);border-bottom:1px solid var(--border);padding:0 30px;top:82px;}
+.nav-tab{padding:13px 18px;font-size:.78rem;color:#85897f;font-weight:500;border-bottom:1px solid transparent;}
+.nav-tab.active{color:var(--deep);border-bottom:2px solid var(--accent);font-weight:600;}
+.nav-tab:hover:not(.active){color:var(--ink);}
+.sub-tabs{gap:22px;margin-bottom:22px;border-bottom:1px solid var(--border);}
+.sub-tab{padding:9px 1px 10px;font-size:.78rem;color:#85897f;}
+.sub-tab.active{color:var(--deep);border-bottom:2px solid var(--accent);}
+.section-wrap,.dash-wrap{max-width:1180px;padding:28px 28px 48px;}
+.reload-bar{margin-bottom:18px;}
+#last-update{font-size:.7rem;color:var(--muted);}
+#btn-reload{background:transparent;color:var(--deep);border:1px solid #c6cbb9;border-radius:5px;padding:7px 13px;}
+.kpi-row{gap:16px;margin-bottom:16px;}
+.kpi-card,.chart-card,.panel,.generator-card,.preview-card,.search-bar-wrap,.alerts-panel,.post-suggestion{border:1px solid var(--border);border-radius:8px;box-shadow:none;background:var(--card);}
+.kpi-card{padding:22px 22px 17px;text-align:left;}
+.kpi-main{color:var(--deep);font-size:2.15rem;}
+.kpi-label{border-top:1px solid var(--border);color:#898c83;letter-spacing:.08em;}
+.kpi-comp.up{color:#718460}.kpi-comp.dn{color:#a85d52}
+.charts-row,.bottom-row{gap:16px;}
+.chart-card{padding:18px 16px 14px;}
+.chart-card h3,.panel h3{font-family:'DM Sans',sans-serif;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:#747a6d;font-weight:600;}
+.panel{padding:18px 16px;}
+.alerts-panel{padding:18px 20px;margin-bottom:16px;}
+.alerts-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--deep);}
+.alert-item{border-radius:5px;background:#f1eee5;padding:9px 11px;}
+.alert-badge{border-radius:4px;}
+.generator-card,.preview-card{padding:24px;margin-bottom:18px;}
+.generator-card h3,.preview-card h3{font-size:1rem;color:var(--deep);margin-bottom:16px;}
+.gen-field label,.search-bar-title{color:#7f8378;font-size:.65rem;letter-spacing:.09em;}
+.gen-field select,.gen-field input,.prompt-area,.title-field,.filter-select{background:#f8f6ef;border:1px solid #d8d4c8;border-radius:5px;color:var(--ink);}
+.gen-field select:focus,.gen-field input:focus,.prompt-area:focus,.title-field:focus,.filter-select:focus{border-color:#aeb89d;box-shadow:0 0 0 2px rgba(137,151,118,.10);}
+.btn-primary{background:var(--accent);border-radius:5px;padding:9px 18px;box-shadow:none;}
+.btn-primary:hover{background:var(--deep);opacity:1;}
+.btn-secondary{color:var(--deep);border-color:#b7c0a7;border-radius:5px;}
+.btn-secondary:hover{background:var(--accent);color:#fff;}
+.btn-save{background:#c9bca3;border-radius:5px;}
+.btn-pdf{background:var(--deep);border-radius:5px;}
+.btn-danger{border-radius:5px;color:#a85d52;}
+.view-tab{border-radius:5px;}
+.view-tab.active{background:var(--accent);border-color:var(--accent);}
+.badge{border-radius:4px;}
+.post-grid{gap:16px;}
+.post-suggestion{padding:20px;}
+.post-suggestion h4{font-size:1rem;color:var(--deep);}
+.post-tag{border-radius:4px;background:#eeece3;color:#6f7766;border:1px solid #e0dccf;}
+.post-editor{gap:16px;}
+.post-preview,.post-slide{background:#f8f6ef;border-color:#ddd8ca;border-radius:5px;}
+.post-art-grid{gap:16px;}
+.post-art-card{border-radius:8px;border-color:var(--border);box-shadow:none;}
+.post-art-card .post-art-caption{background:#fbfaf6;}
+.post-art-card .post-art-download{color:var(--deep);}
+.post-export-bar{border-top:1px solid var(--border);}
+.tag.tipo{background:#e9eee1;color:#667354;border-color:#cfd8c2;}
+.ativ-card,.post-suggestion,.generator-card,.preview-card{transition:transform .18s ease,border-color .18s ease;}
+.ativ-card:hover,.post-suggestion:hover{transform:translateY(-1px);border-color:#c8cfba;}
+@media(max-width:900px){
+  .section-wrap,.dash-wrap{padding:22px 16px 38px;}
+  .app-header{padding:15px 18px;}
+  .nav-tabs{padding:0 14px;top:76px;}
+}
+@media(max-width:600px){
+  .brand-mark,.brand-mark img{width:38px;height:38px;}
+  .brand-mark{flex-basis:38px;}
+  .brand-copy h1{font-size:1.14rem;}
+  .brand-copy p{font-size:.58rem;}
+  .nav-tab{padding:11px 13px;}
+}
 </style>
 </head>
 <body>
 
 <div class="app-header">
-  <div class="logo">🌻</div>
-  <div>
-    <h1>CONSULTÓRIO</h1>
-    <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+  <div class="brand-mark"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira — Psicóloga"/></div>
+  <div class="brand-copy">
+    <h1>Jaqueline Vieira</h1>
+    <p>PSICÓLOGA &nbsp;·&nbsp; CRP 06/191478</p>
   </div>
 </div>
 
 <div class="nav-tabs">
-  <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
-  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">🎨 Espaço de criação</button>
-  <button class="nav-tab" id="tab-btn-prontuarios" onclick="switchTab('prontuarios')">📋 Prontuários</button>
+  <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">Espaço de criação</button>
+  <button class="nav-tab" id="tab-btn-prontuarios" onclick="switchTab('prontuarios')">Prontuários</button>
 </div>
 
 <!-- ── PÁGINA DASHBOARD ── -->
@@ -347,7 +444,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 
   <div class="alerts-panel" id="dashboard-alerts">
-    <div class="alerts-title">🔔 Atenção</div>
+    <div class="alerts-title">Atenção</div>
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
   </div>
 
@@ -396,16 +493,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div class="section-wrap">
 
   <div class="sub-tabs">
-    <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">🖼 Gerar Imagens</button>
-    <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">📊 Gerar Apresentação</button>
-    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">📱 Posts & Tendências</button>
+    <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">Atividades</button>
+    <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">Apresentações</button>
+    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">Posts & tendências</button>
   </div>
 
   <!-- ═══ SUB-ABA: IMAGENS ═══ -->
   <div class="sub-page active" id="subpage-imagens">
 
     <div class="generator-card">
-      <h3>✨ Criar nova atividade</h3>
+      <h3>Criar nova atividade</h3>
       <div class="gen-row">
         <div class="gen-field">
           <label>Tipo de atividade</label>
@@ -736,7 +833,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
   <!-- Biblioteca de pacientes em grade -->
   <div class="view-bar" style="margin-top:16px;">
-    <h2>📋 Prontuários <span id="pront-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
+    <h2>Prontuários <span id="pront-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
   </div>
   <div class="pront-lib-grid" id="pront-pac-grid"></div>
 
@@ -1863,6 +1960,25 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+const BRAND_SAGE='#899776';
+const BRAND_DEEP='#687257';
+const BRAND_CREAM='#F4F1E8';
+const BRAND_SAND='#D8CDB8';
+const BRAND_TERRACOTTA='#C5654E';
+const BRAND_INK='#4F5845';
+const BRAND_PALETTE=[BRAND_SAGE,BRAND_DEEP,BRAND_TERRACOTTA];
+async function corDeMarcaParaArte(b64){
+  // A arte pode influenciar a escolha, mas somente dentro da paleta da marca.
+  // A decisão acontece UMA vez no primeiro slide e é reaproveitada no carrossel inteiro.
+  try{
+    const extracted=await extrairCorAcento(b64);
+    const [r,g,b]=hexToRgb(extracted);
+    const [h]=rgbToHsl(r,g,b);
+    if((h>=345||h<=28) && r>g*1.08) return BRAND_TERRACOTTA;
+    if(h>=55&&h<=155) return BRAND_SAGE;
+    return BRAND_DEEP;
+  }catch(_e){ return BRAND_SAGE; }
+}
 function rgbToHsl(r,g,b){
   r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;
   if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
@@ -1884,7 +2000,7 @@ function extrairCorAcento(b64){
       let best=[30,0];for(const [hue,score] of bins)if(score>best[1])best=[hue,score];
       const rgb=hslToRgb(best[1] ? best[0] : 25,best[1] ? .45 : .35,best[1] ? .43 : .40);
       resolve('#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join(''));
-    };img.onerror=()=>resolve('#9b5b46');img.src='data:image/png;base64,'+b64;
+    };img.onerror=()=>resolve(BRAND_SAGE);img.src='data:image/png;base64,'+b64;
   });
 }
 async function aplicarLogoPost(b64, corPreferida, pageInfo=null){
@@ -1901,79 +2017,85 @@ async function aplicarLogoPost(b64, corPreferida, pageInfo=null){
       // Mantém a transparência real da logo: nenhuma caixa/fundo é desenhada atrás dela.
       ctx.drawImage(off,x,y,targetW,targetH);
 
-      // Numeração do carrossel é aplicada pelo aplicativo, nunca pela IA.
-      // Assim, posição, fonte, tamanho e cor ficam idênticos em todos os slides.
-      if(pageInfo?.current && pageInfo?.total){
-        const label=`${pageInfo.current}/${pageInfo.total}`;
-        ctx.save();
-        ctx.font='600 '+Math.max(18,Math.round(canvas.width*.026))+'px "DM Sans", sans-serif';
-        ctx.textAlign='right';ctx.textBaseline='bottom';
-        const margin=Math.max(18,Math.round(canvas.width*.035));
-        // Fica no canto inferior esquerdo para não competir com a logo no canto inferior direito.
-        const tx=margin, ty=canvas.height-margin;
-        // Usa a mesma cor de identidade do carrossel, com uma sombra discreta para manter legibilidade.
-        ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=4;ctx.shadowOffsetY=1;
-        ctx.fillStyle=corPreferida||'#9b5b46';
-        ctx.fillText(label,tx,ty);
-        ctx.restore();
-      }
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';};base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
 }
 function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+  const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+}
+function hexToRgb(hex){
+  const m=(hex||'').replace('#','').match(/^([0-9a-f]{6})$/i); if(!m)return [137,151,118];
+  return [parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16)];
+}
+function luminancia(rgb){
+  const v=rgb.map(x=>{x/=255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)});
+  return .2126*v[0]+.7152*v[1]+.0722*v[2];
+}
+function corTexto(cor){
+  const l=luminancia(hexToRgb(cor)); return l>.52?'#3f332d':'#fffaf4';
+}
+function wrapText(ctx,text,maxWidth){
+  const words=String(text||'').split(/\s+/); const lines=[]; let line='';
+  for(const word of words){
+    const test=line?line+' '+word:word;
+    if(ctx.measureText(test).width<=maxWidth||!line){line=test;continue;}
+    lines.push(line); line=word;
+  }
+  if(line)lines.push(line); return lines;
+}
+function desenharTextoArte(b64, slideText, titulo, isCarousel, index, total, cor){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(); img.onload=async()=>{
+      try{ await document.fonts.ready; }catch(_e){}
+      const canvas=document.createElement('canvas'); canvas.width=img.naturalWidth||1024; canvas.height=img.naturalHeight||1024;
+      const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const accent=cor||BRAND_SAGE, fg=BRAND_INK, margin=Math.round(canvas.width*.085), maxW=Math.round(canvas.width*.76);
+      // Mantém uma área editorial limpa e consistente para o texto, sem depender do gerador de imagens para tipografia.
+      if(isCarousel && index===0){
+        ctx.fillStyle=accent; ctx.font=`700 ${Math.round(canvas.width*.070)}px "Playfair Display", serif`;
+        const titleLines=wrapText(ctx,titulo,maxW); let y=Math.round(canvas.height*.25);
+        titleLines.slice(0,4).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.082);});
+        ctx.fillStyle=fg; ctx.font=`500 ${Math.round(canvas.width*.031)}px "DM Sans", sans-serif`;
+        const sub=wrapText(ctx,slideText,maxW); y+=Math.round(canvas.width*.025); sub.slice(0,6).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.042);});
+      }else{
+        ctx.fillStyle=accent; ctx.font=`700 ${Math.round(canvas.width*.048)}px "Playfair Display", serif`;
+        const lines=wrapText(ctx,slideText,maxW); let y=Math.round(canvas.height*.28);
+        // O conteúdo é o único texto editorial nos slides internos; o título nunca é repetido.
+        lines.slice(0,9).forEach(line=>{ctx.fillText(line,margin,y);y+=Math.round(canvas.width*.060);});
+      }
+      if(isCarousel){
+        ctx.save(); ctx.fillStyle=accent; ctx.font=`600 ${Math.round(canvas.width*.026)}px "DM Sans", sans-serif`; ctx.textAlign='left'; ctx.textBaseline='bottom';
+        ctx.fillText(`${index+1}/${total}`,margin,canvas.height-margin); ctx.restore();
+      }
+      resolve(canvas.toDataURL('image/png').split(',')[1]);
+    }; img.onerror=reject; img.src='data:image/png;base64,'+b64;
+  });
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
-  const formato=_postAtual.formato||'Carrossel', isCarousel=formato.toLowerCase()==='carrossel', rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides:[], slides=isCarousel?rawSlides.slice(0,7):[rawSlides.filter(Boolean).slice(0,4).join(' • ')||_postAtual.gancho||''];
+  const formato=_postAtual.formato||'Carrossel', isCarousel=formato.toLowerCase()==='carrossel', rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides:[];
+  const slides=isCarousel?rawSlides.slice(0,7):rawSlides.filter(Boolean).slice(0,4);
   if(isCarousel && slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
+  if(!isCarousel && !slides.length){toast('Não há conteúdo suficiente para gerar a arte.');return;}
   try{
     const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
-    // A identidade visual é definida uma única vez para todo o carrossel.
-    // A primeira arte determina a cor de destaque; todos os demais slides
-    // reutilizam exatamente a mesma cor para a logo e a mesma família tipográfica.
-    let identidadeCor=null;
-    const identidadeTipografia="Use exactly the same typography across every slide: Playfair Display for titles/headlines and DM Sans for body text, with the same weights, hierarchy and letter spacing. Do not change font families between slides.";
+    let identidadeCor=BRAND_SAGE;
     for(let i=0;i<slides.length;i++){
-      document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${slides.length}...</div>`;
-      const tituloCapa = isCarousel && i===0 ? `The post title is: "${_postAtual.titulo||''}". Show this title prominently on this cover only.` : `Do NOT show or repeat the post title on this slide. This is an internal carousel slide and should focus only on its specific content.`;
-      const pagina = isCarousel ? `Do NOT create any page number, slide number, "1/7", "2/7" or similar indicator; the application adds it afterward.` : '';
-      const prompt=`Create ONE single Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Slide content: ${slides[i]}. ${tituloCapa} ${pagina} Visual identity: elegant editorial psychology brand, warm cream/off-white base, organic shapes, refined typography, restrained earthy palette, professional and welcoming, no childish clichés unless appropriate. ${identidadeTipografia} This is a ${isCarousel?'carousel':'single-post'} and must have a coherent visual system. Keep text concise and legible in Portuguese. Do not include logos, names, credentials, phone numbers, page numbers or fake claims; leave a calm lower-right area for the brand lockup. ${isCarousel?'Do not repeat the cover title on internal slides. Each internal slide must visually and conceptually develop only its own point.':''} Content only, no mockup, no Instagram UI.`;
+      wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundo ${i+1} de ${slides.length}...</div>`;
+      // A IA gera somente o fundo/elementos visuais. Todo texto, tipografia, paginação e logo são aplicados pelo aplicativo.
+      const prompt=`Create ONE single clean visual background for an Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Visual concept related to this slide: ${slides[i]}. ${isCarousel&&i===0?`This is the cover; create a strong but calm editorial composition suitable for the title: ${_postAtual.titulo||''}.`:''} Elegant editorial psychology brand using the Jaqueline Vieira visual system: warm cream/off-white #F4F1E8, sage green #899776, deep sage #687257, warm sand #D8CDB8 and restrained terracotta #C5654E. Organic shapes, generous negative space, refined editorial composition, quiet luxury, professional and welcoming. NO text, NO letters, NO words, NO typography, NO logo, NO names, NO credentials, NO page numbers, NO UI, NO watermark. Leave generous negative space for text overlay, preferably center-left or center area, and a calm lower-right area for a brand lockup. The application will add all typography and branding afterward. High visual coherence across a 7-slide carousel; do not invent written content.`;
       const raw=await gerarImagem(prompt);
-      if(!identidadeCor) identidadeCor=await extrairCorAcento(raw);
+      if(i===0) identidadeCor=await corDeMarcaParaArte(raw);
       const finalB64=await aplicarLogoPost(raw,identidadeCor,isCarousel?{current:i+1,total:slides.length}:null);
-      _postAtual.imagens_b64.push(finalB64);
-      _postAtual.logo_cor=identidadeCor;
-      renderArtesPost();
+      const composed=await desenharTextoArte(finalB64,slides[i],_postAtual.titulo||'',isCarousel,i,slides.length,identidadeCor);
+      _postAtual.imagens_b64.push(composed); _postAtual.logo_cor=identidadeCor; renderArtesPost();
     }
-    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;_postAtual.prompt='Gerado como carrossel de '+slides.length+' slides; cada slide foi gerado individualmente.';
+    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
+    _postAtual.prompt='Fundo gerado por IA; tipografia, paginação e identidade visual aplicadas deterministicamente pelo aplicativo.';
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
-}
-
-async function exportarArtesPost(){
-  const imgs=_postAtual?.imagens_b64||[];
-  if(!imgs.length){toast('Gere a arte antes de exportar.');return;}
-  try{
-    const files=imgs.map((b,i)=>{
-      const bytes=atob(b),arr=new Uint8Array(bytes.length);
-      for(let j=0;j<bytes.length;j++) arr[j]=bytes.charCodeAt(j);
-      return new File([arr],`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});
-    });
-    // Web Share usa os arquivos PNG originais, sem redimensionar ou recomprimir.
-    if(navigator.share && navigator.canShare && navigator.canShare({files})){
-      await navigator.share({title:_postAtual?.titulo||'Post — Jaqueline Vieira',text:'Arte para Instagram',files});
-      return;
-    }
-    // Fallback para navegadores sem compartilhamento de arquivos.
-    imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});
-    toast('Seu navegador não oferece compartilhamento de arquivos; as artes foram baixadas em PNG na resolução original.');
-  }catch(e){
-    if(e?.name==='AbortError') return;
-    toast('Não foi possível abrir o compartilhamento: '+e.message);
-  }
 }
 
 async function salvarPost(){

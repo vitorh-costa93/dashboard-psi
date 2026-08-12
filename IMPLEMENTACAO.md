@@ -105,3 +105,22 @@ O radar acompanha assuntos públicos recentes; ele não acessa mensagens, dados 
 - A cor da logo também é escolhida por contraste real, alternando entre verde profundo e creme claro.
 - A paginação `1/7 ... 7/7` continua sendo desenhada pelo aplicativo, nunca pela IA.
 - Os campos de posição/cor/contraste do texto e da logo são armazenados junto ao rascunho.
+
+
+## V6 — Legibilidade real do carrossel
+
+- A escolha da cor do texto agora usa percentis de luminância (q10/q50/q90), e não somente média.
+- O sistema exige contraste mínimo de referência antes de escolher entre texto escuro e claro.
+- A cor do texto é independente da cor da logo.
+- A logo também é avaliada pelo pior caso entre os slides; a escolha não usa mais o menor contraste de forma invertida.
+- O véu editorial foi reforçado para funcionar como suporte de leitura, sem card branco.
+- A paginação usa a mesma cor da tipografia e permanece aplicada pelo aplicativo.
+
+## Endurecimento da identidade visual dos posts
+
+A identidade visual de um post/carrossel é definida uma única vez sobre o conjunto completo de imagens e então congelada. Não existe recalculo de cor ou posição por slide.
+
+- Carrossel: mesma cor de texto, mesma cor de logo, mesma posição de texto, mesma posição de logo e mesma tipografia em todos os 7 slides.
+- Contraste: se a cor escolhida não atingir segurança suficiente em algum slide, o sistema adiciona um véu editorial na área fixa de texto/logo; a cor não muda.
+- A IA gera apenas os fundos/composição visual. Texto, título, numeração e logo são compostos pelo aplicativo.
+- Título: somente na capa do carrossel. Posts simples podem usar o título uma única vez.

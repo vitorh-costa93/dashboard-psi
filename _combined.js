@@ -1,883 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Visão Geral — Consultório</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
-  --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
-  --accent:#8b9e6e;--accent2:#c4a882;--accent3:#7a9fb5;
-  --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
-  --sand:#c4a882;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
 
-/* ── Header ── */
-.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
-.app-header .logo{font-size:26px;}
-.app-header h1{font-family:'Newsreader',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
-.app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
 
-/* ── Nav tabs ── */
-.nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow-x:auto;}
-.nav-tab{padding:11px 18px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.nav-tab:hover:not(.active){color:var(--text);}
 
-/* ── Sub-tabs (dentro de Atividades) ── */
-.sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
-.sub-tab{padding:8px 16px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
-.sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.sub-tab:hover:not(.active){color:var(--text);}
-.sub-page{display:none;}
-.sub-page.active{display:block;}
-
-/* ── Páginas ── */
-.page{display:none;}
-.page.active{display:block;}
-
-#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px;color:var(--muted);}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-#error-msg{display:none;max-width:440px;margin:60px auto;background:#fff8f7;border:1px solid #f0d5d0;border-radius:10px;padding:24px;text-align:center;}
-#error-msg h3{color:var(--danger);margin-bottom:8px;font-family:'Newsreader',serif;}
-#error-msg p{color:var(--muted);font-size:.85rem;line-height:1.6;}
-
-#dashboard{display:none;}
-.dash-wrap{max-width:1400px;margin:0 auto;padding:16px 20px 32px;}
-
-.reload-bar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;}
-#last-update{font-size:.75rem;color:var(--muted);}
-#btn-reload{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;transition:opacity .2s;}
-#btn-reload:hover{opacity:.85;}
-
-/* ── KPIs ── */
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
-.kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.kpi-main{font-family:'Newsreader',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;}
-.kpi-comp{font-size:.72rem;margin:2px 0;}
-.kpi-comp.up{color:#27ae60;}.kpi-comp.dn{color:var(--danger);}.kpi-comp.neu{color:var(--muted);}
-.kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
-
-/* ── Gráficos — 3 colunas iguais ── */
-.charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;min-width:0;}
-.chart-card h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;}
-.chart-card canvas{width:100%!important;max-height:200px;}
-
-/* ── Bottom row — 3 colunas iguais ── */
-.bottom-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
-.panel h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
-
-/* ── Saldo — formato badge ── */
-.saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
-.saldo-table tr{border-bottom:1px solid var(--border);}
-.saldo-table tr:last-child{border:none;}
-.saldo-table td{padding:7px 8px;vertical-align:middle;}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:500;}
-.badge-red{background:#fdecea;color:var(--danger);}
-.badge-yellow{background:#fef9ec;color:#b38a2a;}
-.badge-green{background:#eef4eb;color:var(--accent);}
-
-/* ── Donut ── */
-.donut-wrap{position:relative;max-width:280px;margin:0 auto;}
-.donut-wrap canvas{width:100%!important;}
-.profile-select{font-family:'Source Sans 3',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
-
-/* ── Motivos ── */
-.motivos-wrap{display:flex;flex-direction:column;gap:4px;}
-.motivo-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f0e8;font-size:.78rem;}
-.motivo-row:last-child{border:none;}
-.motivo-nome{color:var(--text);flex:1;margin-right:8px;}
-.motivo-qty{font-weight:600;color:var(--text);min-width:24px;text-align:right;}
-
-@media(max-width:900px){
-  .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
-}
-
-/* ══════════════════════════════════════════════════════════
-   LAYOUT COMUM: Atividades / Prontuários
-   ══════════════════════════════════════════════════════════ */
-.section-wrap{max-width:1100px;margin:0 auto;padding:16px 20px 40px;}
-
-.generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;}
-.generator-card h3{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
-
-.gen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
-.gen-field label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;}
-.gen-field select,.gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
-.gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent);}
-
-.prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'Source Sans 3',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
-.prompt-area:focus{outline:none;border-color:var(--accent);}
-
-.gen-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
-.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
-.btn-primary:hover{opacity:.88;}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
-.btn-secondary{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:7px;padding:8px 16px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;}
-.btn-secondary:hover{background:var(--accent);color:#fff;}
-.btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
-.gen-status{font-size:.78rem;color:var(--muted);font-style:italic;}
-
-.preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;display:none;}
-.preview-card h3{font-family:'Newsreader',serif;font-size:.92rem;font-weight:600;margin-bottom:14px;}
-.preview-img-wrap{border:2px dashed var(--border);border-radius:8px;overflow:hidden;background:#fafaf8;min-height:280px;display:flex;align-items:center;justify-content:center;}
-.preview-img-wrap img{max-width:100%;max-height:480px;object-fit:contain;display:block;}
-.preview-placeholder{color:var(--muted);font-size:.82rem;text-align:center;padding:40px;}
-.preview-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
-.btn-save{background:var(--sand);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;}
-.btn-save:hover{opacity:.88;}
-.btn-pdf{background:#3a3020;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'Source Sans 3',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
-.btn-pdf:hover{opacity:.88;}
-.btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;}
-
-.title-field{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'Source Sans 3',sans-serif;font-size:.85rem;margin-bottom:10px;}
-.title-field:focus{outline:none;border-color:var(--accent);}
-
-/* ── Barra de busca inline (sempre visível, abaixo do form) ── */
-.search-bar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;}
-.search-bar-title{font-size:.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
-.search-filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.search-filters-row .filter-select{flex:1;min-width:130px;}
-.filter-select{border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;color:var(--text);background:var(--light);cursor:pointer;}
-.filter-select:focus{outline:none;border-color:var(--accent);}
-.btn-clear-filter{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'Source Sans 3',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.btn-clear-filter:hover{border-color:var(--danger);color:var(--danger);}
-.search-count{font-size:.7rem;color:var(--accent);margin-top:8px;min-height:14px;}
-
-/* ── Biblioteca ── */
-.biblioteca-empty{text-align:center;padding:60px 20px;color:var(--muted);}
-.biblioteca-empty .icon{font-size:40px;margin-bottom:12px;}
-.biblioteca-empty p{font-size:.85rem;line-height:1.6;}
-
-.view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-.view-bar h2{font-family:'Newsreader',serif;font-size:1rem;font-weight:600;color:var(--text);}
-.view-tabs{display:flex;gap:4px;}
-.view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'Source Sans 3',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
-.view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-
-.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
-.list-view{display:flex;flex-direction:column;gap:8px;}
-
-.ativ-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s;}
-.ativ-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
-.ativ-card-img{width:100%;height:150px;object-fit:cover;background:#f0ece4;}
-.ativ-card-img-placeholder{width:100%;height:150px;background:linear-gradient(135deg,#e8e2d8,#d6ccb0);display:flex;align-items:center;justify-content:center;font-size:32px;}
-.ativ-card-body{padding:10px 12px;}
-.ativ-card-title{font-size:.82rem;font-weight:500;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ativ-card-tags{display:flex;flex-wrap:wrap;gap:4px;}
-.tag{font-size:.65rem;padding:2px 7px;border-radius:10px;background:var(--light);color:var(--muted);border:1px solid var(--border);}
-.tag.tipo{background:#eef4eb;color:#5a7a46;border-color:#c8dbb8;}
-.tag.faixa{background:#fef9ec;color:#8a6820;border-color:#e8d898;}
-.tag.tema{background:#f0edf8;color:#6a4fa0;border-color:#ccc0e8;}
-.ativ-card-actions{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
-.btn-xs{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
-.btn-xs:hover{border-color:var(--accent);color:var(--accent);}
-.btn-xs.pdf{border-color:#3a3020;color:#3a3020;}
-.btn-xs.del{border-color:var(--danger);color:var(--danger);}
-
-.ativ-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
-.ativ-row-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:#f0ece4;flex-shrink:0;}
-.ativ-row-thumb-placeholder{width:48px;height:48px;border-radius:6px;background:linear-gradient(135deg,#e8e2d8,#d6ccb0);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.ativ-row-info{flex:1;min-width:0;}
-.ativ-row-title{font-size:.82rem;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ativ-row-actions{display:flex;gap:6px;flex-shrink:0;}
-
-/* ── Modal ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
-.modal-overlay.open{display:flex;}
-.modal{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18);animation:modalIn .2s ease;position:relative;max-height:90vh;overflow-y:auto;}
-@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-.modal h3{font-family:'Newsreader',serif;font-size:1.05rem;margin-bottom:14px;}
-.modal img{width:100%;border-radius:8px;margin-bottom:14px;}
-.modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-.modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
-
-/* ── Toast ── */
-.toast{position:fixed;bottom:24px;right:24px;left:24px;background:#2a2a2a;color:#fff;border-radius:8px;padding:10px 18px;font-size:.82rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;}
-.toast.show{opacity:1;}
-@media(min-width:600px){.toast{left:auto;max-width:360px;}}
-
-/* ══════════════════════════════════════════════════════════
-   PRONTUÁRIOS
-   ══════════════════════════════════════════════════════════ */
-.pront-form-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
-.pront-section-title{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.pront-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:600px){.pront-fields-grid{grid-template-columns:1fr;}}
-.pront-field{display:flex;flex-direction:column;gap:5px;}
-.pront-label{font-size:.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-.pront-input{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'Source Sans 3',sans-serif;font-size:.83rem;color:var(--text);background:var(--light);-webkit-appearance:none;appearance:none;}
-.pront-input:focus{outline:none;border-color:var(--accent);}
-.pront-textarea{min-height:110px;resize:vertical;line-height:1.55;}
-.pront-audio-bar{display:flex;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap;}
-.pront-form-actions{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
-
-.pac-card{width:100%;text-align:left;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 10px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;color:var(--text);}
-.pac-card:hover{border-color:var(--accent);background:#f4f8f0;}
-.pac-card.ativo{background:var(--accent);color:#fff;border-color:var(--accent);}
-.pac-card .pac-nome{font-weight:500;margin-bottom:2px;}
-.pac-card .pac-meta{font-size:.68rem;opacity:.75;}
-
-.pront-lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
-.pront-lib-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;}
-.pront-lib-card:hover{border-color:var(--accent);transform:translateY(-1px);}
-.pront-lib-card.ativo{border-color:var(--accent);background:#f4f8f0;}
-
-/* ── PPT sub-tab ── */
-.ppt-preview{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-top:16px;}
-.ppt-slide-preview{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--light);}
-.ppt-slide-preview h4{font-family:'Newsreader',serif;font-size:.88rem;margin-bottom:8px;color:var(--text);}
-.ppt-slide-preview ul{padding-left:18px;font-size:.8rem;line-height:1.7;color:var(--text);}
-
-/* ── Loading inline pequeno ── */
-.inline-loading{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;padding:20px;justify-content:center;}
-.inline-spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-
-@media(max-width:780px){
-  .gen-row{grid-template-columns:1fr 1fr;}
-  .search-filters-row{flex-direction:column;align-items:stretch;}
-}
-
-
-/* ── Alertas inteligentes ── */
-.alerts-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:12px;}
-.alerts-title{font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;margin-bottom:10px;}
-.alert-group{margin-top:10px;}
-.alert-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px;}
-.alert-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;background:var(--light);margin-bottom:5px;font-size:.8rem;}
-.alert-item:last-child{margin-bottom:0;}
-.alert-badge{font-size:.68rem;padding:3px 7px;border-radius:12px;white-space:nowrap;}
-.alert-green{background:#eef4eb;color:#557548;}
-.alert-red{background:#fdecea;color:var(--danger);}
-.alert-yellow{background:#fef9ec;color:#9a7724;}
-.alert-empty{color:var(--muted);font-size:.78rem;font-style:italic;padding:5px 0;}
-
-/* ── Posts ── */
-.post-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.post-suggestion{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:16px;box-shadow:var(--shadow);}
-.post-suggestion h4{font-family:'Newsreader',serif;font-size:.95rem;margin-bottom:7px;}
-.post-meta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
-.post-tag{font-size:.67rem;padding:3px 8px;border-radius:12px;background:var(--light);color:var(--muted);}
-.post-source{font-size:.7rem;color:var(--muted);line-height:1.45;margin-top:8px;}
-.post-editor{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.post-editor .full{grid-column:1/-1;}
-.post-preview{background:var(--light);border:1px solid var(--border);border-radius:8px;padding:14px;white-space:pre-wrap;line-height:1.55;font-size:.82rem;}
-.post-slides{display:flex;flex-direction:column;gap:7px;}
-.post-slide{padding:9px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:.78rem;}
-.post-history{margin-top:16px;}
-.post-brand-note{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45;display:flex;gap:7px;align-items:flex-start;}
-.post-brand-note::before{content:'✓';font-weight:700;color:#6d8d82;}
-.post-logo-preview{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;}
-.post-logo-preview img{height:42px;width:auto;object-fit:contain;}
-.post-export-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-.post-export-bar span{font-size:.72rem;color:var(--muted);}
-.post-art-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
-.post-art-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
-.post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
-.post-art-card .post-art-caption{padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.post-art-card .post-art-download{font-size:.7rem;color:var(--accent);text-decoration:none;}
-.post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
-@media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
-@media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
-
-/* ═══════════════════════════════════════════════════════════
-   JAQUELINE VIEIRA — SISTEMA VISUAL
-   Editorial, sereno e profissional. Menos “dashboard de IA”,
-   mais consultório: espaço, hierarquia e poucos elementos.
-   ═══════════════════════════════════════════════════════════ */
-:root{
-  --bg:#f4f1e8;
-  --card:#fbfaf6;
-  --header-bg:#e8e4d8;
-  --text:#4f5845;
-  --muted:#7c8075;
-  --light:#f1eee5;
-  --accent:#899776;
-  --accent2:#d8cdb8;
-  --accent3:#c5654e;
-  --danger:#a85d52;
-  --border:#ddd8ca;
-  --shadow:0 2px 12px rgba(76,79,62,.055);
-  --sand:#c9bca3;
-  --deep:#687257;
-  --cream:#f4f1e8;
-  --ink:#4f5845;
-}
-html{background:var(--bg);}
-body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;letter-spacing:-.005em;}
-.app-header{background:var(--header-bg);min-height:92px;padding:13px 30px;border-bottom:1px solid rgba(104,114,87,.18);box-shadow:none;display:flex;align-items:center;}
-.brand-mark{width:155px;height:66px;display:flex;align-items:center;justify-content:flex-start;flex:0 0 155px;}
-.brand-mark img{width:155px;height:auto;max-height:66px;object-fit:contain;object-position:left center;opacity:.94;display:block;}
-.nav-tabs{background:rgba(251,250,246,.94);border-bottom:1px solid var(--border);padding:0 30px;top:92px;}
-.nav-tab{padding:13px 18px;font-size:.78rem;color:#85897f;font-weight:500;border-bottom:1px solid transparent;}
-.nav-tab.active{color:var(--deep);border-bottom:2px solid var(--accent);font-weight:600;}
-.nav-tab:hover:not(.active){color:var(--ink);}
-.sub-tabs{gap:22px;margin-bottom:22px;border-bottom:1px solid var(--border);}
-.sub-tab{padding:9px 1px 10px;font-size:.78rem;color:#85897f;}
-.sub-tab.active{color:var(--deep);border-bottom:2px solid var(--accent);}
-.section-wrap,.dash-wrap{max-width:1180px;padding:28px 28px 48px;}
-.reload-bar{margin-bottom:18px;}
-#last-update{font-size:.7rem;color:var(--muted);}
-#btn-reload{background:transparent;color:var(--deep);border:1px solid #c6cbb9;border-radius:5px;padding:7px 13px;}
-.kpi-row{gap:16px;margin-bottom:16px;}
-.kpi-card,.chart-card,.panel,.generator-card,.preview-card,.search-bar-wrap,.alerts-panel,.post-suggestion{border:1px solid var(--border);border-radius:8px;box-shadow:none;background:var(--card);}
-.kpi-card{padding:22px 22px 17px;text-align:left;}
-.kpi-main{color:var(--deep);font-size:2.15rem;}
-.kpi-label{border-top:1px solid var(--border);color:#898c83;letter-spacing:.08em;}
-.kpi-comp.up{color:#718460}.kpi-comp.dn{color:#a85d52}
-.charts-row,.bottom-row{gap:16px;}
-.chart-card{padding:18px 16px 14px;}
-.chart-card h3,.panel h3{font-family:'Source Sans 3',sans-serif;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:#747a6d;font-weight:600;}
-.panel{padding:18px 16px;}
-.alerts-panel{padding:18px 20px;margin-bottom:16px;}
-.alerts-title{font-family:'Newsreader',serif;font-size:1rem;color:var(--deep);}
-.alert-item{border-radius:5px;background:#f1eee5;padding:9px 11px;}
-.alert-badge{border-radius:4px;}
-.generator-card,.preview-card{padding:24px;margin-bottom:18px;}
-.generator-card h3,.preview-card h3{font-size:1rem;color:var(--deep);margin-bottom:16px;}
-.gen-field label,.search-bar-title{color:#7f8378;font-size:.65rem;letter-spacing:.09em;}
-.gen-field select,.gen-field input,.prompt-area,.title-field,.filter-select{background:#f8f6ef;border:1px solid #d8d4c8;border-radius:5px;color:var(--ink);}
-.gen-field select:focus,.gen-field input:focus,.prompt-area:focus,.title-field:focus,.filter-select:focus{border-color:#aeb89d;box-shadow:0 0 0 2px rgba(137,151,118,.10);}
-.btn-primary{background:var(--accent);border-radius:5px;padding:9px 18px;box-shadow:none;}
-.btn-primary:hover{background:var(--deep);opacity:1;}
-.btn-secondary{color:var(--deep);border-color:#b7c0a7;border-radius:5px;}
-.btn-secondary:hover{background:var(--accent);color:#fff;}
-.btn-save{background:#c9bca3;border-radius:5px;}
-.btn-pdf{background:var(--deep);border-radius:5px;}
-.btn-danger{border-radius:5px;color:#a85d52;}
-.view-tab{border-radius:5px;}
-.view-tab.active{background:var(--accent);border-color:var(--accent);}
-.badge{border-radius:4px;}
-.post-grid{gap:16px;}
-.post-suggestion{padding:20px;}
-.post-suggestion h4{font-size:1rem;color:var(--deep);}
-.post-tag{border-radius:4px;background:#eeece3;color:#6f7766;border:1px solid #e0dccf;}
-.post-editor{gap:16px;}
-.post-preview,.post-slide{background:#f8f6ef;border-color:#ddd8ca;border-radius:5px;}
-.post-art-grid{gap:16px;}
-.post-art-card{border-radius:8px;border-color:var(--border);box-shadow:none;}
-.post-art-card .post-art-caption{background:#fbfaf6;}
-.post-art-card .post-art-download{color:var(--deep);}
-.post-export-bar{border-top:1px solid var(--border);}
-.tag.tipo{background:#e9eee1;color:#667354;border-color:#cfd8c2;}
-.ativ-card,.post-suggestion,.generator-card,.preview-card{transition:transform .18s ease,border-color .18s ease;}
-.ativ-card:hover,.post-suggestion:hover{transform:translateY(-1px);border-color:#c8cfba;}
-@media(max-width:900px){
-  .section-wrap,.dash-wrap{padding:22px 16px 38px;}
-  .app-header{min-height:76px;padding:11px 18px;}
-  .nav-tabs{padding:0 14px;top:76px;}
-}
-@media(max-width:600px){
-  .brand-mark{width:125px;height:53px;flex-basis:125px;}
-  .brand-mark img{width:125px;max-height:53px;height:auto;}
-  .nav-tab{padding:11px 13px;}
-}
-</style>
-</head>
-<body>
-
-<div class="app-header">
-  <div class="brand-mark"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira — Psicóloga, CRP 06/191478"/></div>
-</div>
-
-<div class="nav-tabs">
-  <button class="nav-tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
-  <button class="nav-tab" id="tab-btn-atividades" onclick="switchTab('atividades')">Espaço de criação</button>
-  <button class="nav-tab" id="tab-btn-prontuarios" onclick="switchTab('prontuarios')">Prontuários</button>
-</div>
-
-<!-- ── PÁGINA DASHBOARD ── -->
-<div class="page active" id="page-dashboard">
-<div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
-<div id="error-msg">
-  <h3>Não foi possível carregar os dados</h3>
-  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.</p>
-</div>
-
-<div id="dashboard">
-<div class="dash-wrap">
-
-  <div class="reload-bar">
-    <span id="last-update">—</span>
-    <button id="btn-reload" onclick="loadData()">↻ Atualizar</button>
-  </div>
-
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-main" id="kpi-fat">—</div>
-      <div class="kpi-comp" id="kpi-fat-mom">—</div>
-      <div class="kpi-comp" id="kpi-fat-yoy">—</div>
-      <div class="kpi-label">Valor Recebido</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-main" id="kpi-pac">—</div>
-      <div class="kpi-comp" id="kpi-pac-mom">—</div>
-      <div class="kpi-comp" id="kpi-pac-yoy">—</div>
-      <div class="kpi-label">Pacientes</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-main" id="kpi-falta">—</div>
-      <div class="kpi-comp" id="kpi-falta-mom">—</div>
-      <div class="kpi-comp" id="kpi-falta-yoy">—</div>
-      <div class="kpi-label">Faltas</div>
-    </div>
-  </div>
-
-  <div class="alerts-panel" id="dashboard-alerts">
-    <div class="alerts-title">Atenção</div>
-    <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
-  </div>
-
-  <div class="charts-row">
-    <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
-    <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
-    <div class="chart-card"><h3>Quantidade de Faltas</h3><canvas id="chart-falta"></canvas></div>
-  </div>
-
-  <div class="bottom-row">
-    <div class="panel">
-      <h3>Sessões Restantes | Pacote</h3>
-      <table class="saldo-table">
-        <thead><tr>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
-        </tr></thead>
-        <tbody id="tabela-saldo"></tbody>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>
-        Quantidade de Pacientes
-        <select class="profile-select" id="profile-select" onchange="updateDonut()">
-          <option value="genero">Gênero</option>
-          <option value="faixa">Faixa Etária</option>
-          <option value="modal">Modalidade</option>
-        </select>
-      </h3>
-      <div class="donut-wrap"><canvas id="chart-donut"></canvas></div>
-    </div>
-
-    <div class="panel">
-      <h3>Faltas | % por Paciente (ativos)</h3>
-      <div class="motivos-wrap" id="motivos-list"></div>
-    </div>
-  </div>
-</div>
-</div>
-</div><!-- /page-dashboard -->
-
-<!-- ── PÁGINA ATIVIDADES ── -->
-<div class="page" id="page-atividades">
-<div class="section-wrap">
-
-  <div class="sub-tabs">
-    <button class="sub-tab active" id="subtab-btn-imagens" onclick="switchSubTab('imagens')">Atividades</button>
-    <button class="sub-tab" id="subtab-btn-docs" onclick="switchSubTab('docs')">Apresentações</button>
-    <button class="sub-tab" id="subtab-btn-posts" onclick="switchSubTab('posts')">Posts & tendências</button>
-  </div>
-
-  <!-- ═══ SUB-ABA: IMAGENS ═══ -->
-  <div class="sub-page active" id="subpage-imagens">
-
-    <div class="generator-card">
-      <h3>Criar nova atividade</h3>
-      <div class="gen-row">
-        <div class="gen-field">
-          <label>Tipo de atividade</label>
-          <select id="g-tipo">
-            <option value="">Selecione...</option>
-            <option>Colorir</option>
-            <option>Rotina</option>
-            <option>Psicoeducação</option>
-            <option>Dinâmica</option>
-            <option>Outro</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Faixa etária</label>
-          <select id="g-faixa">
-            <option value="">Selecione...</option>
-            <option>0–3 anos</option>
-            <option>4–6 anos</option>
-            <option>7–10 anos</option>
-            <option>11–14 anos</option>
-            <option>Adolescente</option>
-            <option>Adulto</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Tema clínico</label>
-          <select id="g-tema">
-            <option value="">Selecione...</option>
-            <option>Ansiedade</option>
-            <option>TDAH</option>
-            <option>Luto</option>
-            <option>Autoestima</option>
-            <option>Regulação emocional</option>
-            <option>Relacionamentos</option>
-            <option>Outro</option>
-          </select>
-        </div>
-      </div>
-      <div class="gen-field" style="margin-bottom:10px;">
-        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o que você quer</label>
-        <textarea class="prompt-area" id="g-desc" placeholder="Ex: Rotina matinal para menino de 7 anos com TDAH, com 6 etapas ilustradas em estilo de livro infantil com cores vibrantes..."></textarea>
-      </div>
-      <div class="gen-actions">
-        <button class="btn-primary" id="btn-gen" onclick="gerarAtividade()"><span>✦</span> Gerar imagem</button>
-        <button class="btn-secondary" id="btn-regen" onclick="regenerar()" disabled>↻ Regenerar</button>
-        <button class="btn-secondary" id="btn-edit-prompt" onclick="editarPrompt()" disabled>✎ Editar prompt</button>
-        <span class="gen-status" id="gen-status"></span>
-      </div>
-    </div>
-
-    <div class="preview-card" id="preview-card">
-      <h3>Pré-visualização</h3>
-      <input type="text" class="title-field" id="g-titulo" placeholder="Título da atividade (ex: Rotina Matinal — Lucas, 7 anos)"/>
-      <div class="preview-img-wrap" id="preview-wrap"><div class="preview-placeholder">A imagem gerada aparecerá aqui</div></div>
-      <div class="preview-actions">
-        <button class="btn-save" onclick="salvarAtividade()">💾 Salvar na biblioteca</button>
-        <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
-        <button class="btn-danger" onclick="descartarPreview()">Descartar</button>
-      </div>
-    </div>
-
-    <!-- Busca sempre visível, abaixo do form -->
-    <div class="search-bar-wrap">
-      <div class="search-bar-title">🔍 Buscar na biblioteca</div>
-      <div class="search-filters-row">
-        <select class="filter-select" id="f-tipo" onchange="renderBiblioteca()">
-          <option value="">Todos os tipos</option>
-          <option>Colorir</option>
-          <option>Rotina</option>
-          <option>Psicoeducação</option>
-          <option>Dinâmica</option>
-          <option>Outro</option>
-        </select>
-        <select class="filter-select" id="f-faixa" onchange="renderBiblioteca()">
-          <option value="">Todas as faixas</option>
-          <option>0–3 anos</option>
-          <option>4–6 anos</option>
-          <option>7–10 anos</option>
-          <option>11–14 anos</option>
-          <option>Adolescente</option>
-          <option>Adulto</option>
-        </select>
-        <select class="filter-select" id="f-tema" onchange="renderBiblioteca()">
-          <option value="">Todos os temas</option>
-          <option>Ansiedade</option>
-          <option>TDAH</option>
-          <option>Luto</option>
-          <option>Autoestima</option>
-          <option>Regulação emocional</option>
-          <option>Relacionamentos</option>
-          <option>Outro</option>
-        </select>
-        <button class="btn-clear-filter" onclick="clearFilters()">✕ Limpar</button>
-      </div>
-      <div class="search-count" id="count-badge"></div>
-    </div>
-
-    <div class="view-bar">
-      <h2>📚 Biblioteca de atividades <span id="lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
-      <div class="view-tabs">
-        <button class="view-tab active" id="vt-grid" onclick="setView('grid')">⊞ Grade</button>
-        <button class="view-tab" id="vt-list" onclick="setView('list')">☰ Lista</button>
-      </div>
-    </div>
-    <div id="biblioteca-container"></div>
-
-  </div><!-- /subpage-imagens -->
-
-  <!-- ═══ SUB-ABA: DOCUMENTOS (PPT) ═══ -->
-  <div class="sub-page" id="subpage-docs">
-
-    <div class="generator-card">
-      <h3>📊 Criar apresentação</h3>
-      <div class="gen-row">
-        <div class="gen-field">
-          <label>Público</label>
-          <select id="ppt-publico">
-            <option value="">Selecione...</option>
-            <option>Criança</option>
-            <option>Adolescente</option>
-            <option>Adulto</option>
-            <option>Família / Responsáveis</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Tema</label>
-          <select id="ppt-tema">
-            <option value="">Selecione...</option>
-            <option>Ansiedade</option>
-            <option>TDAH</option>
-            <option>Luto</option>
-            <option>Autoestima</option>
-            <option>Regulação emocional</option>
-            <option>Relacionamentos</option>
-            <option>Outro</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Nº aproximado de slides</label>
-          <select id="ppt-slides">
-            <option value="4-6">4 a 6</option>
-            <option value="6-8" selected>6 a 8</option>
-          </select>
-        </div>
-      </div>
-      <div class="gen-field" style="margin-bottom:10px;">
-        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o conteúdo da apresentação</label>
-        <textarea class="prompt-area" id="ppt-desc" placeholder="Ex: Apresentação explicando o que é ansiedade para uma criança de 8 anos, com exemplos do dia a dia e técnicas simples de respiração..."></textarea>
-      </div>
-      <div class="gen-actions">
-        <button class="btn-primary" id="btn-gen-ppt" onclick="gerarPPT()"><span>✦</span> Gerar conteúdo</button>
-        <span class="gen-status" id="ppt-status"></span>
-      </div>
-    </div>
-
-    <!-- Preview dos slides gerados -->
-    <div class="ppt-preview" id="ppt-preview" style="display:none;">
-      <h3 style="font-family:'Newsreader',serif;font-size:.95rem;margin-bottom:14px;" id="ppt-preview-titulo">—</h3>
-      <div id="ppt-slides-list"></div>
-      <div class="preview-actions" style="margin-top:14px;">
-        <input type="text" class="title-field" id="ppt-titulo-salvar" placeholder="Nome para salvar na biblioteca" style="margin-bottom:0;flex:1;min-width:200px;"/>
-      </div>
-      <div class="preview-actions">
-        <button class="btn-save" onclick="salvarPPTBiblioteca()">💾 Salvar na biblioteca</button>
-        <button class="btn-pdf" onclick="exportarPPTX()">⬇ Baixar .pptx</button>
-        <button class="btn-danger" onclick="descartarPPT()">Descartar</button>
-      </div>
-    </div>
-
-    <!-- Busca sempre visível -->
-    <div class="search-bar-wrap">
-      <div class="search-bar-title">🔍 Buscar apresentações</div>
-      <div class="search-filters-row">
-        <select class="filter-select" id="f-ppt-publico" onchange="renderPPTBiblioteca()">
-          <option value="">Todos os públicos</option>
-          <option>Criança</option>
-          <option>Adolescente</option>
-          <option>Adulto</option>
-          <option>Família / Responsáveis</option>
-        </select>
-        <select class="filter-select" id="f-ppt-tema" onchange="renderPPTBiblioteca()">
-          <option value="">Todos os temas</option>
-          <option>Ansiedade</option>
-          <option>TDAH</option>
-          <option>Luto</option>
-          <option>Autoestima</option>
-          <option>Regulação emocional</option>
-          <option>Relacionamentos</option>
-          <option>Outro</option>
-        </select>
-        <button class="btn-clear-filter" onclick="clearPPTFilters()">✕ Limpar</button>
-      </div>
-      <div class="search-count" id="ppt-count-badge"></div>
-    </div>
-
-    <div class="view-bar">
-      <h2>📊 Biblioteca de apresentações <span id="ppt-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
-    </div>
-    <div id="ppt-biblioteca-container"></div>
-
-  </div><!-- /subpage-docs -->
-
-  <!-- ═══ SUB-ABA: POSTS ═══ -->
-  <div class="sub-page" id="subpage-posts">
-    <div class="generator-card">
-      <h3>📱 Radar de conteúdo</h3>
-      <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">
-        Acompanha assuntos recentes e relevantes para a psicologia ao longo de todo o ciclo vital — infância, adolescência, vida adulta, envelhecimento, família e parentalidade — e transforma oportunidades em ideias de conteúdo. Nada é publicado automaticamente.
-      </p>
-      <div class="gen-actions">
-        <button class="btn-primary" id="btn-trends" onclick="buscarTendencias(true)">🔎 Atualizar tendências</button>
-        <span class="gen-status" id="trends-status"></span>
-      </div>
-    </div>
-
-    <div id="trends-container">
-      <div class="biblioteca-empty"><div class="icon">💡</div><p>Clique em "Buscar tendências" para encontrar ideias recentes.</p></div>
-    </div>
-
-    <div class="generator-card" style="margin-top:16px;">
-      <h3>✦ Criar post</h3>
-      <div class="post-editor">
-        <div class="gen-field">
-          <label>Tema</label>
-          <input id="post-tema" class="gen-field-input" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Ex.: ansiedade na volta às aulas"/>
-        </div>
-        <div class="gen-field">
-          <label>Formato</label>
-          <select id="post-formato" class="filter-select" style="width:100%;">
-            <option>Carrossel</option><option>Post</option><option>Story</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Público</label>
-          <select id="post-publico" class="filter-select" style="width:100%;">
-            <option>Pais e responsáveis</option><option>Crianças</option><option>Adolescentes</option><option>Adultos</option><option>Idosos</option><option>Famílias</option><option>Ciclo vital</option>
-          </select>
-        </div>
-        <div class="gen-field">
-          <label>Contexto</label>
-          <input id="post-contexto" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Opcional"/>
-        </div>
-      </div>
-      <div class="post-brand-preview" id="post-brand-preview"></div>
-      <div class="post-brand-note">A logo é transparente e sua cor é adaptada automaticamente para combinar com a paleta/acento de cada arte. A imagem verde enviada serve apenas como referência da identidade visual.</div>
-      <div class="gen-actions">
-        <button class="btn-primary" id="btn-post-generate" onclick="gerarPost()">✦ Gerar conteúdo</button>
-        <span class="gen-status" id="post-status"></span>
-      </div>
-    </div>
-
-    <div class="preview-card" id="post-preview-card">
-      <h3 id="post-preview-title">Prévia do post</h3>
-      <div class="post-editor">
-        <div>
-          <label class="pront-label">Texto / slides</label>
-          <div id="post-slides" class="post-slides"></div>
-        </div>
-        <div>
-          <label class="pront-label">Legenda</label>
-          <div id="post-legenda" class="post-preview"></div>
-          <div style="margin-top:10px;"><label class="pront-label">Hashtags</label><div id="post-hashtags" class="post-preview"></div></div>
-          <div style="margin-top:10px;"><label class="pront-label">CTA</label><div id="post-cta" class="post-preview"></div></div>
-        </div>
-      </div>
-      <div class="preview-img-wrap" id="post-img-wrap" style="margin-top:14px;min-height:220px;">
-        <div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>
-      </div>
-      <div class="preview-actions">
-        <button class="btn-primary" onclick="gerarArtePost()">🎨 Gerar arte</button>
-        <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
-        <button class="btn-secondary" onclick="limparPost()">✕ Limpar</button>
-      </div>
-    </div>
-
-    <div class="generator-card post-history">
-      <h3>📚 Posts salvos</h3>
-      <div id="posts-history"><div class="alert-empty">Nenhum post salvo ainda.</div></div>
-    </div>
-  </div><!-- /subpage-posts -->
-
-</div>
-</div><!-- /page-atividades -->
-
-<!-- ── PÁGINA PRONTUÁRIOS ── -->
-<div class="page" id="page-prontuarios">
-<div class="section-wrap">
-
-  <!-- Formulário de registro -->
-  <div class="pront-form-wrap">
-    <h3 class="pront-section-title">📝 Registrar sessão</h3>
-    <div class="pront-fields-grid">
-      <div class="pront-field">
-        <label class="pront-label">Paciente | Horário</label>
-        <select class="pront-input" id="pront-pac" onchange="selecionarPaciente()">
-          <option value="">Selecione...</option>
-        </select>
-      </div>
-      <div class="pront-field">
-        <label class="pront-label">Data da sessão</label>
-        <input type="date" class="pront-input" id="pront-data"/>
-      </div>
-    </div>
-    <div class="pront-field" style="margin-top:12px;">
-      <label class="pront-label">Relato da sessão</label>
-      <textarea class="pront-input pront-textarea" id="pront-relato" placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..."></textarea>
-    </div>
-    <div class="pront-audio-bar">
-      <button class="btn-secondary" id="btn-gravar" onclick="toggleGravacao()" style="display:flex;align-items:center;gap:6px;font-size:.8rem;">🎙 Gravar relato</button>
-      <span id="rec-status" style="font-size:.76rem;color:var(--muted);font-style:italic;"></span>
-    </div>
-    <div class="pront-form-actions">
-      <button class="btn-primary" onclick="salvarSessao()">💾 Salvar sessão</button>
-      <button class="btn-secondary" onclick="limparFormPront()" style="font-size:.8rem;">✕ Limpar</button>
-    </div>
-  </div>
-
-  <!-- Busca sempre visível, abaixo do form -->
-  <div class="search-bar-wrap" style="margin-top:16px;">
-    <div class="search-bar-title">🔍 Buscar paciente</div>
-    <div class="search-filters-row">
-      <select class="filter-select" id="pront-busca" onchange="buscarPacienteProntuario()" style="flex:1;">
-        <option value="">Todos os pacientes com prontuário...</option>
-      </select>
-      <button class="btn-clear-filter" onclick="limparBuscaProntuario()">✕ Limpar</button>
-    </div>
-  </div>
-
-  <!-- Biblioteca de pacientes em grade -->
-  <div class="view-bar" style="margin-top:16px;">
-    <h2>Prontuários <span id="pront-lib-count" style="font-size:.75rem;font-weight:400;color:var(--muted);"></span></h2>
-  </div>
-  <div class="pront-lib-grid" id="pront-pac-grid"></div>
-
-  <!-- Visualizador do prontuário selecionado -->
-  <div id="pront-view" style="display:none;margin-top:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <h2 class="pront-section-title" id="pront-view-titulo" style="margin:0;border:none;padding:0;">—</h2>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-pdf" onclick="exportarProntPDF()" style="font-size:.76rem;padding:6px 14px;">⬇ PDF</button>
-        <button class="btn-save" onclick="exportarProntDOCX()" style="font-size:.76rem;padding:6px 14px;">📄 Word</button>
-      </div>
-    </div>
-    <div class="panel" style="padding:0;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
-        <thead>
-          <tr style="background:var(--header-bg);">
-            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;width:110px;">Data</th>
-            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;">Relato da sessão</th>
-            <th style="padding:10px 14px;width:70px;"></th>
-          </tr>
-        </thead>
-        <tbody id="pront-tabela"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="pront-empty" style="text-align:center;padding:50px 20px;color:var(--muted);">
-    <div style="font-size:36px;margin-bottom:12px;">📋</div>
-    <p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>
-  </div>
-
-</div>
-</div><!-- /page-prontuarios -->
-
-<!-- Modal visualização atividade -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <button class="btn-modal-close" onclick="closeModalBtn()">✕</button>
-    <h3 id="modal-title">—</h3>
-    <img id="modal-img" src="" alt=""/>
-    <div class="modal-tags" id="modal-tags"></div>
-    <div class="modal-actions">
-      <button class="btn-pdf" onclick="exportarPDFModal()">⬇ Exportar PDF</button>
-      <button class="btn-danger" onclick="deletarModal()">Excluir</button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<script>
 const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'Source Sans 3',sans-serif";
@@ -1959,208 +1082,256 @@ const BRAND_SAND='#D8CDB8';
 const BRAND_TERRACOTTA='#C5654E';
 const BRAND_INK='#4F5845';
 const BRAND_PALETTE=[BRAND_SAGE,BRAND_DEEP,BRAND_TERRACOTTA];
-
+async function corDeMarcaParaArte(b64){
+  // A arte pode influenciar a escolha, mas somente dentro da paleta da marca.
+  // A decisão acontece UMA vez no primeiro slide e é reaproveitada no carrossel inteiro.
+  try{
+    const extracted=await extrairCorAcento(b64);
+    const [r,g,b]=hexToRgb(extracted);
+    const [h]=rgbToHsl(r,g,b);
+    if((h>=345||h<=28) && r>g*1.08) return BRAND_TERRACOTTA;
+    if(h>=55&&h<=155) return BRAND_SAGE;
+    return BRAND_DEEP;
+  }catch(_e){ return BRAND_SAGE; }
+}
 function rgbToHsl(r,g,b){
   r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;
   if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
   return [h*360,s,l];
 }
-function hexToRgb(hex){
-  const m=String(hex||'').replace('#','').match(/^([0-9a-f]{6})$/i);if(!m)return [0,0,0];
-  return [parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16)];
+function hslToRgb(h,s,l){
+  h/=360;let r,g,b;
+  if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];
 }
-function luminancia([r,g,b]){
-  const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};
-  return .2126*f(r)+.7152*f(g)+.0722*f(b);
-}
-function textoKontrastRatio(fgHex, lum){
-  const fg=luminancia(hexToRgb(fgHex));
-  const L1=Math.max(fg,lum),L2=Math.min(fg,lum);return (L1+.05)/(L2+.05);
-}
-function wrapText(ctx,text,maxWidth){
-  const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
-  for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width<=maxWidth||!line){line=test;}else{lines.push(line);line=word;}}
-  if(line)lines.push(line);return lines;
-}
-function imageStats(b64){
+function extrairCorAcento(b64){
   return new Promise((resolve)=>{
     const img=new Image();
     img.onload=()=>{
-      const c=document.createElement('canvas');c.width=120;c.height=120;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,120,120);
-      const d=ctx.getImageData(0,0,120,120).data,l=[];
-      for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
-      l.sort((a,b)=>a-b);const n=l.length||1;
-      resolve({avg:l.reduce((a,v)=>a+v,0)/n,q10:l[Math.floor((n-1)*.10)]??.7,q50:l[Math.floor((n-1)*.50)]??.7,q90:l[Math.floor((n-1)*.90)]??.7});
-    };img.onerror=()=>resolve({avg:.7,q10:.6,q50:.7,q90:.8});img.src='data:image/png;base64,'+b64;
+      const c=document.createElement('canvas'),w=64,h=64;c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
+      const data=ctx.getImageData(0,0,w,h).data;const bins=new Map();
+      for(let i=0;i<data.length;i+=4){const a=data[i+3];if(a<180)continue;const [hh,ss,ll]=rgbToHsl(data[i],data[i+1],data[i+2]);
+        if(ss<.18||ll<.22||ll>.72)continue;const hb=Math.round(hh/10)*10;const score=ss*(1-Math.abs(ll-.5));bins.set(hb,(bins.get(hb)||0)+score);
+      }
+      let best=[30,0];for(const [hue,score] of bins)if(score>best[1])best=[hue,score];
+      const rgb=hslToRgb(best[1] ? best[0] : 25,best[1] ? .45 : .35,best[1] ? .43 : .40);
+      resolve('#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join(''));
+    };img.onerror=()=>resolve(BRAND_SAGE);img.src='data:image/png;base64,'+b64;
   });
 }
-function zoneRect(zone,w,h){
-  const map={
-    left:{x:.065,y:.17,w:.46,h:.60},
-    right:{x:.475,y:.17,w:.46,h:.60},
-    center:{x:.17,y:.19,w:.66,h:.55}
-  };const z=map[zone]||map.left;return {x:z.x*w,y:z.y*h,w:z.w*w,h:z.h*h};
-}
-function logoRect(pos,w,h){
-  const z=.22,p=.045;const map={tr:{x:1-p-z,y:p},br:{x:1-p-z,y:1-p-z},tl:{x:p,y:p},bl:{x:p,y:1-p-z}};const q=map[pos]||map.tr;return {x:q.x*w,y:q.y*h,w:z*w,h:z*h};
-}
-async function avaliarTextoZona(b64,zone){
-  const st=await imageStats(b64); // fallback global; regional check follows below
-  return new Promise(resolve=>{
-    const img=new Image();img.onload=()=>{
-      const r=zoneRect(zone,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=100;c.height=100;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,100,100);
-      const d=ctx.getImageData(0,0,100,100).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
-      l.sort((a,b)=>a-b);const n=l.length||1,q15=l[Math.floor((n-1)*.15)]??st.q10,q50=l[Math.floor((n-1)*.5)]??st.q50,q85=l[Math.floor((n-1)*.85)]??st.q90;
-      resolve({zone,q15,q50,q85});
-    };img.onerror=()=>resolve({zone,q15:st.q10,q50:st.q50,q85:st.q90});img.src='data:image/png;base64,'+b64;
+function analisarZonaLogo(b64, pos){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas'),size=64;c.width=size;c.height=size;const ctx=c.getContext('2d');
+      const w=img.naturalWidth||1024,h=img.naturalHeight||1024;
+      const boxW=Math.round(w*.24), boxH=Math.round(h*.16), pad=Math.round(Math.min(w,h)*.025);
+      let x=pad,y=pad;
+      if(pos==='tr'){x=w-boxW-pad;y=pad;}
+      if(pos==='br'){x=w-boxW-pad;y=h-boxH-pad;}
+      if(pos==='bl'){x=pad;y=h-boxH-pad;}
+      ctx.drawImage(img,x,y,boxW,boxH);
+      const d=ctx.getImageData(0,0,size,size).data;
+      let lumSum=0, lumSq=0, n=0;
+      for(let i=0;i<d.length;i+=4){const lum=(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2])/255;lumSum+=lum;lumSq+=lum*lum;n++;}
+      const avg=lumSum/n, variance=Math.max(0,lumSq/n-avg*avg);
+      const homogeneity=Math.max(0,1-Math.sqrt(variance)*4);
+      resolve({avg,homogeneity});
+    };
+    img.onerror=()=>resolve({avg:.6,homogeneity:.5});
+    img.src='data:image/png;base64,'+b64;
   });
 }
-async function avaliarLogoZona(b64,pos){
-  const st=await imageStats(b64);
-  return new Promise(resolve=>{
-    const img=new Image();img.onload=()=>{
-      const r=logoRect(pos,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=80;c.height=80;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,80,80);
-      const d=ctx.getImageData(0,0,80,80).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
-      l.sort((a,b)=>a-b);const n=l.length||1,q10=l[Math.floor((n-1)*.1)]??st.q10,q90=l[Math.floor((n-1)*.9)]??st.q90;
-      resolve({pos,q10,q90});
-    };img.onerror=()=>resolve({pos,q10:st.q10,q90:st.q90});img.src='data:image/png;base64,'+b64;
-  });
-}
-async function escolherLayoutEditorial(imagens){
-  if(!imagens?.length)throw new Error('Nenhuma imagem para analisar');
-  // A identidade é decidida UMA ÚNICA VEZ para o conjunto inteiro.
-  // Não recalculamos cor, posição ou tipografia slide a slide.
-  const textZones=['left','right','center'];
-  let melhorTexto=null;
-  for(const zone of textZones){
-    const stats=await Promise.all(imagens.map(b=>avaliarTextoZona(b,zone)));
-    const darkBySlide=stats.map(s=>textoKontrastRatio(BRAND_INK,s.q85));
-    const lightBySlide=stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q15));
-    const darkMin=Math.min(...darkBySlide),lightMin=Math.min(...lightBySlide);
-    const darkAvg=darkBySlide.reduce((a,v)=>a+v,0)/darkBySlide.length;
-    const lightAvg=lightBySlide.reduce((a,v)=>a+v,0)/lightBySlide.length;
-    // Mantemos o verde profundo como padrão quando ele passa com segurança.
-    let color=darkMin>=lightMin?BRAND_INK:BRAND_CREAM;
-    let minContrast=Math.max(darkMin,lightMin);
-    // Preferência estética pela versão escura se ambas forem seguras.
-    if(darkMin>=4.5) color=BRAND_INK,minContrast=darkMin;
-    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
-    const score=Math.min(minContrast,14)*.76 + ((zone==='left'?1:zone==='right'?.72:.55)*.24);
-    if(!melhorTexto||score>melhorTexto.score)melhorTexto={zone,color,minContrast,score,darkMin,lightMin};
-  }
-  // Se a cor escolhida não atingir o mínimo em algum slide, o compositor
-  // usa um véu editorial uniforme na área de texto; a cor NÃO muda.
-  const veilNeeded=melhorTexto.minContrast<5.0;
 
-  const logoPositions=['tr','br','tl','bl'];let melhorLogo=null;
-  for(const pos of logoPositions){
-    const stats=await Promise.all(imagens.map(b=>avaliarLogoZona(b,pos)));
-    const darkMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_DEEP,s.q90)));
-    const lightMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q10)));
-    let color=darkMin>=lightMin?BRAND_DEEP:BRAND_CREAM;
-    let minContrast=Math.max(darkMin,lightMin);
-    // A logo mantém UMA única cor em todo o carrossel.
-    if(darkMin>=4.5) color=BRAND_DEEP,minContrast=darkMin;
-    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
-    const score=Math.min(minContrast,14)*.82 + (pos==='tr'?.18:(pos==='br'?.12:.06));
-    if(!melhorLogo||score>melhorLogo.score)melhorLogo={position:pos,color,minContrast,score,veilNeeded:minContrast<5.0};
+function textoKontrastRatio(fgHex, lum){
+  const fg=luminancia(hexToRgb(fgHex));
+  const L1=Math.max(fg,lum), L2=Math.min(fg,lum);
+  return (L1+.05)/(L2+.05);
+}
+
+function analisarZonaTexto(b64, zone){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');canvas.width=96;canvas.height=96;
+      const ctx=canvas.getContext('2d');
+      const w=img.naturalWidth||1024,h=img.naturalHeight||1024;
+      const map={
+        left:{x:.055,y:.13,w:.50,h:.72},
+        right:{x:.445,y:.13,w:.50,h:.72},
+        center:{x:.14,y:.15,w:.72,h:.68}
+      };
+      const z=map[zone]||map.left;
+      ctx.drawImage(img,z.x*w,z.y*h,z.w*w,z.h*h,0,0,96,96);
+      const d=ctx.getImageData(0,0,96,96).data;
+      const lums=[];
+      for(let i=0;i<d.length;i+=4){
+        const a=d[i+3]/255;if(a<.9)continue;
+        lums.push(luminancia([d[i],d[i+1],d[i+2]]));
+      }
+      lums.sort((a,b)=>a-b);
+      const n=lums.length||1;
+      const q10=lums[Math.max(0,Math.floor((n-1)*.10))] ?? .7;
+      const q50=lums[Math.max(0,Math.floor((n-1)*.50))] ?? .7;
+      const q90=lums[Math.max(0,Math.floor((n-1)*.90))] ?? .7;
+      const avg=lums.reduce((a,v)=>a+v,0)/n;
+      const variance=lums.reduce((a,v)=>a+(v-avg)**2,0)/n;
+      const homogeneity=Math.max(0,1-Math.sqrt(variance)*4);
+      // Avaliamos o pior decil para evitar escolher uma cor que só funciona na média.
+      const darkWorst=textoKontrastRatio(BRAND_INK, q90);
+      const lightWorst=textoKontrastRatio(BRAND_CREAM, q10);
+      const darkMedian=textoKontrastRatio(BRAND_INK, q50);
+      const lightMedian=textoKontrastRatio(BRAND_CREAM, q50);
+      const darkScore=Math.min(darkWorst,darkMedian);
+      const lightScore=Math.min(lightWorst,lightMedian);
+      const preferred=darkScore>=lightScore?'dark':'light';
+      resolve({zone,avg,q10,q50,q90,homogeneity,darkWorst,lightWorst,darkScore,lightScore,preferred,best:Math.max(darkScore,lightScore)});
+    };
+    img.onerror=()=>resolve({zone,avg:.75,q10:.65,q50:.75,q90:.85,homogeneity:.5,darkWorst:6,lightWorst:1.5,darkScore:6,lightScore:1.5,preferred:'dark',best:6});
+    img.src='data:image/png;base64,'+b64;
+  });
+}
+
+function analisarZonaLogo(b64, pos){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=80;c.height=80;const ctx=c.getContext('2d');
+      const w=img.naturalWidth||1024,h=img.naturalHeight||1024;
+      const z=.28, pad=.035;
+      const map={tr:{x:1-pad-z,y:pad},br:{x:1-pad-z,y:1-pad-z},tl:{x:pad,y:pad},bl:{x:pad,y:1-pad-z}};
+      const q=map[pos]||map.br;
+      ctx.drawImage(img,q.x*w,q.y*h,z*w,z*h,0,0,80,80);
+      const d=ctx.getImageData(0,0,80,80).data;const l=[];
+      for(let i=0;i<d.length;i+=4){if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));}
+      l.sort((a,b)=>a-b);const n=l.length||1;const q10=l[Math.max(0,Math.floor((n-1)*.10))]??.7;const q50=l[Math.max(0,Math.floor((n-1)*.5))]??.7;const q90=l[Math.max(0,Math.floor((n-1)*.9))]??.7;
+      const variance=l.reduce((a,v)=>a+(v-q50)**2,0)/n;
+      resolve({pos,avg:q50,q10,q90,homogeneity:Math.max(0,1-Math.sqrt(variance)*4)});
+    };
+    img.onerror=()=>resolve({pos,avg:.75,q10:.65,q90:.85,homogeneity:.5});
+    img.src='data:image/png;base64,'+b64;
+  });
+}
+
+async function escolherLayoutEditorial(imagens){
+  const textCandidates=['left','right','center'];
+  let bestText=null;
+  for(const zone of textCandidates){
+    const stats=await Promise.all(imagens.map(b=>analisarZonaTexto(b,zone)));
+    const darkMin=Math.min(...stats.map(z=>z.darkScore));
+    const lightMin=Math.min(...stats.map(z=>z.lightScore));
+    const darkAvg=stats.reduce((a,z)=>a+z.darkScore,0)/stats.length;
+    const lightAvg=stats.reduce((a,z)=>a+z.lightScore,0)/stats.length;
+    const avgHom=stats.reduce((a,z)=>a+z.homogeneity,0)/stats.length;
+    // Primeiro tentamos garantir contraste WCAG-ish em todos os slides; só depois usamos estética.
+    const darkPass=stats.every(z=>z.darkScore>=4.5);
+    const lightPass=stats.every(z=>z.lightScore>=4.5);
+    const viable=[];
+    if(darkPass)viable.push({color:BRAND_INK,min:darkMin,avg:darkAvg});
+    if(lightPass)viable.push({color:BRAND_CREAM,min:lightMin,avg:lightAvg});
+    let choice;
+    if(viable.length){
+      choice=viable.sort((a,b)=>b.min-a.min || b.avg-a.avg)[0];
+    }else{
+      // Se nenhuma cor passa em todos, escolhemos a mais segura no pior slide.
+      choice=darkMin>=lightMin?{color:BRAND_INK,min:darkMin,avg:darkAvg}:{color:BRAND_CREAM,min:lightMin,avg:lightAvg};
+    }
+    const negativeSpace=stats.reduce((a,z)=>a+z.homogeneity,0)/stats.length;
+    const preference=zone==='left'?0.12:(zone==='right'?0.03:0);
+    const score=Math.min(choice.min,12)*.62+Math.min(choice.avg,12)*.18+negativeSpace*.14+preference;
+    if(!bestText||score>bestText.score)bestText={zone,score,stats,textColor:choice.color,minContrast:choice.min,avgContrast:choice.avg};
   }
+
+  // A logo pode mudar de canto conforme a composição, mas dentro de um carrossel a escolha é única.
+  const logoCandidates=['tr','br','tl','bl'];
+  let bestLogo=null;
+  for(const pos of logoCandidates){
+    const zones=await Promise.all(imagens.map(b=>analisarZonaLogo(b,pos)));
+    const darkScores=zones.map(z=>textoKontrastRatio(BRAND_DEEP,z.q90));
+    const lightScores=zones.map(z=>textoKontrastRatio(BRAND_CREAM,z.q10));
+    const darkMin=Math.min(...darkScores), lightMin=Math.min(...lightScores);
+    const useDark=darkMin>=lightMin;
+    const logoColor=useDark?BRAND_DEEP:BRAND_CREAM;
+    const contrast=useDark?darkMin:lightMin;
+    const hom=zones.reduce((a,z)=>a+z.homogeneity,0)/zones.length;
+    const away=(bestText.zone==='left'&&(pos==='tr'||pos==='br'))||(bestText.zone==='right'&&(pos==='tl'||pos==='bl'))?0.22:0;
+    const score=Math.min(contrast,12)*.68+hom*.18+away*.14;
+    if(!bestLogo||score>bestLogo.score)bestLogo={position:pos,color:logoColor,score,contrast};
+  }
+
   return {
-    textZone:melhorTexto.zone,
-    textColor:melhorTexto.color,
-    textContrast:melhorTexto.minContrast,
-    textVeil:veilNeeded,
-    logoPosition:melhorLogo.position,
-    logoColor:melhorLogo.color,
-    logoContrast:melhorLogo.minContrast,
-    logoVeil:melhorLogo.veilNeeded,
-    fontTitle:'Newsreader',
-    fontBody:'Source Sans 3'
+    textZone:bestText.zone,
+    textColor:bestText.textColor,
+    logoPosition:bestLogo.position,
+    logoColor:bestLogo.color,
+    textContrast:bestText.minContrast,
+    logoContrast:bestLogo.contrast
   };
 }
-function drawSoftEditorialVeil(ctx,canvas,rect,color,alpha=0.82){
-  const pad=canvas.width*.035;const x=Math.max(0,rect.x-pad),y=Math.max(0,rect.y-pad),w=Math.min(canvas.width-x,rect.w+pad*2),h=Math.min(canvas.height-y,rect.h+pad*2);
+
+async function aplicarLogoPost(b64, corPreferida, pageInfo=null, logoLayout=null){
+  return new Promise((resolve,reject)=>{
+    const base=new Image(),logo=new Image();
+    base.onload=()=>{logo.onload=()=>{
+      const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');
+      ctx.drawImage(base,0,0,canvas.width,canvas.height);
+      const targetW=Math.min(canvas.width*.23,230),targetH=targetW*(logo.naturalHeight/logo.naturalWidth),pad=Math.max(18,Math.round(canvas.width*.025));
+      const pos=logoLayout?.logoPosition||'br';
+      let x=pad,y=pad;
+      if(pos==='tr'){x=canvas.width-targetW-pad;y=pad;}
+      if(pos==='br'){x=canvas.width-targetW-pad;y=canvas.height-targetH-pad;}
+      if(pos==='bl'){x=pad;y=canvas.height-targetH-pad;}
+      const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;const octx=off.getContext('2d');octx.drawImage(logo,0,0);
+      const px=octx.getImageData(0,0,off.width,off.height),hex=corPreferida||BRAND_DEEP,rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
+      for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rr;px.data[i+1]=gg;px.data[i+2]=bb;}}octx.putImageData(px,0,0);
+      ctx.drawImage(off,x,y,targetW,targetH);
+      if(pageInfo?.current && pageInfo?.total){
+        const label=`${pageInfo.current}/${pageInfo.total}`;ctx.save();
+        ctx.font='600 '+Math.max(18,Math.round(canvas.width*.026))+'px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.textBaseline='bottom';
+        const margin=Math.max(18,Math.round(canvas.width*.04));ctx.fillStyle=logoLayout?.textColor||BRAND_INK;ctx.fillText(label,margin,canvas.height-margin);ctx.restore();
+      }
+      resolve(canvas.toDataURL('image/png').split(',')[1]);
+    };logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';};base.onerror=reject;base.src='data:image/png;base64,'+b64;
+  });
+}
+
+function desenharVéuEditorial(ctx,canvas,zone,textColor){
+  const zones={left:{x:.045,y:.12,w:.55,h:.76},right:{x:.405,y:.12,w:.55,h:.76},center:{x:.12,y:.13,w:.76,h:.72}};
+  const z=zones[zone]||zones.left;
+  const x=z.x*canvas.width,y=z.y*canvas.height,w=z.w*canvas.width,h=z.h*canvas.height;
   const grad=ctx.createLinearGradient(x,y,x+w,y);
-  if(color===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.92)');grad.addColorStop(.72,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}
-  else{grad.addColorStop(0,'rgba(244,241,232,.96)');grad.addColorStop(.72,'rgba(244,241,232,.82)');grad.addColorStop(1,'rgba(244,241,232,0)');}
+  if(textColor===BRAND_CREAM){
+    grad.addColorStop(0,'rgba(58,64,50,.88)');grad.addColorStop(.55,'rgba(58,64,50,.62)');grad.addColorStop(1,'rgba(58,64,50,.12)');
+  }else{
+    grad.addColorStop(0,'rgba(244,241,232,.96)');grad.addColorStop(.55,'rgba(244,241,232,.78)');grad.addColorStop(1,'rgba(244,241,232,.16)');
+  }
   ctx.save();ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);ctx.restore();
+  return {x:x+w*.10,y:y+h*.15,w:w*.74};
 }
-async function colorizeLogo(src,color){
-  return new Promise((resolve,reject)=>{const logo=new Image();logo.onload=()=>{const c=document.createElement('canvas');c.width=logo.naturalWidth;c.height=logo.naturalHeight;const x=c.getContext('2d');x.drawImage(logo,0,0);const px=x.getImageData(0,0,c.width,c.height),rgb=hexToRgb(color);for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rgb[0];px.data[i+1]=rgb[1];px.data[i+2]=rgb[2];}}x.putImageData(px,0,0);resolve(c);};logo.onerror=reject;logo.src=src;});
-}
+
 function desenharTextoArte(b64,slideText,titulo,isCarousel,index,total,editorialLayout){
   return new Promise((resolve,reject)=>{
     const img=new Image();img.onload=async()=>{
       try{await document.fonts.ready;}catch(_e){}
       const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const L=editorialLayout,rect=zoneRect(L.textZone,canvas.width,canvas.height),fg=L.textColor;
-      if(L.textVeil)drawSoftEditorialVeil(ctx,canvas,rect,fg);
-      ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
-      const content=String(slideText||'').trim();let y=rect.y+rect.h*.08;const maxW=rect.w*.84;
-      if(isCarousel&&index===0&&titulo){
-        ctx.font=`700 ${Math.round(canvas.width*.065)}px "${L.fontTitle}", serif`;
-        wrapText(ctx,titulo,maxW).slice(0,4).forEach(line=>{ctx.fillText(line,rect.x+rect.w*.08,y);y+=canvas.width*.075;});
-        y+=canvas.width*.018;
+      const layout=editorialLayout||{textZone:'left',textColor:BRAND_INK,textContrast:5};
+      const fg=layout.textColor||BRAND_INK;
+      const accent=fg===BRAND_CREAM?BRAND_CREAM:BRAND_SAGE;
+      const box=desenharVéuEditorial(ctx,canvas,layout.textZone,fg);
+      const maxW=Math.round(box.w),marginX=box.x;ctx.textAlign='left';ctx.textBaseline='top';
+      // A cor do texto é deliberadamente independente da cor da logo.
+      // Verde/sage só entra como destaque quando mantém contraste suficiente.
+      if(isCarousel&&index===0){
+        const titleColor=textoKontrastRatio(BRAND_SAGE, layout.textColor===BRAND_CREAM ? .15 : .92)>=4.5?BRAND_SAGE:fg;
+        ctx.fillStyle=titleColor;ctx.font=`700 ${Math.round(canvas.width*.064)}px "Newsreader", serif`;
+        const titleLines=wrapText(ctx,titulo,maxW);let y=box.y;titleLines.slice(0,4).forEach(line=>{ctx.fillText(line,marginX,y);y+=Math.round(canvas.width*.074);});
+        ctx.fillStyle=fg;ctx.font=`500 ${Math.round(canvas.width*.032)}px "Source Sans 3", sans-serif`;const sub=wrapText(ctx,slideText,maxW);y+=Math.round(canvas.width*.018);sub.slice(0,8).forEach(line=>{ctx.fillText(line,marginX,y);y+=Math.round(canvas.width*.043);});
+      }else{
+        ctx.fillStyle=fg;ctx.font=`600 ${Math.round(canvas.width*.048)}px "Newsreader", serif`;
+        const lines=wrapText(ctx,slideText,maxW);let y=box.y;lines.slice(0,10).forEach(line=>{ctx.fillText(line,marginX,y);y+=Math.round(canvas.width*.057);});
       }
-      ctx.font=`500 ${Math.round(canvas.width*.032)}px "${L.fontBody}", sans-serif`;
-      wrapText(ctx,content,maxW).slice(0,9).forEach(line=>{ctx.fillText(line,rect.x+rect.w*.08,y);y+=canvas.width*.044;});
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };img.onerror=reject;img.src='data:image/png;base64,'+b64;
   });
-}
-async function aplicarLogoPost(b64, logoLayout=null, pageInfo=null){
-  return new Promise((resolve,reject)=>{
-    const base=new Image();base.onload=async()=>{try{
-      const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(base,0,0,canvas.width,canvas.height);
-      const r=logoRect(logoLayout.logoPosition,canvas.width,canvas.height),logo=await colorizeLogo('/assets/logo-jaqueline-dark.png',logoLayout.logoColor);
-      if(logoLayout.logoVeil){
-        const grad=ctx.createLinearGradient(r.x,r.y,r.x+r.w,r.y);if(logoLayout.logoColor===BRAND_CREAM){grad.addColorStop(0,'rgba(58,64,50,.72)');grad.addColorStop(1,'rgba(58,64,50,0)');}else{grad.addColorStop(0,'rgba(244,241,232,.86)');grad.addColorStop(1,'rgba(244,241,232,0)');}ctx.save();ctx.fillStyle=grad;ctx.fillRect(r.x-canvas.width*.012,r.y-canvas.height*.012,r.w+canvas.width*.024,r.h+canvas.height*.024);ctx.restore();
-      }
-      ctx.drawImage(logo,r.x,r.y,r.w,r.h);
-      if(pageInfo?.current&&pageInfo?.total){
-        const label=`${pageInfo.current}/${pageInfo.total}`;ctx.save();ctx.fillStyle=logoLayout.textColor;ctx.font=`600 ${Math.max(18,Math.round(canvas.width*.026))}px "Source Sans 3", sans-serif`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(label,canvas.width*.045,canvas.height*.045);ctx.restore();
-      }
-      resolve(canvas.toDataURL('image/png').split(',')[1]);
-    }catch(e){reject(e)}};base.onerror=reject;base.src='data:image/png;base64,'+b64;
-  });
-}
-function renderArtesPost(){
-  const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
-}
-async function gerarArtePost(){
-  if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
-  const formato=_postAtual.formato||'Carrossel';const isCarousel=formato.toLowerCase()==='carrossel';
-  const rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides.filter(Boolean):[];
-  const slides=isCarousel?rawSlides.slice(0,7):[rawSlides.slice(0,4).join(' • ')||_postAtual.gancho||_postAtual.titulo||''];
-  if(isCarousel&&slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
-  try{
-    const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundos...</div>';_postAtual.imagens_b64=[];
-    const backgrounds=[];
-    const brandGuide=`Use the approved brand palette: sage green #899776, deep sage #687257, warm cream #F4F1E8, sand #D8CDB8 and subtle terracotta #C5654E. Elegant clinical/editorial aesthetic, calm, human, organic shapes, generous negative space. Do NOT render any text, title, logo, watermark, page number, credentials or fake typography. Leave intentional quiet space for the application to add the content later.`;
-    for(let i=0;i<slides.length;i++){
-      wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Criando composição ${i+1} de ${slides.length}...</div>`;
-      const cover=isCarousel&&i===0?`This is the cover. Create a strong visual area with generous negative space for a title and short introduction.`:`This is an internal slide. Do not create a title area; create a calm visual composition that supports this idea: ${slides[i]}.`;
-      const prompt=`Create ONE single Instagram ${formato} background, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. ${brandGuide} ${cover} Keep the composition coherent with all other slides, but vary imagery and organic forms naturally. No mockup, no Instagram UI.`;
-      backgrounds.push(await gerarImagem(prompt));
-    }
-    wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Definindo identidade visual única...</div>';
-    const layout=await escolherLayoutEditorial(backgrounds);
-    const finais=[];
-    for(let i=0;i<backgrounds.length;i++){
-      wrap.innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Finalizando arte ${i+1} de ${backgrounds.length}...</div>`;
-      let composita=await desenharTextoArte(backgrounds[i],slides[i],_postAtual.titulo||'',isCarousel,i,backgrounds.length,layout);
-      composita=await aplicarLogoPost(composita,layout,isCarousel?{current:i+1,total:backgrounds.length}:null);
-      finais.push(composita);
-      _postAtual.imagens_b64=finais.slice();renderArtesPost();
-    }
-    _postAtual.img_b64=finais[0]||null;_postAtual.logo_cor=layout.logoColor;_postAtual.logo_posicao=layout.logoPosition;_postAtual.logo_contraste=layout.logoContrast;_postAtual.texto_posicao=layout.textZone;_postAtual.texto_cor=layout.textColor;_postAtual.texto_contraste=layout.textContrast;_postAtual.prompt='Fundos gerados separadamente; identidade tipográfica, cor, posição do texto, posição da logo e paginação definidas uma única vez para o conjunto inteiro.';
-    renderArtesPost();
-  }catch(e){console.error(e);toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
-}
-async function exportarArtesPost(){
-  const imgs=_postAtual?.imagens_b64||[];if(!imgs.length){toast('Gere a arte antes de exportar.');return;}
-  try{const files=imgs.map((b,i)=>{const bytes=atob(b),arr=new Uint8Array(bytes.length);for(let j=0;j<bytes.length;j++)arr[j]=bytes.charCodeAt(j);return new File([arr],`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});});if(navigator.share&&navigator.canShare&&navigator.canShare({files})){await navigator.share({title:_postAtual?.titulo||'Post — Jaqueline Vieira',text:'Arte para Instagram',files});return;}imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});toast('Seu navegador não oferece compartilhamento de arquivos; as artes foram baixadas em PNG.');}catch(e){if(e?.name==='AbortError')return;toast('Não foi possível abrir o compartilhamento: '+e.message);}
 }
 
 async function salvarPost(){
@@ -2563,6 +1734,3 @@ function switchTab(name) {
 }
 
 window.onload = loadData;
-</script>
-</body>
-</html>

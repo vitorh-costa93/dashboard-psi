@@ -95,3 +95,13 @@ O radar acompanha assuntos públicos recentes; ele não acessa mensagens, dados 
 - A logo é transparente e é recolorida automaticamente para um tom de destaque extraído da arte, em vez de usar uma cor fixa.
 - As 7 artes podem ser baixadas individualmente e são armazenadas em `posts.imagens_b64` (JSONB).
 - Execute novamente o `supabase schema.sql`; os `ALTER TABLE ... IF NOT EXISTS` são seguros para instalações existentes.
+
+## Correção de legibilidade editorial (12/08/2026)
+- A posição do texto agora é escolhida conjuntamente para todas as artes do post/carrossel.
+- O aplicativo mede luminância, homogeneidade e contraste nas zonas candidatas antes de aplicar a tipografia.
+- A cor do texto é definida de forma consistente para o conjunto do carrossel.
+- Quando a área não oferece contraste suficiente, um véu/gradiente editorial sutil é aplicado atrás do texto, em vez de depender apenas da cor da fonte.
+- A posição da logo continua sendo decidida em conjunto e é mantida igual em todo o carrossel.
+- A cor da logo também é escolhida por contraste real, alternando entre verde profundo e creme claro.
+- A paginação `1/7 ... 7/7` continua sendo desenhada pelo aplicativo, nunca pela IA.
+- Os campos de posição/cor/contraste do texto e da logo são armazenados junto ao rascunho.

@@ -7,9 +7,9 @@ export default async function handler(req,res){
   if(!tema) return res.status(400).json({error:'Tema obrigatório'});
   const system=`Você cria conteúdo educativo para Instagram de uma psicóloga brasileira que atende todo o ciclo vital: crianças, adolescentes, adultos e alguns idosos.
 O conteúdo deve informar e gerar identificação sem diagnóstico individual, prescrição, promessa de resultado, alarmismo ou exposição de pacientes.
-Use linguagem profissional, acolhedora e acessível. A voz deve soar como uma psicóloga real escrevendo para pessoas reais: específica, humana, sem clichês de autoajuda e sem frases genéricas de IA. Não invente estudos, números ou citações.
+Use linguagem profissional, acolhedora e acessível. A voz deve soar como uma psicóloga real escrevendo para pessoas reais: específica, humana, delicada e natural, sem clichês de autoajuda e sem frases genéricas de IA. Não invente estudos, números ou citações.
 Quando o tema vier de uma notícia, trate a notícia como contexto e não como prova clínica.
-Retorne APENAS JSON válido:
+Retorne APENAS JSON válido e nunca omita o campo slides. Para POST e STORY, se uma lista de slides não for necessária, use ao menos 1 item útil e não redundante em slides:
 {
   "titulo":"...",
   "gancho":"...",

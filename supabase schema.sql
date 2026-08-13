@@ -74,6 +74,7 @@ create index if not exists idx_posts_criado_em on posts(criado_em desc);
 
 alter table posts add column if not exists imagens_b64 jsonb;
 alter table posts add column if not exists logo_cor text;
+alter table posts add column if not exists arte_count integer not null default 0;
 
 create table if not exists trend_radar (
   id uuid primary key default gen_random_uuid(),

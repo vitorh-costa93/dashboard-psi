@@ -303,6 +303,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .post-logo-preview img{height:42px;width:auto;object-fit:contain;}
 .post-export-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
 .post-export-bar span{font-size:.72rem;color:var(--muted);}
+.save-post-overlay{position:fixed;inset:0;background:rgba(79,88,69,.26);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:1000;}
+.save-post-overlay.open{display:flex;}
+.save-post-box{width:min(420px,calc(100vw - 40px));background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 16px 42px rgba(0,0,0,.14);}
+.save-post-title{font-family:'Newsreader',serif;font-size:1.12rem;color:var(--text);margin-bottom:8px;}
+.save-post-text{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:12px;}
+.save-post-track{height:8px;background:#e8e3d8;border-radius:999px;overflow:hidden;}
+.save-post-bar{height:100%;width:0;background:var(--accent);transition:width .2s ease;}
+.save-post-step{margin-top:9px;font-size:.74rem;color:var(--muted);text-align:right;}
 .post-art-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
 .post-art-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
 .post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
@@ -1999,11 +2007,12 @@ async function aplicarLogoPost(b64, pageInfo=null){
         ctx.save();
         ctx.font=`600 ${fs}px "DM Sans", sans-serif`;
         ctx.textAlign='left';ctx.textBaseline='middle';
-        const boxW=Math.round(fs*3.8),boxH=Math.round(fs*1.55);
-        const px0=margin,py0=Math.max(20,py-boxH/2);
-        // limpa qualquer paginação que a IA possa ter criado no canto superior esquerdo.
-        ctx.fillStyle='rgba(245,241,232,.94)';
-        ctx.beginPath();ctx.roundRect(px0-10,py0,boxW,boxH,boxH*.32);ctx.fill();
+        const boxW=Math.round(canvas.width*.24),boxH=Math.round(canvas.height*.12);
+        const px0=margin,py0=Math.max(16,py-boxH/2);
+        // Apaga qualquer tentativa da IA de desenhar numeração na zona reservada.
+        // A paginação final é sempre adicionada pelo aplicativo com o mesmo estilo.
+        ctx.fillStyle=POST_BRAND.bg;
+        ctx.fillRect(0,0,Math.round(canvas.width*.29),Math.round(canvas.height*.15));
         ctx.fillStyle=POST_BRAND.terracotta;
         ctx.fillText(label,px0,py);
         ctx.strokeStyle=POST_BRAND.terracotta;ctx.lineWidth=Math.max(2,Math.round(canvas.width*.0025));
@@ -2033,15 +2042,15 @@ async function gerarArtePost(){
     _postAtual.imagens_b64=[];
 
     const total=slides.length;
-    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Keep the top-center 10% of the canvas calm, light cream, low-detail and free of photos, illustrations, text, logos or decorative shapes because the application places the brand logo there. Keep the top-left area calm and light because the application places the fixed page counter there. Never render a page number, logo, watermark, Instagram handle or credentials. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream.`;
+    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. Keep the top-center 12% of the canvas calm, light cream, low-detail and completely free of photos, illustrations, text, numbers, logos or decorative shapes because the application places the brand logo there. Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
 
     for(let i=0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
       const coverRule=isCarousel&&i===0
-        ? `This is the COVER. Show the post title prominently once. Do not add a page number or logo.`
+        ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
         : isCarousel
-          ? `This is an INTERNAL CAROUSEL SLIDE. Never repeat the main post title. Focus only on this slide's own message. Do not add a page number or logo.`
-          : `This is a SINGLE POST. Do not add page numbers. Use one strong editorial title and one short supporting sentence.`;
+          ? `This is an INTERNAL CAROUSEL SLIDE. Do not repeat the main post title. Do not create a new headline or heading. Show only the specific message supplied for this slide, with concise body copy if needed. Do not add any page number, counter, badge or logo. The top-left and top-center reserved zones must remain empty.`
+          : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
       const prompt=`Create ONE square Instagram editorial image (1080x1080) for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${identidade} Visual direction: sophisticated clinical-editorial design, airy composition, generous negative space, one strong photographic or illustrated focal point, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
       const raw=await gerarImagem(prompt);
       const finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
@@ -2079,48 +2088,70 @@ async function exportarArtesPost(){
   }
 }
 
+function atualizarStatusSalvarPost(texto, progresso=0){
+  const ov=document.getElementById('save-post-overlay');
+  const tx=document.getElementById('save-post-text');
+  const bar=document.getElementById('save-post-progress');
+  const step=document.getElementById('save-post-step');
+  if(tx)tx.textContent=texto;
+  if(bar)bar.style.width=Math.max(0,Math.min(100,progresso))+'%';
+  if(step)step.textContent=progresso>=100?'Concluído':`${Math.round(progresso)}%`;
+  if(ov)ov.classList.add('open');
+}
+function fecharStatusSalvarPost(){
+  const ov=document.getElementById('save-post-overlay');
+  if(ov)ov.classList.remove('open');
+}
+
 async function salvarPost(){
   if(!_postAtual){toast('Gere um post primeiro.');return;}
   const btn=document.querySelector('#post-preview-card .btn-save');
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;btn.textContent='Salvando…';}
   try{
     const imagens=Array.isArray(_postAtual.imagens_b64)?_postAtual.imagens_b64.filter(Boolean):[];
     const payload={
       titulo:_postAtual.titulo||_postAtual.tema||'Post',
-      tema:_postAtual.tema||'',
-      formato:_postAtual.formato||'Post',
-      publico:_postAtual.publico||'Ciclo vital',
-      legenda:_postAtual.legenda||'',
-      hashtags:Array.isArray(_postAtual.hashtags)?_postAtual.hashtags.join(' '):(_postAtual.hashtags||''),
-      cta:_postAtual.cta||'',
-      img_b64:null,
-      imagens_b64:null,
-      logo_cor:_postAtual.logo_cor||'',
-      prompt:_postAtual.prompt||'',
-      fonte_tendencia:_postAtual.fonte_tendencia||'',
-      tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+(document.getElementById('post-contexto')?.value||''),
-      status:'rascunho',
-      criado_em:new Date().toISOString()
+      tema:_postAtual.tema||'',formato:_postAtual.formato||'Post',publico:_postAtual.publico||'Ciclo vital',
+      legenda:_postAtual.legenda||'',hashtags:Array.isArray(_postAtual.hashtags)?_postAtual.hashtags.join(' '):(_postAtual.hashtags||''),
+      cta:_postAtual.cta||'',img_b64:null,imagens_b64:null,logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
+      fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+(document.getElementById('post-contexto')?.value||''),
+      status:'rascunho',criado_em:new Date().toISOString()
     };
+    atualizarStatusSalvarPost('Criando o rascunho e preparando as artes…',5);
     const r=await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await r.json().catch(()=>null);
     if(!r.ok)throw new Error(data?.error?.message||data?.error||`Falha ao salvar (${r.status})`);
     const id=Array.isArray(data)?data[0]?.id:data?.id;
     if(!id)throw new Error('O Supabase não retornou o ID do rascunho.');
 
-    for(let i=0;i<imagens.length;i++){
-      const ir=await fetch(`/api/data?table=posts&action=append-image&id=${encodeURIComponent(id)}`,{
-        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:imagens[i],ordem:i})
-      });
-      const idata=await ir.json().catch(()=>null);
-      if(!ir.ok)throw new Error(idata?.error?.message||idata?.error||`Falha ao salvar a arte ${i+1}`);
+    if(imagens.length){
+      let concluidas=0;
+      atualizarStatusSalvarPost(`Gravando ${imagens.length} arte${imagens.length===1?'':'s'}…`,10);
+      await Promise.all(imagens.map(async (image_b64,ordem)=>{
+        const ir=await fetch(`/api/data?table=posts&action=append-image&id=${encodeURIComponent(id)}`,{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64,ordem})
+        });
+        const idata=await ir.json().catch(()=>null);
+        if(!ir.ok)throw new Error(idata?.error?.message||idata?.error||`Falha ao salvar a arte ${ordem+1}`);
+        concluidas++;
+        atualizarStatusSalvarPost(`Gravando artes… ${concluidas} de ${imagens.length}`,10+(concluidas/imagens.length)*82);
+      }));
     }
+
     _postAtual.id=id;
+    atualizarStatusSalvarPost('Rascunho salvo. Atualizando sua biblioteca…',96);
     await carregarPostsSalvos();
+    atualizarStatusSalvarPost('Rascunho salvo com sucesso.',100);
+    await new Promise(r=>setTimeout(r,350));
+    fecharStatusSalvarPost();
     limparPost();
     toast(`✅ Rascunho salvo${imagens.length?` com ${imagens.length} arte${imagens.length===1?'':'s'}`:''}.`,4500);
-  }catch(e){toast('Erro ao salvar rascunho: '+e.message,5000);}
-  finally{if(btn)btn.disabled=false;}
+  }catch(e){
+    fecharStatusSalvarPost();
+    toast('Erro ao salvar rascunho: '+e.message,5000);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='💾 Salvar rascunho';}
+  }
 }
 
 let _rascunhoAtual=null;
@@ -2576,5 +2607,13 @@ function switchTab(name) {
 
 window.onload = loadData;
 </script>
+<div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
+  <div class="save-post-box">
+    <div class="save-post-title">Salvando rascunho</div>
+    <div class="save-post-text" id="save-post-text">Aguarde enquanto gravamos o conteúdo e as artes. Não feche esta janela.</div>
+    <div class="save-post-track"><div id="save-post-progress" class="save-post-bar"></div></div>
+    <div id="save-post-step" class="save-post-step">Preparando…</div>
+  </div>
+</div>
 </body>
 </html>

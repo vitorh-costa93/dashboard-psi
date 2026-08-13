@@ -95,3 +95,11 @@ O radar acompanha assuntos públicos recentes; ele não acessa mensagens, dados 
 - A logo é transparente e é recolorida automaticamente para um tom de destaque extraído da arte, em vez de usar uma cor fixa.
 - As 7 artes podem ser baixadas individualmente e são armazenadas em `posts.imagens_b64` (JSONB).
 - Execute novamente o `supabase schema.sql`; os `ALTER TABLE ... IF NOT EXISTS` são seguros para instalações existentes.
+
+
+## Ajustes de consistência visual do carrossel
+- Logo aplicada pelo aplicativo em posição fixa no centro superior, dentro de uma zona de respiro protegida.
+- Paginação aplicada pelo aplicativo em componente fixo `02 / 07`, no canto superior esquerdo.
+- Paleta congelada por carrossel: creme `#F5F1E8`, verde profundo `#4E553E`, sage `#899776`, terracota `#B86A49`, areia `#D9CDB8`.
+- IA instruída a não gerar logo, paginação ou elementos de marca e a reservar as zonas superiores.
+- Slides internos não repetem o título principal.

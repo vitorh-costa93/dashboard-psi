@@ -1863,6 +1863,24 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+const POST_BRAND = {
+  bg:'#F5F1E8',
+  olive:'#4E553E',
+  oliveSoft:'#899776',
+  terracotta:'#B86A49',
+  sand:'#D9CDB8',
+  logo:'#4E553E',
+  logoWhite:'#F5F1E8'
+};
+
+function contrasteLuminancia(hex){
+  const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');
+  if(!m) return 0.5;
+  const n=parseInt(m[1],16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const lin=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
+  return 0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+}
+
 function rgbToHsl(r,g,b){
   r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;
   if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
@@ -1887,21 +1905,72 @@ function extrairCorAcento(b64){
     };img.onerror=()=>resolve('#9b5b46');img.src='data:image/png;base64,'+b64;
   });
 }
-async function aplicarLogoPost(b64, corPreferida){
+async function aplicarLogoPost(b64, pageInfo=null){
   return new Promise((resolve,reject)=>{
     const base=new Image(),logo=new Image();
     base.onload=()=>{logo.onload=()=>{
-      const canvas=document.createElement('canvas');canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;const ctx=canvas.getContext('2d');
+      const canvas=document.createElement('canvas');
+      canvas.width=base.naturalWidth||1024;canvas.height=base.naturalHeight||1024;
+      const ctx=canvas.getContext('2d');
       ctx.drawImage(base,0,0,canvas.width,canvas.height);
-      const targetW=Math.min(canvas.width*.23,230),targetH=targetW*(logo.naturalHeight/logo.naturalWidth),pad=Math.max(14,Math.round(canvas.width*.018));
-      const x=canvas.width-targetW-pad,y=canvas.height-targetH-pad;
-      const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;const octx=off.getContext('2d');octx.drawImage(logo,0,0);
-      const px=octx.getImageData(0,0,off.width,off.height),hex=corPreferida||'#9b5b46',rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
-      for(let i=0;i<px.data.length;i+=4){if(px.data[i+3]>0){px.data[i]=rr;px.data[i+1]=gg;px.data[i+2]=bb;}}octx.putImageData(px,0,0);
-      // Mantém a transparência real da logo: nenhuma caixa/fundo é desenhada atrás dela.
+
+      // Zona de marca protegida: centro superior, sempre no mesmo lugar.
+      // A faixa de respiro é muito discreta e serve apenas para garantir contraste.
+      const zoneW=canvas.width*.25, zoneH=canvas.height*.105;
+      const zx=(canvas.width-zoneW)/2, zy=canvas.height*.018;
+      const grad=ctx.createLinearGradient(0,zy,0,zy+zoneH);
+      grad.addColorStop(0,'rgba(245,241,232,.96)');
+      grad.addColorStop(1,'rgba(245,241,232,.78)');
+      ctx.save();
+      ctx.fillStyle=grad;
+      ctx.beginPath();
+      ctx.roundRect(zx,zy,zoneW,zoneH,Math.min(24,zoneH*.22));
+      ctx.fill();
+      ctx.restore();
+
+      // Logo: posição e cor FIXAS para todo o carrossel.
+      const targetW=Math.min(canvas.width*.17,210);
+      const targetH=targetW*(logo.naturalHeight/logo.naturalWidth);
+      const x=(canvas.width-targetW)/2;
+      const y=zy+(zoneH-targetH)/2;
+      const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;
+      const octx=off.getContext('2d');octx.drawImage(logo,0,0);
+      const px=octx.getImageData(0,0,off.width,off.height);
+      const useWhite=contrasteLuminancia(POST_BRAND.logo)>.55;
+      const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.logo;
+      const rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
+      for(let i=0;i<px.data.length;i+=4){
+        if(px.data[i+3]>0){px.data[i]=rr;px.data[i+1]=gg;px.data[i+2]=bb;}
+      }
+      octx.putImageData(px,0,0);
       ctx.drawImage(off,x,y,targetW,targetH);
+
+      // Paginação: componente fixo, desenhado pelo aplicativo, nunca pela IA.
+      if(pageInfo?.current && pageInfo?.total){
+        const label=`${String(pageInfo.current).padStart(2,'0')} / ${String(pageInfo.total).padStart(2,'0')}`;
+        const fs=Math.max(22,Math.round(canvas.width*.032));
+        const margin=Math.max(34,Math.round(canvas.width*.055));
+        const py=Math.max(54,Math.round(canvas.height*.055));
+        ctx.save();
+        ctx.font=`600 ${fs}px "DM Sans", sans-serif`;
+        ctx.textAlign='left';ctx.textBaseline='middle';
+        const boxW=Math.round(fs*3.8),boxH=Math.round(fs*1.55);
+        const px0=margin,py0=Math.max(20,py-boxH/2);
+        // limpa qualquer paginação que a IA possa ter criado no canto superior esquerdo.
+        ctx.fillStyle='rgba(245,241,232,.94)';
+        ctx.beginPath();ctx.roundRect(px0-10,py0,boxW,boxH,boxH*.32);ctx.fill();
+        ctx.fillStyle=POST_BRAND.terracotta;
+        ctx.fillText(label,px0,py);
+        ctx.strokeStyle=POST_BRAND.terracotta;ctx.lineWidth=Math.max(2,Math.round(canvas.width*.0025));
+        ctx.beginPath();ctx.moveTo(px0,py+fs*.7);ctx.lineTo(px0+fs*.95,py+fs*.7);ctx.stroke();
+        ctx.restore();
+      }
+
       resolve(canvas.toDataURL('image/png').split(',')[1]);
-    };logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';};base.onerror=reject;base.src='data:image/png;base64,'+b64;
+    };
+    logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';
+  };
+  base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
 }
 function renderArtesPost(){
@@ -1910,27 +1979,35 @@ function renderArtesPost(){
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
-  const formato=_postAtual.formato||'Carrossel', isCarousel=formato.toLowerCase()==='carrossel', slides=isCarousel?(_postAtual.slides||[]).slice(0,7):[_postAtual.slides?.[0]||_postAtual.gancho||''];
+  const formato=_postAtual.formato||'Carrossel';
+  const isCarousel=formato.toLowerCase()==='carrossel';
+  const slides=isCarousel?(_postAtual.slides||[]).slice(0,7):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
   if(isCarousel && slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
   try{
-    const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
+    document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
-    // A identidade visual é definida uma única vez para todo o carrossel.
-    // A primeira arte determina a cor de destaque; todos os demais slides
-    // reutilizam exatamente a mesma cor para a logo e a mesma família tipográfica.
-    let identidadeCor=null;
-    const identidadeTipografia="Use exactly the same typography across every slide: Playfair Display for titles/headlines and DM Sans for body text, with the same weights, hierarchy and letter spacing. Do not change font families between slides.";
+
+    const total=slides.length;
+    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Keep the top-center 10% of the canvas calm, light cream, low-detail and free of photos, illustrations, text, logos or decorative shapes because the application places the brand logo there. Keep the top-left area calm and light because the application places the fixed page counter there. Never render a page number, logo, watermark, Instagram handle or credentials. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream.`;
+
     for(let i=0;i<slides.length;i++){
-      document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${slides.length}...</div>`;
-      const prompt=`Create ONE single Instagram ${formato} slide, slide ${i+1} of ${slides.length}, for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Main title: ${_postAtual.titulo||''}. Audience: ${_postAtual.publico||'público geral'}. Slide content: ${slides[i]}. Visual identity: elegant editorial psychology brand, warm cream/off-white base, organic shapes, refined typography, restrained earthy palette, cohesive with the cover, professional and welcoming, no childish clichés unless appropriate. ${identidadeTipografia} Keep the same accent-color family and visual language across every slide. Keep text concise and legible in Portuguese. Do not include logos, names, credentials, phone numbers or fake claims; leave a calm lower-right area for the brand lockup. For a carousel, make this slide visually consistent with the other slides while still distinct. Content only, no mockup, no Instagram UI.`;
+      document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
+      const coverRule=isCarousel&&i===0
+        ? `This is the COVER. Show the post title prominently once. Do not add a page number or logo.`
+        : isCarousel
+          ? `This is an INTERNAL CAROUSEL SLIDE. Never repeat the main post title. Focus only on this slide's own message. Do not add a page number or logo.`
+          : `This is a SINGLE POST. Do not add page numbers. Use one strong editorial title and one short supporting sentence.`;
+      const prompt=`Create ONE square Instagram editorial image (1080x1080) for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${identidade} Visual direction: sophisticated clinical-editorial design, airy composition, generous negative space, one strong photographic or illustrated focal point, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
       const raw=await gerarImagem(prompt);
-      if(!identidadeCor) identidadeCor=await extrairCorAcento(raw);
-      const finalB64=await aplicarLogoPost(raw,identidadeCor);
+      const finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
       _postAtual.imagens_b64.push(finalB64);
-      _postAtual.logo_cor=identidadeCor;
+      _postAtual.logo_cor=POST_BRAND.logo;
+      _postAtual.logo_posicao='centro-superior';
+      _postAtual.paginacao_estilo='02 / 07';
       renderArtesPost();
     }
-    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;_postAtual.prompt='Gerado como carrossel de '+slides.length+' slides; cada slide foi gerado individualmente.';
+    _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
+    _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?'Carrossel de 7 slides;':'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
 }
 

@@ -74,7 +74,16 @@ create index if not exists idx_posts_criado_em on posts(criado_em desc);
 
 alter table posts add column if not exists imagens_b64 jsonb;
 alter table posts add column if not exists logo_cor text;
-alter table posts add column if not exists arte_count integer not null default 0;
+
+create table if not exists post_artes (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references posts(id) on delete cascade,
+  ordem integer not null default 0,
+  image_b64 text not null,
+  criado_em timestamptz default now(),
+  unique(post_id, ordem)
+);
+create index if not exists idx_post_artes_post_id on post_artes(post_id);
 
 create table if not exists trend_radar (
   id uuid primary key default gen_random_uuid(),
@@ -97,6 +106,7 @@ alter table pacientes enable row level security;
 alter table prontuarios enable row level security;
 alter table posts enable row level security;
 alter table trend_radar enable row level security;
+alter table post_artes enable row level security;
 
 -- A API usa service_role; as políticas abaixo mantêm compatibilidade
 -- com a configuração atual.

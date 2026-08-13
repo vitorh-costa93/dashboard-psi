@@ -276,35 +276,6 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 .post-preview{background:var(--light);border:1px solid var(--border);border-radius:8px;padding:14px;white-space:pre-wrap;line-height:1.55;font-size:.82rem;}
 .post-slides{display:flex;flex-direction:column;gap:7px;}
 .post-slide{padding:9px 11px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:.78rem;}
-
-.post-draft-row{display:flex;align-items:center;gap:8px;padding:0!important;overflow:hidden;}
-.post-draft-main{appearance:none;border:0;background:transparent;flex:1;min-width:0;text-align:left;padding:11px 12px;cursor:pointer;color:inherit;font:inherit;}
-.post-draft-main:hover{background:#f7f5ee;}
-.post-draft-title{display:block;font-family:'Newsreader',serif;font-size:.95rem;font-weight:600;color:var(--deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.post-draft-summary{display:block;font-size:.7rem;color:var(--muted);margin-top:3px;}
-.post-draft-delete{appearance:none;border:0;background:transparent;color:#9a8178;width:36px;height:36px;border-radius:50%;font-size:1.25rem;line-height:1;cursor:pointer;margin-right:7px;}
-.post-draft-delete:hover{background:#f5e9e6;color:#9b5848;}
-.post-draft-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;z-index:1000;}
-.post-draft-modal.open{display:flex;}
-.post-draft-backdrop{position:absolute;inset:0;background:rgba(49,57,43,.42);backdrop-filter:blur(4px);}
-.post-draft-dialog{position:relative;width:min(980px,96vw);max-height:90vh;overflow:auto;background:#fbfaf6;border:1px solid #d8d8cb;border-radius:18px;box-shadow:0 24px 80px rgba(44,52,40,.2);padding:22px;}
-.post-draft-dialog-head{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #e5e3da;padding-bottom:16px;}
-.post-draft-kicker{font:600 .68rem 'Manrope',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#899776;margin-bottom:4px;}
-.post-draft-dialog h3{font:700 1.55rem 'Newsreader',serif;color:#59664a;}
-.post-draft-modal-meta{font:.75rem 'Manrope',sans-serif;color:#8b8d84;margin-top:5px;}
-.post-draft-close{border:0;background:transparent;font-size:2rem;color:#72766b;cursor:pointer;line-height:1;}
-.post-draft-dialog-body{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px 0;}
-.post-draft-copy{display:flex;flex-direction:column;gap:14px;}
-.post-draft-copy strong{display:block;font:700 .72rem 'Manrope',sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#899776;margin-bottom:5px;}
-.post-draft-copy p{font:.86rem/1.55 'Manrope',sans-serif;color:#4d5548;white-space:pre-wrap;}
-.post-draft-slide-list{display:flex;flex-direction:column;gap:7px;}
-.post-draft-slide-list>div{display:flex;gap:8px;align-items:flex-start;background:#f3f1e8;border-left:3px solid #c5654e;padding:8px 10px;border-radius:6px;font:.78rem/1.45 'Manrope',sans-serif;color:#4d5548;}
-.post-draft-slide-list span{font-weight:700;color:#687257;min-width:18px;}
-.post-draft-thumb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-content:start;}
-.post-draft-thumb-grid img{display:block;width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:#f5f1e8;border:1px solid #dfddd4;}
-.post-draft-no-art{padding:30px;border:1px dashed #d6d5cc;border-radius:10px;color:#8b8d84;font:.82rem 'Manrope',sans-serif;}
-.post-draft-dialog-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;border-top:1px solid #e5e3da;}
-
 .post-history{margin-top:16px;}
 .post-brand-note{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45;display:flex;gap:7px;align-items:flex-start;}
 .post-brand-note::before{content:'✓';font-weight:700;color:#6d8d82;}
@@ -1874,6 +1845,7 @@ async function deletarApresentacao(id) {
 // ══════════════════════════════════════════════════════════
 let _postAtual=null;
 let _postTrends=[];
+let _postsSalvos=[];
 function escHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 async function initPosts(){
@@ -2059,131 +2031,77 @@ function footerRect(w,h){
   return { x:.06*w, y:(1-footerH)*h, w:.88*w, h:footerH*h };
 }
 async function avaliarTextoZona(b64,zone){
-  const st=await imageStats(b64);
+  const st=await imageStats(b64); // fallback global; regional check follows below
   return new Promise(resolve=>{
     const img=new Image();img.onload=()=>{
-      const r=zoneRect(zone,img.naturalWidth||1024,img.naturalHeight||1024);
-      const c=document.createElement('canvas');c.width=140;c.height=140;
-      const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,140,140);
-      const d=ctx.getImageData(0,0,140,140).data,l=[];
-      let edge=0, samples=0;
-      const lumGrid=[];
-      for(let y=0;y<140;y++){
-        const row=[];
-        for(let x=0;x<140;x++){
-          const p=(y*140+x)*4;
-          const v=luminancia([d[p],d[p+1],d[p+2]]);
-          row.push(v); l.push(v);
-          if(x>0){edge+=Math.abs(v-row[x-1]);samples++;}
-          if(y>0){edge+=Math.abs(v-lumGrid[y-1][x]);samples++;}
-        }
-        lumGrid.push(row);
-      }
-      l.sort((a,b)=>a-b);
-      const n=l.length||1;
-      const avg=l.reduce((a,v)=>a+v,0)/n;
-      const variance=l.reduce((a,v)=>a+Math.pow(v-avg,2),0)/n;
-      resolve({
-        zone,
-        q10:l[Math.floor((n-1)*.10)]??st.q10,
-        q25:l[Math.floor((n-1)*.25)]??st.q10,
-        q50:l[Math.floor((n-1)*.50)]??st.q50,
-        q75:l[Math.floor((n-1)*.75)]??st.q90,
-        q90:l[Math.floor((n-1)*.90)]??st.q90,
-        busy:Math.min(1,(Math.sqrt(variance)*1.7)+(edge/Math.max(1,samples))*2.0)
-      });
-    };
-    img.onerror=()=>resolve({zone,q10:st.q10,q25:st.q10,q50:st.q50,q75:st.q90,q90:st.q90,busy:.8});
-    img.src='data:image/png;base64,'+b64;
+      const r=zoneRect(zone,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=100;c.height=100;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,100,100);
+      const d=ctx.getImageData(0,0,100,100).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
+      l.sort((a,b)=>a-b);const n=l.length||1,q15=l[Math.floor((n-1)*.15)]??st.q10,q50=l[Math.floor((n-1)*.5)]??st.q50,q85=l[Math.floor((n-1)*.85)]??st.q90;
+      resolve({zone,q15,q50,q85});
+    };img.onerror=()=>resolve({zone,q15:st.q10,q50:st.q50,q85:st.q90});img.src='data:image/png;base64,'+b64;
   });
 }
 async function avaliarLogoZona(b64,pos){
+  const st=await imageStats(b64);
   return new Promise(resolve=>{
     const img=new Image();img.onload=()=>{
-      const w=img.naturalWidth||1024,h=img.naturalHeight||1024;
-      const x=(pos==='tl'? .035*w : .72*w), y=.015*h, rw=.24*w, rh=.115*h;
-      const c=document.createElement('canvas');c.width=120;c.height=80;const ctx=c.getContext('2d');
-      ctx.drawImage(img,x,y,rw,rh,0,0,120,80);
-      const d=ctx.getImageData(0,0,120,80).data,l=[];let edge=0,samples=0,prev=[];
-      const grid=[];
-      for(let yy=0;yy<80;yy++){
-        const row=[];
-        for(let xx=0;xx<120;xx++){
-          const p=(yy*120+xx)*4,v=luminancia([d[p],d[p+1],d[p+2]]);
-          row.push(v);l.push(v);
-          if(xx>0){edge+=Math.abs(v-row[xx-1]);samples++;}
-          if(yy>0){edge+=Math.abs(v-grid[yy-1][xx]);samples++;}
-        }
-        grid.push(row);
-      }
-      l.sort((a,b)=>a-b);const n=l.length||1,avg=l.reduce((a,v)=>a+v,0)/n;
-      const variance=l.reduce((a,v)=>a+(v-avg)**2,0)/n;
-      resolve({
-        position:pos,
-        q10:l[Math.floor((n-1)*.10)]??.6,
-        q25:l[Math.floor((n-1)*.25)]??.6,
-        q75:l[Math.floor((n-1)*.75)]??.7,
-        q90:l[Math.floor((n-1)*.90)]??.8,
-        busy:Math.min(1,(Math.sqrt(variance)*1.7)+(edge/Math.max(1,samples))*2)
-      });
-    };
-    img.onerror=()=>resolve({position:pos,q10:.6,q25:.6,q75:.7,q90:.8,busy:.8});
-    img.src='data:image/png;base64,'+b64;
+      const r=logoRect(pos,img.naturalWidth||1024,img.naturalHeight||1024),c=document.createElement('canvas');c.width=80;c.height=80;const ctx=c.getContext('2d');ctx.drawImage(img,r.x,r.y,r.w,r.h,0,0,80,80);
+      const d=ctx.getImageData(0,0,80,80).data,l=[];for(let i=0;i<d.length;i+=4)if(d[i+3]>220)l.push(luminancia([d[i],d[i+1],d[i+2]]));
+      l.sort((a,b)=>a-b);const n=l.length||1,q10=l[Math.floor((n-1)*.1)]??st.q10,q90=l[Math.floor((n-1)*.9)]??st.q90;
+      resolve({pos,q10,q90});
+    };img.onerror=()=>resolve({pos,q10:st.q10,q90:st.q90});img.src='data:image/png;base64,'+b64;
   });
 }
-
 async function escolherLayoutEditorial(imagens){
   if(!imagens?.length)throw new Error('Nenhuma imagem para analisar');
-
-  // A identidade é calculada uma única vez olhando o conjunto inteiro.
-  // A prioridade é: contraste mínimo seguro > área visualmente tranquila > estética.
-  const candidatos=['left','right','center'];
-  let melhor=null;
-  for(const zone of candidatos){
+  // A identidade é decidida UMA ÚNICA VEZ para o conjunto inteiro.
+  // Não recalculamos cor, posição ou tipografia slide a slide.
+  const textZones=['left','right','center'];
+  let melhorTexto=null;
+  for(const zone of textZones){
     const stats=await Promise.all(imagens.map(b=>avaliarTextoZona(b,zone)));
-    const dark=stats.map(s=>textoKontrastRatio(BRAND_INK,s.q75));
-    const light=stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q25));
-    const darkMin=Math.min(...dark), lightMin=Math.min(...light);
-    const darkScore=darkMin + (dark.reduce((a,v)=>a+v,0)/dark.length)*.18;
-    const lightScore=lightMin + (light.reduce((a,v)=>a+v,0)/light.length)*.18;
-    // A cor escolhida é congelada para o conjunto.
-    const useDark=darkScore>=lightScore;
-    const color=useDark?BRAND_INK:BRAND_CREAM;
-    const contrastMin=useDark?darkMin:lightMin;
-    const busyAvg=stats.reduce((a,v)=>a+v.busy,0)/stats.length;
-    const score=Math.min(contrastMin,8)*.68+(1-busyAvg)*2.2+(zone==='left'?.12:0);
-    if(!melhor||score>melhor.score)melhor={zone,color,min:contrastMin,busy:busyAvg,score,darkMin,lightMin};
+    const darkBySlide=stats.map(s=>textoKontrastRatio(BRAND_INK,s.q85));
+    const lightBySlide=stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q15));
+    const darkMin=Math.min(...darkBySlide),lightMin=Math.min(...lightBySlide);
+    const darkAvg=darkBySlide.reduce((a,v)=>a+v,0)/darkBySlide.length;
+    const lightAvg=lightBySlide.reduce((a,v)=>a+v,0)/lightBySlide.length;
+    // Mantemos o verde profundo como padrão quando ele passa com segurança.
+    let color=darkMin>=lightMin?BRAND_INK:BRAND_CREAM;
+    let minContrast=Math.max(darkMin,lightMin);
+    // Preferência estética pela versão escura se ambas forem seguras.
+    if(darkMin>=4.5) color=BRAND_INK,minContrast=darkMin;
+    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
+    const score=Math.min(minContrast,14)*.76 + ((zone==='left'?1:zone==='right'?.72:.55)*.24);
+    if(!melhorTexto||score>melhorTexto.score)melhorTexto={zone,color,minContrast,score,darkMin,lightMin};
   }
+  // Se a cor escolhida não atingir o mínimo em algum slide, o compositor
+  // usa um véu editorial uniforme na área de texto; a cor NÃO muda.
+  const veilNeeded=melhorTexto.minContrast<5.0;
 
-  const textVeil=melhor.min<4.5;
-
-  // Logo: escolhemos UMA posição e UMA cor olhando a área real do cabeçalho.
-  let bestLogo=null;
-  for(const pos of ['tl','tr']){
+  const logoPositions=['tr','tl'];let melhorLogo=null;
+  for(const pos of logoPositions){
     const stats=await Promise.all(imagens.map(b=>avaliarLogoZona(b,pos)));
-    const darkMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_DEEP,s.q75)));
-    const lightMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q25)));
-    const darkBusy=Math.max(...stats.map(s=>s.busy));
-    const lightBusy=darkBusy;
-    const useDark=darkMin>=lightMin;
-    const color=useDark?BRAND_DEEP:BRAND_CREAM;
-    const contrastMin=useDark?darkMin:lightMin;
-    const score=Math.min(contrastMin,8)*.72+(1-(useDark?darkBusy:lightBusy))*1.7+(pos==='tr'?.08:.04);
-    if(!bestLogo||score>bestLogo.score)bestLogo={position:pos,color,min:contrastMin,score,veil:contrastMin<4.5};
+    const darkMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_DEEP,s.q90)));
+    const lightMin=Math.min(...stats.map(s=>textoKontrastRatio(BRAND_CREAM,s.q10)));
+    let color=darkMin>=lightMin?BRAND_DEEP:BRAND_CREAM;
+    let minContrast=Math.max(darkMin,lightMin);
+    // A logo mantém UMA única cor em todo o carrossel.
+    if(darkMin>=4.5) color=BRAND_DEEP,minContrast=darkMin;
+    else if(lightMin>=4.5) color=BRAND_CREAM,minContrast=lightMin;
+    const score=Math.min(minContrast,14)*.82 + (pos==='tr'?.18:(pos==='br'?.12:.06));
+    if(!melhorLogo||score>melhorLogo.score)melhorLogo={position:pos,color,minContrast,score,veilNeeded:minContrast<5.0};
   }
-
   return {
-    textZone:melhor.zone,
-    textColor:melhor.color,
-    textContrast:melhor.min,
-    textBusy:melhor.busy,
-    textVeil,
-    logoPosition:bestLogo.position,
-    logoColor:bestLogo.color,
-    logoContrast:bestLogo.min,
-    logoVeil:bestLogo.veil,
+    textZone:melhorTexto.zone,
+    textColor:melhorTexto.color,
+    textContrast:melhorTexto.minContrast,
+    textVeil:veilNeeded,
+    logoPosition:melhorLogo.position,
+    logoColor:melhorLogo.color,
+    logoContrast:melhorLogo.minContrast,
+    logoVeil:melhorLogo.veilNeeded,
     fontTitle:'Newsreader',
-    fontBody:'Manrope'
+    fontBody:'Source Sans 3'
   };
 }
 function drawSoftEditorialVeil(ctx,canvas,rect,color,alpha=0.82){
@@ -2207,81 +2125,68 @@ function medirLinhas(ctx,text,maxW,fontSpec){
 // título+corpo caber inteiro na altura disponível, sem cortar texto
 // e sem invadir a faixa de header/footer do grid.
 function ajustarTipografiaParaCaber(ctx,canvas,rect,titulo,content,temTitulo,fontTitleName,fontBodyName){
-  const maxW=rect.w*.82;
-  let titleSize=canvas.width*.075, bodySize=canvas.width*.032;
-  const minTitle=canvas.width*.046, minBody=canvas.width*.023;
-  for(let tries=0;tries<20;tries++){
-    const titleLines=temTitulo?medirLinhas(ctx,titulo,maxW,`700 ${Math.round(titleSize)}px "${fontTitleName}", serif`):[];
-    const bodyLines=medirLinhas(ctx,content,maxW,`500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
-    const titleGap=titleSize*1.03, bodyGap=bodySize*1.42;
-    const used=(temTitulo?titleLines.length*titleGap+canvas.width*.022:0)+bodyLines.length*bodyGap;
-    if(used<=rect.h*.60 || (titleSize<=minTitle&&bodySize<=minBody))
-      return {titleSize,bodySize,titleGap,bodyGap,titleLines,bodyLines};
-    titleSize=Math.max(minTitle,titleSize*.94);
-    bodySize=Math.max(minBody,bodySize*.94);
-  }
-  return {
-    titleSize,bodySize,
-    titleGap:titleSize*1.03,bodyGap:bodySize*1.42,
-    titleLines:temTitulo?medirLinhas(ctx,titulo,maxW,`700 ${Math.round(titleSize)}px "${fontTitleName}", serif`):[],
-    bodyLines:medirLinhas(ctx,content,maxW,`500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`)
-  };
-}
+  const maxW = rect.w*.84;
+  let titleSize = canvas.width*.065;
+  let bodySize  = canvas.width*.032;
+  let titleGap  = canvas.width*.075;
+  let bodyGap   = canvas.width*.044;
+  const minTitle = canvas.width*.042;
+  const minBody  = canvas.width*.024;
 
-function compactarTextoPost(texto,maxChars=180){
-  let t=String(texto||'').replace(/\s+/g,' ').trim();
-  if(t.length<=maxChars)return t;
-  const partes=t.split(/(?<=[.!?])\s+/).filter(Boolean);
-  let out='';
-  for(const p of partes){
-    if((out+' '+p).trim().length>maxChars)break;
-    out=(out+' '+p).trim();
-    if(out.length>=maxChars*.72)break;
+  for(let tries=0; tries<14; tries++){
+    const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
+    const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+
+    const usedH = (temTitulo ? titleLines.length*titleGap + canvas.width*.018 : 0)
+                + bodyLines.length*bodyGap;
+
+    if (usedH <= rect.h*.92 || (titleSize<=minTitle && bodySize<=minBody)) {
+      return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
+    }
+    // Reduz proporcionalmente e tenta de novo
+    titleSize = Math.max(minTitle, titleSize*.92);
+    bodySize  = Math.max(minBody,  bodySize*.92);
+    titleGap  = titleSize*1.16;
+    bodyGap   = bodySize*1.38;
   }
-  if(out)return out;
-  return t.slice(0,maxChars-1).trimEnd()+'…';
+  // Fallback (não deveria chegar aqui): retorna o último estado calculado
+  const titleLines = temTitulo ? medirLinhas(ctx, titulo, maxW, `700 ${Math.round(titleSize)}px "${fontTitleName}", serif`) : [];
+  const bodyLines   = medirLinhas(ctx, content, maxW, `500 ${Math.round(bodySize)}px "${fontBodyName}", sans-serif`);
+  return { titleSize, bodySize, titleGap, bodyGap, titleLines, bodyLines };
 }
 
 function desenharTextoArte(b64,slideText,titulo,isCarousel,index,total,editorialLayout){
   return new Promise((resolve,reject)=>{
     const img=new Image();img.onload=async()=>{
       try{await document.fonts.ready;}catch(_e){}
-      const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;
-      const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const L=editorialLayout,rect=zoneRect(L.textZone,canvas.width,canvas.height),fg=L.textColor;
-      if(L.textVeil)drawSoftEditorialVeil(ctx,canvas,rect,fg);
+      const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||1024;canvas.height=img.naturalHeight||1024;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
-      const content=compactarTextoPost(slideText,isCarousel?155:185);
-      const temTitulo=!!titulo && (!isCarousel || index===0);
-      const fit=ajustarTipografiaParaCaber(ctx,canvas,rect,titulo||'',content,temTitulo,L.fontTitle,L.fontBody);
-      const xText=rect.x+rect.w*.035;
-      let y=rect.y+rect.h*.10;
+      const L=editorialLayout, rect=zoneRect(L.textZone,canvas.width,canvas.height), fg=L.textColor;
+      if(L.textVeil) drawSoftEditorialVeil(ctx,canvas,rect,fg);
 
-      // Tratamento editorial: pequeno marcador e hierarquia tipográfica clara.
-      ctx.save();ctx.fillStyle=BRAND_TERRACOTTA;ctx.fillRect(xText,y-10,Math.max(30,canvas.width*.032),4);ctx.restore();
-      y+=canvas.width*.025;
+      const content = String(slideText||'').trim();
+      const temTitulo = isCarousel && index===0 && !!titulo;
 
-      if(temTitulo){
-        ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
-        ctx.font=`700 ${Math.round(fit.titleSize)}px "${L.fontTitle}", serif`;
-        fit.titleLines.forEach(line=>{ctx.fillText(line,xText,y);y+=fit.titleGap;});
-        y+=canvas.width*.015;
+      // Auto-fit: nunca corta texto, apenas reduz a fonte até caber
+      // inteiramente dentro da faixa segura do grid (rect).
+      const fit = ajustarTipografiaParaCaber(ctx, canvas, rect, titulo||'', content, temTitulo, L.fontTitle, L.fontBody);
+
+      ctx.fillStyle = fg; ctx.textAlign='left'; ctx.textBaseline='top';
+      let y = rect.y + rect.h*.06;
+      const xText = rect.x + rect.w*.08;
+
+      if (temTitulo) {
+        ctx.font = `700 ${Math.round(fit.titleSize)}px "${L.fontTitle}", serif`;
+        fit.titleLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.titleGap; });
+        y += canvas.width*.018;
       }
+      ctx.font = `500 ${Math.round(fit.bodySize)}px "${L.fontBody}", sans-serif`;
+      fit.bodyLines.forEach(line=>{ ctx.fillText(line, xText, y); y += fit.bodyGap; });
 
-      ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='top';
-      ctx.font=`500 ${Math.round(fit.bodySize)}px "${L.fontBody}", sans-serif`;
-      fit.bodyLines.forEach(line=>{ctx.fillText(line,xText,y);y+=fit.bodyGap;});
-
-      const endY=y+canvas.width*.025;
-      if(endY<rect.y+rect.h*.86){
-        ctx.save();ctx.strokeStyle=BRAND_SAND;ctx.lineWidth=Math.max(1,canvas.width*.0014);
-        ctx.beginPath();ctx.moveTo(xText,endY);ctx.lineTo(xText+canvas.width*.055,endY);ctx.stroke();ctx.restore();
-      }
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };img.onerror=reject;img.src='data:image/png;base64,'+b64;
   });
 }
-
 async function aplicarLogoPost(b64, logoLayout=null, pageInfo=null){
   return new Promise((resolve,reject)=>{
     const base=new Image();base.onload=async()=>{try{
@@ -2324,10 +2229,7 @@ async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
   const formato=_postAtual.formato||'Carrossel';const isCarousel=formato.toLowerCase()==='carrossel';
   const rawSlides=Array.isArray(_postAtual.slides)?_postAtual.slides.filter(Boolean):[];
-  // Post único: uma mensagem central. Nunca juntamos vários slides com "•",
-  // pois isso transforma uma boa ideia em um bloco ilegível.
-  const singleContent=rawSlides[0]||_postAtual.gancho||_postAtual.cta||'';
-  const slides=isCarousel?rawSlides.slice(0,7):[singleContent];
+  const slides=isCarousel?rawSlides.slice(0,7):[rawSlides.slice(0,4).join(' • ')||_postAtual.gancho||_postAtual.titulo||''];
   if(isCarousel&&slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
   try{
     const wrap=document.getElementById('post-img-wrap');wrap.innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Gerando fundos...</div>';_postAtual.imagens_b64=[];
@@ -2380,13 +2282,100 @@ async function salvarPost(){
 async function carregarPostsSalvos(){
   const el=document.getElementById('posts-history');if(!el)return;
   try{
-    const r=await fetch('/api/data?table=posts');const rows=r.ok?await r.json():[];
-    if(!rows.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
-    el.innerHTML=rows.slice(0,12).map(p=>`<div class="alert-item">
-      <span><strong>${p.titulo}</strong><br><small>${p.formato||'Post'} · ${new Date(p.criado_em).toLocaleDateString('pt-BR')}</small></span>
-      <span class="alert-badge alert-yellow">${p.status||'rascunho'}</span>
-    </div>`).join('');
-  }catch(e){el.innerHTML='<div class="alert-empty">Salve o schema novo para ativar o histórico de posts.</div>';}
+    const r=await fetch('/api/data?table=posts');
+    if(!r.ok)throw new Error('Falha ao carregar rascunhos');
+    const rows=await r.json();
+    _postsSalvos=Array.isArray(rows)?rows:[];
+    if(!_postsSalvos.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
+    el.innerHTML=_postsSalvos.slice(0,12).map(p=>{
+      const id=escHtml(String(p.id??''));
+      const title=escHtml(p.titulo||p.tema||'Post sem título');
+      const label=escHtml(p.formato||'Post');
+      const dt=p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):'';
+      const imgs=normalizarImagensPost(p);
+      return `<div class="alert-item post-draft-row">
+        <button type="button" class="post-draft-main" data-id="${id}" aria-label="Abrir rascunho ${title}">
+          <span class="post-draft-title"><strong>${title}</strong></span>
+          <span class="post-draft-summary">${label}${dt?' · '+dt:''}${imgs.length?' · '+imgs.length+' arte'+(imgs.length>1?'s':''):''}</span>
+        </button>
+        <button type="button" class="post-draft-delete" data-id="${id}" title="Excluir rascunho" aria-label="Excluir rascunho">×</button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.post-draft-main').forEach(btn=>btn.addEventListener('click',()=>abrirPostRascunho(btn.dataset.id,false)));
+    el.querySelectorAll('.post-draft-delete').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();excluirPostRascunho(btn.dataset.id);}));
+  }catch(e){el.innerHTML='<div class="alert-empty">Não foi possível carregar os rascunhos agora.</div>';
+  }
+}
+function normalizarHashtags(v){
+  if(Array.isArray(v))return v.filter(Boolean).map(x=>String(x).trim()).filter(Boolean);
+  return String(v||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
+}
+function normalizarImagensPost(p){
+  if(Array.isArray(p?.imagens_b64))return p.imagens_b64.filter(Boolean);
+  if(typeof p?.imagens_b64==='string'){
+    try{const x=JSON.parse(p.imagens_b64);if(Array.isArray(x))return x.filter(Boolean);}catch(_e){}
+  }
+  if(p?.img_b64)return [p.img_b64];
+  return [];
+}
+function garantirModalRascunho(){
+  if(document.getElementById('post-draft-modal'))return;
+  const el=document.createElement('div');
+  el.id='post-draft-modal';el.className='post-draft-modal';
+  el.innerHTML=`
+    <div class="post-draft-backdrop"></div>
+    <div class="post-draft-dialog" role="dialog" aria-modal="true" aria-labelledby="post-draft-modal-title">
+      <div class="post-draft-dialog-head"><div><div class="post-draft-kicker">Rascunho salvo</div><h3 id="post-draft-modal-title"></h3><div id="post-draft-modal-meta" class="post-draft-modal-meta"></div></div><button type="button" class="post-draft-close" aria-label="Fechar">×</button></div>
+      <div id="post-draft-modal-body" class="post-draft-dialog-body"></div>
+      <div class="post-draft-dialog-actions"><button type="button" class="btn-secondary" id="post-draft-close-btn">Fechar</button><button type="button" class="btn-danger" id="post-draft-delete-btn">Excluir rascunho</button><button type="button" class="btn-primary" id="post-draft-edit-btn">Abrir no editor</button></div>
+    </div>`;
+  document.body.appendChild(el);
+  el.querySelector('.post-draft-backdrop').addEventListener('click',fecharModalRascunho);
+  el.querySelector('.post-draft-close').addEventListener('click',fecharModalRascunho);
+  el.querySelector('#post-draft-close-btn').addEventListener('click',fecharModalRascunho);
+}
+function fecharModalRascunho(){document.getElementById('post-draft-modal')?.classList.remove('open');}
+function renderModalRascunho(p){
+  garantirModalRascunho();
+  const imgs=normalizarImagensPost(p), slides=Array.isArray(p.slides)?p.slides.filter(Boolean):[];
+  document.getElementById('post-draft-modal-title').textContent=p.titulo||p.tema||'Post sem título';
+  document.getElementById('post-draft-modal-meta').textContent=`${p.formato||'Post'} · ${p.publico||'Ciclo vital'}${p.criado_em?' · '+new Date(p.criado_em).toLocaleDateString('pt-BR'):''}`;
+  document.getElementById('post-draft-modal-body').innerHTML=`
+    <div class="post-draft-copy">
+      <div><strong>Legenda</strong><p>${escHtml(p.legenda||'Sem legenda')}</p></div>
+      <div><strong>CTA</strong><p>${escHtml(p.cta||'Sem CTA')}</p></div>
+      <div><strong>Hashtags</strong><p>${escHtml(normalizarHashtags(p.hashtags).join(' ')||'Sem hashtags')}</p></div>
+      ${slides.length?`<div><strong>Conteúdo</strong><div class="post-draft-slide-list">${slides.map((x,i)=>`<div><span>${i+1}</span><span>${escHtml(x)}</span></div>`).join('')}</div></div>`:''}
+    </div>
+    <div>${imgs.length?`<div class="post-draft-thumb-grid">${imgs.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}" loading="lazy">`).join('')}</div>`:'<div class="post-draft-no-art">Este rascunho ainda não possui arte.</div>'}</div>`;
+  document.getElementById('post-draft-delete-btn').onclick=()=>excluirPostRascunho(p.id);
+  document.getElementById('post-draft-edit-btn').onclick=()=>abrirPostRascunho(p.id,true);
+  document.getElementById('post-draft-modal').classList.add('open');
+}
+async function abrirPostRascunho(id,editor=false){
+  if(id===null||id===undefined||id===''){toast('Rascunho inválido.');return;}
+  try{
+    let p=_postsSalvos.find(x=>String(x.id)===String(id));
+    if(!p){const r=await fetch('/api/data?table=posts');if(!r.ok)throw new Error('Não foi possível carregar o rascunho.');const rows=await r.json();p=(Array.isArray(rows)?rows:[]).find(x=>String(x.id)===String(id));}
+    if(!p){toast('Rascunho não encontrado.');return;}
+    if(!editor){renderModalRascunho(p);return;}
+    _postAtual={...p,imagens_b64:normalizarImagensPost(p),hashtags:normalizarHashtags(p.hashtags),slides:Array.isArray(p.slides)?p.slides.filter(Boolean):[],tema:p.tema||p.titulo||'',formato:p.formato||'Post',publico:p.publico||'Ciclo vital',logo_cor:p.logo_cor||'',logo_posicao:p.logo_posicao||'',texto_posicao:p.texto_posicao||''};
+    const tema=document.getElementById('post-tema');if(tema)tema.value=_postAtual.tema||'';
+    const contexto=document.getElementById('post-contexto');if(contexto)contexto.value=_postAtual.tendencia||'';
+    fecharModalRascunho();renderPostPreview();toast('Rascunho aberto no editor.');
+  }catch(e){toast('Erro ao abrir rascunho: '+e.message);}
+}
+async function excluirPostRascunho(id){
+  if(id===null||id===undefined||id==='')return;
+  const p=_postsSalvos.find(x=>String(x.id)===String(id));
+  const titulo=p?.titulo||'este rascunho';
+  if(!window.confirm(`Excluir "${titulo}"? Esta ação não pode ser desfeita.`))return;
+  try{
+    const r=await fetch(`/api/data?table=posts&id=${encodeURIComponent(id)}`,{method:'DELETE'});
+    if(!r.ok){const err=await r.json().catch(()=>({}));throw new Error(err.error?.message||err.error||'Falha ao excluir');}
+    _postsSalvos=_postsSalvos.filter(x=>String(x.id)!==String(id));
+    fecharModalRascunho();await carregarPostsSalvos();toast('Rascunho excluído.');
+  }catch(e){toast('Erro ao excluir rascunho: '+e.message);}
 }
 
 function limparPost(){
@@ -2716,7 +2705,38 @@ function exportarProntDOCX() {
 
   const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
   <head><meta charset='utf-8'><title>Prontuário</title>
-  <style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;}h1{font-size:14pt;color:#3a3020;}p{font-size:9pt;color:#888;}table{width:100%;border-collapse:collapse;margin-top:16pt;}th{background:#d6ccb0;padding:6pt;font-size:10pt;border:1px solid #ccc;text-align:left;}</style>
+  <style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;}h1{font-size:14pt;color:#3a3020;}p{font-size:9pt;color:#888;}table{width:100%;border-collapse:collapse;margin-top:16pt;}th{background:#d6ccb0;padding:6pt;font-size:10pt;border:1px solid #ccc;text-align:left;}
+/* ── Rascunhos de Posts ── */
+.post-draft-row{display:flex;align-items:center;gap:8px;padding:10px 12px!important;cursor:default;}
+.post-draft-main{flex:1;min-width:0;border:0;background:none;text-align:left;padding:0;color:inherit;font:inherit;cursor:pointer;}
+.post-draft-main:hover .post-draft-title{text-decoration:underline;}
+.post-draft-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.post-draft-summary{display:block;color:var(--muted);font-size:.72rem;margin-top:2px;}
+.post-draft-delete{flex:0 0 auto;width:28px;height:28px;border:1px solid #d7c8bc;border-radius:50%;background:transparent;color:#a85d4c;font-size:18px;line-height:1;cursor:pointer;}
+.post-draft-delete:hover{background:#fbf3ef;border-color:#c5654e;}
+.post-draft-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;}
+.post-draft-modal.open{display:flex;}
+.post-draft-backdrop{position:absolute;inset:0;background:rgba(46,54,43,.42);backdrop-filter:blur(3px);}
+.post-draft-dialog{position:relative;width:min(980px,96vw);max-height:90vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 60px rgba(49,55,45,.22);}
+.post-draft-dialog-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:2;}
+.post-draft-kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600;margin-bottom:5px;}
+.post-draft-dialog-head h3{font-family:'Newsreader',serif;font-size:1.55rem;font-weight:600;margin:0;color:var(--text);}
+.post-draft-modal-meta{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.post-draft-close{border:0;background:none;color:var(--muted);font-size:28px;line-height:1;cursor:pointer;padding:0 4px;}
+.post-draft-dialog-body{padding:22px 24px;display:grid;grid-template-columns:minmax(240px,.8fr) minmax(320px,1.2fr);gap:22px;}
+.post-draft-copy{display:flex;flex-direction:column;gap:16px;}
+.post-draft-copy>div{padding-bottom:14px;border-bottom:1px solid #eee8de;}
+.post-draft-copy strong{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.post-draft-copy p{font-size:.86rem;line-height:1.6;color:var(--text);white-space:pre-wrap;}
+.post-draft-slide-list{display:flex;flex-direction:column;gap:8px;}
+.post-draft-slide-list>div{font-size:.82rem;line-height:1.5;color:var(--text);display:grid;grid-template-columns:24px 1fr;gap:6px;}
+.post-draft-slide-list span{font-weight:600;color:var(--accent);}
+.post-draft-thumb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-content:start;}
+.post-draft-thumb-grid img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--border);background:#f5f2eb;}
+.post-draft-no-art{padding:24px;border:1px dashed var(--border);border-radius:10px;color:var(--muted);font-size:.82rem;text-align:center;}
+.post-draft-dialog-actions{display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border);position:sticky;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);}
+@media(max-width:760px){.post-draft-dialog-body{grid-template-columns:1fr;}.post-draft-dialog{width:100%;max-height:94vh;}.post-draft-modal{padding:10px;}}
+</style>
   </head><body>
     <h1>🌻 Prontuário — ${p.label}</h1>
     <p>Psicóloga Jaqueline C. Vieira | CRP 06/191478 | Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
@@ -2760,111 +2780,4 @@ function switchTab(name) {
 window.onload = loadData;
 </script>
 </body>
-</html>function garantirModalRascunho(){
-  if(document.getElementById('post-draft-modal'))return;
-  const el=document.createElement('div');
-  el.id='post-draft-modal';
-  el.className='post-draft-modal';
-  el.innerHTML=`
-    <div class="post-draft-backdrop" onclick="fecharModalRascunho()"></div>
-    <div class="post-draft-dialog" role="dialog" aria-modal="true" aria-labelledby="post-draft-modal-title">
-      <div class="post-draft-dialog-head">
-        <div>
-          <div class="post-draft-kicker">Rascunho salvo</div>
-          <h3 id="post-draft-modal-title"></h3>
-          <div id="post-draft-modal-meta" class="post-draft-modal-meta"></div>
-        </div>
-        <button class="post-draft-close" onclick="fecharModalRascunho()" aria-label="Fechar">×</button>
-      </div>
-      <div id="post-draft-modal-body" class="post-draft-dialog-body"></div>
-      <div class="post-draft-dialog-actions">
-        <button class="btn-secondary" onclick="fecharModalRascunho()">Fechar</button>
-        <button class="btn-danger" id="post-draft-delete-btn">Excluir rascunho</button>
-        <button class="btn-primary" id="post-draft-edit-btn">Abrir no editor</button>
-      </div>
-    </div>`;
-  document.body.appendChild(el);
-}
-function renderModalRascunho(p){
-  garantirModalRascunho();
-  const imgs=normalizarImagensPost(p), slides=Array.isArray(p.slides)?p.slides.filter(Boolean):[];
-  document.getElementById('post-draft-modal-title').textContent=p.titulo||p.tema||'Post sem título';
-  document.getElementById('post-draft-modal-meta').textContent=`${p.formato||'Post'} · ${p.publico||'Ciclo vital'} · ${p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):''}`;
-  document.getElementById('post-draft-modal-body').innerHTML=`
-    <div class="post-draft-copy">
-      <div><strong>Legenda</strong><p>${escHtml(p.legenda||'')}</p></div>
-      <div><strong>CTA</strong><p>${escHtml(p.cta||'')}</p></div>
-      <div><strong>Hashtags</strong><p>${escHtml(normalizarHashtags(p.hashtags).join(' '))}</p></div>
-      ${slides.length?`<div><strong>Conteúdo</strong><div class="post-draft-slide-list">${slides.map((x,i)=>`<div><span>${i+1}</span>${escHtml(x)}</div>`).join('')}</div></div>`:''}
-    </div>
-    ${imgs.length?`<div class="post-draft-thumb-grid">${imgs.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}" loading="lazy"/>`).join('')}</div>`:'<div class="post-draft-no-art">Este rascunho ainda não possui arte.</div>'}`;
-  document.getElementById('post-draft-delete-btn').onclick=()=>excluirPostRascunho(p.id);
-  document.getElementById('post-draft-edit-btn').onclick=()=>{fecharModalRascunho();abrirPostRascunho(p.id,true);};
-  document.getElementById('post-draft-modal').classList.add('open');
-}
-function fecharModalRascunho(){document.getElementById('post-draft-modal')?.classList.remove('open');}
-async function abrirPostRascunho(id,editor=false){
-  if(id===null||id===undefined||id===''){toast('Rascunho inválido.');return;}
-  try{
-    let p=_postsSalvos.find(x=>String(x.id)===String(id));
-    if(!p){
-      const r=await fetch('/api/data?table=posts'); if(!r.ok)throw new Error('Não foi possível carregar os rascunhos.');
-      const rows=await r.json(); _postsSalvos=Array.isArray(rows)?rows:[];
-      p=_postsSalvos.find(x=>String(x.id)===String(id));
-    }
-    if(!p){toast('Rascunho não encontrado.');return;}
-    if(!editor){renderModalRascunho(p);return;}
-    _postAtual={
-      ...p,
-      imagens_b64:normalizarImagensPost(p),
-      hashtags:normalizarHashtags(p.hashtags),
-      slides:Array.isArray(p.slides)?p.slides.filter(Boolean):[],
-      tema:p.tema||p.titulo||'',
-      formato:p.formato||'Post',
-      publico:p.publico||'Ciclo vital',
-      logo_cor:p.logo_cor||'',logo_posicao:p.logo_posicao||'',texto_posicao:p.texto_posicao||'',
-    };
-    const tema=document.getElementById('post-tema'); if(tema)tema.value=_postAtual.tema||'';
-    const contexto=document.getElementById('post-contexto'); if(contexto)contexto.value=_postAtual.tendencia||'';
-    renderPostPreview(); toast('Rascunho aberto no editor.');
-  }catch(e){toast('Erro ao abrir rascunho: '+e.message);}
-}
-async function excluirPostRascunho(id){
-  if(id===null||id===undefined||id==='')return;
-  const p=_postsSalvos.find(x=>String(x.id)===String(id));
-  const titulo=p?.titulo||'este rascunho';
-  if(!confirm(`Excluir "${titulo}"? Esta ação não pode ser desfeita.`))return;
-  try{
-    const r=await fetch(`/api/data?table=posts&id=${encodeURIComponent(id)}`,{method:'DELETE'});
-    if(!r.ok){
-      const err=await r.json().catch(()=>({}));
-      throw new Error(err.error?.message||err.error||'Falha ao excluir');
-    }
-    _postsSalvos=_postsSalvos.filter(x=>String(x.id)!==String(id));
-    fecharModalRascunho();
-    await carregarPostsSalvos();
-    toast('Rascunho excluído.');
-  }catch(e){toast('Erro ao excluir rascunho: '+e.message);}
-}
-async function carregarPostsSalvos(){
-  const el=document.getElementById('posts-history');if(!el)return;
-  try{
-    const r=await fetch('/api/data?table=posts');
-    if(!r.ok)throw new Error('Falha');
-    const rows=await r.json();_postsSalvos=Array.isArray(rows)?rows:[];
-    if(!_postsSalvos.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
-    el.innerHTML=_postsSalvos.slice(0,12).map(p=>{
-      const imgs=normalizarImagensPost(p),id=encodeURIComponent(String(p.id??''));
-      const label=p.formato||'Post',dt=p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):'';
-      return `<div class="alert-item post-draft-row">
-        <button type="button" class="post-draft-main" onclick="abrirPostRascunho(decodeURIComponent(this.dataset.id))" data-id="${id}">
-          <span class="post-draft-title">${escHtml(p.titulo||p.tema||'Post sem título')}</span>
-          <span class="post-draft-summary">${escHtml(label)} · ${escHtml(dt)}${imgs.length?' · '+imgs.length+' arte'+(imgs.length>1?'s':''):''}</span>
-        </button>
-        <button type="button" class="post-draft-delete" onclick="event.stopPropagation();excluirPostRascunho(decodeURIComponent(this.dataset.id))" data-id="${id}" title="Excluir rascunho" aria-label="Excluir rascunho">×</button>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div class="alert-empty">Não foi possível carregar os rascunhos agora.</div>';}
-}
-
-
+</html>

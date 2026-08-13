@@ -123,3 +123,12 @@ do $$ begin
   create policy "Permitir tudo via service role" on trend_radar
     for all using (true) with check (true);
 exception when duplicate_object then null; end $$;
+
+
+-- Metadados de composição dos posts (compatibilidade com versões anteriores)
+alter table posts add column if not exists slides jsonb;
+alter table posts add column if not exists logo_posicao text;
+alter table posts add column if not exists logo_contraste numeric;
+alter table posts add column if not exists texto_posicao text;
+alter table posts add column if not exists texto_cor text;
+alter table posts add column if not exists texto_contraste numeric;

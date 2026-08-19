@@ -1,5 +1,6 @@
 import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
+import {decryptClinicalData} from './_clinical-crypto.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -13,7 +14,12 @@ export default async function handler(req,res){
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
       }
       const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade))&order=enviado_em.desc');
-      const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar respostas'});
+      const data=await safeJson(response);
+      if(response.ok){
+        try{return res.status(200).json(data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
+        catch{return res.status(500).json({error:'Não foi possível abrir os dados clínicos'});}
+      }
+      return res.status(response.status).json({error:'Falha ao carregar respostas'});
     }
     if(req.method==='POST'&&req.body?.action==='template'){
       const {nome,finalidade,campos}=req.body;if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});

@@ -67,6 +67,12 @@ Rollback do corte: reverter o commit do frontend para a leitura anterior somente
 
 Na estabilização, respostas administrativas passaram a usar `Cache-Control: private, no-store`; se uma sessão expirar, o frontend retorna ao fluxo de autenticação. O corte somente deve ser promovido à produção com `CRON_SECRET` configurado e após a criação imediata do primeiro administrador.
 
+## Dados clínicos e formulários externos
+
+As Fases 6 e 7 são aditivas e não substituem `prontuarios`. `registros_clinicos` e `anamneses_versoes` permitem evolução clínica versionada. Modelos, convites e respostas externas ficam separados; o banco armazena somente o hash do token, o link expira e aceita um único envio.
+
+Toda resposta entra como `pending_review`. Aprovar cria uma nova versão de anamnese em transação; rejeitar preserva a resposta e registra a decisão. O formulário público não revela o paciente e informa que a incorporação não é automática.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

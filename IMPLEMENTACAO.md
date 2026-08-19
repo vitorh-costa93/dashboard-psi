@@ -99,6 +99,19 @@ O dashboard carrega `/api/operational`, que exige a sessão do administrador e l
 
 A planilha não participa mais da execução do frontend. Ela deve ser mantida somente leitura como backup e como fonte explícita dos scripts de importação e reconciliação.
 
+## Anamnese versionada e formulários externos
+
+- `registros_clinicos` mantém um registro por paciente.
+- `anamneses_versoes` nunca sobrescreve uma versão anterior.
+- `formularios_modelos` define campos e finalidade.
+- `formularios_convites` guarda somente o hash de um token aleatório, com expiração, revogação e uso único.
+- `formularios_respostas` começa sempre como `pending_review`.
+- `POST /api/forms` cria modelos e convites para o administrador autenticado.
+- `GET/PATCH /api/forms` lista e revisa respostas.
+- `GET/POST /api/form` atende exclusivamente o link externo limitado pelo token.
+- `form.html` renderiza o formulário sem mostrar nome ou outros dados do paciente.
+- Aprovação cria uma nova versão da anamnese; rejeição não apaga a resposta.
+
 ## Radar automático
 
 O `vercel.json` mantém uma execução diária de `/api/trends`.

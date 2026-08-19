@@ -24,7 +24,7 @@ export default async function handler(req,res){
         const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&ativo=eq.true&order=criado_em.desc');
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
       }
-      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino))&order=enviado_em.desc');
+      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino,campos))&status=in.(pending_review,approved)&order=enviado_em.desc');
       const data=await safeJson(response);
       if(response.ok){
         try{return res.status(200).json(data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
@@ -69,7 +69,7 @@ export default async function handler(req,res){
       const token=randomBytes(32).toString('base64url');const expira_em=new Date(Date.now()+hours*3600000).toISOString();
       const response=await supabase('/rest/v1/formularios_convites',{method:'POST',body:JSON.stringify({modelo_id,paciente_id,token_hash:digest(token),expira_em,criado_por:user.id})});
       if(!response.ok)return res.status(response.status).json({error:'Falha ao criar convite'});
-      const origin=`https://${req.headers.host}`;return res.status(201).json({url:`${origin}/form.html?token=${encodeURIComponent(token)}`,expira_em});
+      const origin=String(process.env.PUBLIC_FORM_ORIGIN||`https://${req.headers.host}`).replace(/\/$/,'');return res.status(201).json({url:`${origin}/form.html?token=${encodeURIComponent(token)}`,expira_em});
     }
     if(req.method==='PATCH'){
       const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject'].includes(action))return res.status(400).json({error:'Revisão inválida'});

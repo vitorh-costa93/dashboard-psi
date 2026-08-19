@@ -77,7 +77,7 @@ try{
     if(!id)throw new Error('Paciente sem correspondência após upsert');
     mapping.set(item.patientKey,id);
     const current=patientState.get(id)||{id,nome:item.row.Paciente.trim(),ativo:false,ultima_chave:item.row.Paciente.trim(),ultimo_label:item.row.Paciente.trim()};
-    if(item.row.Ativo==='Ativo'){current.ativo=true;current.ultimo_label=`${item.row['Horário']?item.row['Horário']+' | ':''}${item.row.Paciente.split(/\s+/).map(x=>x[0]).join('')}`;}
+    if(item.row.Ativo==='Ativo'){current.ativo=true;current.ultimo_label=`${item.row.Paciente.trim().split(/\s+/)[0]}${item.row['Horário']?' | '+item.row['Horário']:''}`;}
     patientState.set(id,current);
   }
   await batches('pacientes?on_conflict=id',[...patientState.values()].map(p=>({...p,atualizado_em:new Date().toISOString()})));

@@ -80,6 +80,7 @@ export async function currentUser(req, res) {
 }
 
 export async function requireAuth(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   try {
     const user = await currentUser(req, res);
     const admin = user && await getAdminRecord();
@@ -101,4 +102,3 @@ export async function requireAuthOrCron(req, res) {
   if (secret && authorization === `Bearer ${secret}`) return {cron: true};
   return requireAuth(req, res);
 }
-

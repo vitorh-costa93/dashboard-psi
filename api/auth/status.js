@@ -1,6 +1,7 @@
 import {currentUser, getAdminRecord} from '../_auth.js';
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   if (req.method !== 'GET') return res.status(405).json({error: 'Method not allowed'});
   try {
     const admin = await getAdminRecord();
@@ -15,4 +16,3 @@ export default async function handler(req, res) {
     return res.status(503).json({error: 'Não foi possível verificar o acesso'});
   }
 }
-

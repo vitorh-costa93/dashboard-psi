@@ -65,6 +65,8 @@ O frontend passou a carregar essa API e não contém mais URL, ID ou parser da p
 
 Rollback do corte: reverter o commit do frontend para a leitura anterior somente se uma divergência for comprovada. Não excluir as tabelas novas nem a planilha. Antes de qualquer rollback, executar `npm run reconcile:sheet` para registrar a diferença.
 
+Na estabilização, respostas administrativas passaram a usar `Cache-Control: private, no-store`; se uma sessão expirar, o frontend retorna ao fluxo de autenticação. O corte somente deve ser promovido à produção com `CRON_SECRET` configurado e após a criação imediata do primeiro administrador.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

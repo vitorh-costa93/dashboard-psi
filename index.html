@@ -993,7 +993,9 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
   try{
-    const res=await fetch('/api/operational');if(!res.ok)throw new Error('HTTP '+res.status);
+    const res=await fetch('/api/operational',{cache:'no-store'});
+    if(res.status===401){window.location.reload();return;}
+    if(!res.ok)throw new Error('HTTP '+res.status);
     const raw=(await res.json()).filter(r=>r['Data']&&String(r['Data']).trim());
     raw.forEach(r=>{
       r._data           =pData(r['Data']);

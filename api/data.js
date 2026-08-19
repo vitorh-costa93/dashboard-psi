@@ -1,17 +1,20 @@
 // api/data.js
 // Proxy do Supabase. A chave sensível permanece somente no servidor.
 
+import { requireAuth } from './_auth.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
 const TABLES = ['atividades', 'prontuarios', 'pacientes', 'posts', 'trend_radar', 'post_artes'];
 
 async function supaFetch(path, options = {}) {
+  const legacyAuthorization = SUPABASE_KEY?.startsWith('sb_secret_') ? {} : { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
     headers: {
       'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      ...legacyAuthorization,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation',
       ...(options.headers || {}),
@@ -20,6 +23,7 @@ async function supaFetch(path, options = {}) {
 }
 
 export default async function handler(req, res) {
+  if (!await requireAuth(req, res)) return;
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(500).json({ error: 'SUPABASE_URL ou SUPABASE_SERVICE_KEY não configuradas no Vercel' });
   }

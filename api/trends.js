@@ -1,6 +1,8 @@
 // Radar de tendências de conteúdo para uma psicóloga que atende todo o ciclo vital.
 // Fontes: RSS público do Google News. Nenhum dado clínico ou de paciente é enviado à IA.
 
+import { requireAuthOrCron } from './_auth.js';
+
 const OPENAI_KEY = process.env.OPENAI_KEY;
 const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-4.1-mini';
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -87,11 +89,13 @@ async function saveRadar(items){
     formato:x.formato||'Carrossel', potencial:x.potencial||'Médio', angulo:x.angulo||'',
     fonte_titulo:x.fonte?.title||'', fonte_url:x.fonte?.link||'', fonte_publicacao:x.fonte?.source||''
   }));
+  const legacyAuthorization=SUPABASE_KEY.startsWith('sb_secret_')?{}:{Authorization:`Bearer ${SUPABASE_KEY}`};
   await fetch(`${SUPABASE_URL}/rest/v1/trend_radar`,{
-    method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)
+    method:'POST',headers:{apikey:SUPABASE_KEY,...legacyAuthorization,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)
   }).catch(()=>{});
 }
 export default async function handler(req,res){
+  if (!await requireAuthOrCron(req, res)) return;
   if(req.method!=='GET') return res.status(405).json({error:'Method not allowed'});
   try{
     const news=await collect();

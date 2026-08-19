@@ -68,11 +68,50 @@ Mantenha:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
 - `OPENAI_KEY`
+- `CRON_SECRET` — segredo aleatório compartilhado com o cron da Vercel.
 
 Opcional:
 - `OPENAI_TEXT_MODEL` — padrão `gpt-4.1-mini`.
 
 Não é necessário configurar Instagram nem Meta API.
+
+## Acesso administrativo único
+
+- No primeiro acesso, o painel solicita a criação do único login administrativo por e-mail e senha.
+- Após a criação, o cadastro é bloqueado no servidor e a tela passa a exibir somente o login.
+- O painel, os prontuários, as rotas de dados e os geradores de IA exigem uma sessão válida.
+- O botão `Sair` encerra a sessão no navegador.
+- Aplique as migrations versionadas em `supabase/migrations`; o arquivo `supabase schema.sql` permanece apenas como referência legada.
+
+## Base operacional versionada
+
+- `convenios`: cadastro normalizado dos 17 convênios encontrados na origem.
+- `pacotes`: compras de sessões vinculadas ao ID permanente do paciente.
+- `sessoes`: histórico operacional normalizado, incluindo presença, cobrança, valores e fotografia dos atributos da origem.
+- `pacientes_origem`: correspondência estável entre a planilha e `pacientes.id`.
+- `importacoes`: execução, contagens e divergências da migração.
+- `npm run import:sheet -- --apply`: importação idempotente.
+- `npm run reconcile:sheet`: comparação agregada entre planilha e Supabase.
+
+## Fonte operacional do dashboard
+
+O dashboard carrega `/api/operational`, que exige a sessão do administrador e lê `sessoes`, `pacientes` e `convenios` no Supabase. O retorno mantém os nomes de campos anteriores para preservar KPIs, gráficos, saldos, faltas e alertas sem reescrever as regras de negócio.
+
+A planilha não participa mais da execução do frontend. Ela deve ser mantida somente leitura como backup e como fonte explícita dos scripts de importação e reconciliação.
+
+## Anamnese versionada e formulários externos
+
+- `registros_clinicos` mantém um registro por paciente.
+- `anamneses_versoes` nunca sobrescreve uma versão anterior.
+- `formularios_modelos` define campos e finalidade.
+- `formularios_convites` guarda somente o hash de um token aleatório, com expiração, revogação e uso único.
+- `formularios_respostas` começa sempre como `pending_review`.
+- `POST /api/forms` cria modelos e convites para o administrador autenticado.
+- `GET/PATCH /api/forms` lista e revisa respostas.
+- `GET/POST /api/form` atende exclusivamente o link externo limitado pelo token.
+- `form.html` renderiza o formulário sem mostrar nome ou outros dados do paciente.
+- Aprovação cria uma nova versão da anamnese; rejeição não apaga a resposta.
+- A seção `Prontuários > Formulários externos` permite criar o modelo padrão, selecionar paciente, gerar/copiar o link e aprovar ou rejeitar respostas.
 
 ## Radar automático
 

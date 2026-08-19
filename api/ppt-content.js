@@ -3,7 +3,10 @@
 // a partir de uma descrição da psicóloga. Retorna JSON estruturado que o
 // frontend usa para montar o .pptx com a biblioteca PptxGenJS.
 
+import { requireAuth } from './_auth.js';
+
 export default async function handler(req, res) {
+  if (!await requireAuth(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

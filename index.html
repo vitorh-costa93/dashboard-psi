@@ -23,6 +23,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .app-header .logo{font-size:26px;}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
 .app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
+.app-header-main{display:flex;align-items:center;gap:14px;flex:1;}
+.logout-btn{margin-left:auto;border:1px solid rgba(58,48,32,.25);background:rgba(255,255,255,.35);color:#3a3020;border-radius:7px;padding:7px 12px;cursor:pointer;font:inherit;font-size:.76rem;}
+.logout-btn:hover{background:rgba(255,255,255,.6);}
+
+/* ── Acesso administrativo ── */
+.auth-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-card{width:min(410px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;box-shadow:0 18px 50px rgba(58,48,32,.12);}
+.auth-brand{text-align:center;margin-bottom:24px;}
+.auth-brand .logo{font-size:38px;margin-bottom:8px;}
+.auth-brand h1{font:700 1.5rem 'Playfair Display',serif;color:#3a3020;letter-spacing:.04em;}
+.auth-brand p{font-size:.78rem;color:var(--muted);margin-top:5px;}
+.auth-title{font:600 1.15rem 'Playfair Display',serif;margin-bottom:7px;}
+.auth-help{font-size:.79rem;color:var(--muted);line-height:1.5;margin-bottom:18px;}
+.auth-field{display:block;margin-bottom:13px;}
+.auth-field span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
+.auth-field input{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;font:inherit;background:#fff;color:var(--text);outline:none;}
+.auth-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,158,110,.13);}
+.auth-submit{width:100%;border:0;border-radius:8px;padding:11px 14px;background:var(--accent);color:#fff;font:600 .84rem 'DM Sans',sans-serif;cursor:pointer;margin-top:4px;}
+.auth-submit:disabled{opacity:.6;cursor:wait;}
+.auth-message{min-height:20px;margin-top:12px;font-size:.76rem;color:var(--danger);text-align:center;}
+.auth-loading{text-align:center;color:var(--muted);font-size:.82rem;}
 
 /* ── Nav tabs ── */
 .nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow-x:auto;}
@@ -323,12 +344,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 </head>
 <body>
 
-<div class="app-header">
-  <div class="logo">🌻</div>
-  <div>
-    <h1>CONSULTÓRIO</h1>
-    <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="logo">🌻</div>
+      <h1>CONSULTÓRIO</h1>
+      <p>Área administrativa protegida</p>
+    </div>
+    <div id="auth-loading" class="auth-loading">Verificando acesso...</div>
+    <form id="auth-form" style="display:none" onsubmit="enviarAcesso(event)">
+      <div class="auth-title" id="auth-title">Entrar</div>
+      <div class="auth-help" id="auth-help">Use seu login e senha para abrir o painel.</div>
+      <label class="auth-field"><span>Login (e-mail)</span><input id="auth-email" type="email" autocomplete="username" required/></label>
+      <label class="auth-field"><span>Senha</span><input id="auth-password" type="password" autocomplete="current-password" required/></label>
+      <button class="auth-submit" id="auth-submit" type="submit">Entrar</button>
+      <div class="auth-message" id="auth-message" role="alert"></div>
+    </form>
   </div>
+</div>
+
+<div id="app-shell" style="display:none">
+
+<div class="app-header">
+  <div class="app-header-main">
+    <div class="logo">🌻</div>
+    <div>
+      <h1>CONSULTÓRIO</h1>
+      <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+    </div>
+  </div>
+  <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
 
 <div class="nav-tabs">
@@ -342,7 +387,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
 <div id="error-msg">
   <h3>Não foi possível carregar os dados</h3>
-  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.</p>
+  <p>Tente novamente. Se o problema continuar, confira a conexão segura com o banco de dados.</p>
 </div>
 
 <div id="dashboard">
@@ -796,6 +841,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>
   </div>
 
+  <div class="pront-form-wrap" style="margin-top:20px;">
+    <h3 class="pront-section-title">🔗 Formulários externos</h3>
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Crie um modelo uma vez, gere um link individual e revise cada resposta antes de incorporá-la à anamnese.</p>
+    <div class="pront-fields-grid">
+      <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="form-paciente"><option value="">Selecione...</option></select></div>
+      <div class="pront-field"><label class="pront-label">Modelo</label><select class="pront-input" id="form-modelo"><option value="">Selecione...</option></select></div>
+    </div>
+    <div class="pront-form-actions"><button class="btn-primary" onclick="gerarLinkFormulario()">Gerar link seguro</button><button class="btn-secondary" onclick="criarModeloAnamnese()">Criar modelo padrão</button></div>
+    <div id="form-link-box" style="display:none;margin-top:12px;padding:12px;background:var(--light);border:1px solid var(--border);border-radius:8px;word-break:break-all;"></div>
+    <h3 class="pront-section-title" style="margin-top:22px;">Respostas para revisão</h3>
+    <div id="form-respostas"><div class="alert-empty">Nenhuma resposta pendente.</div></div>
+  </div>
+
 </div>
 </div><!-- /page-prontuarios -->
 
@@ -840,9 +898,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+</div>
 
 <script>
-const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
+let _authMode='login';
+
+function mostrarFormularioAcesso(configured){
+  _authMode=configured?'login':'setup';
+  document.getElementById('auth-loading').style.display='none';
+  document.getElementById('auth-form').style.display='block';
+  document.getElementById('auth-title').textContent=configured?'Entrar':'Criar acesso';
+  document.getElementById('auth-help').textContent=configured
+    ?'Use seu login e senha para abrir o painel.'
+    :'Este é o primeiro acesso. Crie o único login administrativo do painel.';
+  document.getElementById('auth-submit').textContent=configured?'Entrar':'Criar login';
+  const password=document.getElementById('auth-password');
+  password.autocomplete=configured?'current-password':'new-password';
+  password.minLength=configured?1:12;
+  document.getElementById('auth-email').focus();
+}
+
+function abrirPainel(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-shell').style.display='block';
+  loadData();
+}
+
+async function verificarAcesso(){
+  try{
+    const response=await fetch('/api/auth/status',{credentials:'same-origin'});
+    const state=await response.json();
+    if(!response.ok)throw new Error(state.error||'Falha ao verificar acesso');
+    if(state.authenticated)return abrirPainel();
+    mostrarFormularioAcesso(state.configured);
+  }catch(error){
+    document.getElementById('auth-loading').textContent='Não foi possível verificar o acesso. Atualize a página para tentar novamente.';
+  }
+}
+
+async function enviarAcesso(event){
+  event.preventDefault();
+  const button=document.getElementById('auth-submit');
+  const message=document.getElementById('auth-message');
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  button.disabled=true;message.textContent='';
+  try{
+    const response=await fetch(`/api/auth/${_authMode}`,{
+      method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||'Não foi possível continuar');
+    if(data.requiresLogin){mostrarFormularioAcesso(true);message.textContent='Acesso criado. Entre com a senha cadastrada.';return;}
+    abrirPainel();
+  }catch(error){
+    message.textContent=error.message;
+    if(_authMode==='setup' && /já foi criado/i.test(error.message))mostrarFormularioAcesso(true);
+  }finally{button.disabled=false;}
+}
+
+async function sair(){
+  await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  window.location.reload();
+}
+
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
@@ -852,19 +972,7 @@ let _pacientesMap = {}; // nome -> {id, nome, ativo, ultima_chave, ultimo_label}
 
 function dC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function parseCSV(text){
-  const lines=text.trim().split('\n');
-  const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
-  return lines.slice(1).map(line=>{
-    const cols=[];let cur='',inQ=false;
-    for(let c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur);cur='';}else cur+=c;}
-    cols.push(cur);
-    const obj={};headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
-    return obj;
-  });
-}
-
-function pVal(v){if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
+function pVal(v){if(typeof v==='number')return v;if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
 function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
 function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
@@ -898,10 +1006,10 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
   try{
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
-    const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    const raw=parseCSV(text).filter(r=>r['Data']&&r['Data'].trim());
+    const res=await fetch('/api/operational',{cache:'no-store'});
+    if(res.status===401){window.location.reload();return;}
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const raw=(await res.json()).filter(r=>r['Data']&&String(r['Data']).trim());
     raw.forEach(r=>{
       r._data           =pData(r['Data']);
       r._anoMes         =anoMes(r._data);
@@ -2261,7 +2369,31 @@ async function initProntuarios() {
   preencherDropdownProntuarios();
   setDataHoje();
   await carregarProntuarios();
+  await initFormularios();
 }
+
+let _formTemplates=[];
+async function initFormularios(){
+  const paciente=document.getElementById('form-paciente');if(!paciente)return;
+  paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  try{
+    const [tm,rs]=await Promise.all([fetch('/api/forms?resource=templates'),fetch('/api/forms')]);
+    _formTemplates=tm.ok?await tm.json():[];const respostas=rs.ok?await rs.json():[];
+    document.getElementById('form-modelo').innerHTML='<option value="">Selecione...</option>'+_formTemplates.map(t=>`<option value="${escHtmlAttr(t.id)}">${escHtml(t.nome)}</option>`).join('');
+    renderRespostasFormularios(respostas);
+  }catch(e){document.getElementById('form-respostas').innerHTML='<div class="alert-empty">Não foi possível carregar os formulários.</div>';}
+}
+async function criarModeloAnamnese(){
+  const payload={action:'template',nome:'Anamnese inicial',finalidade:'Informações iniciais para avaliação e revisão pela psicóloga.',campos:[{key:'motivo',label:'Qual é o principal motivo para buscar acompanhamento?',type:'textarea',required:true},{key:'historico',label:'Há algo importante sobre seu histórico que gostaria de compartilhar?',type:'textarea',required:false},{key:'expectativas',label:'Quais são suas expectativas para o acompanhamento?',type:'textarea',required:false}]};
+  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível criar o modelo');toast('✅ Modelo criado');await initFormularios();
+}
+async function gerarLinkFormulario(){
+  const paciente_id=document.getElementById('form-paciente').value,modelo_id=document.getElementById('form-modelo').value;if(!paciente_id||!modelo_id)return toast('Selecione paciente e modelo.');
+  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
+  const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link válido por 72 horas:</strong><br>${escHtml(d.url)}<br><button class="btn-secondary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button>`;
+}
+function renderRespostasFormularios(rows){const el=document.getElementById('form-respostas'),pending=rows.filter(x=>x.status==='pending_review');if(!pending.length){el.innerHTML='<div class="alert-empty">Nenhuma resposta pendente.</div>';return;}el.innerHTML=pending.map(x=>`<div class="alert-item" style="display:block"><strong>${escHtml(x.formularios_convites?.formularios_modelos?.nome||'Formulário')}</strong><pre style="white-space:pre-wrap;font:inherit;margin:8px 0">${escHtml(JSON.stringify(x.conteudo,null,2))}</pre><button class="btn-primary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','approve')">Aprovar e incorporar</button> <button class="btn-secondary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','reject')">Rejeitar</button></div>`).join('');}
+async function revisarFormulario(resposta_id,action){if(!confirm(action==='approve'?'Aprovar e criar uma nova versão da anamnese?':'Rejeitar esta resposta?'))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?'✅ Resposta incorporada':'Resposta rejeitada');await initFormularios();}
 
 async function carregarPacientes() {
   try {
@@ -2605,7 +2737,7 @@ function switchTab(name) {
   }
 }
 
-window.onload = loadData;
+window.onload = verificarAcesso;
 </script>
 <div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
   <div class="save-post-box">

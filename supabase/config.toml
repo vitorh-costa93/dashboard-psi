@@ -1,0 +1,15 @@
+# Local Supabase CLI configuration. The remote project link is stored only in
+# supabase/.temp and is intentionally ignored by Git.
+project_id = "dashboard-psi"
+
+[db]
+major_version = 17
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+enabled = false
+sql_paths = []
+

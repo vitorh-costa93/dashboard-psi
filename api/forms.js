@@ -1,6 +1,7 @@
 import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
 import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
+import {Document,Packer,Paragraph,TextRun,HeadingLevel} from 'docx';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -14,7 +15,7 @@ export default async function handler(req,res){
         const pacienteId=String(req.query?.paciente_id||'');if(!uuid.test(pacienteId))return res.status(400).json({error:'Paciente inválido'});
         const rr=await supabase(`/rest/v1/registros_clinicos?select=id&paciente_id=eq.${pacienteId}&limit=1`),records=await safeJson(rr);
         if(!rr.ok)return res.status(rr.status).json({error:'Falha ao carregar anamnese'});if(!records?.length)return res.status(200).json([]);
-        const vr=await supabase(`/rest/v1/anamneses_versoes?select=id,versao,conteudo,criado_em&registro_clinico_id=eq.${records[0].id}&order=versao.desc`),versions=await safeJson(vr);
+        const vr=await supabase(`/rest/v1/anamneses_versoes?select=id,versao,conteudo,criado_em&registro_clinico_id=eq.${records[0].id}&excluido_em=is.null&order=versao.desc`),versions=await safeJson(vr);
         if(!vr.ok)return res.status(vr.status).json({error:'Falha ao carregar versões'});
         try{return res.status(200).json(versions.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
         catch{return res.status(500).json({error:'Não foi possível abrir os dados da anamnese'});}
@@ -40,9 +41,26 @@ export default async function handler(req,res){
       const response=await supabase('/rest/v1/rpc/salvar_anamnese',{method:'POST',body:JSON.stringify({p_paciente_id:pacienteId,p_conteudo:encryptClinicalData(conteudo),p_autor:user.id})});
       const result=await safeJson(response);return res.status(response.ok?201:409).json(response.ok?{id:result}:{error:'Não foi possível salvar a anamnese'});
     }
+    if(req.method==='POST'&&req.body?.action==='export_anamnesis'){
+      const {paciente_nome,versao,criado_em,secoes}=req.body;
+      if(!Array.isArray(secoes)||secoes.length>30)return res.status(400).json({error:'Dados de exportação inválidos'});
+      const children=[new Paragraph({text:'ANAMNESE INFANTIL',heading:HeadingLevel.TITLE}),new Paragraph({children:[new TextRun({text:`Paciente: ${String(paciente_nome||'Não informado')}`,bold:true})]}),new Paragraph({text:`Versão ${Number(versao)||1} · ${String(criado_em||'')}`})];
+      for(const section of secoes){
+        children.push(new Paragraph({text:String(section.titulo||'Seção'),heading:HeadingLevel.HEADING_1}));
+        for(const item of Array.isArray(section.itens)?section.itens:[]){
+          const value=String(item.valor||'').trim();if(!value)continue;
+          children.push(new Paragraph({children:[new TextRun({text:`${String(item.rotulo||'Campo')}: `,bold:true}),new TextRun(value)]}));
+        }
+      }
+      const doc=new Document({sections:[{properties:{},children}]});
+      const buffer=await Packer.toBuffer(doc);
+      return res.status(200).json({arquivo:buffer.toString('base64')});
+    }
     if(req.method==='POST'&&req.body?.action==='template'){
       const {nome,finalidade,campos}=req.body,destino=req.body.destino==='cadastro'?'cadastro':'anamnese';if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});
-      const response=await supabase('/rest/v1/formularios_modelos',{method:'POST',body:JSON.stringify({nome,finalidade,campos,destino})});
+      const existingResponse=await supabase(`/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&nome=eq.${encodeURIComponent(nome)}&destino=eq.${destino}&ativo=eq.true&limit=1`);
+      const existing=await safeJson(existingResponse);if(existingResponse.ok&&existing?.length)return res.status(200).json(existing[0]);
+      const response=await supabase('/rest/v1/formularios_modelos',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({nome,finalidade,campos,destino})});
       const data=await safeJson(response);return res.status(response.ok?201:response.status).json(response.ok?data[0]:{error:'Falha ao criar modelo'});
     }
     if(req.method==='POST'&&req.body?.action==='invite'){
@@ -57,6 +75,11 @@ export default async function handler(req,res){
       const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject'].includes(action))return res.status(400).json({error:'Revisão inválida'});
       const response=await supabase('/rest/v1/rpc/revisar_formulario',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_acao:action,p_revisor:user.id})});
       return res.status(response.ok?200:409).json(response.ok?{ok:true,anamnese_versao_id:await safeJson(response)}:{error:'Resposta não está pendente'});
+    }
+    if(req.method==='DELETE'&&req.query?.resource==='anamnesis'){
+      const anamneseId=String(req.query?.id||'');if(!uuid.test(anamneseId))return res.status(400).json({error:'Anamnese inválida'});
+      const response=await supabase('/rest/v1/rpc/arquivar_anamnese',{method:'POST',body:JSON.stringify({p_anamnese_id:anamneseId,p_autor:user.id})});
+      const archived=await safeJson(response);return res.status(response.ok&&archived?200:404).json(response.ok&&archived?{ok:true}:{error:'Anamnese não encontrada'});
     }
     return res.status(405).json({error:'Method not allowed'});
   }catch(error){return res.status(500).json({error:'Não foi possível processar formulários'});}

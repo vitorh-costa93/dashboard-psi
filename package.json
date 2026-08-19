@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "supabase": "supabase",
-    "test": "node --test"
+    "test": "node --test",
+    "import:sheet": "node scripts/import-sheet.mjs",
+    "reconcile:sheet": "node scripts/reconcile-sheet.mjs"
   },
   "devDependencies": {
     "supabase": "2.115.0"

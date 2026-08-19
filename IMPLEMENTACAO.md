@@ -83,6 +83,16 @@ Não é necessário configurar Instagram nem Meta API.
 - O botão `Sair` encerra a sessão no navegador.
 - Aplique as migrations versionadas em `supabase/migrations`; o arquivo `supabase schema.sql` permanece apenas como referência legada.
 
+## Base operacional versionada
+
+- `convenios`: cadastro normalizado dos 17 convênios encontrados na origem.
+- `pacotes`: compras de sessões vinculadas ao ID permanente do paciente.
+- `sessoes`: histórico operacional normalizado, incluindo presença, cobrança, valores e fotografia dos atributos da origem.
+- `pacientes_origem`: correspondência estável entre a planilha e `pacientes.id`.
+- `importacoes`: execução, contagens e divergências da migração.
+- `npm run import:sheet -- --apply`: importação idempotente.
+- `npm run reconcile:sheet`: comparação agregada entre planilha e Supabase.
+
 ## Radar automático
 
 O `vercel.json` mantém uma execução diária de `/api/trends`.

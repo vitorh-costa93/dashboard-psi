@@ -38,6 +38,25 @@ A Fase 1 implementa um único administrador:
 
 A primeira configuração deve ser feita pelo proprietário imediatamente após o deploy. Antes de existir a linha única em `app_admin`, o endereço de setup permanece disponível para a primeira criação bem-sucedida.
 
+## Base operacional e migração
+
+Em 19/08/2026, a Fase 2 criou de forma aditiva `convenios`, `pacotes`, `sessoes`, `pacientes_origem` e `importacoes`. As tabelas anteriores, incluindo `prontuarios`, não foram alteradas nem removidas.
+
+O importador `scripts/import-sheet.mjs` usa uma chave determinística por paciente, data e ocorrência para fazer upsert. A correspondência permanente entre a identificação legada e `pacientes.id` fica em `pacientes_origem`, portanto mudanças futuras de atributos não recriam o paciente. Registros ausentes em uma execução posterior são relatados como obsoletos e não são excluídos automaticamente.
+
+A importação foi executada duas vezes para testar idempotência. A reconciliação agregada confirmou, sem divergências:
+
+- 2.343 sessões;
+- 114 pacientes;
+- 992 compras de pacote;
+- 17 convênios;
+- 1.788 sessões cobradas;
+- 1.775 sessões consumidas;
+- valor total de 155.930;
+- valor final de 154.690.
+
+A planilha continua preservada e o frontend ainda não foi trocado nesta fase.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

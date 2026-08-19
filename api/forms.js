@@ -20,10 +20,10 @@ export default async function handler(req,res){
         catch{return res.status(500).json({error:'Não foi possível abrir os dados da anamnese'});}
       }
       if(req.query?.resource==='templates'){
-        const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,ativo&ativo=eq.true&order=criado_em.desc');
+        const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&ativo=eq.true&order=criado_em.desc');
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
       }
-      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade))&order=enviado_em.desc');
+      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino))&order=enviado_em.desc');
       const data=await safeJson(response);
       if(response.ok){
         try{return res.status(200).json(data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
@@ -41,8 +41,8 @@ export default async function handler(req,res){
       const result=await safeJson(response);return res.status(response.ok?201:409).json(response.ok?{id:result}:{error:'Não foi possível salvar a anamnese'});
     }
     if(req.method==='POST'&&req.body?.action==='template'){
-      const {nome,finalidade,campos}=req.body;if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});
-      const response=await supabase('/rest/v1/formularios_modelos',{method:'POST',body:JSON.stringify({nome,finalidade,campos})});
+      const {nome,finalidade,campos}=req.body,destino=req.body.destino==='cadastro'?'cadastro':'anamnese';if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});
+      const response=await supabase('/rest/v1/formularios_modelos',{method:'POST',body:JSON.stringify({nome,finalidade,campos,destino})});
       const data=await safeJson(response);return res.status(response.ok?201:response.status).json(response.ok?data[0]:{error:'Falha ao criar modelo'});
     }
     if(req.method==='POST'&&req.body?.action==='invite'){

@@ -387,7 +387,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div id="loading"><div class="spinner"></div><span>Carregando dados...</span></div>
 <div id="error-msg">
   <h3>Não foi possível carregar os dados</h3>
-  <p>Verifique se a planilha está compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.</p>
+  <p>Tente novamente. Se o problema continuar, confira a conexão segura com o banco de dados.</p>
 </div>
 
 <div id="dashboard">
@@ -950,7 +950,6 @@ async function sair(){
   window.location.reload();
 }
 
-const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
@@ -960,19 +959,7 @@ let _pacientesMap = {}; // nome -> {id, nome, ativo, ultima_chave, ultimo_label}
 
 function dC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function parseCSV(text){
-  const lines=text.trim().split('\n');
-  const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
-  return lines.slice(1).map(line=>{
-    const cols=[];let cur='',inQ=false;
-    for(let c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur);cur='';}else cur+=c;}
-    cols.push(cur);
-    const obj={};headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
-    return obj;
-  });
-}
-
-function pVal(v){if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
+function pVal(v){if(typeof v==='number')return v;if(!v)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim())||0;}
 function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
 function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
@@ -1006,10 +993,8 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
   try{
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
-    const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    const raw=parseCSV(text).filter(r=>r['Data']&&r['Data'].trim());
+    const res=await fetch('/api/operational');if(!res.ok)throw new Error('HTTP '+res.status);
+    const raw=(await res.json()).filter(r=>r['Data']&&String(r['Data']).trim());
     raw.forEach(r=>{
       r._data           =pData(r['Data']);
       r._anoMes         =anoMes(r._data);

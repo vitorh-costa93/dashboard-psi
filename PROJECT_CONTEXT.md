@@ -57,6 +57,14 @@ A importação foi executada duas vezes para testar idempotência. A reconcilia�
 
 A planilha continua preservada e o frontend ainda não foi trocado nesta fase.
 
+## API e corte da fonte operacional
+
+As Fases 3 a 5 adicionaram `/api/operational`, protegida pela sessão do administrador. Ela pagina todas as sessões no Supabase e devolve o contrato de campos já consumido pelo dashboard, preservando os cálculos e a interface atuais.
+
+O frontend passou a carregar essa API e não contém mais URL, ID ou parser da planilha. A planilha permanece como backup e origem do importador/reconciliador, mas não participa mais do funcionamento normal da aplicação.
+
+Rollback do corte: reverter o commit do frontend para a leitura anterior somente se uma divergência for comprovada. Não excluir as tabelas novas nem a planilha. Antes de qualquer rollback, executar `npm run reconcile:sheet` para registrar a diferença.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

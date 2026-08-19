@@ -93,6 +93,12 @@ Não é necessário configurar Instagram nem Meta API.
 - `npm run import:sheet -- --apply`: importação idempotente.
 - `npm run reconcile:sheet`: comparação agregada entre planilha e Supabase.
 
+## Fonte operacional do dashboard
+
+O dashboard carrega `/api/operational`, que exige a sessão do administrador e lê `sessoes`, `pacientes` e `convenios` no Supabase. O retorno mantém os nomes de campos anteriores para preservar KPIs, gráficos, saldos, faltas e alertas sem reescrever as regras de negócio.
+
+A planilha não participa mais da execução do frontend. Ela deve ser mantida somente leitura como backup e como fonte explícita dos scripts de importação e reconciliação.
+
 ## Radar automático
 
 O `vercel.json` mantém uma execução diária de `/api/trends`.

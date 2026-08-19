@@ -851,7 +851,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <div id="anamnese-editor" style="display:none;margin-top:14px;">
       <div id="anamnese-campos"></div>
       <div id="anamnese-meta" style="font-size:.72rem;color:var(--muted);margin-top:10px;"></div>
-      <div class="pront-form-actions"><button class="btn-primary" id="anamnese-salvar" onclick="salvarAnamnese()">💾 Salvar nova versão</button><button class="btn-secondary" onclick="limparCamposAnamnese()">Limpar campos</button></div>
+      <div class="pront-form-actions"><button class="btn-primary" id="anamnese-salvar" onclick="salvarAnamnese()">💾 Salvar nova versão</button><button class="btn-secondary" onclick="limparCamposAnamnese()">Limpar campos</button><button class="btn-save" id="anamnese-exportar" onclick="exportarAnamneseDOCX()" disabled>📄 Exportar .docx</button><button class="btn-danger" id="anamnese-excluir" onclick="excluirAnamnese()" disabled>Excluir versão</button></div>
     </div>
   </div>
 
@@ -2441,12 +2441,14 @@ function mostrarVersaoAnamnese(){
   const c=item.conteudo||{};
   _anamneseCampos.forEach(campo=>document.getElementById('anamnese-'+campo).value=String(c[campo]||''));
   document.getElementById('anamnese-meta').textContent=`Versão ${item.versao} · salva em ${new Date(item.criado_em).toLocaleString('pt-BR')}`;
+  document.getElementById('anamnese-exportar').disabled=false;document.getElementById('anamnese-excluir').disabled=false;
 }
 
 async function carregarAnamnese(){
   const paciente_id=document.getElementById('anamnese-paciente').value;
   const editor=document.getElementById('anamnese-editor'),versao=document.getElementById('anamnese-versao');
   _anamneseVersoes=[];
+  document.getElementById('anamnese-exportar').disabled=true;document.getElementById('anamnese-excluir').disabled=true;
   if(!paciente_id){editor.style.display='none';versao.disabled=true;versao.innerHTML='<option value="">Nenhuma versão</option>';return;}
   editor.style.display='block';versao.disabled=true;versao.innerHTML='<option>Carregando...</option>';limparCamposAnamnese();
   try{
@@ -2457,6 +2459,23 @@ async function carregarAnamnese(){
     versao.disabled=false;versao.innerHTML=d.map((v,i)=>`<option value="${i}">Versão ${v.versao} · ${new Date(v.criado_em).toLocaleDateString('pt-BR')}</option>`).join('');
     versao.value='0';mostrarVersaoAnamnese();
   }catch(e){versao.innerHTML='<option value="">Erro ao carregar</option>';toast(e.message);}
+}
+
+async function excluirAnamnese(){
+  const item=_anamneseVersoes[Number(document.getElementById('anamnese-versao').value||0)];if(!item)return toast('Nenhuma versão selecionada.');
+  if(!confirm(`Excluir a versão ${item.versao} da anamnese? Ela sairá da visualização e uma nova poderá ser registrada.`))return;
+  const r=await fetch(`/api/forms?resource=anamnesis&id=${encodeURIComponent(item.id)}`,{method:'DELETE'}),d=await r.json();
+  if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Versão excluída.');await carregarAnamnese();
+}
+
+async function exportarAnamneseDOCX(){
+  const item=_anamneseVersoes[Number(document.getElementById('anamnese-versao').value||0)];if(!item)return toast('Nenhuma versão selecionada.');
+  const paciente=_pacientesById[document.getElementById('anamnese-paciente').value];
+  const secoes=_anamneseSecoes.map(([titulo,campos])=>({titulo,itens:campos.map(([key,rotulo])=>({rotulo,valor:item.conteudo?.[key]||''}))}));
+  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'export_anamnesis',paciente_nome:paciente?.nome||'Paciente',versao:item.versao,criado_em:new Date(item.criado_em).toLocaleString('pt-BR'),secoes})}),d=await r.json();
+  if(!r.ok)return toast(d.error||'Não foi possível exportar');
+  const bytes=Uint8Array.from(atob(d.arquivo),c=>c.charCodeAt(0)),blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=`anamnese-${String(paciente?.nome||'paciente').replace(/[^a-z0-9]+/gi,'-').toLowerCase()}-v${item.versao}.docx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('✅ Anamnese exportada em Word.');
 }
 
 async function salvarAnamnese(){

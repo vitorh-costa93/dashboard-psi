@@ -52,6 +52,18 @@ test('formulário público recusa token curto sem consultar o banco', async () =
   const res=response();await publicForm({method:'GET',query:{token:'curto'},headers:{}},res);assert.equal(res.code,404);
 });
 
+test('exportação de anamnese gera um arquivo docx válido', async () => {
+  global.fetch=async url=>{
+    if(url.includes('/auth/v1/user'))return jsonResponse({id:'admin-1'});
+    if(url.includes('app_admin'))return jsonResponse([{user_id:'admin-1'}]);
+    throw new Error(`URL inesperada: ${url}`);
+  };
+  const res=response();
+  await forms({method:'POST',headers:{cookie:'psi_access=token'},body:{action:'export_anamnesis',paciente_nome:'Teste',versao:1,criado_em:'19/08/2026',secoes:[{titulo:'Identificação',itens:[{rotulo:'Nome',valor:'Teste'}]}]}},res);
+  assert.equal(res.code,200);
+  assert.equal(Buffer.from(res.body.arquivo,'base64').subarray(0,2).toString(),'PK');
+});
+
 test('API operacional entrega contrato legado somente ao administrador', async () => {
   global.fetch = async url => {
     if(url.includes('/auth/v1/user'))return jsonResponse({id:'admin-1',email:'admin@example.com'});

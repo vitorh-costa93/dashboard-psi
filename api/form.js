@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {supabase} from './_auth.js';
+import {encryptClinicalData} from './_clinical-crypto.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 
@@ -17,7 +18,7 @@ export default async function handler(req,res){
     }
     if(req.method==='POST'){
       const conteudo=req.body?.conteudo;if(!conteudo||typeof conteudo!=='object'||Array.isArray(conteudo)||JSON.stringify(conteudo).length>65536)return res.status(400).json({error:'Resposta inválida'});
-      const response=await supabase('/rest/v1/rpc/enviar_formulario_externo',{method:'POST',body:JSON.stringify({p_token_hash:tokenHash,p_conteudo:conteudo})});
+      const response=await supabase('/rest/v1/rpc/enviar_formulario_externo',{method:'POST',body:JSON.stringify({p_token_hash:tokenHash,p_conteudo:encryptClinicalData(conteudo)})});
       return res.status(response.ok?201:404).json(response.ok?{ok:true}:{error:'Link inválido, expirado ou já utilizado'});
     }
     return res.status(405).json({error:'Method not allowed'});

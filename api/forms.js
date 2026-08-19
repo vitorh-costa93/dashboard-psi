@@ -24,7 +24,7 @@ export default async function handler(req,res){
         const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&ativo=eq.true&order=criado_em.desc');
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
       }
-      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino,campos))&status=in.(pending_review,approved)&order=enviado_em.desc');
+      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino,campos))&status=in.(pending_review,approved)&arquivado_em=is.null&order=enviado_em.desc');
       const data=await safeJson(response);
       if(response.ok){
         try{return res.status(200).json(data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
@@ -80,6 +80,11 @@ export default async function handler(req,res){
       const anamneseId=String(req.query?.id||'');if(!uuid.test(anamneseId))return res.status(400).json({error:'Anamnese inválida'});
       const response=await supabase('/rest/v1/rpc/arquivar_anamnese',{method:'POST',body:JSON.stringify({p_anamnese_id:anamneseId,p_autor:user.id})});
       const archived=await safeJson(response);return res.status(response.ok&&archived?200:404).json(response.ok&&archived?{ok:true}:{error:'Anamnese não encontrada'});
+    }
+    if(req.method==='DELETE'&&req.query?.resource==='response'){
+      const respostaId=String(req.query?.id||'');if(!uuid.test(respostaId))return res.status(400).json({error:'Resposta inválida'});
+      const response=await supabase('/rest/v1/rpc/arquivar_resposta_formulario',{method:'POST',body:JSON.stringify({p_resposta_id:respostaId,p_autor:user.id})});
+      const archived=await safeJson(response);return res.status(response.ok&&archived?200:404).json(response.ok&&archived?{ok:true}:{error:'Registro aprovado não encontrado'});
     }
     return res.status(405).json({error:'Method not allowed'});
   }catch(error){return res.status(500).json({error:'Não foi possível processar formulários'});}

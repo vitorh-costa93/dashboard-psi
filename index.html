@@ -23,6 +23,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .app-header .logo{font-size:26px;}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
 .app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
+.app-header-main{display:flex;align-items:center;gap:14px;flex:1;}
+.logout-btn{margin-left:auto;border:1px solid rgba(58,48,32,.25);background:rgba(255,255,255,.35);color:#3a3020;border-radius:7px;padding:7px 12px;cursor:pointer;font:inherit;font-size:.76rem;}
+.logout-btn:hover{background:rgba(255,255,255,.6);}
+
+/* ── Acesso administrativo ── */
+.auth-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-card{width:min(410px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;box-shadow:0 18px 50px rgba(58,48,32,.12);}
+.auth-brand{text-align:center;margin-bottom:24px;}
+.auth-brand .logo{font-size:38px;margin-bottom:8px;}
+.auth-brand h1{font:700 1.5rem 'Playfair Display',serif;color:#3a3020;letter-spacing:.04em;}
+.auth-brand p{font-size:.78rem;color:var(--muted);margin-top:5px;}
+.auth-title{font:600 1.15rem 'Playfair Display',serif;margin-bottom:7px;}
+.auth-help{font-size:.79rem;color:var(--muted);line-height:1.5;margin-bottom:18px;}
+.auth-field{display:block;margin-bottom:13px;}
+.auth-field span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
+.auth-field input{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;font:inherit;background:#fff;color:var(--text);outline:none;}
+.auth-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,158,110,.13);}
+.auth-submit{width:100%;border:0;border-radius:8px;padding:11px 14px;background:var(--accent);color:#fff;font:600 .84rem 'DM Sans',sans-serif;cursor:pointer;margin-top:4px;}
+.auth-submit:disabled{opacity:.6;cursor:wait;}
+.auth-message{min-height:20px;margin-top:12px;font-size:.76rem;color:var(--danger);text-align:center;}
+.auth-loading{text-align:center;color:var(--muted);font-size:.82rem;}
 
 /* ── Nav tabs ── */
 .nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow-x:auto;}
@@ -323,12 +344,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 </head>
 <body>
 
-<div class="app-header">
-  <div class="logo">🌻</div>
-  <div>
-    <h1>CONSULTÓRIO</h1>
-    <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="logo">🌻</div>
+      <h1>CONSULTÓRIO</h1>
+      <p>Área administrativa protegida</p>
+    </div>
+    <div id="auth-loading" class="auth-loading">Verificando acesso...</div>
+    <form id="auth-form" style="display:none" onsubmit="enviarAcesso(event)">
+      <div class="auth-title" id="auth-title">Entrar</div>
+      <div class="auth-help" id="auth-help">Use seu login e senha para abrir o painel.</div>
+      <label class="auth-field"><span>Login (e-mail)</span><input id="auth-email" type="email" autocomplete="username" required/></label>
+      <label class="auth-field"><span>Senha</span><input id="auth-password" type="password" autocomplete="current-password" required/></label>
+      <button class="auth-submit" id="auth-submit" type="submit">Entrar</button>
+      <div class="auth-message" id="auth-message" role="alert"></div>
+    </form>
   </div>
+</div>
+
+<div id="app-shell" style="display:none">
+
+<div class="app-header">
+  <div class="app-header-main">
+    <div class="logo">🌻</div>
+    <div>
+      <h1>CONSULTÓRIO</h1>
+      <p>Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478</p>
+    </div>
+  </div>
+  <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
 
 <div class="nav-tabs">
@@ -840,8 +885,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+</div>
 
 <script>
+let _authMode='login';
+
+function mostrarFormularioAcesso(configured){
+  _authMode=configured?'login':'setup';
+  document.getElementById('auth-loading').style.display='none';
+  document.getElementById('auth-form').style.display='block';
+  document.getElementById('auth-title').textContent=configured?'Entrar':'Criar acesso';
+  document.getElementById('auth-help').textContent=configured
+    ?'Use seu login e senha para abrir o painel.'
+    :'Este é o primeiro acesso. Crie o único login administrativo do painel.';
+  document.getElementById('auth-submit').textContent=configured?'Entrar':'Criar login';
+  const password=document.getElementById('auth-password');
+  password.autocomplete=configured?'current-password':'new-password';
+  password.minLength=configured?1:12;
+  document.getElementById('auth-email').focus();
+}
+
+function abrirPainel(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-shell').style.display='block';
+  loadData();
+}
+
+async function verificarAcesso(){
+  try{
+    const response=await fetch('/api/auth/status',{credentials:'same-origin'});
+    const state=await response.json();
+    if(!response.ok)throw new Error(state.error||'Falha ao verificar acesso');
+    if(state.authenticated)return abrirPainel();
+    mostrarFormularioAcesso(state.configured);
+  }catch(error){
+    document.getElementById('auth-loading').textContent='Não foi possível verificar o acesso. Atualize a página para tentar novamente.';
+  }
+}
+
+async function enviarAcesso(event){
+  event.preventDefault();
+  const button=document.getElementById('auth-submit');
+  const message=document.getElementById('auth-message');
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  button.disabled=true;message.textContent='';
+  try{
+    const response=await fetch(`/api/auth/${_authMode}`,{
+      method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||'Não foi possível continuar');
+    if(data.requiresLogin){mostrarFormularioAcesso(true);message.textContent='Acesso criado. Entre com a senha cadastrada.';return;}
+    abrirPainel();
+  }catch(error){
+    message.textContent=error.message;
+    if(_authMode==='setup' && /já foi criado/i.test(error.message))mostrarFormularioAcesso(true);
+  }finally{button.disabled=false;}
+}
+
+async function sair(){
+  await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  window.location.reload();
+}
+
 const SHEET_ID="1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI",GID="0";
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
@@ -2605,7 +2713,7 @@ function switchTab(name) {
   }
 }
 
-window.onload = loadData;
+window.onload = verificarAcesso;
 </script>
 <div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
   <div class="save-post-box">

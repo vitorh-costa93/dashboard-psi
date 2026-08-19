@@ -68,11 +68,20 @@ Mantenha:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
 - `OPENAI_KEY`
+- `CRON_SECRET` — segredo aleatório compartilhado com o cron da Vercel.
 
 Opcional:
 - `OPENAI_TEXT_MODEL` — padrão `gpt-4.1-mini`.
 
 Não é necessário configurar Instagram nem Meta API.
+
+## Acesso administrativo único
+
+- No primeiro acesso, o painel solicita a criação do único login administrativo por e-mail e senha.
+- Após a criação, o cadastro é bloqueado no servidor e a tela passa a exibir somente o login.
+- O painel, os prontuários, as rotas de dados e os geradores de IA exigem uma sessão válida.
+- O botão `Sair` encerra a sessão no navegador.
+- Aplique as migrations versionadas em `supabase/migrations`; o arquivo `supabase schema.sql` permanece apenas como referência legada.
 
 ## Radar automático
 

@@ -23,6 +23,21 @@ A captura confirmou seis tabelas existentes: `atividades`, `pacientes`, `post_ar
 
 Risco conhecido para a Fase 1: o schema remoto concede privilégios amplos a `anon` e `authenticated`, e cinco tabelas têm políticas RLS com condição universal (`USING (true)` e `WITH CHECK (true)`). A tabela `post_artes` tem RLS habilitada sem política. Nenhuma dessas permissões foi modificada durante a preparação da conexão.
 
+## Autenticação administrativa
+
+A Fase 1 implementa um único administrador:
+
+- sem administrador configurado, o portal mostra somente o formulário de criação do primeiro acesso;
+- a tabela `app_admin` aceita apenas uma linha e vincula esse acesso ao usuário do Supabase Auth;
+- tentativas concorrentes de criar outro administrador falham; o usuário excedente é removido;
+- depois da configuração, o formulário de criação deixa de existir no fluxo e somente o login é aceito;
+- tokens de acesso e renovação ficam em cookies `HttpOnly`, `Secure` e `SameSite=Strict`;
+- todas as APIs administrativas validam que a sessão pertence ao único usuário registrado;
+- o cron de tendências exige `CRON_SECRET` quando não existe uma sessão administrativa;
+- privilégios de `anon` e `authenticated` são revogados das tabelas privadas, e as políticas universais anteriores são removidas.
+
+A primeira configuração deve ser feita pelo proprietário imediatamente após o deploy. Antes de existir a linha única em `app_admin`, o endereço de setup permanece disponível para a primeira criação bem-sucedida.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

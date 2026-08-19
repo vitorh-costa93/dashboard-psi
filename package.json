@@ -2,11 +2,12 @@
   "name": "dashboard-psi",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "supabase": "supabase"
+    "supabase": "supabase",
+    "test": "node --test"
   },
   "devDependencies": {
     "supabase": "2.115.0"
   }
 }
-

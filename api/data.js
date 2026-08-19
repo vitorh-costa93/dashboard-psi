@@ -1,6 +1,8 @@
 // api/data.js
 // Proxy do Supabase. A chave sensível permanece somente no servidor.
 
+import { requireAuth } from './_auth.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
@@ -20,6 +22,7 @@ async function supaFetch(path, options = {}) {
 }
 
 export default async function handler(req, res) {
+  if (!await requireAuth(req, res)) return;
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(500).json({ error: 'SUPABASE_URL ou SUPABASE_SERVICE_KEY não configuradas no Vercel' });
   }

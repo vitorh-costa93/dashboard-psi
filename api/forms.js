@@ -8,6 +8,10 @@ export default async function handler(req,res){
   const user=await requireAuth(req,res);if(!user)return;
   try{
     if(req.method==='GET'){
+      if(req.query?.resource==='templates'){
+        const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,ativo&ativo=eq.true&order=criado_em.desc');
+        const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
+      }
       const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade))&order=enviado_em.desc');
       const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar respostas'});
     }
@@ -32,4 +36,3 @@ export default async function handler(req,res){
     return res.status(405).json({error:'Method not allowed'});
   }catch(error){return res.status(500).json({error:'Não foi possível processar formulários'});}
 }
-

@@ -111,6 +111,7 @@ A planilha não participa mais da execução do frontend. Ela deve ser mantida s
 - `GET/POST /api/form` atende exclusivamente o link externo limitado pelo token.
 - `form.html` renderiza o formulário sem mostrar nome ou outros dados do paciente.
 - Aprovação cria uma nova versão da anamnese; rejeição não apaga a resposta.
+- A seção `Prontuários > Formulários externos` permite criar o modelo padrão, selecionar paciente, gerar/copiar o link e aprovar ou rejeitar respostas.
 
 ## Radar automático
 

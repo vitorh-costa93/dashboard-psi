@@ -73,6 +73,8 @@ As Fases 6 e 7 são aditivas e não substituem `prontuarios`. `registros_clinico
 
 Toda resposta entra como `pending_review`. Aprovar cria uma nova versão de anamnese em transação; rejeitar preserva a resposta e registra a decisão. O formulário público não revela o paciente e informa que a incorporação não é automática.
 
+Os controles administrativos ficam ao final da página de Prontuários, sem alterar o formulário de registro de sessões nem a biblioteca existente.
+
 ## Regras de continuidade
 
 - Preserve a identidade visual e as regras comprovadas no código.

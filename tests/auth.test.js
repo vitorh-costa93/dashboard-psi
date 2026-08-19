@@ -8,6 +8,7 @@ const {requireAuth} = await import('../api/_auth.js');
 const {default: setup} = await import('../api/auth/setup.js');
 const {default: login} = await import('../api/auth/login.js');
 const {default: status} = await import('../api/auth/status.js');
+const {default: operational} = await import('../api/operational.js');
 
 function response() {
   return {
@@ -30,6 +31,28 @@ test('visitante sem cookie é bloqueado', async () => {
   const user = await requireAuth({headers: {}}, res);
   assert.equal(user, null);
   assert.equal(res.code, 401);
+});
+
+test('API operacional não entrega dados a visitante', async () => {
+  global.fetch = async () => { throw new Error('não deveria consultar sem token'); };
+  const res = response();
+  await operational({method: 'GET', headers: {}}, res);
+  assert.equal(res.code, 401);
+});
+
+test('API operacional entrega contrato legado somente ao administrador', async () => {
+  global.fetch = async url => {
+    if(url.includes('/auth/v1/user'))return jsonResponse({id:'admin-1',email:'admin@example.com'});
+    if(url.includes('app_admin'))return jsonResponse([{user_id:'admin-1'}]);
+    if(url.includes('/sessoes?'))return jsonResponse([{data_sessao:'2026-08-19',genero:'F',faixa_etaria:'Adulto',modalidade:'Online',horario:'Quarta 10h',comparecimento:'Sim',motivo:null,valor_sessao:150,sessoes_cobradas:1,valor_total:150,valor_final:150,cnpj:false,pacientes:{nome:'Paciente Teste',ativo:true},convenios:{nome:'Particular'}}]);
+    throw new Error(`URL inesperada: ${url}`);
+  };
+  const res=response();
+  await operational({method:'GET',headers:{cookie:'psi_access=token'}},res);
+  assert.equal(res.code,200);
+  assert.equal(res.body[0].Data,'19/08/2026');
+  assert.equal(res.body[0].Paciente,'Paciente Teste');
+  assert.equal(res.body[0].Ativo,'Ativo');
 });
 
 test('status mostra criação inicial quando não existe administrador', async () => {

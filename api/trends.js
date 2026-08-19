@@ -89,8 +89,9 @@ async function saveRadar(items){
     formato:x.formato||'Carrossel', potencial:x.potencial||'Médio', angulo:x.angulo||'',
     fonte_titulo:x.fonte?.title||'', fonte_url:x.fonte?.link||'', fonte_publicacao:x.fonte?.source||''
   }));
+  const legacyAuthorization=SUPABASE_KEY.startsWith('sb_secret_')?{}:{Authorization:`Bearer ${SUPABASE_KEY}`};
   await fetch(`${SUPABASE_URL}/rest/v1/trend_radar`,{
-    method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)
+    method:'POST',headers:{apikey:SUPABASE_KEY,...legacyAuthorization,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)
   }).catch(()=>{});
 }
 export default async function handler(req,res){

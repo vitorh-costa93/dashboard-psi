@@ -35,6 +35,7 @@ A Fase 1 implementa um único administrador:
 - todas as APIs administrativas validam que a sessão pertence ao único usuário registrado;
 - o cron de tendências exige `CRON_SECRET` quando não existe uma sessão administrativa;
 - privilégios de `anon` e `authenticated` são revogados das tabelas privadas, e as políticas universais anteriores são removidas.
+- o backend aceita a chave moderna `sb_secret_...` apenas no cabeçalho `apikey`; `Authorization: Bearer` fica reservado aos tokens de usuário e à compatibilidade temporária com chaves legadas.
 
 A primeira configuração deve ser feita pelo proprietário imediatamente após o deploy. Antes de existir a linha única em `app_admin`, o endereço de setup permanece disponível para a primeira criação bem-sucedida.
 

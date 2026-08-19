@@ -9,11 +9,12 @@ const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 const TABLES = ['atividades', 'prontuarios', 'pacientes', 'posts', 'trend_radar', 'post_artes'];
 
 async function supaFetch(path, options = {}) {
+  const legacyAuthorization = SUPABASE_KEY?.startsWith('sb_secret_') ? {} : { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
     headers: {
       'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      ...legacyAuthorization,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation',
       ...(options.headers || {}),

@@ -30,11 +30,12 @@ export function clearSessionCookies(res) {
 
 export async function supabase(path, options = {}) {
   if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase não configurado');
+  const legacyAuthorization = SUPABASE_KEY.startsWith('sb_secret_') ? {} : {Authorization: `Bearer ${SUPABASE_KEY}`};
   return fetch(`${SUPABASE_URL}${path}`, {
     ...options,
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
+      ...legacyAuthorization,
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },

@@ -1,4 +1,4 @@
-import {currentUser, getAdminRecord} from '../_auth.js';
+import {clearSessionCookies,currentUser,getAdminRecord,hasActiveIdleSession,touchIdleSession} from '../_auth.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
@@ -6,7 +6,9 @@ export default async function handler(req, res) {
   try {
     const admin = await getAdminRecord();
     if (!admin) return res.status(200).json({configured: false, authenticated: false});
+    if(!hasActiveIdleSession(req)){clearSessionCookies(res);return res.status(200).json({configured:true,authenticated:false,reason:'idle_timeout'});}
     const user = await currentUser(req, res);
+    if(user?.id===admin.user_id)touchIdleSession(res);
     return res.status(200).json({
       configured: true,
       authenticated: !!user && user.id === admin.user_id,

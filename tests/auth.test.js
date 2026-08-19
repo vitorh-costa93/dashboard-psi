@@ -4,7 +4,7 @@ import test from 'node:test';
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
 
-const {requireAuth} = await import('../api/_auth.js');
+const {requireAuth,setSessionCookies,IDLE_TIMEOUT_MS} = await import('../api/_auth.js');
 const {default: setup} = await import('../api/auth/setup.js');
 const {default: login} = await import('../api/auth/login.js');
 const {default: status} = await import('../api/auth/status.js');
@@ -25,6 +25,12 @@ function response() {
 
 function jsonResponse(body, ok = true, statusCode = 200) {
   return {ok, status: statusCode, json: async () => body};
+}
+
+function authenticatedCookie(){
+  const res=response();
+  setSessionCookies(res,{access_token:'token',refresh_token:'refresh',expires_in:3600});
+  return res.headers['Set-Cookie'].map(value=>value.split(';')[0]).join('; ');
 }
 
 test('visitante sem cookie é bloqueado', async () => {
@@ -59,7 +65,7 @@ test('exportação de anamnese gera um arquivo docx válido', async () => {
     throw new Error(`URL inesperada: ${url}`);
   };
   const res=response();
-  await forms({method:'POST',headers:{cookie:'psi_access=token'},body:{action:'export_anamnesis',paciente_nome:'Teste',versao:1,criado_em:'19/08/2026',secoes:[{titulo:'Identificação',itens:[{rotulo:'Nome',valor:'Teste'}]}]}},res);
+  await forms({method:'POST',headers:{cookie:authenticatedCookie()},body:{action:'export_anamnesis',paciente_nome:'Teste',versao:1,criado_em:'19/08/2026',secoes:[{titulo:'Identificação',itens:[{rotulo:'Nome',valor:'Teste'}]}]}},res);
   assert.equal(res.code,200);
   assert.equal(Buffer.from(res.body.arquivo,'base64').subarray(0,2).toString(),'PK');
 });
@@ -72,11 +78,21 @@ test('API operacional entrega contrato legado somente ao administrador', async (
     throw new Error(`URL inesperada: ${url}`);
   };
   const res=response();
-  await operational({method:'GET',headers:{cookie:'psi_access=token'}},res);
+  await operational({method:'GET',headers:{cookie:authenticatedCookie()}},res);
   assert.equal(res.code,200);
   assert.equal(res.body[0].Data,'19/08/2026');
   assert.equal(res.body[0].Paciente,'Paciente Teste');
   assert.equal(res.body[0].Ativo,'Ativo');
+});
+
+test('sessão expira após uma hora sem atividade', async () => {
+  const cookie=authenticatedCookie(),realNow=Date.now,base=realNow();
+  Date.now=()=>base+IDLE_TIMEOUT_MS+1;
+  global.fetch=async()=>{throw new Error('não deve consultar o Supabase após expiração');};
+  try{
+    const res=response(),user=await requireAuth({headers:{cookie}},res);
+    assert.equal(user,null);assert.equal(res.code,401);assert.match(res.body.error,/inatividade/i);
+  }finally{Date.now=realNow;}
 });
 
 test('status mostra criação inicial quando não existe administrador', async () => {

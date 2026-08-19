@@ -58,6 +58,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .sub-tab:hover:not(.active){color:var(--text);}
 .sub-page{display:none;}
 .sub-page.active{display:block;}
+.pront-sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow:hidden;scrollbar-width:none}.pront-sub-tabs::-webkit-scrollbar{display:none}
+.pront-sub-tab{padding:9px 16px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.pront-sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.pront-sub-page{display:none}.pront-sub-page.active{display:block}
+.notification-badge{display:none;min-width:18px;height:18px;margin-left:5px;padding:0 5px;border-radius:999px;background:#d93025;color:#fff;font-size:.66rem;font-weight:700;line-height:18px;text-align:center;vertical-align:middle;}
+.response-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.response-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-top:12px}.response-field{padding:9px 10px;background:var(--light);border-radius:7px}.response-label{display:block;font-size:.67rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}.response-value{white-space:pre-wrap;line-height:1.45;word-break:break-word}@media(max-width:600px){.pront-sub-tabs{overflow-x:auto}.response-grid{grid-template-columns:1fr}}
 
 /* ── Páginas ── */
 .page{display:none;}
@@ -767,6 +774,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div class="page" id="page-prontuarios">
 <div class="section-wrap">
 
+  <div class="pront-sub-tabs">
+    <button class="pront-sub-tab active" id="pront-sub-btn-prontuario" onclick="switchProntSubTab('prontuario')">📋 Prontuário</button>
+    <button class="pront-sub-tab" id="pront-sub-btn-anamnese" onclick="switchProntSubTab('anamnese')">🧾 Anamnese</button>
+    <button class="pront-sub-tab" id="pront-sub-btn-online" onclick="switchProntSubTab('online')">🔗 Informações iniciais - online <span class="notification-badge" id="online-pending-badge"></span></button>
+  </div>
+
+  <div class="pront-sub-page active" id="pront-sub-prontuario">
+
   <!-- Formulário de registro -->
   <div class="pront-form-wrap">
     <h3 class="pront-section-title">📝 Registrar sessão</h3>
@@ -840,10 +855,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <div style="font-size:36px;margin-bottom:12px;">📋</div>
     <p style="font-size:.85rem;line-height:1.6;">Nenhum prontuário criado ainda.<br>Registre a primeira sessão acima.</p>
   </div>
+  </div>
 
-  <div class="pront-form-wrap" style="margin-top:20px;">
+  <div class="pront-form-wrap pront-sub-page" id="pront-sub-anamnese">
     <h3 class="pront-section-title">🧾 Anamnese</h3>
     <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Registre as informações iniciais e acompanhe todas as alterações. Cada salvamento cria uma nova versão criptografada, sem apagar as anteriores.</p>
+    <div class="pront-lib-grid" id="anamnese-pac-grid" style="margin-bottom:16px"></div>
     <div class="pront-fields-grid">
       <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="anamnese-paciente" onchange="carregarAnamnese()"><option value="">Selecione...</option></select></div>
       <div class="pront-field"><label class="pront-label">Versão para consulta</label><select class="pront-input" id="anamnese-versao" onchange="mostrarVersaoAnamnese()" disabled><option value="">Nenhuma versão</option></select></div>
@@ -855,9 +872,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     </div>
   </div>
 
-  <div class="pront-form-wrap" style="margin-top:20px;">
-    <h3 class="pront-section-title">🔗 Formulários externos</h3>
-    <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Crie um modelo uma vez, gere um link individual e revise cada resposta antes de incorporá-la à anamnese.</p>
+  <div class="pront-form-wrap pront-sub-page" id="pront-sub-online">
+    <h3 class="pront-section-title">🔗 Informações iniciais - online</h3>
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Gere um link individual para o paciente preencher as informações iniciais e valide as respostas recebidas.</p>
     <div class="pront-fields-grid">
       <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="form-paciente"><option value="">Selecione...</option></select></div>
       <div class="pront-field"><label class="pront-label">Modelo</label><select class="pront-input" id="form-modelo"><option value="">Selecione...</option></select></div>
@@ -916,6 +933,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <script>
 let _authMode='login';
+const IDLE_TIMEOUT_MS=60*60*1000;
+let _idleLastActivity=Date.now(),_idleTimer=null,_idleLastPing=0,_idleStarted=false;
+
+async function encerrarPorInatividade(){
+  if(document.getElementById('app-shell').style.display==='none')return;
+  await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  alert('Sua sessão foi encerrada após 1 hora sem atividade. Faça o login novamente.');
+  location.reload();
+}
+
+function programarTimeoutInatividade(){
+  clearTimeout(_idleTimer);
+  const restante=IDLE_TIMEOUT_MS-(Date.now()-_idleLastActivity);
+  if(restante<=0)return encerrarPorInatividade();
+  _idleTimer=setTimeout(encerrarPorInatividade,restante);
+}
+
+function registrarAtividade(){
+  const agora=Date.now();
+  if(agora-_idleLastActivity>=IDLE_TIMEOUT_MS)return encerrarPorInatividade();
+  _idleLastActivity=agora;programarTimeoutInatividade();
+  if(agora-_idleLastPing>=60000){
+    _idleLastPing=agora;
+    fetch('/api/auth/status',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(s=>{if(!s.authenticated)encerrarPorInatividade();}).catch(()=>{});
+  }
+}
+
+function iniciarControleInatividade(){
+  _idleLastActivity=Date.now();programarTimeoutInatividade();
+  if(_idleStarted)return;_idleStarted=true;
+  ['pointerdown','keydown','scroll','touchstart'].forEach(evento=>window.addEventListener(evento,registrarAtividade,{passive:true}));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)registrarAtividade();});
+}
 
 function mostrarFormularioAcesso(configured){
   _authMode=configured?'login':'setup';
@@ -935,6 +985,7 @@ function mostrarFormularioAcesso(configured){
 function abrirPainel(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app-shell').style.display='block';
+  iniciarControleInatividade();
   loadData();
 }
 
@@ -973,6 +1024,7 @@ async function enviarAcesso(event){
 }
 
 async function sair(){
+  clearTimeout(_idleTimer);
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
   window.location.reload();
 }
@@ -990,7 +1042,7 @@ function pVal(v){if(typeof v==='number')return v;if(!v)return 0;return parseFloa
 function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
 function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
-function iniciais(nome){return String(nome).split(' ').filter(Boolean).map(p=>p[0]).join('');}
+function iniciais(nome){return String(nome).trim().split(/\s+/).filter(Boolean)[0]||'';}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
 function setComp(id,atual,ant,suffix){
@@ -1069,7 +1121,7 @@ async function sincronizarPacientesPlanilha(rows) {
   rows.forEach(r => {
     const nome=(r._paciente||'').trim();
     if(!nome)return;
-    const label=(r._horario ? r._horario+' | ' : '')+(r._iniciais||nome);
+    const label=(r._iniciais||nome)+(r._horario?' | '+r._horario:'');
     if(!map[nome]) map[nome]={nome,ativo:false,ultima_chave:nome,ultimo_label:label};
     if(r._ativo==='Ativo') {
       map[nome].ativo=true;
@@ -1203,7 +1255,7 @@ function processAndRender(){
   });
   const faltaPacArr=Object.entries(faltasPac)
     .filter(([,v])=>v.total>0)
-    .map(([,v])=>({label:(v.horario?v.horario+' | ':'')+v.iniciais,pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
+    .map(([,v])=>({label:v.iniciais+(v.horario?' | '+v.horario:''),pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
     .sort((a,b)=>b.pct-a.pct);
   const ml=document.getElementById('motivos-list');ml.innerHTML='';
   faltaPacArr.forEach(({label,pct,faltas,total})=>{
@@ -2375,6 +2427,13 @@ let _pacientesById = {};
 let _recognition = null;
 let _gravando    = false;
 
+function switchProntSubTab(name){
+  document.querySelectorAll('.pront-sub-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pront-sub-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pront-sub-btn-'+name)?.classList.add('active');
+  document.getElementById('pront-sub-'+name)?.classList.add('active');
+}
+
 async function initProntuarios() {
   document.getElementById('pront-pac-grid').innerHTML =
     '<div class="inline-loading"><div class="inline-spinner"></div> Carregando prontuários...</div>';
@@ -2426,8 +2485,12 @@ function renderCamposAnamnese(){
 function initAnamnese(){
   const select=document.getElementById('anamnese-paciente');if(!select)return;
   renderCamposAnamnese();
-  select.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  const pacientes=Object.values(_pacientesById).filter(p=>p.ativo&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome));
+  select.innerHTML='<option value="">Selecione...</option>'+pacientes.map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  document.getElementById('anamnese-pac-grid').innerHTML=pacientes.map(p=>`<button class="pront-lib-card" type="button" onclick="selecionarPacienteAnamnese('${escHtmlAttr(p.id)}')" style="text-align:left"><div style="font-weight:500;font-size:.85rem;margin-bottom:4px">${escHtml(p.nome)}</div><div style="font-size:.72rem;color:var(--muted)">Abrir anamnese</div></button>`).join('');
 }
+
+function selecionarPacienteAnamnese(id){document.getElementById('anamnese-paciente').value=id;carregarAnamnese();}
 
 function limparCamposAnamnese(){
   _anamneseCampos.forEach(c=>document.getElementById('anamnese-'+c).value='');
@@ -2507,9 +2570,18 @@ async function criarModeloAnamnese(){
 async function gerarLinkFormulario(){
   const paciente_id=document.getElementById('form-paciente').value,modelo_id=document.getElementById('form-modelo').value;if(!paciente_id||!modelo_id)return toast('Selecione paciente e modelo.');
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
-  const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link válido por 72 horas:</strong><br>${escHtml(d.url)}<br><button class="btn-secondary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button>`;
+  const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
-function renderRespostasFormularios(rows){const el=document.getElementById('form-respostas');if(!rows.length){el.innerHTML='<div class="alert-empty">Nenhuma resposta recebida.</div>';return;}el.innerHTML=rows.slice(0,30).map(x=>{const modelo=x.formularios_convites?.formularios_modelos||{},pending=x.status==='pending_review',cadastro=modelo.destino==='cadastro';return `<div class="alert-item" style="display:block"><strong>${escHtml(modelo.nome||'Formulário')}</strong> <span class="alert-badge ${pending?'alert-yellow':'alert-green'}">${pending?'Aguardando revisão':x.status==='approved'?'Aprovado':'Rejeitado'}</span><pre style="white-space:pre-wrap;font:inherit;margin:8px 0">${escHtml(JSON.stringify(x.conteudo,null,2))}</pre>${pending?`<button class="btn-primary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','approve',${cadastro})">${cadastro?'Aprovar cadastro':'Aprovar e incorporar à anamnese'}</button> <button class="btn-secondary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','reject',${cadastro})">Rejeitar</button>`:''}</div>`;}).join('');}
+function renderRespostasFormularios(rows){
+  const el=document.getElementById('form-respostas'),visiveis=rows.filter(x=>x.status!=='rejected'),pending=visiveis.filter(x=>x.status==='pending_review');
+  const badge=document.getElementById('online-pending-badge');badge.textContent=pending.length;badge.style.display=pending.length?'inline-block':'none';
+  if(!visiveis.length){el.innerHTML='<div class="alert-empty">Nenhuma informação recebida.</div>';return;}
+  el.innerHTML=visiveis.slice(0,30).map(x=>{
+    const convite=x.formularios_convites||{},modelo=convite.formularios_modelos||{},aguardando=x.status==='pending_review',cadastro=modelo.destino==='cadastro',paciente=_pacientesById[convite.paciente_id],labels=Object.fromEntries((modelo.campos||[]).map(c=>[c.key,c.label]));
+    const campos=Object.entries(x.conteudo||{}).map(([key,value])=>`<div class="response-field"><span class="response-label">${escHtml(labels[key]||key.replace(/_/g,' '))}</span><div class="response-value">${escHtml(value||'Não informado')}</div></div>`).join('');
+    return `<article class="response-card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><strong style="font-size:.88rem">${escHtml(paciente?.nome||'Paciente')}</strong><br><span style="font-size:.72rem;color:var(--muted)">${escHtml(modelo.nome||'Informações iniciais')} · ${new Date(x.enviado_em).toLocaleString('pt-BR')}</span></div><span class="alert-badge ${aguardando?'alert-yellow':'alert-green'}">${aguardando?'Nova resposta':'Aprovado'}</span></div><div class="response-grid">${campos}</div>${aguardando?`<div class="pront-form-actions"><button class="btn-primary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','approve',${cadastro})">${cadastro?'Aprovar informações':'Aprovar e incorporar à anamnese'}</button><button class="btn-secondary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','reject',${cadastro})">Rejeitar</button></div>`:''}</article>`;
+  }).join('');
+}
 async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='approve'?(cadastro?'Aprovar e arquivar este cadastro?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?(cadastro?'✅ Cadastro aprovado e arquivado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
 
 async function carregarPacientes() {
@@ -2527,7 +2599,7 @@ async function carregarPacientes() {
       _pacientesById['legacy:'+r._paciente] = {
         id:'legacy:'+r._paciente, nome:r._paciente, ativo:true,
         ultima_chave:r._paciente,
-        ultimo_label:(r._horario ? r._horario+' | ' : '')+(r._iniciais||r._paciente)
+        ultimo_label:(r._iniciais||r._paciente)+(r._horario?' | '+r._horario:'')
       };
     });
   }

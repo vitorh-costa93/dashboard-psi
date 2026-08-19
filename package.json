@@ -1,0 +1,12 @@
+{
+  "name": "dashboard-psi",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "supabase": "supabase"
+  },
+  "devDependencies": {
+    "supabase": "2.115.0"
+  }
+}
+

@@ -842,6 +842,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 
   <div class="pront-form-wrap" style="margin-top:20px;">
+    <h3 class="pront-section-title">🧾 Anamnese</h3>
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Registre as informações iniciais e acompanhe todas as alterações. Cada salvamento cria uma nova versão criptografada, sem apagar as anteriores.</p>
+    <div class="pront-fields-grid">
+      <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="anamnese-paciente" onchange="carregarAnamnese()"><option value="">Selecione...</option></select></div>
+      <div class="pront-field"><label class="pront-label">Versão para consulta</label><select class="pront-input" id="anamnese-versao" onchange="mostrarVersaoAnamnese()" disabled><option value="">Nenhuma versão</option></select></div>
+    </div>
+    <div id="anamnese-editor" style="display:none;margin-top:14px;">
+      <div class="pront-field"><label class="pront-label">Motivo da procura / demanda principal</label><textarea class="pront-input pront-textarea" id="anamnese-motivo"></textarea></div>
+      <div class="pront-field" style="margin-top:12px;"><label class="pront-label">Histórico da demanda</label><textarea class="pront-input pront-textarea" id="anamnese-historico"></textarea></div>
+      <div class="pront-fields-grid" style="margin-top:12px;">
+        <div class="pront-field"><label class="pront-label">Histórico pessoal e familiar</label><textarea class="pront-input pront-textarea" id="anamnese-pessoal"></textarea></div>
+        <div class="pront-field"><label class="pront-label">Saúde, tratamentos e medicações</label><textarea class="pront-input pront-textarea" id="anamnese-saude"></textarea></div>
+        <div class="pront-field"><label class="pront-label">Rotina, trabalho, estudos e relações</label><textarea class="pront-input pront-textarea" id="anamnese-rotina"></textarea></div>
+        <div class="pront-field"><label class="pront-label">Objetivos e expectativas</label><textarea class="pront-input pront-textarea" id="anamnese-expectativas"></textarea></div>
+      </div>
+      <div class="pront-field" style="margin-top:12px;"><label class="pront-label">Observações clínicas</label><textarea class="pront-input pront-textarea" id="anamnese-observacoes"></textarea></div>
+      <div id="anamnese-meta" style="font-size:.72rem;color:var(--muted);margin-top:10px;"></div>
+      <div class="pront-form-actions"><button class="btn-primary" id="anamnese-salvar" onclick="salvarAnamnese()">💾 Salvar nova versão</button><button class="btn-secondary" onclick="limparCamposAnamnese()">Limpar campos</button></div>
+    </div>
+  </div>
+
+  <div class="pront-form-wrap" style="margin-top:20px;">
     <h3 class="pront-section-title">🔗 Formulários externos</h3>
     <p style="font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">Crie um modelo uma vez, gere um link individual e revise cada resposta antes de incorporá-la à anamnese.</p>
     <div class="pront-fields-grid">
@@ -2369,7 +2391,57 @@ async function initProntuarios() {
   preencherDropdownProntuarios();
   setDataHoje();
   await carregarProntuarios();
+  initAnamnese();
   await initFormularios();
+}
+
+const _anamneseCampos=['motivo','historico','pessoal','saude','rotina','expectativas','observacoes'];
+let _anamneseVersoes=[];
+
+function initAnamnese(){
+  const select=document.getElementById('anamnese-paciente');if(!select)return;
+  select.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+}
+
+function limparCamposAnamnese(){
+  _anamneseCampos.forEach(c=>document.getElementById('anamnese-'+c).value='');
+  document.getElementById('anamnese-meta').textContent='Nova anamnese ainda não salva.';
+}
+
+function mostrarVersaoAnamnese(){
+  const index=Number(document.getElementById('anamnese-versao').value||0);
+  const item=_anamneseVersoes[index];
+  if(!item)return limparCamposAnamnese();
+  const c=item.conteudo||{};
+  _anamneseCampos.forEach(campo=>document.getElementById('anamnese-'+campo).value=String(c[campo]||''));
+  document.getElementById('anamnese-meta').textContent=`Versão ${item.versao} · salva em ${new Date(item.criado_em).toLocaleString('pt-BR')}`;
+}
+
+async function carregarAnamnese(){
+  const paciente_id=document.getElementById('anamnese-paciente').value;
+  const editor=document.getElementById('anamnese-editor'),versao=document.getElementById('anamnese-versao');
+  _anamneseVersoes=[];
+  if(!paciente_id){editor.style.display='none';versao.disabled=true;versao.innerHTML='<option value="">Nenhuma versão</option>';return;}
+  editor.style.display='block';versao.disabled=true;versao.innerHTML='<option>Carregando...</option>';limparCamposAnamnese();
+  try{
+    const r=await fetch(`/api/anamnesis?paciente_id=${encodeURIComponent(paciente_id)}`),d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Não foi possível carregar');
+    _anamneseVersoes=d;
+    if(!d.length){versao.innerHTML='<option value="">Nova anamnese</option>';document.getElementById('anamnese-meta').textContent='Nenhuma anamnese registrada para este paciente.';return;}
+    versao.disabled=false;versao.innerHTML=d.map((v,i)=>`<option value="${i}">Versão ${v.versao} · ${new Date(v.criado_em).toLocaleDateString('pt-BR')}</option>`).join('');
+    versao.value='0';mostrarVersaoAnamnese();
+  }catch(e){versao.innerHTML='<option value="">Erro ao carregar</option>';toast(e.message);}
+}
+
+async function salvarAnamnese(){
+  const paciente_id=document.getElementById('anamnese-paciente').value;if(!paciente_id)return toast('Selecione um paciente.');
+  const conteudo={};_anamneseCampos.forEach(c=>conteudo[c]=document.getElementById('anamnese-'+c).value.trim());
+  const button=document.getElementById('anamnese-salvar');button.disabled=true;
+  try{
+    const r=await fetch('/api/anamnesis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paciente_id,conteudo})}),d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Não foi possível salvar');
+    toast('✅ Nova versão da anamnese salva e criptografada.');await carregarAnamnese();
+  }catch(e){toast(e.message);}finally{button.disabled=false;}
 }
 
 let _formTemplates=[];
@@ -2393,7 +2465,7 @@ async function gerarLinkFormulario(){
   const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link válido por 72 horas:</strong><br>${escHtml(d.url)}<br><button class="btn-secondary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button>`;
 }
 function renderRespostasFormularios(rows){const el=document.getElementById('form-respostas'),pending=rows.filter(x=>x.status==='pending_review');if(!pending.length){el.innerHTML='<div class="alert-empty">Nenhuma resposta pendente.</div>';return;}el.innerHTML=pending.map(x=>`<div class="alert-item" style="display:block"><strong>${escHtml(x.formularios_convites?.formularios_modelos?.nome||'Formulário')}</strong><pre style="white-space:pre-wrap;font:inherit;margin:8px 0">${escHtml(JSON.stringify(x.conteudo,null,2))}</pre><button class="btn-primary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','approve')">Aprovar e incorporar</button> <button class="btn-secondary" onclick="revisarFormulario('${escHtmlAttr(x.id)}','reject')">Rejeitar</button></div>`).join('');}
-async function revisarFormulario(resposta_id,action){if(!confirm(action==='approve'?'Aprovar e criar uma nova versão da anamnese?':'Rejeitar esta resposta?'))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?'✅ Resposta incorporada':'Resposta rejeitada');await initFormularios();}
+async function revisarFormulario(resposta_id,action){if(!confirm(action==='approve'?'Aprovar e criar uma nova versão da anamnese?':'Rejeitar esta resposta?'))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?'✅ Resposta incorporada':'Resposta rejeitada');await initFormularios();if(action==='approve'&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
 
 async function carregarPacientes() {
   try {

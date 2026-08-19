@@ -11,7 +11,6 @@ const {default: status} = await import('../api/auth/status.js');
 const {default: operational} = await import('../api/operational.js');
 const {default: forms} = await import('../api/forms.js');
 const {default: publicForm} = await import('../api/form.js');
-const {default: anamnesis} = await import('../api/anamnesis.js');
 
 function response() {
   return {
@@ -51,13 +50,6 @@ test('administração de formulários não entrega dados a visitante', async () 
 test('formulário público recusa token curto sem consultar o banco', async () => {
   global.fetch=async()=>{throw new Error('não deveria consultar token inválido');};
   const res=response();await publicForm({method:'GET',query:{token:'curto'},headers:{}},res);assert.equal(res.code,404);
-});
-
-test('anamnese não entrega dados a visitante', async () => {
-  global.fetch=async()=>{throw new Error('não deveria consultar sem token');};
-  const res=response();
-  await anamnesis({method:'GET',query:{paciente_id:'00000000-0000-4000-8000-000000000000'},headers:{}},res);
-  assert.equal(res.code,401);
 });
 
 test('API operacional entrega contrato legado somente ao administrador', async () => {

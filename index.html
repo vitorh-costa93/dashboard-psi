@@ -2424,7 +2424,7 @@ async function carregarAnamnese(){
   if(!paciente_id){editor.style.display='none';versao.disabled=true;versao.innerHTML='<option value="">Nenhuma versão</option>';return;}
   editor.style.display='block';versao.disabled=true;versao.innerHTML='<option>Carregando...</option>';limparCamposAnamnese();
   try{
-    const r=await fetch(`/api/anamnesis?paciente_id=${encodeURIComponent(paciente_id)}`),d=await r.json();
+    const r=await fetch(`/api/forms?resource=anamnesis&paciente_id=${encodeURIComponent(paciente_id)}`),d=await r.json();
     if(!r.ok)throw new Error(d.error||'Não foi possível carregar');
     _anamneseVersoes=d;
     if(!d.length){versao.innerHTML='<option value="">Nova anamnese</option>';document.getElementById('anamnese-meta').textContent='Nenhuma anamnese registrada para este paciente.';return;}
@@ -2438,7 +2438,7 @@ async function salvarAnamnese(){
   const conteudo={};_anamneseCampos.forEach(c=>conteudo[c]=document.getElementById('anamnese-'+c).value.trim());
   const button=document.getElementById('anamnese-salvar');button.disabled=true;
   try{
-    const r=await fetch('/api/anamnesis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paciente_id,conteudo})}),d=await r.json();
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'anamnesis',paciente_id,conteudo})}),d=await r.json();
     if(!r.ok)throw new Error(d.error||'Não foi possível salvar');
     toast('✅ Nova versão da anamnese salva e criptografada.');await carregarAnamnese();
   }catch(e){toast(e.message);}finally{button.disabled=false;}

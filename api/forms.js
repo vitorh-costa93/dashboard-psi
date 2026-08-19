@@ -1,14 +1,24 @@
 import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
-import {decryptClinicalData} from './_clinical-crypto.js';
+import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
+const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default async function handler(req,res){
   const user=await requireAuth(req,res);if(!user)return;
   try{
     if(req.method==='GET'){
+      if(req.query?.resource==='anamnesis'){
+        const pacienteId=String(req.query?.paciente_id||'');if(!uuid.test(pacienteId))return res.status(400).json({error:'Paciente inválido'});
+        const rr=await supabase(`/rest/v1/registros_clinicos?select=id&paciente_id=eq.${pacienteId}&limit=1`),records=await safeJson(rr);
+        if(!rr.ok)return res.status(rr.status).json({error:'Falha ao carregar anamnese'});if(!records?.length)return res.status(200).json([]);
+        const vr=await supabase(`/rest/v1/anamneses_versoes?select=id,versao,conteudo,criado_em&registro_clinico_id=eq.${records[0].id}&order=versao.desc`),versions=await safeJson(vr);
+        if(!vr.ok)return res.status(vr.status).json({error:'Falha ao carregar versões'});
+        try{return res.status(200).json(versions.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
+        catch{return res.status(500).json({error:'Não foi possível abrir os dados da anamnese'});}
+      }
       if(req.query?.resource==='templates'){
         const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,ativo&ativo=eq.true&order=criado_em.desc');
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
@@ -20,6 +30,15 @@ export default async function handler(req,res){
         catch{return res.status(500).json({error:'Não foi possível abrir os dados clínicos'});}
       }
       return res.status(response.status).json({error:'Falha ao carregar respostas'});
+    }
+    if(req.method==='POST'&&req.body?.action==='anamnesis'){
+      const pacienteId=String(req.body?.paciente_id||''),conteudo=req.body?.conteudo;
+      if(!uuid.test(pacienteId))return res.status(400).json({error:'Paciente inválido'});
+      if(!conteudo||typeof conteudo!=='object'||Array.isArray(conteudo))return res.status(400).json({error:'Conteúdo inválido'});
+      const serialized=JSON.stringify(conteudo);if(serialized.length>131072)return res.status(413).json({error:'Anamnese muito extensa'});
+      if(!Object.values(conteudo).some(value=>String(value||'').trim()))return res.status(400).json({error:'Preencha ao menos um campo'});
+      const response=await supabase('/rest/v1/rpc/salvar_anamnese',{method:'POST',body:JSON.stringify({p_paciente_id:pacienteId,p_conteudo:encryptClinicalData(conteudo),p_autor:user.id})});
+      const result=await safeJson(response);return res.status(response.ok?201:409).json(response.ok?{id:result}:{error:'Não foi possível salvar a anamnese'});
     }
     if(req.method==='POST'&&req.body?.action==='template'){
       const {nome,finalidade,campos}=req.body;if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});

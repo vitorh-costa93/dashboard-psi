@@ -3,6 +3,7 @@ import test from 'node:test';
 
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
+process.env.CLINICAL_DATA_KEY = Buffer.alloc(32,7).toString('base64');
 
 const {requireAuth,setSessionCookies,IDLE_TIMEOUT_MS} = await import('../api/_auth.js');
 const {default: setup} = await import('../api/auth/setup.js');
@@ -10,7 +11,9 @@ const {default: login} = await import('../api/auth/login.js');
 const {default: status} = await import('../api/auth/status.js');
 const {default: operational} = await import('../api/operational.js');
 const {default: forms} = await import('../api/forms.js');
+const {handleDocuments} = await import('../lib/documents.js');
 const {default: publicForm} = await import('../api/form.js');
+const {encryptClinicalData} = await import('../api/_clinical-crypto.js');
 
 function response() {
   return {
@@ -20,6 +23,7 @@ function response() {
     status(code) { this.code = code; return this; },
     setHeader(name, value) { this.headers[name] = value; },
     json(body) { this.body = body; return this; },
+    send(body) { this.body = body; return this; },
   };
 }
 
@@ -51,6 +55,23 @@ test('API operacional não entrega dados a visitante', async () => {
 test('administração de formulários não entrega dados a visitante', async () => {
   global.fetch=async()=>{throw new Error('não deveria consultar sem token');};
   const res=response();await forms({method:'GET',headers:{}},res);assert.equal(res.code,401);
+});
+
+test('documentos por paciente não são entregues a visitante', async () => {
+  global.fetch=async()=>{throw new Error('não deveria consultar sem token');};
+  const res=response();await forms({method:'GET',query:{resource:'documents'},headers:{}},res);assert.equal(res.code,401);
+});
+
+test('exportação de documento salvo gera um arquivo docx válido', async () => {
+  const id='11111111-1111-4111-8111-111111111111';
+  global.fetch=async url=>{
+    if(url.includes('/auth/v1/user'))return jsonResponse({id:'admin-1'});
+    if(url.includes('app_admin'))return jsonResponse([{user_id:'admin-1'}]);
+    if(url.includes('documentos_clinicos'))return jsonResponse([{id,paciente_id:'22222222-2222-4222-8222-222222222222',tipo:'declaracao_comparecimento',titulo:'Declaração de Comparecimento',emitido_em:'2026-08-20',criado_em:'2026-08-20T12:00:00Z',conteudo:encryptClinicalData({campos:{Paciente:'Teste'},secoes:[{titulo:'Declaração',texto:'Compareceu ao atendimento.'}]})}]);
+    throw new Error(`URL inesperada: ${url}`);
+  };
+  const res=response();await handleDocuments({method:'GET',query:{action:'export',id},headers:{cookie:authenticatedCookie()}},res,{id:'admin-1'});
+  assert.equal(res.code,200);assert.equal(Buffer.from(res.body).subarray(0,2).toString(),'PK');
 });
 
 test('formulário público recusa token curto sem consultar o banco', async () => {

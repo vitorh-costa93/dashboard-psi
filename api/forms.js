@@ -101,5 +101,5 @@ export default async function handler(req,res){
       const archived=await safeJson(response);return res.status(response.ok&&archived?200:404).json(response.ok&&archived?{ok:true}:{error:'Registro aprovado não encontrado'});
     }
     return res.status(405).json({error:'Method not allowed'});
-  }catch(error){return res.status(500).json({error:'Não foi possível processar formulários'});}
+  }catch(error){console.error('forms handler error:',error);return res.status(500).json({error:'Não foi possível processar formulários'});}
 }

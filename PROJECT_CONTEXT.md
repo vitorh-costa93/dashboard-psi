@@ -96,3 +96,11 @@ Os controles administrativos ficam ao final da página de Prontuários, sem alte
 - Não trate nome, telefone, horário ou convênio como identidade permanente do paciente.
 - Migrações e importadores devem ser repetíveis e não destrutivos.
 - Atualize este documento quando houver mudança arquitetural, nova integração, alteração de schema ou avanço de fase do roadmap.
+
+## Padronização dos documentos clínicos
+
+Na correção visual de 20/08/2026, os documentos passaram a exibir datas no padrão brasileiro, inclusive ao abrir registros antigos que ainda contenham datas ISO. O seletor de paciente define somente a pasta de armazenamento; o nome completo que aparece no documento é informado em campo próprio e obrigatório.
+
+Todos os modelos oferecem versões colorida e em preto e branco. A escolha é gravada junto ao conteúdo criptografado e respeitada na prévia e nas exportações. Depois de salvar, o formulário é totalmente reiniciado; documentos armazenados continuam acessíveis e podem ser arquivados pela pasta do paciente.
+
+O assistente de relatório foi orientado a converter falas coloquiais, ofensivas ou literais em discurso indireto, técnico e respeitoso, sem inventar fatos. A identidade visual continua usando o arquivo oficial transparente `assets/logo-jaqueline-dark.png`, exibido com proporções preservadas e dimensões apropriadas no portal, nas artes e nos documentos.

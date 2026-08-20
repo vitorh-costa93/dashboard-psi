@@ -20,13 +20,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 /* ── Header ── */
 .app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
-.app-header-logo{display:block;width:210px;max-width:42vw;height:48px;object-fit:contain;object-position:left center;}
+.app-header-logo{display:block;width:240px;max-width:48vw;height:64px;object-fit:contain;object-position:left center;image-rendering:auto;}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
 .app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
 .app-header-main{display:flex;align-items:center;gap:14px;flex:1;}
 .logout-btn{margin-left:auto;border:1px solid rgba(58,48,32,.25);background:rgba(255,255,255,.35);color:#3a3020;border-radius:7px;padding:7px 12px;cursor:pointer;font:inherit;font-size:.76rem;}
 .logout-btn:hover{background:rgba(255,255,255,.6);}
-.auth-brand-logo{display:block;width:min(250px,80%);height:auto;max-height:105px;object-fit:contain;margin:0 auto 14px;}
+.auth-brand-logo{display:block;width:min(290px,86%);height:auto;object-fit:contain;margin:0 auto 16px;image-rendering:auto;}
 
 /* ── Acesso administrativo ── */
 .auth-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;}
@@ -154,7 +154,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .audio-input-btn{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:.92rem;display:inline-flex;align-items:center;justify-content:center;}
 .audio-input-btn:hover{background:#f1f5ec;border-color:var(--accent)}.audio-input-btn.recording{background:#fff1ef;color:var(--danger);border-color:var(--danger);animation:pulseMic 1s infinite alternate}
 @keyframes pulseMic{to{box-shadow:0 0 0 4px rgba(192,57,43,.12)}}
-.doc-layout{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px;align-items:start}.doc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.doc-form-grid .full{grid-column:1/-1}.doc-preview{background:#fff;border:1px solid var(--border);border-radius:12px;padding:34px 42px;min-height:620px;box-shadow:var(--shadow);line-height:1.65}.doc-preview-brand{display:flex;align-items:center;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:26px}.doc-preview-brand img{width:170px;height:62px;object-fit:contain;object-position:left center}.doc-preview h2{text-align:center;color:#596457;font:700 1.2rem 'Playfair Display',serif;margin-bottom:24px}.doc-preview h3{font-size:.86rem;margin:20px 0 7px}.doc-preview p{margin:0 0 12px;white-space:pre-wrap;text-align:justify}.doc-signature{text-align:right;margin-top:44px}.doc-list{display:flex;flex-direction:column;gap:8px}.doc-record{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;padding:11px 12px;text-align:left;cursor:pointer;color:var(--text)}.doc-record:hover,.doc-record.active{border-color:var(--accent);background:#f4f7f0}.doc-record strong{display:block}.doc-record span{font-size:.7rem;color:var(--muted)}
+.doc-layout{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px;align-items:start}.doc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.doc-form-grid .full{grid-column:1/-1}.doc-preview{position:relative;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px;padding:34px 42px;min-height:620px;box-shadow:var(--shadow);line-height:1.65}.doc-preview.colorido::before{content:'';position:absolute;left:0;top:0;width:100%;height:7px;background:linear-gradient(90deg,#9db7ae 0 32%,#d7cbb6 32% 100%)}.doc-preview.preto-branco{filter:grayscale(1)}.doc-preview-brand{display:flex;align-items:center;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:26px}.doc-preview-brand img{width:225px;height:auto;max-height:92px;object-fit:contain;object-position:left center;image-rendering:auto}.doc-preview h2{text-align:center;color:#596457;font:700 1.2rem 'Playfair Display',serif;margin-bottom:24px}.doc-preview.preto-branco h2{color:#222}.doc-preview h3{font-size:.86rem;color:#596457;margin:20px 0 7px}.doc-preview.preto-branco h3{color:#222}.doc-preview p{margin:0 0 12px;white-space:pre-wrap;text-align:justify}.doc-signature{text-align:right;margin-top:44px}.doc-list{display:flex;flex-direction:column;gap:8px}.doc-record{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;padding:11px 12px;text-align:left;cursor:pointer;color:var(--text)}.doc-record:hover,.doc-record.active{border-color:var(--accent);background:#f4f7f0}.doc-record strong{display:block}.doc-record span{font-size:.7rem;color:var(--muted)}
 @media(max-width:820px){.doc-layout{grid-template-columns:1fr}.doc-preview{padding:24px 20px;min-height:420px}.app-header-logo{width:175px;max-width:58vw}.doc-form-grid{grid-template-columns:1fr}.doc-form-grid .full{grid-column:auto}}
 
 .gen-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
@@ -901,7 +901,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
     <div class="doc-form-grid">
       <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="doc-paciente" onchange="carregarDocumentos()"><option value="">Selecione...</option></select></div>
       <div class="pront-field"><label class="pront-label">Tipo de documento</label><select class="pront-input" id="doc-tipo" onchange="montarFormularioDocumento()"><option value="">Selecione...</option><option value="termo_infantil">Termo de Compromisso - Infantil</option><option value="termo_adulto">Termo de Compromisso - Adulto</option><option value="orcamento">Orçamento de atendimento</option><option value="recibo">Comprovante de pagamento</option><option value="relatorio_psicologico">Relatório psicológico</option><option value="solicitacao_escolar">Solicitação de relatório escolar</option><option value="declaracao_comparecimento">Declaração de comparecimento</option></select></div>
-      <div class="pront-field"><label class="pront-label">Data de emissão</label><input class="pront-input" type="date" id="doc-emissao"/></div>
+      <div class="pront-field"><label class="pront-label">Data de emissão</label><input class="pront-input" type="date" id="doc-emissao" oninput="atualizarPreviaDocumento()"/></div>
+      <div class="pront-field"><label class="pront-label">Estilo do documento</label><select class="pront-input" id="doc-estilo" onchange="atualizarPreviaDocumento()"><option value="colorido">Colorido</option><option value="preto-branco">Preto e branco</option></select></div>
     </div>
   </div>
   <div class="doc-layout">
@@ -2170,7 +2171,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
 
       // Zona de marca protegida: centro superior, sempre no mesmo lugar.
       // A faixa de respiro é muito discreta e serve apenas para garantir contraste.
-      const zoneW=canvas.width*.25, zoneH=canvas.height*.105;
+      const zoneW=canvas.width*.32, zoneH=canvas.height*.125;
       const zx=(canvas.width-zoneW)/2, zy=canvas.height*.018;
       const grad=ctx.createLinearGradient(0,zy,0,zy+zoneH);
       grad.addColorStop(0,'rgba(245,241,232,.96)');
@@ -2183,7 +2184,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.restore();
 
       // Logo: posição e cor FIXAS para todo o carrossel.
-      const targetW=Math.min(canvas.width*.17,210);
+      const targetW=Math.min(canvas.width*.23,280);
       const targetH=targetW*(logo.naturalHeight/logo.naturalWidth);
       const x=(canvas.width-targetW)/2;
       const y=zy+(zoneH-targetH)/2;
@@ -2951,8 +2952,8 @@ function inputDoc(id,label,type='text',extra=''){
 function areaDoc(id,label,placeholder=''){
   return `<div class="pront-field full"><label class="pront-label">${label}</label><textarea class="pront-input pront-textarea doc-input" id="${id}" placeholder="${placeholder}" oninput="atualizarPreviaDocumento()"></textarea></div>`;
 }
-function nomePacienteDocumento(){return _pacientesById?.[document.getElementById('doc-paciente').value]?.nome||'';}
 function valorBR(value){const n=Number(String(value||'').replace(',','.'));return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';}
+function dataBR(value){return String(value||'').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,'$3/$2/$1');}
 function campo(id){return document.getElementById(id)?.value?.trim()||'';}
 
 async function initDocumentos(){
@@ -2964,7 +2965,7 @@ async function initDocumentos(){
 function montarFormularioDocumento(){
   const tipo=document.getElementById('doc-tipo').value,editor=document.getElementById('doc-editor');_docAtual=null;
   if(!tipo){editor.innerHTML='<div class="alert-empty">Escolha o tipo de documento.</div>';return atualizarPreviaDocumento();}
-  let html=`<h3>${DOC_NAMES[tipo]}</h3><div class="doc-form-grid">`;
+  let html=`<h3>${DOC_NAMES[tipo]}</h3><div class="doc-form-grid">${inputDoc('doc-nome-completo','Nome completo no documento')}`;
   if(tipo==='termo_infantil')html+=inputDoc('doc-responsavel','Nome do responsável')+inputDoc('doc-cpf-responsavel','CPF do responsável')+inputDoc('doc-cpf-paciente','CPF da criança')+inputDoc('doc-anamnese-data','Data da anamnese','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
   if(tipo==='termo_adulto')html+=inputDoc('doc-cpf-paciente','CPF do paciente')+inputDoc('doc-anamnese-data','Data da entrevista inicial','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
   if(tipo==='orcamento')html+=inputDoc('doc-inicio','Data de início','date')+inputDoc('doc-valor-avulso','Valor da sessão individual','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote-sessao','Valor de cada sessão no pacote','number','min="0" step="0.01"');
@@ -2982,22 +2983,22 @@ function renderSessoesRecibo(){
 }
 
 function conteudoDocumento(){
-  const tipo=document.getElementById('doc-tipo').value,nome=nomePacienteDocumento(),campos={'Paciente':nome},secoes=[];
+  const tipo=document.getElementById('doc-tipo').value,nome=campo('doc-nome-completo'),campos={'Paciente':nome},secoes=[];
   if(tipo.startsWith('termo_')){
     campos['CPF do paciente']=campo('doc-cpf-paciente');if(tipo==='termo_infantil'){campos['Responsável']=campo('doc-responsavel');campos['CPF do responsável']=campo('doc-cpf-responsavel');}
-    campos['Data da entrevista inicial']=campo('doc-anamnese-data');campos['Valor da sessão']=valorBR(campo('doc-valor'));secoes.push(...TERM_COMMON);
+    campos['Data da entrevista inicial']=dataBR(campo('doc-anamnese-data'));campos['Valor da sessão']=valorBR(campo('doc-valor'));secoes.push(...TERM_COMMON);
   } else if(tipo==='orcamento'){
-    const pacote=Number(campo('doc-valor-pacote-sessao'))||0;campos['Início do atendimento']=campo('doc-inicio');campos['Sessão individual']=valorBR(campo('doc-valor-avulso'));campos['Sessão no pacote mensal']=valorBR(pacote);campos['Pacote mensal - 4 sessões']=valorBR(pacote*4);secoes.push({titulo:'Condições',texto:'O pacote mensal corresponde a quatro sessões. Este orçamento é emitido a pedido da pessoa interessada para os devidos fins.'});
+    const pacote=Number(campo('doc-valor-pacote-sessao'))||0;campos['Início do atendimento']=dataBR(campo('doc-inicio'));campos['Sessão individual']=valorBR(campo('doc-valor-avulso'));campos['Sessão no pacote mensal']=valorBR(pacote);campos['Pacote mensal - 4 sessões']=valorBR(pacote*4);secoes.push({titulo:'Condições',texto:'O pacote mensal corresponde a quatro sessões. Este orçamento é emitido a pedido da pessoa interessada para os devidos fins.'});
   } else if(tipo==='recibo'){
-    campos['Valor recebido']=valorBR(campo('doc-valor-pago'));campos['Forma de pagamento']=campo('doc-forma-pagamento');const n=Math.min(20,Math.max(1,Number(campo('doc-qtd-sessoes'))||1));campos['Total de sessões']=String(n);secoes.push({titulo:'Sessões realizadas',texto:Array.from({length:n},(_,i)=>`${campo(`doc-sessao-${i}-data`)||'Data não informada'} - ${valorBR(campo(`doc-sessao-${i}-valor`))||'Valor não informado'}`).join('\n')},{titulo:'Declaração',texto:'Declaro que os atendimentos foram prestados conforme os preceitos éticos da profissão, respeitando o sigilo profissional e os direitos do paciente.'});
+    campos['Valor recebido']=valorBR(campo('doc-valor-pago'));campos['Forma de pagamento']=campo('doc-forma-pagamento');const n=Math.min(20,Math.max(1,Number(campo('doc-qtd-sessoes'))||1));campos['Total de sessões']=String(n);secoes.push({titulo:'Sessões realizadas',texto:Array.from({length:n},(_,i)=>`${dataBR(campo(`doc-sessao-${i}-data`))||'Data não informada'} - ${valorBR(campo(`doc-sessao-${i}-valor`))||'Valor não informado'}`).join('\n')},{titulo:'Declaração',texto:'Declaro que os atendimentos foram prestados conforme os preceitos éticos da profissão, respeitando o sigilo profissional e os direitos do paciente.'});
   } else if(tipo==='relatorio_psicologico'){
-    campos['Data de nascimento']=campo('doc-nascimento');campos['Responsável']=campo('doc-responsavel');campos['Início dos atendimentos']=campo('doc-inicio');campos['Finalidade']=campo('doc-finalidade');secoes.push(...separarTextoIA(campo('doc-texto-final')));
+    campos['Data de nascimento']=dataBR(campo('doc-nascimento'));campos['Responsável']=campo('doc-responsavel');campos['Início dos atendimentos']=dataBR(campo('doc-inicio'));campos['Finalidade']=campo('doc-finalidade');secoes.push(...separarTextoIA(campo('doc-texto-final')));
   } else if(tipo==='solicitacao_escolar'){
     campos['Destinatário']=campo('doc-destinatario');secoes.push({titulo:'Solicitação',texto:campo('doc-texto-final')});
   } else if(tipo==='declaracao_comparecimento'){
-    campos['Dia da sessão']=campo('doc-sessao-data');campos['Horário']=`${campo('doc-hora-inicio')} às ${campo('doc-hora-fim')}`;secoes.push({titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} compareceu ao consultório para atendimento psicológico na data e horário informados.`});
+    campos['Dia da sessão']=dataBR(campo('doc-sessao-data'));campos['Horário']=`${campo('doc-hora-inicio')} às ${campo('doc-hora-fim')}`;secoes.push({titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} compareceu ao consultório para atendimento psicológico na data e horário informados.`});
   }
-  return {campos,secoes};
+  return {estilo:document.getElementById('doc-estilo')?.value||'colorido',campos,secoes};
 }
 
 function separarTextoIA(texto){
@@ -3006,8 +3007,9 @@ function separarTextoIA(texto){
 }
 
 function atualizarPreviaDocumento(){
-  const tipo=document.getElementById('doc-tipo').value,preview=document.getElementById('doc-preview');if(!tipo)return preview.innerHTML='<div class="alert-empty">A prévia aparecerá aqui enquanto você preenche.</div>';
+  const tipo=document.getElementById('doc-tipo').value,preview=document.getElementById('doc-preview');if(!tipo){preview.className='doc-preview';return preview.innerHTML='<div class="alert-empty">A prévia aparecerá aqui enquanto você preenche.</div>';}
   const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=Object.entries(data.campos).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(v)}</p>`).join(''),secoes=data.secoes.filter(x=>x.texto).map(x=>`<h3>${escHtml(x.titulo)}</h3><p>${escHtml(x.texto)}</p>`).join('');
+  preview.className=`doc-preview ${data.estilo}`;
   preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira Psicóloga"></div><h2>${escHtml(DOC_NAMES[tipo])}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${emissao?new Date(emissao+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}):'data de emissão'}.</p><p>À disposição para esclarecimentos de quaisquer dúvidas.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div>`;
 }
 
@@ -3018,20 +3020,21 @@ async function gerarTextoDocumento(btn){
 }
 
 async function salvarDocumento(){
-  const paciente_id=document.getElementById('doc-paciente').value,tipo=document.getElementById('doc-tipo').value,emitido_em=document.getElementById('doc-emissao').value;if(!paciente_id||!tipo||!emitido_em)return toast('Selecione paciente, tipo e data de emissão.');
-  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo:DOC_NAMES[tipo],emitido_em,conteudo:conteudoDocumento()})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar.');toast('✅ Documento salvo.');await carregarDocumentos();
+  const paciente_id=document.getElementById('doc-paciente').value,tipo=document.getElementById('doc-tipo').value,emitido_em=document.getElementById('doc-emissao').value;if(!paciente_id||!tipo||!emitido_em)return toast('Selecione paciente, tipo e data de emissão.');if(!campo('doc-nome-completo'))return toast('Informe o nome completo que deve aparecer no documento.');
+  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo:DOC_NAMES[tipo],emitido_em,conteudo:conteudoDocumento()})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar.');toast('✅ Documento salvo.');resetarDocumentoCompleto();
 }
 async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 function abrirDocumento(id,button){
-  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(v)}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(s.texto)}</p>`).join('');document.getElementById('doc-preview').innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline-dark.png" alt="Logo"></div><h2>${escHtml(x.titulo)}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div><div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>`;
+  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline-dark.png" alt="Logo"></div><h2>${escHtml(x.titulo)}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div><div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>`;
 }
 async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=documents&action=export&id=${encodeURIComponent(id)}`);if(!r.ok)return toast('Não foi possível exportar.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='documento-'+id.slice(0,8)+'.docx';a.click();URL.revokeObjectURL(url);}
-function exportarDocumentoPDF(){const conteudo=document.getElementById('doc-preview').cloneNode(true);conteudo.querySelector('.pront-form-actions')?.remove();const win=window.open('','_blank');if(!win)return toast('Permita a abertura da janela para exportar o PDF.');win.document.write(`<html><head><title>${escHtml(_docAtual?.titulo||'Documento')}</title><style>@page{size:A4;margin:18mm}body{font:11.5pt Arial;line-height:1.55;color:#222}img{width:180px;height:auto}h2{text-align:center;color:#596457;margin:26px}h3{margin-top:18px;break-after:avoid}p{text-align:justify;white-space:pre-wrap;orphans:3;widows:3}.doc-signature{text-align:right;margin-top:45px;break-inside:avoid}@media print{body{margin:0}}</style></head><body>${conteudo.innerHTML}<script>window.onload=()=>{window.print();}<\/script></body></html>`);win.document.close();}
+function exportarDocumentoPDF(){const conteudo=document.getElementById('doc-preview').cloneNode(true);conteudo.querySelector('.pront-form-actions')?.remove();const colorido=(_docAtual?.conteudo?.estilo||'colorido')==='colorido',win=window.open('','_blank');if(!win)return toast('Permita a abertura da janela para exportar o PDF.');win.document.write(`<html><head><title>${escHtml(_docAtual?.titulo||'Documento')}</title><style>@page{size:A4;margin:18mm}body{font:11.5pt Arial;line-height:1.55;color:#222;border-top:7px solid ${colorido?'#9db7ae':'#333'};padding-top:12px}img{width:225px;height:auto}h2{text-align:center;color:${colorido?'#596457':'#222'};margin:26px}h3{color:${colorido?'#596457':'#222'};margin-top:18px;break-after:avoid}p{text-align:justify;white-space:pre-wrap;orphans:3;widows:3}.doc-signature{text-align:right;margin-top:45px;break-inside:avoid}@media print{body{margin:0}}</style></head><body>${conteudo.innerHTML}<script>window.onload=()=>{window.print();}<\/script></body></html>`);win.document.close();}
 async function excluirDocumento(id){if(!confirm('Excluir este documento da visualização?'))return;const r=await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir.');_docAtual=null;document.getElementById('doc-preview').innerHTML='<div class="alert-empty">Documento excluído.</div>';await carregarDocumentos();toast('Documento excluído.');}
 function limparDocumento(){montarFormularioDocumento();}
+function resetarDocumentoCompleto(){_docAtual=null;_documentos=[];document.getElementById('doc-paciente').value='';document.getElementById('doc-tipo').value='';document.getElementById('doc-estilo').value='colorido';document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);document.getElementById('doc-editor').innerHTML='<div class="alert-empty">Escolha o paciente e o tipo de documento.</div>';document.getElementById('doc-lista').innerHTML='<div class="alert-empty">Selecione um paciente.</div>';const preview=document.getElementById('doc-preview');preview.className='doc-preview';preview.innerHTML='<div class="alert-empty">Documento salvo. Selecione um paciente para consultar a pasta.</div>';}
 
 // Ditado por voz em todos os campos de texto
 function habilitarAudioGlobal(root=document){

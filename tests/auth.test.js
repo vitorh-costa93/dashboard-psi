@@ -66,6 +66,19 @@ test('datas de documentos são apresentadas no padrão brasileiro', () => {
   assert.equal(formatDates('Sessões em 2026-08-20 e 2026-08-27.'),'Sessões em 20/08/2026 e 27/08/2026.');
 });
 
+test('PSM exige público e valores positivos antes de salvar', async () => {
+  global.fetch=async()=>{throw new Error('não deveria consultar o banco');};
+  const res=response();await handleDocuments({method:'POST',body:{action:'psm-save',publico:'adulto',titulo:'PSM Adulto',valor_individual:0,valor_pacote:520}},res,{id:'admin-1'});
+  assert.equal(res.code,400);
+});
+
+test('PSM válida é salva na biblioteca administrativa', async () => {
+  let request;
+  global.fetch=async (url,options)=>{request={url,options};return jsonResponse([{id:'33333333-3333-4333-8333-333333333333',publico:'infantil',titulo:'PSM Infantil - Pacote R$ 560,00',valor_individual:160,valor_pacote:560}]);};
+  const res=response();await handleDocuments({method:'POST',body:{action:'psm-save',publico:'infantil',titulo:'PSM Infantil - Pacote R$ 560,00',valor_individual:160,valor_pacote:560}},res,{id:'admin-1'});
+  assert.equal(res.code,201);assert.match(request.url,/psm_modelos/);assert.match(request.options.body,/"criado_por":"admin-1"/);
+});
+
 test('exportação de documento salvo gera um arquivo docx válido', async () => {
   const id='11111111-1111-4111-8111-111111111111';
   global.fetch=async url=>{

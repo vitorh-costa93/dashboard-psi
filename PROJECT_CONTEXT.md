@@ -103,4 +103,12 @@ Na correção visual de 20/08/2026, os documentos passaram a exibir datas no pad
 
 Todos os modelos oferecem versões colorida e em preto e branco. A escolha é gravada junto ao conteúdo criptografado e respeitada na prévia e nas exportações. Depois de salvar, o formulário é totalmente reiniciado; documentos armazenados continuam acessíveis e podem ser arquivados pela pasta do paciente.
 
-O assistente de relatório foi orientado a converter falas coloquiais, ofensivas ou literais em discurso indireto, técnico e respeitoso, sem inventar fatos. A identidade visual usa `assets/logo-jaqueline.svg`, uma vetorização da arte oficial para telas e prévias, e `assets/logo-jaqueline-hires.png`, sua derivação transparente em alta resolução para artes e exportações DOCX. O raster original permanece apenas como fonte histórica e não deve ser ampliado na interface.
+O assistente de relatório foi orientado a converter falas coloquiais, ofensivas ou literais em discurso indireto, técnico e respeitoso, sem inventar fatos. Os arquivos `assets/logo-jaqueline.svg` e `assets/logo-jaqueline-hires.png` pertencem à tentativa anterior de vetorização integral e ficam apenas como histórico; a composição ativa da marca é descrita abaixo.
+
+## Marca tipográfica e biblioteca de PSM
+
+Em 20/08/2026, a marca deixou de usar o nome rasterizado. O símbolo floral fica isolado em SVG e o lettering é composto no aplicativo com a Agrandir Tight incorporada nos PDFs originais da profissional: peso bold em “Jaqueline” e “PSICÓLOGA”, regular em “Vieira” e no CRP. Artes geradas repetem essa composição diretamente no canvas, sem ampliar uma captura do logotipo.
+
+O cabeçalho dos documentos segue o modelo do relatório fornecido, com círculo em verde oliva, e a assinatura padronizada informa: Jaqueline Cristina Vieira, CRP 06/191478, Psicóloga Clínica e Pós-graduada em Terapia Cognitivo-Comportamental.
+
+A aba Documentos contém duas sub-abas: `Documentos` e `PSM`. A PSM preserva as dez páginas originais das versões adulta e infantil e altera somente os valores da sessão individual e do pacote de quatro sessões. A migration aditiva `20260820130000_psm_library.sql` cria `psm_modelos`, uma biblioteca administrativa reutilizável sem vínculo com paciente. Os registros guardam público, título e valores; RLS bloqueia clientes e o acesso ocorre apenas pela API administrativa autenticada.

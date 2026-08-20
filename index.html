@@ -1684,17 +1684,20 @@ function limparFormAtividade() {
   document.getElementById('btn-edit-prompt').disabled = true;
 }
 
-function exportarPDF(b64, titulo) {
-  const imgSrc = b64
-    ? `data:image/png;base64,${b64}`
-    : document.querySelector('#preview-wrap img')?.src;
-  if (!imgSrc) { toast('Nenhuma imagem para exportar.'); return; }
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${titulo||'Atividade'}</title>
-    <style>*{margin:0;padding:0;box-sizing:border-box;}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;}img{max-width:100%;max-height:100vh;object-fit:contain;display:block;}@media print{body{margin:0;}img{width:100%;height:auto;}}</style>
-  </head><body><img src="${imgSrc}" onload="window.print();"/></body></html>`);
-  win.document.close();
+async function exportarPDF(b64, titulo) {
+  const imgB64 = b64 || document.querySelector('#preview-wrap img')?.src?.split(',')[1];
+  if (!imgB64) { toast('Nenhuma imagem para exportar.'); return; }
+  try {
+    const r = await fetch('/api/forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'export_atividade_pdf', titulo: titulo || 'Atividade', img_b64: imgB64 })
+    });
+    if (!r.ok) { toast('Não foi possível gerar o PDF.'); return; }
+    const blob = await r.blob(), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `${(titulo||'atividade').replace(/[^a-zA-Z0-9]+/g,'-')}.pdf`; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { toast('Não foi possível gerar o PDF.'); }
 }
 
 function exportarPDFModal() {

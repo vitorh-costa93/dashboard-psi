@@ -2,7 +2,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
 import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
 import {Document,Packer,Paragraph,TextRun,HeadingLevel} from 'docx';
-import {handleDocuments,renderProntuarioPdf} from '../lib/documents.js';
+import {handleDocuments,renderProntuarioPdf,renderAtividadePdf} from '../lib/documents.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -68,6 +68,15 @@ export default async function handler(req,res){
       const buffer=await renderProntuarioPdf(nome,sessoes);
       res.setHeader('Content-Type','application/pdf');
       res.setHeader('Content-Disposition',`attachment; filename="prontuario-${nome.replace(/[^a-zA-Z0-9]+/g,'-')}.pdf"`);
+      return res.status(200).send(buffer);
+    }
+    if(req.method==='POST'&&req.body?.action==='export_atividade_pdf'){
+      const titulo=String(req.body?.titulo||'').trim().slice(0,200);
+      const img_b64=String(req.body?.img_b64||'');
+      if(!img_b64||img_b64.length>15000000||!/^[A-Za-z0-9+/]+=*$/.test(img_b64))return res.status(400).json({error:'Imagem inválida'});
+      const buffer=await renderAtividadePdf(titulo,img_b64);
+      res.setHeader('Content-Type','application/pdf');
+      res.setHeader('Content-Disposition',`attachment; filename="${(titulo||'atividade').replace(/[^a-zA-Z0-9]+/g,'-')}.pdf"`);
       return res.status(200).send(buffer);
     }
     if(req.method==='POST'&&req.body?.action==='template'){

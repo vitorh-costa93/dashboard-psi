@@ -11,7 +11,7 @@ const {default: login} = await import('../api/auth/login.js');
 const {default: status} = await import('../api/auth/status.js');
 const {default: operational} = await import('../api/operational.js');
 const {default: forms} = await import('../api/forms.js');
-const {handleDocuments} = await import('../lib/documents.js');
+const {handleDocuments,formatDates} = await import('../lib/documents.js');
 const {default: publicForm} = await import('../api/form.js');
 const {encryptClinicalData} = await import('../api/_clinical-crypto.js');
 
@@ -60,6 +60,10 @@ test('administração de formulários não entrega dados a visitante', async () 
 test('documentos por paciente não são entregues a visitante', async () => {
   global.fetch=async()=>{throw new Error('não deveria consultar sem token');};
   const res=response();await forms({method:'GET',query:{resource:'documents'},headers:{}},res);assert.equal(res.code,401);
+});
+
+test('datas de documentos são apresentadas no padrão brasileiro', () => {
+  assert.equal(formatDates('Sessões em 2026-08-20 e 2026-08-27.'),'Sessões em 20/08/2026 e 27/08/2026.');
 });
 
 test('exportação de documento salvo gera um arquivo docx válido', async () => {

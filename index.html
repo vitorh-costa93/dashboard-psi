@@ -363,7 +363,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <div class="auth-screen" id="auth-screen">
   <div class="auth-card">
     <div class="auth-brand">
-      <img class="auth-brand-logo" src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira Psicóloga"/>
+      <img class="auth-brand-logo" src="/assets/logo-jaqueline.svg" alt="Jaqueline Vieira Psicóloga"/>
       <p>Área administrativa protegida</p>
     </div>
     <div id="auth-loading" class="auth-loading">Verificando acesso...</div>
@@ -382,7 +382,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <div class="app-header">
   <div class="app-header-main">
-    <img class="app-header-logo" src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira Psicóloga"/>
+    <img class="app-header-logo" src="/assets/logo-jaqueline.svg" alt="Jaqueline Vieira Psicóloga"/>
   </div>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
@@ -2017,7 +2017,7 @@ async function initPosts(){
   await carregarPostsSalvos();
   const brand=document.getElementById('post-brand-preview');
   if(brand){
-    brand.innerHTML='<div class="post-logo-preview"><img src="/assets/logo-jaqueline-dark.png" alt="Logo Jaqueline Vieira"/><span style="font-size:.72rem;color:var(--muted)">Logo aplicada automaticamente às artes</span></div>';
+    brand.innerHTML='<div class="post-logo-preview"><img src="/assets/logo-jaqueline.svg" alt="Logo Jaqueline Vieira"/><span style="font-size:.72rem;color:var(--muted)">Logo aplicada automaticamente às artes</span></div>';
   }
   buscarTendencias(false);
 }
@@ -2224,7 +2224,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
 
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };
-    logo.onerror=reject;logo.src='/assets/logo-jaqueline-dark.png';
+    logo.onerror=reject;logo.src='/assets/logo-jaqueline-hires.png';
   };
   base.onerror=reject;base.src='data:image/png;base64,'+b64;
   });
@@ -3010,7 +3010,7 @@ function atualizarPreviaDocumento(){
   const tipo=document.getElementById('doc-tipo').value,preview=document.getElementById('doc-preview');if(!tipo){preview.className='doc-preview';return preview.innerHTML='<div class="alert-empty">A prévia aparecerá aqui enquanto você preenche.</div>';}
   const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=Object.entries(data.campos).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(v)}</p>`).join(''),secoes=data.secoes.filter(x=>x.texto).map(x=>`<h3>${escHtml(x.titulo)}</h3><p>${escHtml(x.texto)}</p>`).join('');
   preview.className=`doc-preview ${data.estilo}`;
-  preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline-dark.png" alt="Jaqueline Vieira Psicóloga"></div><h2>${escHtml(DOC_NAMES[tipo])}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${emissao?new Date(emissao+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}):'data de emissão'}.</p><p>À disposição para esclarecimentos de quaisquer dúvidas.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div>`;
+  preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline.svg" alt="Jaqueline Vieira Psicóloga"></div><h2>${escHtml(DOC_NAMES[tipo])}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${emissao?new Date(emissao+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}):'data de emissão'}.</p><p>À disposição para esclarecimentos de quaisquer dúvidas.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div>`;
 }
 
 async function gerarTextoDocumento(btn){
@@ -3028,7 +3028,7 @@ async function carregarDocumentos(){
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 function abrirDocumento(id,button){
-  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline-dark.png" alt="Logo"></div><h2>${escHtml(x.titulo)}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div><div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>`;
+  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;preview.innerHTML=`<div class="doc-preview-brand"><img src="/assets/logo-jaqueline.svg" alt="Logo"></div><h2>${escHtml(x.titulo)}</h2>${campos}${secoes}<div class="doc-signature"><p>Araraquara, ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}.</p><br><p>________________________________<br><strong>Jaqueline Cristina Vieira</strong><br>Psicóloga Clínica · CRP 06/191478</p></div><div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>`;
 }
 async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=documents&action=export&id=${encodeURIComponent(id)}`);if(!r.ok)return toast('Não foi possível exportar.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='documento-'+id.slice(0,8)+'.docx';a.click();URL.revokeObjectURL(url);}
 function exportarDocumentoPDF(){const conteudo=document.getElementById('doc-preview').cloneNode(true);conteudo.querySelector('.pront-form-actions')?.remove();const colorido=(_docAtual?.conteudo?.estilo||'colorido')==='colorido',win=window.open('','_blank');if(!win)return toast('Permita a abertura da janela para exportar o PDF.');win.document.write(`<html><head><title>${escHtml(_docAtual?.titulo||'Documento')}</title><style>@page{size:A4;margin:18mm}body{font:11.5pt Arial;line-height:1.55;color:#222;border-top:7px solid ${colorido?'#9db7ae':'#333'};padding-top:12px}img{width:225px;height:auto}h2{text-align:center;color:${colorido?'#596457':'#222'};margin:26px}h3{color:${colorido?'#596457':'#222'};margin-top:18px;break-after:avoid}p{text-align:justify;white-space:pre-wrap;orphans:3;widows:3}.doc-signature{text-align:right;margin-top:45px;break-inside:avoid}@media print{body{margin:0}}</style></head><body>${conteudo.innerHTML}<script>window.onload=()=>{window.print();}<\/script></body></html>`);win.document.close();}

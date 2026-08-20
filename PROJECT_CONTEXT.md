@@ -2,6 +2,18 @@
 
 Documento vivo para continuidade técnica. Leia também `ROADMAP_MIGRACAO_SUPABASE.md` antes de alterar autenticação, banco, APIs ou regras de negócio.
 
+## Fase de documentos clínicos (20/08/2026)
+
+- A aba administrativa `Documentos` foi validada localmente em desktop e celular e autorizada para implantação em produção.
+- Os documentos são vinculados ao ID permanente do paciente e o conteúdo é criptografado no servidor com a mesma chave e o mesmo envelope AES-256-GCM usados por anamneses e formulários.
+- A migration aditiva `20260820090000_clinical_documents.sql` cria `documentos_clinicos`, com RLS, acesso exclusivo da service role e arquivamento lógico em vez de exclusão física.
+- Os tipos previstos são: termos infantil e adulto, orçamento, recibo, relatório psicológico, solicitação escolar e declaração de comparecimento.
+- Relatório e solicitação escolar podem usar IA somente para organizar o texto fornecido pela profissional; a resposta permanece editável e precisa ser revisada antes de salvar.
+- A exportação principal é `.docx`; a impressão do navegador permite salvar em PDF. Ambos seguem a identidade visual da profissional.
+- A mesma fase troca o cabeçalho pela logo oficial, aplica a marca às atividades geradas e generaliza o ditado por voz para campos textuais administrativos.
+- Para respeitar o limite de 12 funções do plano Hobby da Vercel, Documentos reutiliza a rota autenticada `/api/forms?resource=documents`; a lógica interna fica isolada em `lib/documents.js`.
+- Rollback funcional: retirar a nova aba e o recurso `documents` de `/api/forms`; a tabela aditiva pode permanecer inacessível e sem uso, preservando os dados já salvos.
+
 ## Setup do repositório
 
 - Repositório GitHub: `vitorh-costa93/dashboard-psi`.

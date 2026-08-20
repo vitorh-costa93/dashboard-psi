@@ -2,6 +2,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
 import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
 import {Document,Packer,Paragraph,TextRun,HeadingLevel} from 'docx';
+import {handleDocuments} from '../lib/documents.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -9,6 +10,7 @@ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 
 export default async function handler(req,res){
   const user=await requireAuth(req,res);if(!user)return;
+  if(req.query?.resource==='documents'||req.body?.resource==='documents')return handleDocuments(req,res,user);
   try{
     if(req.method==='GET'){
       if(req.query?.resource==='anamnesis'){

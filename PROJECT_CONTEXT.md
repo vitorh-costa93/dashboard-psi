@@ -111,4 +111,6 @@ Em 20/08/2026, a marca deixou de usar o nome rasterizado. O símbolo floral fica
 
 O cabeçalho dos documentos segue o modelo do relatório fornecido, com círculo em verde oliva, e a assinatura padronizada informa: Jaqueline Cristina Vieira, CRP 06/191478, Psicóloga Clínica e Pós-graduada em Terapia Cognitivo-Comportamental.
 
+Após validação visual em produção, o cabeçalho foi refinado para reproduzir a geometria do modelo: círculo oliva pastel menor, símbolo e lettering concentrados à esquerda, linha curta apenas sob o bloco da marca, fundo quente muito claro e assinatura em cinza suave. O quadro de valores das PSMs usa colunas fixas e tipografia reduzida para manter rótulos e valores integralmente dentro da caixa tanto na prévia quanto no PDF.
+
 A aba Documentos contém duas sub-abas: `Documentos` e `PSM`. A PSM preserva as dez páginas originais das versões adulta e infantil e altera somente os valores da sessão individual e do pacote de quatro sessões. A migration aditiva `20260820130000_psm_library.sql` cria `psm_modelos`, uma biblioteca administrativa reutilizável sem vínculo com paciente. Os registros guardam público, título e valores; RLS bloqueia clientes e o acesso ocorre apenas pela API administrativa autenticada.

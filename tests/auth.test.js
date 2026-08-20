@@ -79,6 +79,14 @@ test('PSM válida é salva na biblioteca administrativa', async () => {
   assert.equal(res.code,201);assert.match(request.url,/psm_modelos/);assert.match(request.options.body,/"criado_por":"admin-1"/);
 });
 
+test('PSM salva pode ser arquivada da biblioteca', async () => {
+  let request;
+  const id='44444444-4444-4444-8444-444444444444';
+  global.fetch=async (url,options)=>{request={url,options};return jsonResponse([{id}]);};
+  const res=response();await handleDocuments({method:'DELETE',query:{action:'psm-delete',id}},res,{id:'admin-1'});
+  assert.equal(res.code,200);assert.match(request.url,/psm_modelos/);assert.equal(request.options.method,'PATCH');assert.match(request.options.body,/"arquivado_por":"admin-1"/);
+});
+
 test('exportação de documento salvo gera um arquivo docx válido', async () => {
   const id='11111111-1111-4111-8111-111111111111';
   global.fetch=async url=>{

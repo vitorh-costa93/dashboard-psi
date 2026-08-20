@@ -4,5 +4,11 @@
       "path": "/api/trends",
       "schedule": "0 10 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/forms.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
 }

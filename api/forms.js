@@ -2,7 +2,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
 import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
 import {Document,Packer,Paragraph,TextRun,HeadingLevel} from 'docx';
-import {handleDocuments} from '../lib/documents.js';
+import {handleDocuments,renderProntuarioPdf} from '../lib/documents.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -57,6 +57,18 @@ export default async function handler(req,res){
       const doc=new Document({sections:[{properties:{},children}]});
       const buffer=await Packer.toBuffer(doc);
       return res.status(200).json({arquivo:buffer.toString('base64')});
+    }
+    if(req.method==='POST'&&req.body?.action==='export_prontuario'){
+      const nome=String(req.body?.paciente_nome||'').trim();
+      const sessoes=Array.isArray(req.body?.sessoes)?req.body.sessoes:[];
+      if(!nome||nome.length>200)return res.status(400).json({error:'Paciente inválido'});
+      if(!sessoes.length||sessoes.length>1000)return res.status(400).json({error:'Nenhuma sessão para exportar'});
+      const sane=sessoes.every(s=>s&&typeof s.data==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.data)&&typeof s.relato==='string'&&s.relato.length<=20000);
+      if(!sane)return res.status(400).json({error:'Dados de sessão inválidos'});
+      const buffer=await renderProntuarioPdf(nome,sessoes);
+      res.setHeader('Content-Type','application/pdf');
+      res.setHeader('Content-Disposition',`attachment; filename="prontuario-${nome.replace(/[^a-zA-Z0-9]+/g,'-')}.pdf"`);
+      return res.status(200).send(buffer);
     }
     if(req.method==='POST'&&req.body?.action==='template'){
       const {nome,finalidade,campos}=req.body,destino=req.body.destino==='cadastro'?'cadastro':'anamnese';if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});

@@ -2909,27 +2909,25 @@ async function toggleGravacao() {
 }
 
 // ── Exportar PDF ──────────────────────────────────────────────────────────────
-function exportarProntPDF() {
+async function exportarProntPDF() {
   const p = _pacAtual && _prontuarios[_pacAtual];
   if (!p) return;
-  const linhas = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s => {
-    const [y,m,d] = s.data.split('-');
-    return `<tr>
-      <td style="padding:8px 12px;border:1px solid #ddd;white-space:nowrap;vertical-align:top;color:#555;font-size:12px;">${d}/${m}/${y}</td>
-      <td style="padding:8px 12px;border:1px solid #ddd;line-height:1.6;font-size:12px;">${s.relato.replace(/\n/g,'<br>')}</td>
-    </tr>`;
-  }).join('');
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Prontuário — ${p.label}</title>
-    <style>body{font-family:'Georgia',serif;margin:40px;color:#2a2a2a;}h1{font-size:16px;margin-bottom:4px;}.sub{font-size:11px;color:#888;margin-bottom:20px;}table{width:100%;border-collapse:collapse;}th{background:#d6ccb0;padding:8px 12px;text-align:left;font-size:11px;border:1px solid #ddd;}@media print{body{margin:20px;}}</style>
-  </head><body>
-    <h1>🌻 Prontuário — ${p.label}</h1>
-    <p class="sub">Psicóloga Jaqueline C. Vieira &nbsp;|&nbsp; CRP 06/191478 &nbsp;|&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
-    <table><thead><tr><th style="width:100px;">Data</th><th>Relato da sessão</th></tr></thead><tbody>${linhas}</tbody></table>
-    <script>window.onload=()=>{window.print();}<\/script>
-  </body></html>`);
-  win.document.close();
+  const btn = document.querySelector('.pront-form-actions .btn-pdf, [onclick="exportarProntPDF()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando PDF…'; }
+  try {
+    const sessoes = [...p.sessoes].sort((a,b)=>a.data.localeCompare(b.data)).map(s=>({data:s.data,relato:s.relato}));
+    const r = await fetch('/api/forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'export_prontuario', paciente_nome: p.label || p.nome, sessoes })
+    });
+    if (!r.ok) { toast('Não foi possível gerar o PDF.'); return; }
+    const blob = await r.blob(), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `prontuario-${(p.label||p.nome||_pacAtual).replace(/[^a-zA-Z0-9]/g,'-')}.pdf`; a.click();
+    URL.revokeObjectURL(url);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PDF'; }
+  }
 }
 
 // ── Exportar Word ─────────────────────────────────────────────────────────────

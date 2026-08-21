@@ -2,7 +2,9 @@
 // Fontes: RSS público do Google News. Nenhum dado clínico ou de paciente é enviado à IA.
 
 import { requireAuthOrCron } from './_auth.js';
+import { applySheetImport } from '../lib/sheet-import.js';
 
+const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
 const OPENAI_KEY = process.env.OPENAI_KEY;
 const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-4.1-mini';
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -94,7 +96,24 @@ async function saveRadar(items){
     method:'POST',headers:{apikey:SUPABASE_KEY,...legacyAuthorization,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)
   }).catch(()=>{});
 }
+// Folded into this same function (rather than a separate api/ file) because
+// the Vercel Hobby plan caps a deployment at 12 serverless functions, and
+// this project is already at that limit -- each route file is one function.
+async function handleImportSheet(req,res){
+  if (!await requireAuthOrCron(req, res)) return;
+  if (req.method !== 'GET') return res.status(405).json({error: 'Method not allowed'});
+  if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({error: 'SUPABASE_URL ou SUPABASE_SERVICE_KEY não configuradas no Vercel'});
+  try {
+    const result = await applySheetImport({supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY, sheetUrl: SHEET_URL});
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('import-sheet error:', error);
+    return res.status(500).json({error: 'Não foi possível importar a planilha'});
+  }
+}
+
 export default async function handler(req,res){
+  if(req.query?.job==='import-sheet') return handleImportSheet(req,res);
   if (!await requireAuthOrCron(req, res)) return;
   if(req.method!=='GET') return res.status(405).json({error:'Method not allowed'});
   try{

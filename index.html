@@ -356,6 +356,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .post-art-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
 .post-art-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
 .post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
+.post-art-card.story img{aspect-ratio:9/16;}
 .post-art-card .post-art-caption{padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .post-art-card .post-art-download{font-size:.7rem;color:var(--accent);text-decoration:none;}
 .post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
@@ -1577,11 +1578,11 @@ async function gerarAtividade() {
   }
 }
 
-async function gerarImagem(prompt) {
+async function gerarImagem(prompt, size) {
   const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ type: 'image', prompt })
+    body: JSON.stringify({ type: 'image', prompt, size })
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
@@ -2265,12 +2266,14 @@ async function aplicarLogoPost(b64, pageInfo=null){
 }
 function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64;wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+  const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
   const formato=_postAtual.formato||'Carrossel';
   const isCarousel=formato.toLowerCase()==='carrossel';
+  const isStory=formato.toLowerCase()==='story';
+  const imgSize=isStory?'1024x1536':'1024x1024';
   const slides=isCarousel?(_postAtual.slides||[]).slice(0,7):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
   if(isCarousel && slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
   try{
@@ -2286,9 +2289,12 @@ async function gerarArtePost(){
         ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
         : isCarousel
           ? `This is an INTERNAL CAROUSEL SLIDE. Do not repeat the main post title. Do not create a new headline or heading. Show only the specific message supplied for this slide, with concise body copy if needed. Do not add any page number, counter, badge or logo. The top-left and top-center reserved zones must remain empty.`
-          : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
-      const prompt=`Create ONE square Instagram editorial image (1080x1080) for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${identidade} Visual direction: sophisticated clinical-editorial design, airy composition, generous negative space, one strong photographic or illustrated focal point, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
-      const raw=await gerarImagem(prompt);
+          : isStory
+            ? `This is an INSTAGRAM STORY. Compose specifically for a tall 9:16 vertical frame, not a cropped square: build the layout top-to-bottom with generous vertical breathing room. Keep the very top ~12% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Use one strong editorial title and one short supporting sentence. Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
+            : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
+      const formatDesc=isStory?'ONE vertical Instagram Story editorial image (1080x1920, 9:16 portrait)':'ONE square Instagram editorial image (1080x1080)';
+      const prompt=`Create ${formatDesc} for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${identidade} Visual direction: sophisticated clinical-editorial design, airy composition, generous negative space, one strong photographic or illustrated focal point, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
+      const raw=await gerarImagem(prompt,imgSize);
       const finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
       _postAtual.imagens_b64.push(finalB64);
       _postAtual.logo_cor=POST_BRAND.logo;

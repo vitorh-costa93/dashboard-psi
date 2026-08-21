@@ -6,11 +6,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { type, prompt } = req.body;
+  const { type, prompt, size } = req.body;
 
   if (type !== 'image') {
     return res.status(400).json({ error: 'Tipo inválido' });
   }
+
+  // The prompt text can *describe* an aspect ratio, but only this API
+  // parameter actually controls the output pixel dimensions -- a request for
+  // a vertical Story image still came out perfectly square before because
+  // this was hardcoded to 1024x1024 regardless of what the prompt asked for.
+  const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
+  const finalSize = ALLOWED_SIZES.has(size) ? size : '1024x1024';
 
   const apiKey = process.env.OPENAI_KEY;
   if (!apiKey) {
@@ -28,7 +35,7 @@ export default async function handler(req, res) {
         model: 'gpt-image-2',
         prompt,
         n: 1,
-        size: '1024x1024',
+        size: finalSize,
       }),
     });
 

@@ -6,7 +6,7 @@
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Baloo+2:wght@600;700&family=Nunito:wght@600;700&display=swap" rel="stylesheet"/>
 <style>
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight-bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
@@ -204,7 +204,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-content-head h2{font:300 4.4cqw/1.15 'Fraunces',serif;font-style:italic;color:#4e553e;margin:0;letter-spacing:.002em}
 .psm-mark{display:inline-flex;color:#899776;transform:rotate(-12deg) translateY(.2cqw);flex-shrink:0}
 .psm-mark svg{width:2.4cqw;height:2.4cqw}
-.psm-kids .psm-content-head h2{font-variation-settings:'opsz' 144;font-weight:500}
+.psm-kids .psm-content-head h2{font-family:'Baloo 2',cursive;font-style:normal;font-weight:700;letter-spacing:0}
+.psm-kids .psm-kicker{font-family:'Nunito',sans-serif;font-style:normal;font-weight:700;color:var(--emo);text-transform:uppercase;letter-spacing:.04em;font-size:1.2cqw}
+.psm-kids .psm-address-text strong{font-family:'Baloo 2',cursive;font-style:normal;font-weight:700}
+.psm-kids .psm-contact-lines{font-family:'Baloo 2',cursive;font-style:normal;font-weight:600}
+.psm-kids .psm-insta span{font-family:'Baloo 2',cursive;font-style:normal;font-weight:600}
 .psm-icon-badge{display:inline-flex;align-items:center;justify-content:center;color:#4e553e}
 .psm-kids .psm-icon-badge{background:var(--emo-bg);border:1.5px solid var(--emo);color:var(--emo);border-radius:50%;padding:1.3cqw}
 .psm-kids .psm-icon-badge svg{color:var(--emo)}
@@ -237,6 +241,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-price-num{font:300 3.4cqw 'Fraunces',serif;color:#4e553e}
 .psm-price-num-lg{font-weight:400;font-size:4.4cqw;color:#b86a49}
 .psm-kids .psm-price-num-lg{color:var(--emo)}
+.psm-kids .psm-price-num{font-family:'Baloo 2',cursive;font-style:normal;font-weight:700}
 .psm-kids .psm-price-div{background:var(--emo);opacity:.4}
 .psm-pay{text-align:center}
 .psm-pay p{font:400 1.7cqw/1.6 'Newsreader',serif;color:#4a4234;margin:0 0 .6cqw}
@@ -3236,7 +3241,7 @@ function switchDocumentPanel(name){
 }
 function psmCoverSlide(publico){
   const subtitle=publico==='infantil'?'<div class="psm-cover-sub">Psicoterapia Infantil</div>':'';
-  const cast=publico==='infantil'?`<div class="psm-cover-cast">${PSM_EMOTIONS.map(e=>`<span class="psm-icon-badge psm-emo-badge" style="--emo:${e.fg};--emo-bg:${e.bg}">${e.icon}</span>`).join('')}</div>`:'';
+  const cast=publico==='infantil'?`<div class="psm-cover-cast">${PSM_TOYS.map(e=>`<span class="psm-icon-badge psm-emo-badge" style="--emo:${e.fg};--emo-bg:${e.bg}">${e.icon}</span>`).join('')}</div>`:'';
   return `<section class="psm-slide psm-slide-html"><div class="psm-cover-wrap${publico==='infantil'?' psm-kids':''}">
 <div class="psm-cover">
 <div class="psm-cover-logo"><img src="/assets/logo-symbol-hires.png" alt=""></div>
@@ -3280,23 +3285,23 @@ const PSM_TEXT={
 };
 const PSM_PAGAMENTO=['Qualquer alteração do valor somente poderá acontecer com o conhecimento e acordo entre as partes','Sessões em que o cliente não comparece, sem aviso antecipado, serão cobradas normalmente, salvo, motivos de extrema urgência','O valor dos honorários pode ser revisto a cada 6 meses','O contrato poderá ser reincidindo por qualquer uma das partes a qualquer momento e não será cobrado nenhuma multa ou qualquer outro tipo de ônus.'];
 const PSM_SPRIG='<svg class="psm-sprig" viewBox="0 0 20 20"><path d="M10 18 C10 12 10 6 10 2 M10 8 C7 6 5 6 3 8 M10 6 C13 4 15 4 17 6 M10 12 C7 10 5 10 3 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
-const PSM_EMOTIONS=[
-  {name:'Alegria',bg:'#fbf0c8',fg:'#c99a2e',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>'},
-  {name:'Tristeza',bg:'#e4eef7',fg:'#6e9dc4',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/></svg>'},
-  {name:'Raiva',bg:'#fbe4e1',fg:'#d97066',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 6 6 1-5 4 1.5 6L12 17l-4.5 3L9 14 4 10l6-1z"/></svg>'},
-  {name:'Medo',bg:'#eee6f7',fg:'#a784cc',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C8 4 5 7.5 5 11.5A6.5 6.5 0 0 0 11.5 18c1.7 0 3-1 3-2.3S13.3 14 12 14s-2-.8-2-2 1.3-2.7 3.3-2.7 3.7 1.7 3.7 4"/></svg>'},
-  {name:'Nojinho',bg:'#e7f2e0',fg:'#7fa968',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C8 4 5 8 5 12c2 0 4-1 5-3 0 3-2 5-2 8 3 0 6-3 6-7 0-2-1-4-2-6z"/></svg>'},
+const PSM_TOYS=[
+  {name:'Blocos',bg:'#fbf0c8',fg:'#c99a2e',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="4" y="12.5" width="7" height="7" rx="1"/><rect x="13" y="12.5" width="7" height="7" rx="1"/><rect x="8.5" y="4" width="7" height="7" rx="1"/></svg>'},
+  {name:'Pipa',bg:'#e4eef7',fg:'#6e9dc4',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 18 10 12 21 6 10z"/><path d="M6 10h12M12 3v18"/><path d="M12 21c.8.9.8 1.8 0 2.7"/></svg>'},
+  {name:'Bola',bg:'#fbe4e1',fg:'#d97066',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4c3 3 3 13 0 16M4 12c3-3 13-3 16 0"/></svg>'},
+  {name:'Catavento',bg:'#eee6f7',fg:'#a784cc',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.5 8.5c0-3 2.7-4.8 5.7-3.8z"/><path d="M12 12 15.5 4.5c3 0 4.8 2.7 3.8 5.7z"/><path d="M12 12 19.5 15.5c0 3-2.7 4.8-5.7 3.8z"/><path d="M12 12 8.5 19.5c-3 0-4.8-2.7-3.8-5.7z"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>'},
+  {name:'Ursinho',bg:'#e7f2e0',fg:'#7fa968',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.3" cy="6.3" r="2"/><circle cx="16.7" cy="6.3" r="2"/><circle cx="12" cy="13.5" r="7"/><circle cx="9.3" cy="12.5" r=".4" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.5" r=".4" fill="currentColor" stroke="none"/><path d="M10 16.3c1.2 1 2.8 1 4 0"/></svg>'},
 ];
 function psmHeader(titulo,publico,emoIdx){
   if(publico==='infantil'){
-    const e=PSM_EMOTIONS[emoIdx%PSM_EMOTIONS.length];
+    const e=PSM_TOYS[emoIdx%PSM_TOYS.length];
     return `<div class="psm-content-head"><span class="psm-icon-badge psm-emo-badge" style="--emo:${e.fg};--emo-bg:${e.bg}">${e.icon}</span><h2>${escHtml(titulo)}</h2></div>`;
   }
   return `<div class="psm-content-head"><span class="psm-mark">${PSM_SPRIG}</span><h2>${escHtml(titulo)}</h2></div>`;
 }
 function psmWrap(publico,emoIdx){
   if(publico!=='infantil')return {cls:'psm-content',style:''};
-  const e=PSM_EMOTIONS[emoIdx%PSM_EMOTIONS.length];
+  const e=PSM_TOYS[emoIdx%PSM_TOYS.length];
   return {cls:'psm-content psm-kids',style:` style="--emo:${e.fg};--emo-bg:${e.bg}"`};
 }
 function psmListLi(items,rot){

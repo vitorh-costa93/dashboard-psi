@@ -247,8 +247,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-contact-lines{display:flex;flex-direction:column;align-items:center;gap:1.1cqw;font:italic 300 2.2cqw 'Fraunces',serif;color:#3f3a2e;margin-top:.4cqw}
 .psm-photo-wrap{display:flex;justify-content:center;margin:1.6cqw 0 3.6cqw;position:relative}
 .psm-photo{width:21cqw;height:21cqw;border-radius:50%;object-fit:cover;border:1.5px solid #4e553e}
-.psm-photo-mark{position:absolute;right:calc(50% - 10.5cqw);bottom:.4cqw;color:#b86a49;background:#f5f1e8;border-radius:50%;padding:1cqw;transform:rotate(14deg)}
-.psm-photo-mark svg{width:2.6cqw;height:2.6cqw;display:block}
 .psm-insta{display:flex;align-items:center;justify-content:center;gap:1.3cqw;color:#4e553e}
 .psm-insta svg{width:2.9cqw;height:2.9cqw;color:#899776}
 .psm-insta span{font:italic 300 2.1cqw 'Fraunces',serif}
@@ -3343,7 +3341,7 @@ function psmInnerSlide(index,publico,individual,pacote){
 function psmAcompanheSlide(publico){
   const w=psmWrap(publico,1);
   return `<section class="psm-slide psm-slide-html"><div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe',publico,1)}
-<div class="psm-photo-wrap"><img class="psm-photo" src="/assets/psm/shared/wife-photo.jpg" alt="Jaqueline Vieira"><span class="psm-photo-mark">${PSM_SPRIG}</span></div>
+<div class="psm-photo-wrap"><img class="psm-photo" src="/assets/psm/shared/wife-photo.jpg" alt="Jaqueline Vieira"></div>
 <div class="psm-insta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg><span>@psi_jaquelinevieira</span></div>
 </div></section>`;
 }

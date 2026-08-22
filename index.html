@@ -179,10 +179,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-slide.psm-slide-html{container-type:inline-size;display:flex;align-items:center;justify-content:center}
 .psm-cover-wrap{position:relative;width:100%;height:100%;background:#f5f1e8}
 .psm-cover{display:flex;align-items:center;gap:6cqw;width:100%;height:100%;justify-content:center}
-.psm-cover-sticker{position:absolute;right:8cqw;bottom:8cqw;transform:rotate(-6deg)}
-.psm-cover-sticker img{width:13cqw;height:13cqw;border-radius:50%;object-fit:cover;border:1.5px solid #4e553e;display:block}
-.psm-cover-sticker-tag{position:absolute;left:-1cqw;bottom:-.4cqw;color:#b86a49;background:#f5f1e8;border-radius:50%;padding:.9cqw;display:flex;transform:rotate(-18deg)}
-.psm-cover-sticker-tag svg{width:1.8cqw;height:1.8cqw;display:block}
+.psm-cover-cast{position:absolute;right:6.5cqw;bottom:6.5cqw;display:flex;gap:1.4cqw}
+.psm-cover-cast .psm-icon-badge{width:5.4cqw;height:5.4cqw}
+.psm-cover-cast .psm-icon-badge svg{width:2.8cqw;height:2.8cqw}
 .psm-cover-logo img{width:22cqw;height:auto;display:block}
 .psm-cover-name{font:400 11cqw 'Playfair Display',serif;color:#4e553e;line-height:1.05}
 .psm-cover-name strong{font-weight:700}
@@ -205,16 +204,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-content-head h2{font:300 4.4cqw/1.15 'Fraunces',serif;font-style:italic;color:#4e553e;margin:0;letter-spacing:.002em}
 .psm-mark{display:inline-flex;color:#899776;transform:rotate(-12deg) translateY(.2cqw);flex-shrink:0}
 .psm-mark svg{width:2.4cqw;height:2.4cqw}
-.psm-mood{display:inline-flex;gap:.8cqw;margin-left:.8cqw;transform:translateY(-.15cqw)}
-.psm-mood i{width:1.1cqw;height:1.1cqw;border-radius:50%;display:block}
-.psm-mood i:nth-child(1){background:#4e553e}
-.psm-mood i:nth-child(2){background:#899776}
-.psm-mood i:nth-child(3){background:#b86a49}
-.psm-mood i:nth-child(4){background:#d9cdb8}
-.psm-mood i:nth-child(5){background:#f5f1e8;border:1px solid #c9b79a}
 .psm-kids .psm-content-head h2{font-variation-settings:'opsz' 144;font-weight:500}
 .psm-icon-badge{display:inline-flex;align-items:center;justify-content:center;color:#4e553e}
-.psm-kids .psm-icon-badge{background:#f5f1e8;border:1.5px solid #d9cdb8;border-radius:50%;padding:1.3cqw}
+.psm-kids .psm-icon-badge{background:var(--emo-bg);border:1.5px solid var(--emo);color:var(--emo);border-radius:50%;padding:1.3cqw}
+.psm-kids .psm-icon-badge svg{color:var(--emo)}
+.psm-emo-badge{width:5cqw;height:5cqw;flex-shrink:0}
+.psm-emo-badge svg{width:2.6cqw;height:2.6cqw;display:block}
 .psm-kicker{font:italic 400 1.75cqw 'Newsreader',serif;color:#899776;margin:0 0 1.6cqw;letter-spacing:.01em}
 .psm-kicker-center{text-align:center;margin:0 0 2.8cqw}
 .psm-content p{font:400 1.85cqw/1.7 'Newsreader',serif;color:#4a4234;margin:0 0 1.6cqw}
@@ -235,11 +230,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-list li{display:flex;align-items:flex-start;gap:2cqw;font:400 1.85cqw/1.6 'Newsreader',serif;color:#4a4234}
 .psm-bullet{display:inline-flex;color:#899776;flex-shrink:0;margin-top:.5cqw}
 .psm-bullet svg{width:1.7cqw;height:1.7cqw;display:block}
+.psm-kids .psm-bullet{color:var(--emo)}
 .psm-price-row{display:flex;align-items:center;justify-content:center;gap:5.6cqw;margin-bottom:4.8cqw}
 .psm-price-item{display:flex;flex-direction:column;align-items:center;gap:1.1cqw}
 .psm-price-div{width:1px;height:7cqw;background:#c9b79a}
 .psm-price-num{font:300 3.4cqw 'Fraunces',serif;color:#4e553e}
 .psm-price-num-lg{font-weight:400;font-size:4.4cqw;color:#b86a49}
+.psm-kids .psm-price-num-lg{color:var(--emo)}
+.psm-kids .psm-price-div{background:var(--emo);opacity:.4}
 .psm-pay{text-align:center}
 .psm-pay p{font:400 1.7cqw/1.6 'Newsreader',serif;color:#4a4234;margin:0 0 .6cqw}
 .psm-pay strong{color:#4e553e;font-weight:500}
@@ -3240,8 +3238,8 @@ function switchDocumentPanel(name){
 }
 function psmCoverSlide(publico){
   const subtitle=publico==='infantil'?'<div class="psm-cover-sub">Psicoterapia Infantil</div>':'';
-  const sticker=publico==='infantil'?`<div class="psm-cover-sticker"><img src="/assets/psm/shared/divertidamente.jpg" alt=""><span class="psm-cover-sticker-tag">${PSM_SPRIG}</span></div>`:'';
-  return `<section class="psm-slide psm-slide-html"><div class="psm-cover-wrap">
+  const cast=publico==='infantil'?`<div class="psm-cover-cast">${PSM_EMOTIONS.map(e=>`<span class="psm-icon-badge psm-emo-badge" style="--emo:${e.fg};--emo-bg:${e.bg}">${e.icon}</span>`).join('')}</div>`:'';
+  return `<section class="psm-slide psm-slide-html"><div class="psm-cover-wrap${publico==='infantil'?' psm-kids':''}">
 <div class="psm-cover">
 <div class="psm-cover-logo"><img src="/assets/logo-symbol-hires.png" alt=""></div>
 <div class="psm-cover-copy">
@@ -3250,7 +3248,7 @@ function psmCoverSlide(publico){
 ${subtitle}
 </div>
 </div>
-${sticker}
+${cast}
 </div></section>`;
 }
 function psmClosingSlide(){
@@ -3284,55 +3282,67 @@ const PSM_TEXT={
 };
 const PSM_PAGAMENTO=['Qualquer alteração do valor somente poderá acontecer com o conhecimento e acordo entre as partes','Sessões em que o cliente não comparece, sem aviso antecipado, serão cobradas normalmente, salvo, motivos de extrema urgência','O valor dos honorários pode ser revisto a cada 6 meses','O contrato poderá ser reincidindo por qualquer uma das partes a qualquer momento e não será cobrado nenhuma multa ou qualquer outro tipo de ônus.'];
 const PSM_SPRIG='<svg class="psm-sprig" viewBox="0 0 20 20"><path d="M10 18 C10 12 10 6 10 2 M10 8 C7 6 5 6 3 8 M10 6 C13 4 15 4 17 6 M10 12 C7 10 5 10 3 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
-const PSM_MOOD='<span class="psm-mood"><i></i><i></i><i></i><i></i><i></i></span>';
-function psmHeader(titulo,publico){
-  const mood=publico==='infantil'?PSM_MOOD:'';
-  return `<div class="psm-content-head"><span class="psm-mark">${PSM_SPRIG}</span><h2>${escHtml(titulo)}</h2>${mood}</div>`;
+const PSM_EMOTIONS=[
+  {name:'Alegria',bg:'#fbf0c8',fg:'#c99a2e',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>'},
+  {name:'Tristeza',bg:'#e4eef7',fg:'#6e9dc4',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/></svg>'},
+  {name:'Raiva',bg:'#fbe4e1',fg:'#d97066',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 6 6 1-5 4 1.5 6L12 17l-4.5 3L9 14 4 10l6-1z"/></svg>'},
+  {name:'Medo',bg:'#eee6f7',fg:'#a784cc',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C8 4 5 7.5 5 11.5A6.5 6.5 0 0 0 11.5 18c1.7 0 3-1 3-2.3S13.3 14 12 14s-2-.8-2-2 1.3-2.7 3.3-2.7 3.7 1.7 3.7 4"/></svg>'},
+  {name:'Nojinho',bg:'#e7f2e0',fg:'#7fa968',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C8 4 5 8 5 12c2 0 4-1 5-3 0 3-2 5-2 8 3 0 6-3 6-7 0-2-1-4-2-6z"/></svg>'},
+];
+function psmHeader(titulo,publico,emoIdx){
+  if(publico==='infantil'){
+    const e=PSM_EMOTIONS[emoIdx%PSM_EMOTIONS.length];
+    return `<div class="psm-content-head"><span class="psm-icon-badge psm-emo-badge" style="--emo:${e.fg};--emo-bg:${e.bg}">${e.icon}</span><h2>${escHtml(titulo)}</h2></div>`;
+  }
+  return `<div class="psm-content-head"><span class="psm-mark">${PSM_SPRIG}</span><h2>${escHtml(titulo)}</h2></div>`;
 }
-function psmWrap(publico){
-  return publico==='infantil'?'psm-content psm-kids':'psm-content';
+function psmWrap(publico,emoIdx){
+  if(publico!=='infantil')return {cls:'psm-content',style:''};
+  const e=PSM_EMOTIONS[emoIdx%PSM_EMOTIONS.length];
+  return {cls:'psm-content psm-kids',style:` style="--emo:${e.fg};--emo-bg:${e.bg}"`};
 }
 function psmListLi(items,rot){
   return items.map((i,n)=>`<li><span class="psm-bullet" style="transform:rotate(${rot[n%rot.length]}deg)">${PSM_SPRIG}</span><span>${escHtml(i)}</span></li>`).join('');
 }
 function psmInnerSlide(index,publico,individual,pacote){
   const t=PSM_TEXT[publico]||PSM_TEXT.adulto;
-  if(index===1)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Abordagem utilizada',publico)}
+  if(index===1){const w=psmWrap(publico,0);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Abordagem utilizada',publico,0)}
 <div class="psm-abordagem-grid">
 <div class="psm-abordagem-text"><p class="psm-kicker">Terapia Cognitivo-Comportamental</p>${t.abordagem.map(p=>`<p>${escHtml(p)}</p>`).join('')}</div>
 <img class="psm-abordagem-brain" src="${t.brain}" alt="Como a TCC pode ajudar">
-</div></div>`;
-  if(index===2)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Terapia online',publico)}
+</div></div>`;}
+  if(index===2){const w=psmWrap(publico,1);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Terapia online',publico,1)}
 <p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas pelo Google Meet, através de um link criado por mim e enviado na hora agendada, pelo Whatsapp.</p>
 <p class="psm-kicker psm-kicker-center">Pré-requisitos</p>
 <div class="psm-req-row">
 <div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_WIFI}</span><span>Internet com<br>boa conexão</span></div>
 <div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><span>Lugar confortável<br>e reservado</span></div>
-</div></div>`;
-  if(index===3)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial',publico)}
+</div></div>`;}
+  if(index===3){const w=psmWrap(publico,2);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial',publico,2)}
 <p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas no seguinte endereço:</p>
 <div class="psm-address-block"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><div class="psm-address-text"><strong>${escHtml(t.endereco.nome)}</strong>${t.endereco.linhas.map(l=>`<span>${escHtml(l)}</span>`).join('')}</div></div>
-</div>`;
-  if(index===4)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento',publico)}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul></div>`;
-  if(index===5)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento',publico)}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul></div>`;
-  if(index===6)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Valores',publico)}
+</div>`;}
+  if(index===4){const w=psmWrap(publico,3);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento',publico,3)}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul></div>`;}
+  if(index===5){const w=psmWrap(publico,4);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento',publico,4)}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul></div>`;}
+  if(index===6){const w=psmWrap(publico,0);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Valores',publico,0)}
 <div class="psm-price-row">
 <div class="psm-price-item"><span class="psm-kicker">1 sessão</span><span class="psm-price-num">${escHtml(valorBR(individual)||'R$ 0,00')}</span></div>
 <div class="psm-price-div"></div>
 <div class="psm-price-item"><span class="psm-kicker">Pacote com 4 sessões</span><span class="psm-price-num psm-price-num-lg">${escHtml(valorBR(pacote)||'R$ 0,00')}</span></div>
 </div>
 <div class="psm-pay"><p class="psm-kicker">Pagamento</p><p>Pix: <strong>57.062.579/0001-34</strong></p><p class="psm-pay-note">Gentileza enviar o comprovante de pagamento até o dia da sessão a ser realizada.</p></div>
-</div>`;
-  if(index===7)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Agendamento',publico)}
+</div>`;}
+  if(index===7){const w=psmWrap(publico,1);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Agendamento',publico,1)}
 <div class="psm-contact-block">
 <span class="psm-icon-badge">${PSM_ICON_CALENDAR}</span>
 <p class="psm-kicker">Agendamento e dúvidas</p>
 <div class="psm-contact-lines"><span>(16) 99746-7348</span><span>Jaqueline Vieira</span><span>psi.jaquelinev@gmail.com</span></div>
-</div></div>`;
+</div></div>`;}
   return '';
 }
 function psmAcompanheSlide(publico){
-  return `<section class="psm-slide psm-slide-html"><div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe',publico)}
+  const w=psmWrap(publico,1);
+  return `<section class="psm-slide psm-slide-html"><div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe',publico,1)}
 <div class="psm-photo-wrap"><img class="psm-photo" src="/assets/psm/shared/wife-photo.jpg" alt="Jaqueline Vieira"><span class="psm-photo-mark">${PSM_SPRIG}</span></div>
 <div class="psm-insta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg><span>@psi_jaquelinevieira</span></div>
 </div></section>`;

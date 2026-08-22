@@ -205,6 +205,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-content-head h2{font:300 4.4cqw/1.15 'Fraunces',serif;font-style:italic;color:#4e553e;margin:0;letter-spacing:.002em}
 .psm-mark{display:inline-flex;color:#899776;transform:rotate(-12deg) translateY(.2cqw);flex-shrink:0}
 .psm-mark svg{width:2.4cqw;height:2.4cqw}
+.psm-mood{display:inline-flex;gap:.8cqw;margin-left:.8cqw;transform:translateY(-.15cqw)}
+.psm-mood i{width:1.1cqw;height:1.1cqw;border-radius:50%;display:block}
+.psm-mood i:nth-child(1){background:#4e553e}
+.psm-mood i:nth-child(2){background:#899776}
+.psm-mood i:nth-child(3){background:#b86a49}
+.psm-mood i:nth-child(4){background:#d9cdb8}
+.psm-mood i:nth-child(5){background:#f5f1e8;border:1px solid #c9b79a}
+.psm-kids .psm-content-head h2{font-variation-settings:'opsz' 144;font-weight:500}
+.psm-icon-badge{display:inline-flex;align-items:center;justify-content:center;color:#4e553e}
+.psm-kids .psm-icon-badge{background:#f5f1e8;border:1.5px solid #d9cdb8;border-radius:50%;padding:1.3cqw}
 .psm-kicker{font:italic 400 1.75cqw 'Newsreader',serif;color:#899776;margin:0 0 1.6cqw;letter-spacing:.01em}
 .psm-kicker-center{text-align:center;margin:0 0 2.8cqw}
 .psm-content p{font:400 1.85cqw/1.7 'Newsreader',serif;color:#4a4234;margin:0 0 1.6cqw}
@@ -3274,33 +3284,38 @@ const PSM_TEXT={
 };
 const PSM_PAGAMENTO=['Qualquer alteração do valor somente poderá acontecer com o conhecimento e acordo entre as partes','Sessões em que o cliente não comparece, sem aviso antecipado, serão cobradas normalmente, salvo, motivos de extrema urgência','O valor dos honorários pode ser revisto a cada 6 meses','O contrato poderá ser reincidindo por qualquer uma das partes a qualquer momento e não será cobrado nenhuma multa ou qualquer outro tipo de ônus.'];
 const PSM_SPRIG='<svg class="psm-sprig" viewBox="0 0 20 20"><path d="M10 18 C10 12 10 6 10 2 M10 8 C7 6 5 6 3 8 M10 6 C13 4 15 4 17 6 M10 12 C7 10 5 10 3 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
-function psmHeader(titulo){
-  return `<div class="psm-content-head"><span class="psm-mark">${PSM_SPRIG}</span><h2>${escHtml(titulo)}</h2></div>`;
+const PSM_MOOD='<span class="psm-mood"><i></i><i></i><i></i><i></i><i></i></span>';
+function psmHeader(titulo,publico){
+  const mood=publico==='infantil'?PSM_MOOD:'';
+  return `<div class="psm-content-head"><span class="psm-mark">${PSM_SPRIG}</span><h2>${escHtml(titulo)}</h2>${mood}</div>`;
+}
+function psmWrap(publico){
+  return publico==='infantil'?'psm-content psm-kids':'psm-content';
 }
 function psmListLi(items,rot){
   return items.map((i,n)=>`<li><span class="psm-bullet" style="transform:rotate(${rot[n%rot.length]}deg)">${PSM_SPRIG}</span><span>${escHtml(i)}</span></li>`).join('');
 }
 function psmInnerSlide(index,publico,individual,pacote){
   const t=PSM_TEXT[publico]||PSM_TEXT.adulto;
-  if(index===1)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Abordagem utilizada')}
+  if(index===1)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Abordagem utilizada',publico)}
 <div class="psm-abordagem-grid">
 <div class="psm-abordagem-text"><p class="psm-kicker">Terapia Cognitivo-Comportamental</p>${t.abordagem.map(p=>`<p>${escHtml(p)}</p>`).join('')}</div>
 <img class="psm-abordagem-brain" src="${t.brain}" alt="Como a TCC pode ajudar">
 </div></div>`;
-  if(index===2)return `<div class="psm-content"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Terapia online')}
+  if(index===2)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Terapia online',publico)}
 <p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas pelo Google Meet, através de um link criado por mim e enviado na hora agendada, pelo Whatsapp.</p>
 <p class="psm-kicker psm-kicker-center">Pré-requisitos</p>
 <div class="psm-req-row">
-<div class="psm-req-item">${PSM_ICON_WIFI}<span>Internet com<br>boa conexão</span></div>
-<div class="psm-req-item">${PSM_ICON_HOME}<span>Lugar confortável<br>e reservado</span></div>
+<div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_WIFI}</span><span>Internet com<br>boa conexão</span></div>
+<div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><span>Lugar confortável<br>e reservado</span></div>
 </div></div>`;
-  if(index===3)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial')}
+  if(index===3)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial',publico)}
 <p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas no seguinte endereço:</p>
-<div class="psm-address-block">${PSM_ICON_HOME}<div class="psm-address-text"><strong>${escHtml(t.endereco.nome)}</strong>${t.endereco.linhas.map(l=>`<span>${escHtml(l)}</span>`).join('')}</div></div>
+<div class="psm-address-block"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><div class="psm-address-text"><strong>${escHtml(t.endereco.nome)}</strong>${t.endereco.linhas.map(l=>`<span>${escHtml(l)}</span>`).join('')}</div></div>
 </div>`;
-  if(index===4)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento')}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul></div>`;
-  if(index===5)return `<div class="psm-content"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento')}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul></div>`;
-  if(index===6)return `<div class="psm-content"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Valores')}
+  if(index===4)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento',publico)}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul></div>`;
+  if(index===5)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento',publico)}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul></div>`;
+  if(index===6)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Valores',publico)}
 <div class="psm-price-row">
 <div class="psm-price-item"><span class="psm-kicker">1 sessão</span><span class="psm-price-num">${escHtml(valorBR(individual)||'R$ 0,00')}</span></div>
 <div class="psm-price-div"></div>
@@ -3308,16 +3323,16 @@ function psmInnerSlide(index,publico,individual,pacote){
 </div>
 <div class="psm-pay"><p class="psm-kicker">Pagamento</p><p>Pix: <strong>57.062.579/0001-34</strong></p><p class="psm-pay-note">Gentileza enviar o comprovante de pagamento até o dia da sessão a ser realizada.</p></div>
 </div>`;
-  if(index===7)return `<div class="psm-content"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Agendamento')}
+  if(index===7)return `<div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Agendamento',publico)}
 <div class="psm-contact-block">
-${PSM_ICON_CALENDAR}
+<span class="psm-icon-badge">${PSM_ICON_CALENDAR}</span>
 <p class="psm-kicker">Agendamento e dúvidas</p>
 <div class="psm-contact-lines"><span>(16) 99746-7348</span><span>Jaqueline Vieira</span><span>psi.jaquelinev@gmail.com</span></div>
 </div></div>`;
   return '';
 }
-function psmAcompanheSlide(){
-  return `<section class="psm-slide psm-slide-html"><div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe')}
+function psmAcompanheSlide(publico){
+  return `<section class="psm-slide psm-slide-html"><div class="${psmWrap(publico)}"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe',publico)}
 <div class="psm-photo-wrap"><img class="psm-photo" src="/assets/psm/shared/wife-photo.jpg" alt="Jaqueline Vieira"><span class="psm-photo-mark">${PSM_SPRIG}</span></div>
 <div class="psm-insta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg><span>@psi_jaquelinevieira</span></div>
 </div></section>`;
@@ -3326,7 +3341,7 @@ function psmSlidesNew(publico,individual,pacote){
   return Array.from({length:10},(_,i)=>{
     if(i===0)return psmCoverSlide(publico);
     if(i===9)return psmClosingSlide();
-    if(i===8)return psmAcompanheSlide();
+    if(i===8)return psmAcompanheSlide(publico);
     return `<section class="psm-slide psm-slide-html">${psmInnerSlide(i,publico,individual,pacote)}</section>`;
   }).join('');
 }

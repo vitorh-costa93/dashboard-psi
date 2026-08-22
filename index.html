@@ -6,30 +6,33 @@
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
 <style>
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight-bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Agrandir Values';src:url('/assets/fonts/agrandir-tight-values-bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Adlery Pro';src:url('/assets/fonts/adlery-pro-swash.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
 :root{
-  --bg:#f5f2eb;--card:#fff;--header-bg:#d6ccb0;
+  /* Brand palette matching the printed card / PSM materials (cream, sage
+     circle, terracotta script, deep olive ink). --accent2/--accent3 were
+     dead (never referenced anywhere) -- repurposed as terracotta/olive. */
+  --bg:#f5f1e8;--card:#fff;--header-bg:#899776;
   --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
-  --accent:#8b9e6e;--accent2:#c4a882;--accent3:#7a9fb5;
+  --accent:#4e553e;--accent2:#b86a49;--accent3:#4e553e;--sage:#899776;
   --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
-  --sand:#c4a882;
+  --sand:#d9cdb8;--terracotta:#b86a49;--olive:#4e553e;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
 
 /* ── Header ── */
-.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #bfb89a;position:sticky;top:0;z-index:200;}
-.brand-lockup{display:flex;align-items:center;color:#30291f;line-height:.82}.brand-symbol{display:block;width:92px;height:72px;object-fit:contain}.brand-copy{font-family:'Agrandir Tight','Arial Narrow',sans-serif;display:flex;flex-direction:column;align-items:flex-start}.brand-name{font-size:29px;letter-spacing:-.035em}.brand-name strong{font-weight:700}.brand-role{display:flex;align-items:baseline;gap:10px;margin-top:9px;font-size:9px;white-space:nowrap}.brand-role strong{font-weight:700}.app-header-logo{max-width:48vw}.app-header-logo .brand-symbol{width:72px;height:58px}.app-header-logo .brand-name{font-size:23px}.app-header-logo .brand-role{font-size:7px;margin-top:7px;gap:7px}
-.app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#3a3020;}
-.app-header p{font-size:.75rem;color:#5a5040;margin-top:2px;}
+.app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #74845f;position:sticky;top:0;z-index:200;}
+.brand-lockup{display:flex;align-items:center;color:var(--olive);line-height:.82}.brand-symbol{display:block;width:92px;height:72px;object-fit:contain}.app-header .brand-lockup{color:#f5f1e8}.app-header .brand-symbol{filter:brightness(0) invert(1)}.brand-copy{font-family:'Playfair Display',serif;display:flex;flex-direction:column;align-items:flex-start}.brand-name{font-size:29px;letter-spacing:-.01em;font-weight:400;line-height:1.05}.brand-name strong{font-weight:700}.brand-role{display:flex;align-items:baseline;gap:10px;margin-top:9px;font-size:9px;white-space:nowrap;font-family:'DM Sans',sans-serif;color:var(--terracotta)}.brand-role strong{font-weight:700}.app-header-logo{max-width:48vw}.app-header-logo .brand-symbol{width:72px;height:58px}.app-header-logo .brand-name{font-size:23px}.app-header-logo .brand-role{font-size:7px;margin-top:7px;gap:7px}
+.app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#f5f1e8;}
+.app-header p{font-size:.75rem;color:#d9cdb8;margin-top:2px;}
 .app-header-main{display:flex;align-items:center;gap:14px;flex:1;}
-.logout-btn{margin-left:auto;border:1px solid rgba(58,48,32,.25);background:rgba(255,255,255,.35);color:#3a3020;border-radius:7px;padding:7px 12px;cursor:pointer;font:inherit;font-size:.76rem;}
-.logout-btn:hover{background:rgba(255,255,255,.6);}
+.logout-btn{margin-left:auto;border:1px solid rgba(245,241,232,.3);background:rgba(245,241,232,.1);color:#f5f1e8;border-radius:7px;padding:7px 12px;cursor:pointer;font:inherit;font-size:.76rem;}
+.logout-btn:hover{background:rgba(245,241,232,.22);}
 .auth-brand-logo{width:min(330px,96%);justify-content:center;margin:0 auto 18px}.auth-brand-logo .brand-symbol{width:105px;height:92px}.auth-brand-logo .brand-name{font-size:34px}.auth-brand-logo .brand-role{font-size:10px}
 
 /* ── Acesso administrativo ── */
@@ -37,7 +40,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .auth-card{width:min(410px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;box-shadow:0 18px 50px rgba(58,48,32,.12);}
 .auth-brand{text-align:center;margin-bottom:24px;}
 .auth-brand .logo{font-size:38px;margin-bottom:8px;}
-.auth-brand h1{font:700 1.5rem 'Playfair Display',serif;color:#3a3020;letter-spacing:.04em;}
+.auth-brand h1{font:700 1.5rem 'Playfair Display',serif;color:#4e553e;letter-spacing:.04em;}
 .auth-brand p{font-size:.78rem;color:var(--muted);margin-top:5px;}
 .auth-title{font:600 1.15rem 'Playfair Display',serif;margin-bottom:7px;}
 .auth-help{font-size:.79rem;color:var(--muted);line-height:1.5;margin-bottom:18px;}
@@ -53,23 +56,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .auth-submit:disabled{opacity:.6;cursor:wait;}
 .auth-message{min-height:20px;margin-top:12px;font-size:.76rem;color:var(--danger);text-align:center;}
 .auth-loading{text-align:center;color:var(--muted);font-size:.82rem;}
+.ui-theme-toggle{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:20px;cursor:pointer;user-select:none;}
+.ui-theme-toggle input{position:absolute;opacity:0;width:0;height:0;}
+.ui-theme-track{width:34px;height:19px;border-radius:999px;background:#d9cdb8;position:relative;transition:background .2s;flex-shrink:0;}
+.ui-theme-thumb{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;}
+.ui-theme-toggle input:checked+.ui-theme-track{background:#899776;}
+.ui-theme-toggle input:checked+.ui-theme-track .ui-theme-thumb{transform:translateX(15px);}
+.ui-theme-label{font-size:.72rem;color:var(--muted);}
+.ui-theme-toggle-header{margin-top:0;margin-left:14px;}
+.ui-theme-toggle-header .ui-theme-label{color:#e5e0d3;}
 
 /* ── Nav tabs ── */
 .nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow:hidden;}
-.nav-tab{padding:11px 18px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--terracotta);}
 .nav-tab:hover:not(.active){color:var(--text);}
 @media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:5px}}
 
 /* ── Sub-tabs (dentro de Atividades) ── */
 .sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
-.sub-tab{padding:8px 16px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.sub-tab{padding:8px 16px;font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
 .sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .sub-tab:hover:not(.active){color:var(--text);}
 .sub-page{display:none;}
 .sub-page.active{display:block;}
 .pront-sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow:hidden;scrollbar-width:none}.pront-sub-tabs::-webkit-scrollbar{display:none}
-.pront-sub-tab{padding:9px 16px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.pront-sub-tab{padding:9px 16px;font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;}
 .pront-sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .pront-sub-page{display:none}.pront-sub-page.active{display:block}
 .notification-badge{display:none;min-width:18px;height:18px;margin-left:5px;padding:0 5px;border-radius:999px;background:#d93025;color:#fff;font-size:.66rem;font-weight:700;line-height:18px;text-align:center;vertical-align:middle;}
@@ -100,7 +112,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
 .kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.kpi-main{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;}
+.kpi-main{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px;color:var(--olive);}
 .kpi-comp{font-size:.72rem;margin:2px 0;}
 .kpi-comp.up{color:#27ae60;}.kpi-comp.dn{color:var(--danger);}.kpi-comp.neu{color:var(--muted);}
 .kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
@@ -108,13 +120,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Gráficos — 3 colunas iguais ── */
 .charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;min-width:0;}
-.chart-card h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;}
+.chart-card h3{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--olive);margin-bottom:10px;}
 .chart-card canvas{width:100%!important;max-height:200px;}
 
 /* ── Bottom row — 3 colunas iguais ── */
 .bottom-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
-.panel h3{font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.panel h3{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--olive);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 
 /* ── Saldo — formato badge ── */
 .saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
@@ -124,7 +136,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:500;}
 .badge-red{background:#fdecea;color:var(--danger);}
 .badge-yellow{background:#fef9ec;color:#b38a2a;}
-.badge-green{background:#eef4eb;color:var(--accent);}
+.badge-green{background:#eef4eb;color:#5a7a46;}
 
 /* ── Donut ── */
 .donut-wrap{position:relative;max-width:280px;margin:0 auto;}
@@ -148,7 +160,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .section-wrap{max-width:1100px;margin:0 auto;padding:16px 20px 40px;}
 
 .generator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;}
-.generator-card h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--text);}
+.generator-card h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--olive);}
 
 .gen-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
 .gen-field label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;}
@@ -162,8 +174,67 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .audio-input-btn{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:.92rem;display:inline-flex;align-items:center;justify-content:center;}
 .audio-input-btn:hover{background:#f1f5ec;border-color:var(--accent)}.audio-input-btn.recording{background:#fff1ef;color:var(--danger);border-color:var(--danger);animation:pulseMic 1s infinite alternate}
 @keyframes pulseMic{to{box-shadow:0 0 0 4px rgba(192,57,43,.12)}}
-.doc-main-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border)}.doc-main-tab{border:0;background:none;padding:10px 18px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font:500 .82rem 'DM Sans',sans-serif}.doc-main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}.doc-main-panel{display:none}.doc-main-panel.active{display:block}.doc-layout{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px;align-items:start}.doc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.doc-form-grid .full{grid-column:1/-1}.doc-preview{position:relative;overflow:hidden;background:#fbfaf9;border:1px solid var(--border);border-radius:12px;padding:30px 42px;min-height:620px;box-shadow:var(--shadow);line-height:1.65}.doc-preview.preto-branco{filter:grayscale(1)}.doc-preview-brand{height:108px;margin:-30px -42px 30px;position:relative;overflow:visible}.doc-preview-brand::before{content:'';position:absolute;left:-18px;top:-32px;width:156px;height:156px;border-radius:50%;background:#b7c3a5;z-index:0}.doc-preview-brand::after{content:'';position:absolute;left:0;bottom:0;width:180px;border-bottom:2px solid #9aa7aa;z-index:1}.doc-preview-brand .brand-lockup{position:absolute;left:7px;top:7px;color:#6b6b70;z-index:2}.doc-preview-brand .brand-symbol{width:100px;height:88px;filter:brightness(0) invert(1)}.doc-preview-brand .brand-copy{margin-left:37px}.doc-preview-brand .brand-name{font-size:23px}.doc-preview-brand .brand-role{font-size:6.5px;margin-top:6px}.doc-preview h2{text-align:center;color:#626267;font:700 1.08rem 'Agrandir Tight','Arial Narrow',sans-serif;margin:26px 0 46px}.doc-preview h3{font-size:.86rem;color:#626267;margin:20px 0 7px}.doc-preview p{margin:0 0 12px;white-space:pre-wrap;text-align:justify}.doc-signature{position:relative;text-align:right;margin-top:74px;padding-top:14px;padding-right:92px;min-height:112px}.doc-signature::before{content:'';position:absolute;right:0;top:0;width:330px;border-top:2px solid #9aa7aa}.doc-signature img{position:absolute;right:0;bottom:0;width:88px;height:98px;object-fit:contain;opacity:.28}.doc-signature p{margin:0 0 2px;text-align:right;color:#3f3f44}.doc-signature strong{color:#69696e}.doc-list{display:flex;flex-direction:column;gap:8px}.doc-record{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;padding:11px 12px;text-align:left;cursor:pointer;color:var(--text)}.doc-record:hover,.doc-record.active{border-color:var(--accent);background:#f4f7f0}.doc-record strong{display:block}.doc-record span{font-size:.7rem;color:var(--muted)}.doc-record-actions{display:flex;gap:8px;margin-top:8px}.doc-record-actions button{border:0;background:transparent;color:var(--muted);font-size:.72rem;cursor:pointer;padding:0}.doc-record-actions button:hover{color:var(--danger)}
-.psm-layout{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:16px;align-items:start}.psm-preview{background:#dedede;border-radius:12px;padding:14px;max-height:74vh;overflow:auto}.psm-slide{aspect-ratio:3/2;background:#fbfaf9;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.13)}.psm-slide:last-child{margin-bottom:0}.psm-slide>img{display:block;width:100%;height:100%;object-fit:cover}.psm-price-overlay{position:absolute;left:8.4%;top:27.5%;width:47.3%;height:28.2%;border-radius:8%/20%;background:#b68a77;color:#fff;padding:4.7% 2.15%;display:grid;grid-template-columns:minmax(0,1fr) minmax(84px,.48fr);column-gap:2%;row-gap:14%;align-items:center;font:700 clamp(9px,1.12vw,17px) 'Agrandir Values','Arial Narrow',sans-serif}.psm-price-overlay span{white-space:nowrap;min-width:0}.psm-price-overlay span:nth-child(even){text-align:right}
+.doc-main-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border)}.doc-main-tab{border:0;background:none;padding:10px 18px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font:600 .85rem 'Playfair Display',serif}.doc-main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}.doc-main-panel{display:none}.doc-main-panel.active{display:block}.doc-layout{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px;align-items:start}.doc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.doc-form-grid .full{grid-column:1/-1}.doc-preview{position:relative;overflow:hidden;background:#fbfaf9;border:1px solid var(--border);border-radius:12px;padding:30px 42px;min-height:620px;box-shadow:var(--shadow);line-height:1.65}.doc-preview.preto-branco{filter:grayscale(1)}.doc-preview-brand{height:108px;margin:-30px -42px 30px;position:relative;overflow:visible}.doc-preview-brand::before{content:'';position:absolute;left:-18px;top:-32px;width:156px;height:156px;border-radius:50%;background:#899776;z-index:0}.doc-preview-brand::after{content:'';position:absolute;left:0;bottom:0;width:180px;border-bottom:2px solid #9aa7aa;z-index:1}.doc-preview-brand .brand-lockup{position:absolute;left:7px;top:7px;color:#4e553e;font-family:'Playfair Display',serif;z-index:2}.doc-preview-brand .brand-symbol{width:100px;height:88px;filter:brightness(0) invert(1)}.doc-preview-brand .brand-copy{margin-left:37px}.doc-preview-brand .brand-name{font-size:23px;font-weight:400}.doc-preview-brand .brand-name strong{font-weight:700}.doc-preview-brand .brand-role{font-size:6.5px;margin-top:6px;font-family:'DM Sans',sans-serif;color:#b86a49}.doc-preview h2{text-align:center;color:#4e553e;font:700 1.08rem 'Agrandir Tight','Arial Narrow',sans-serif;margin:26px 0 46px}.doc-preview h3{font-size:.86rem;color:#4e553e;margin:20px 0 7px}.doc-preview p{margin:0 0 12px;white-space:pre-wrap;text-align:justify}.doc-signature{position:relative;text-align:right;margin-top:74px;padding-top:14px;padding-right:92px;min-height:112px}.doc-signature::before{content:'';position:absolute;right:0;top:0;width:330px;border-top:2px solid #9aa7aa}.doc-signature img{position:absolute;right:0;bottom:0;width:88px;height:98px;object-fit:contain;opacity:.28}.doc-signature p{margin:0 0 2px;text-align:right;color:#3f3f44}.doc-signature strong{color:#69696e}.doc-list{display:flex;flex-direction:column;gap:8px}.doc-record{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;padding:11px 12px;text-align:left;cursor:pointer;color:var(--text)}.doc-record:hover,.doc-record.active{border-color:var(--accent);background:#f4f7f0}.doc-record strong{display:block}.doc-record span{font-size:.7rem;color:var(--muted)}.doc-record-actions{display:flex;gap:8px;margin-top:8px}.doc-record-actions button{border:0;background:transparent;color:var(--muted);font-size:.72rem;cursor:pointer;padding:0}.doc-record-actions button:hover{color:var(--danger)}
+.psm-layout{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:16px;align-items:start}.psm-preview{background:#dedede;border-radius:12px;padding:14px;max-height:74vh;overflow:auto}.psm-slide{aspect-ratio:3/2;background:#fbfaf9;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.13)}.psm-slide:last-child{margin-bottom:0}.psm-slide>img{display:block;width:100%;height:100%;object-fit:cover}.psm-price-overlay{position:absolute;left:8.4%;top:27.5%;width:47.3%;height:28.2%;border-radius:8%/20%;background:#b86a49;color:#fff;padding:4.7% 2.15%;display:grid;grid-template-columns:minmax(0,1fr) minmax(84px,.48fr);column-gap:2%;row-gap:14%;align-items:center;font:700 clamp(9px,1.12vw,17px) 'Playfair Display',serif}.psm-price-overlay span{white-space:nowrap;min-width:0}.psm-price-overlay span:nth-child(even){text-align:right}
+.psm-slide.psm-slide-html{container-type:inline-size;display:flex;align-items:center;justify-content:center}
+.psm-cover{display:flex;align-items:center;gap:6cqw;background:#f5f1e8;width:100%;height:100%;justify-content:center}
+.psm-cover-logo img{width:22cqw;height:auto;display:block}
+.psm-cover-name{font:400 11cqw 'Playfair Display',serif;color:#4e553e;line-height:1.05}
+.psm-cover-name strong{font-weight:700}
+.psm-cover-role{display:flex;align-items:center;gap:1.2cqw;margin-top:2cqw;font:700 2.2cqw 'DM Sans',sans-serif;color:#b86a49;letter-spacing:.12em}
+.psm-cover-role span{width:6cqw;height:1px;background:#b86a49;display:inline-block}
+.psm-cover-sub{margin-top:2.6cqw;font:400 3cqw 'Playfair Display',serif;color:#899776}
+.psm-closing{width:100%;height:100%;background:#899776;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.psm-closing-thanks{font:700 9cqw 'Playfair Display',serif;margin-bottom:4.5cqw}
+.psm-closing-lockup{display:flex;align-items:center;gap:3cqw}
+.psm-closing-logo{width:11cqw;height:auto;display:block;filter:brightness(0) invert(1)}
+.psm-closing-name{font:400 4.4cqw 'Playfair Display',serif;line-height:1.05}
+.psm-closing-name strong{font-weight:700}
+.psm-closing-role{display:flex;align-items:baseline;gap:1cqw;margin-top:1.2cqw;font:700 1.7cqw 'DM Sans',sans-serif;letter-spacing:.08em}
+.psm-closing-role span{font-weight:400}
+.psm-content{width:100%;height:100%;padding:7.3% 9.7%;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;overflow:hidden;position:relative;background:#f5f1e8}
+.psm-leaf{position:absolute;pointer-events:none;opacity:.92}
+.psm-leaf-tr{top:-2.4cqw;right:-2.4cqw;width:19cqw;height:auto}
+.psm-leaf-bl{bottom:-2.8cqw;left:-2.8cqw;width:25cqw;height:auto}
+.psm-content-head{margin-bottom:4.4cqw;flex-shrink:0}
+.psm-content-head h2{font:300 4.7cqw/1.15 'Fraunces',serif;font-style:italic;color:#4e553e;margin:0 0 1.7cqw;letter-spacing:.002em}
+.psm-wave{display:block;width:9cqw;height:1.1cqw;color:#899776;opacity:.85}
+.psm-kicker{font:italic 400 1.75cqw 'Newsreader',serif;color:#899776;margin:0 0 1.6cqw;letter-spacing:.01em}
+.psm-kicker-center{text-align:center;margin:0 0 2.8cqw}
+.psm-content p{font:400 1.85cqw/1.7 'Newsreader',serif;color:#4a4234;margin:0 0 1.6cqw}
+.psm-content-lead{font:400 2.25cqw/1.75 'Newsreader',serif;font-style:italic;color:#4a4234;text-align:center;max-width:84%;margin:0 auto 5.6cqw}
+.psm-content-lead strong{font-weight:500;font-style:normal;color:#4e553e}
+.psm-abordagem-grid{display:flex;gap:5cqw;align-items:center}
+.psm-abordagem-text{flex:1.3}
+.psm-abordagem-brain{width:29cqw;height:auto;border-radius:6px;display:block}
+.psm-req-row{display:flex;justify-content:center;gap:10cqw;margin-top:1cqw}
+.psm-req-item{display:flex;flex-direction:column;align-items:center;gap:1.5cqw;color:#4e553e}
+.psm-req-item svg{width:5.6cqw;height:5.6cqw;color:#899776}
+.psm-req-item span{font:400 1.75cqw/1.4 'Newsreader',serif;color:#4a4234;text-align:center}
+.psm-address-block{display:flex;align-items:center;gap:3cqw;justify-content:center;margin-top:1cqw}
+.psm-address-block svg{width:5.6cqw;height:5.6cqw;color:#899776;flex-shrink:0}
+.psm-address-text{display:flex;flex-direction:column;gap:.8cqw;font:400 2cqw/1.55 'Newsreader',serif;color:#4a4234}
+.psm-address-text strong{font:italic 300 2.55cqw 'Fraunces',serif;color:#4e553e;letter-spacing:.01em}
+.psm-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2.2cqw}
+.psm-list li{display:flex;align-items:flex-start;gap:1.9cqw;font:400 1.85cqw/1.6 'Newsreader',serif;color:#4a4234}
+.psm-sprig{width:1.7cqw;height:1.7cqw;color:#899776;flex-shrink:0;margin-top:.6cqw}
+.psm-price-row{display:flex;align-items:center;justify-content:center;gap:5.6cqw;margin-bottom:4.8cqw}
+.psm-price-item{display:flex;flex-direction:column;align-items:center;gap:1.1cqw}
+.psm-price-div{width:1px;height:7cqw;background:#c9b79a}
+.psm-price-num{font:300 3.4cqw 'Fraunces',serif;color:#4e553e}
+.psm-price-num-lg{font-weight:400;font-size:4.4cqw;color:#b86a49}
+.psm-pay{text-align:center}
+.psm-pay p{font:400 1.7cqw/1.6 'Newsreader',serif;color:#4a4234;margin:0 0 .6cqw}
+.psm-pay strong{color:#4e553e;font-weight:500}
+.psm-pay-note{max-width:52%;margin-left:auto!important;margin-right:auto!important}
+.psm-contact-block{display:flex;flex-direction:column;align-items:center;gap:1.7cqw}
+.psm-contact-block svg{width:4.4cqw;height:4.4cqw;color:#899776}
+.psm-contact-lines{display:flex;flex-direction:column;align-items:center;gap:1.1cqw;font:italic 300 2.2cqw 'Fraunces',serif;color:#3f3a2e;margin-top:.4cqw}
+.psm-photo-wrap{display:flex;justify-content:center;margin:1.6cqw 0 3.6cqw}
+.psm-photo{width:21cqw;height:21cqw;border-radius:50%;object-fit:cover;border:1.5px solid #b86a49;box-shadow:0 0 0 .9cqw #f5f1e8,0 0 0 1cqw #dccfb4}
+.psm-insta{display:flex;align-items:center;justify-content:center;gap:1.3cqw;color:#4e553e}
+.psm-insta svg{width:2.9cqw;height:2.9cqw;color:#899776}
+.psm-insta span{font:italic 300 2.1cqw 'Fraunces',serif}
 @media(max-width:820px){.doc-layout,.psm-layout{grid-template-columns:1fr}.doc-preview{padding:24px 20px;min-height:420px}.doc-preview-brand{margin:-24px -20px 26px}.doc-form-grid{grid-template-columns:1fr}.doc-form-grid .full{grid-column:auto}.psm-preview{max-height:none}}
 
 .gen-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
@@ -183,7 +254,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .preview-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .btn-save{background:var(--sand);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;}
 .btn-save:hover{opacity:.88;}
-.btn-pdf{background:#3a3020;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
+.btn-pdf{background:#4e553e;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px;}
 .btn-pdf:hover{opacity:.88;}
 .btn-danger{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;}
 
@@ -207,7 +278,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .biblioteca-empty p{font-size:.85rem;line-height:1.6;}
 
 .view-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-.view-bar h2{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text);}
+.view-bar h2{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--olive);}
 .view-tabs{display:flex;gap:4px;}
 .view-tab{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;}
 .view-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -229,7 +300,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .ativ-card-actions{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
 .btn-xs{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
-.btn-xs.pdf{border-color:#3a3020;color:#3a3020;}
+.btn-xs.pdf{border-color:#4e553e;color:#4e553e;}
 .btn-xs.del{border-color:var(--danger);color:var(--danger);}
 
 .ativ-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
@@ -253,7 +324,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Galeria de rascunhos de posts ── */
 .draft-modal{max-width:980px;width:min(980px,96vw);max-height:92vh;overflow-y:auto;}
 .draft-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;padding-right:28px;}
-.draft-title{font-family:'Newsreader',Georgia,serif;font-size:1.35rem;font-weight:600;color:var(--text);}
+.draft-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--olive);}
 .draft-meta{font-size:.76rem;color:var(--muted);margin-top:4px;}
 .draft-main-preview{background:#f4f1e8;border:1px solid var(--border);border-radius:10px;min-height:360px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;}
 .draft-main-preview img{display:block;max-width:100%;max-height:66vh;width:auto;height:auto;object-fit:contain;cursor:zoom-in;}
@@ -279,7 +350,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
    PRONTUÁRIOS
    ══════════════════════════════════════════════════════════ */
 .pront-form-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
-.pront-section-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.pront-section-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--olive);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .pront-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.pront-fields-grid{grid-template-columns:1fr;}}
 .pront-field{display:flex;flex-direction:column;gap:5px;}
@@ -304,7 +375,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── PPT sub-tab ── */
 .ppt-preview{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-top:16px;}
 .ppt-slide-preview{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--light);}
-.ppt-slide-preview h4{font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:8px;color:var(--text);}
+.ppt-slide-preview h4{font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:8px;color:var(--olive);}
 .ppt-slide-preview ul{padding-left:18px;font-size:.8rem;line-height:1.7;color:var(--text);}
 
 /* ── Loading inline pequeno ── */
@@ -352,7 +423,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .save-post-overlay{position:fixed;inset:0;background:rgba(79,88,69,.26);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:1000;}
 .save-post-overlay.open{display:flex;}
 .save-post-box{width:min(420px,calc(100vw - 40px));background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 16px 42px rgba(0,0,0,.14);}
-.save-post-title{font-family:'Newsreader',serif;font-size:1.12rem;color:var(--text);margin-bottom:8px;}
+.save-post-title{font-family:'Playfair Display',serif;font-weight:700;font-size:1.12rem;color:var(--olive);margin-bottom:8px;}
 .save-post-text{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:12px;}
 .save-post-track{height:8px;background:#e8e3d8;border-radius:999px;overflow:hidden;}
 .save-post-bar{height:100%;width:0;background:var(--accent);transition:width .2s ease;}
@@ -366,6 +437,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
+
+/* ══════════════════════════════════════════════════════════
+   TEMA ATUAL (pré-rebranding) -- toggle "Nova identidade visual".
+   Documentos (lib/documents.js) e Atividades (geração de imagem)
+   não têm variante própria aqui: eles nunca foram alterados pelo
+   rebranding, então ficam iguais nos dois temas.
+   ══════════════════════════════════════════════════════════ */
+body.theme-legacy{--accent:#899776;--header-bg:#d9cdb8;}
+body.theme-legacy .app-header{border-bottom-color:#bfb89a}
+body.theme-legacy .brand-lockup{color:#30291f}
+body.theme-legacy .brand-copy{font-family:'Agrandir Tight','Arial Narrow',sans-serif}
+body.theme-legacy .brand-name{letter-spacing:-.035em;font-weight:400}
+body.theme-legacy .brand-role{font-family:inherit;color:inherit}
+body.theme-legacy .app-header .brand-lockup{color:#30291f}
+body.theme-legacy .app-header .brand-symbol{filter:none}
+body.theme-legacy .app-header h1{color:#3a3020}
+body.theme-legacy .auth-brand h1{color:#3a3020}
+body.theme-legacy .kpi-main{color:var(--text)}
+body.theme-legacy .view-bar h2{color:var(--text)}
+body.theme-legacy .pront-section-title{color:var(--text)}
+body.theme-legacy .generator-card h3{color:var(--text)}
+body.theme-legacy .logout-btn{border:1px solid rgba(78,85,62,.25);background:rgba(255,255,255,.35);color:#4e553e}
+body.theme-legacy .logout-btn:hover{background:rgba(255,255,255,.6)}
+body.theme-legacy .ui-theme-toggle-header .ui-theme-label{color:#5a5040}
+body.theme-legacy .nav-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.82rem}
+body.theme-legacy .nav-tab.active{border-bottom-color:var(--accent)}
+body.theme-legacy .sub-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem}
+body.theme-legacy .pront-sub-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem}
+body.theme-legacy .doc-main-tab{font:500 .82rem 'DM Sans',sans-serif}
+body.theme-legacy .chart-card h3{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem;color:var(--text)}
+body.theme-legacy .panel h3{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem;color:var(--text)}
+body.theme-legacy .draft-title{font-family:'Newsreader',Georgia,serif;font-weight:600;color:var(--text)}
+body.theme-legacy .save-post-title{font-family:'Newsreader',serif;font-weight:400;color:var(--text)}
+body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12vw,17px) 'Agrandir Values','Arial Narrow',sans-serif}
 </style>
 </head>
 <body>
@@ -385,6 +490,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       <button class="auth-submit" id="auth-submit" type="submit">Entrar</button>
       <div class="auth-message" id="auth-message" role="alert"></div>
     </form>
+    <label class="ui-theme-toggle"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade visual</span></label>
   </div>
 </div>
 
@@ -394,6 +500,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div class="app-header-main">
     <div class="brand-lockup app-header-logo" aria-label="Jaqueline Vieira Psicóloga"><img class="brand-symbol" src="/assets/logo-symbol.svg" alt=""><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>
   </div>
+  <label class="ui-theme-toggle ui-theme-toggle-header"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade</span></label>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
 
@@ -856,8 +963,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
       <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
         <thead>
           <tr style="background:var(--header-bg);">
-            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;width:110px;">Data</th>
-            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#3a3020;font-weight:600;">Relato da sessão</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#4e553e;font-weight:600;width:110px;">Data</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.72rem;color:#4e553e;font-weight:600;">Relato da sessão</th>
             <th style="padding:10px 14px;width:70px;"></th>
           </tr>
         </thead>
@@ -2204,7 +2311,7 @@ function extrairCorAcento(b64){
   });
 }
 async function aplicarLogoPost(b64, pageInfo=null){
-  await Promise.all([document.fonts.load('700 48px "Agrandir Tight"'),document.fonts.load('400 48px "Agrandir Tight"')]);
+  await Promise.all([document.fonts.load('700 48px "Playfair Display"'),document.fonts.load('400 48px "Playfair Display"')]);
   return new Promise((resolve,reject)=>{
     const base=new Image(),logo=new Image();
     base.onload=()=>{logo.onload=()=>{
@@ -2243,10 +2350,11 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.drawImage(off,x,y,targetW,targetH);
       const tx=x+targetW+zoneW*.025,nameSize=Math.round(zoneH*.27),roleSize=Math.round(zoneH*.083);
       ctx.save();ctx.fillStyle=hex;ctx.textAlign='left';ctx.textBaseline='top';
-      ctx.font=`700 ${nameSize}px "Agrandir Tight", "Arial Narrow", sans-serif`;ctx.fillText('Jaqueline',tx,y+targetH*.06);
-      ctx.font=`400 ${nameSize}px "Agrandir Tight", "Arial Narrow", sans-serif`;ctx.fillText('Vieira',tx,y+targetH*.36);
-      ctx.font=`700 ${roleSize}px "Agrandir Tight", "Arial Narrow", sans-serif`;ctx.fillText('PSICÓLOGA',tx,y+targetH*.72);
-      const roleW=ctx.measureText('PSICÓLOGA').width;ctx.font=`400 ${roleSize}px "Agrandir Tight", "Arial Narrow", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+zoneW*.018,y+targetH*.72);ctx.restore();
+      ctx.font=`700 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Jaqueline',tx,y+targetH*.06);
+      ctx.font=`400 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Vieira',tx,y+targetH*.36);
+      ctx.fillStyle=useWhite?POST_BRAND.logoWhite:POST_BRAND.terracotta;
+      ctx.font=`700 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('PSICÓLOGA',tx,y+targetH*.72);
+      const roleW=ctx.measureText('PSICÓLOGA').width;ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+zoneW*.018,y+targetH*.72);ctx.restore();
 
       // Paginação: componente fixo, desenhado pelo aplicativo, nunca pela IA.
       if(pageInfo?.current && pageInfo?.total){
@@ -2255,7 +2363,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
         const margin=Math.max(34,Math.round(canvas.width*.055));
         const py=Math.max(54,Math.round(canvas.height*.055));
         ctx.save();
-        ctx.font=`600 ${fs}px "DM Sans", sans-serif`;
+        ctx.font=`500 ${fs}px "DM Sans", sans-serif`;
         ctx.textAlign='left';ctx.textBaseline='middle';
         const boxW=Math.round(canvas.width*.24),boxH=Math.round(canvas.height*.12);
         const px0=margin,py0=Math.max(16,py-boxH/2);
@@ -2265,7 +2373,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
         ctx.fillRect(0,0,Math.round(canvas.width*.29),Math.round(canvas.height*.15));
         ctx.fillStyle=POST_BRAND.terracotta;
         ctx.fillText(label,px0,py);
-        ctx.strokeStyle=POST_BRAND.terracotta;ctx.lineWidth=Math.max(2,Math.round(canvas.width*.0025));
+        ctx.strokeStyle=POST_BRAND.oliveSoft;ctx.lineWidth=Math.max(1.4,Math.round(canvas.width*.0016));
         ctx.beginPath();ctx.moveTo(px0,py+fs*.7);ctx.lineTo(px0+fs*.95,py+fs*.7);ctx.stroke();
         ctx.restore();
       }
@@ -2301,7 +2409,7 @@ async function gerarArtePost(){
     // whole slide SET -- not relevant to a standalone Story image, and its
     // "premium magazine" framing actively fights the casual tone Story needs.
     const safeZones=`Keep the top-center 12% of the canvas calm, light cream, low-detail and completely free of photos, illustrations, text, numbers, logos or decorative shapes because the application places the brand logo there. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
-    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
+    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — generous white space, thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
 
     for(let i=0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
@@ -2576,7 +2684,7 @@ let _anamneseVersoes=[];
 
 function renderCamposAnamnese(){
   const host=document.getElementById('anamnese-campos');if(!host||host.childElementCount)return;
-  host.innerHTML=_anamneseSecoes.map(([titulo,campos])=>`<section style="margin-top:18px"><h4 style="font:600 .86rem 'Playfair Display',serif;color:#3a3020;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">${escHtml(titulo)}</h4><div class="pront-fields-grid">${campos.map(([key,label,type='text',options=[]])=>{const id='anamnese-'+key;if(type==='textarea')return `<div class="pront-field" style="grid-column:1/-1"><label class="pront-label">${escHtml(label)}</label><textarea class="pront-input pront-textarea" id="${id}"></textarea></div>`;if(type==='yesno')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option><option>Sim</option><option>Não</option></select></div>`;if(type==='select')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option>${options.map(o=>`<option>${escHtml(o)}</option>`).join('')}</select></div>`;return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><input class="pront-input" id="${id}" type="${type}"></div>`;}).join('')}</div></section>`).join('');
+  host.innerHTML=_anamneseSecoes.map(([titulo,campos])=>`<section style="margin-top:18px"><h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">${escHtml(titulo)}</h4><div class="pront-fields-grid">${campos.map(([key,label,type='text',options=[]])=>{const id='anamnese-'+key;if(type==='textarea')return `<div class="pront-field" style="grid-column:1/-1"><label class="pront-label">${escHtml(label)}</label><textarea class="pront-input pront-textarea" id="${id}"></textarea></div>`;if(type==='yesno')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option><option>Sim</option><option>Não</option></select></div>`;if(type==='select')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option>${options.map(o=>`<option>${escHtml(o)}</option>`).join('')}</select></div>`;return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><input class="pront-input" id="${id}" type="${type}"></div>`;}).join('')}</div></section>`).join('');
 }
 
 function initAnamnese(){
@@ -3111,14 +3219,113 @@ function switchDocumentPanel(name){
   document.getElementById(`doc-main-tab-${name}`)?.classList.add('active');document.getElementById(`doc-main-panel-${name}`)?.classList.add('active');
   if(name==='psm'){atualizarPreviaPSM();carregarPSMs();}
 }
-function psmSlides(publico,individual,pacote){
+function psmCoverSlide(publico){
+  const subtitle=publico==='infantil'?'<div class="psm-cover-sub">Psicoterapia Infantil</div>':'';
+  return `<section class="psm-slide psm-slide-html"><div class="psm-cover">
+<div class="psm-cover-logo"><img src="/assets/logo-symbol-hires.png" alt=""></div>
+<div class="psm-cover-copy">
+<div class="psm-cover-name"><strong>Jaqueline</strong><br>Vieira</div>
+<div class="psm-cover-role"><span></span><strong>PSICÓLOGA</strong><span></span></div>
+${subtitle}
+</div>
+</div></section>`;
+}
+function psmClosingSlide(){
+  return `<section class="psm-slide psm-slide-html"><div class="psm-closing">
+<div class="psm-closing-thanks">Obrigada!</div>
+<div class="psm-closing-lockup">
+<img class="psm-closing-logo" src="/assets/logo-symbol-white-hires.png" alt="">
+<div class="psm-closing-copy">
+<div class="psm-closing-name"><strong>Jaqueline</strong><br>Vieira</div>
+<div class="psm-closing-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div>
+</div>
+</div>
+</div></section>`;
+}
+const PSM_ICON_WIFI='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M4 8.5a13 13 0 0 1 16 0"/><path d="M7 12.2a8.4 8.4 0 0 1 10 0"/><path d="M10 15.8a3.8 3.8 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>';
+const PSM_ICON_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>';
+const PSM_ICON_CALENDAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.2"/><path d="M4 10h16M8 3.5v3.5M16 3.5v3.5"/><path d="m9 14.3 2 2 4-4.2"/></svg>';
+const PSM_TEXT={
+  adulto:{
+    abordagem:['Através da TCC será possível identificar as crenças disfuncionais que levam aos pensamentos mal adaptativos, influenciando as emoções e o comportamento do paciente.','Ao longo das sessões, o objetivo é auxiliar o paciente a avaliar esses pensamentos de forma adapativa, trazendo uma mudança das reações - comportamental, emocional e fisiológica.'],
+    endereco:{nome:'Espaço Humaniza',linhas:['Av. Armando Corrêa de Siqueira, 1104','Bairro: Vila Harmonia']},
+    agendamento:['Tolerância de atraso é de 15 minutos','Cancelamento deve ser feito 24 horas antes','Mudanças de horário devem ser comunicados em até 72 horas antes da terapia, sendo possível de acordo com a disponibilidade do psicólogo','A partir de duas faltas consecutivas, sem aviso durante o tratamento, o atendimento será considerado interrompido e o cliente poderá perder sua vaga preferencial de horário'],
+    brain:'/assets/psm/shared/brain-diagram-adulto.png',
+  },
+  infantil:{
+    abordagem:['Durante os atendimentos, será possível auxiliar as crianças a desenvolverem habilidades de enfrentamento e modificar padrões de pensamentos disfuncionais. A TCC ensina as crianças a reconhecer e gerenciar suas emoções de forma mais eficaz; buscando aprimoramento de habilidades para resolução de problemas; mudanças de comportamentos e desenvolvimento de habilidades sociais. Essas abordagens são adaptas de acordo com a idade e nível de desenvolvimento da criança, sendo utilizado métodos lúdicos e atividades interativas.'],
+    endereco:{nome:'Clínica Integrale',linhas:['Rua Napoleão Selmidei, 478','Bairro: Vila Harmonia']},
+    agendamento:['Tolerância de atraso é de 15 minutos;','Cancelamento deve ser feito 8 horas antes;','Mudanças de horário devem ser comunicados em até 24 horas antes da terapia, sendo possível de acordo com a disponibilidade do psicólogo;','A partir de duas faltas consecutivas, sem aviso durante o tratamento, o atendimento será considerado interrompido e o cliente poderá perder sua vaga preferencial de horário.'],
+    brain:'/assets/psm/shared/brain-diagram-infantil.png',
+  },
+};
+const PSM_PAGAMENTO=['Qualquer alteração do valor somente poderá acontecer com o conhecimento e acordo entre as partes','Sessões em que o cliente não comparece, sem aviso antecipado, serão cobradas normalmente, salvo, motivos de extrema urgência','O valor dos honorários pode ser revisto a cada 6 meses','O contrato poderá ser reincidindo por qualquer uma das partes a qualquer momento e não será cobrado nenhuma multa ou qualquer outro tipo de ônus.'];
+const PSM_WAVE='<svg class="psm-wave" viewBox="0 0 120 14" preserveAspectRatio="none"><path d="M0,8 C10,1 18,1 28,8 C38,15 46,15 56,8 C66,1 74,1 84,8 C94,15 102,15 112,8 L120,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const PSM_SPRIG='<svg class="psm-sprig" viewBox="0 0 20 20"><path d="M10 18 C10 12 10 6 10 2 M10 8 C7 6 5 6 3 8 M10 6 C13 4 15 4 17 6 M10 12 C7 10 5 10 3 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+function psmHeader(titulo){
+  return `<div class="psm-content-head"><h2>${escHtml(titulo)}</h2>${PSM_WAVE}</div>`;
+}
+function psmInnerSlide(index,publico,individual,pacote){
+  const t=PSM_TEXT[publico]||PSM_TEXT.adulto;
+  if(index===1)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Abordagem utilizada')}
+<div class="psm-abordagem-grid">
+<div class="psm-abordagem-text"><p class="psm-kicker">Terapia Cognitivo-Comportamental</p>${t.abordagem.map(p=>`<p>${escHtml(p)}</p>`).join('')}</div>
+<img class="psm-abordagem-brain" src="${t.brain}" alt="Como a TCC pode ajudar">
+</div></div>`;
+  if(index===2)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia online')}
+<p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas pelo Google Meet, através de um link criado por mim e enviado na hora agendada, pelo Whatsapp.</p>
+<p class="psm-kicker psm-kicker-center">Pré-requisitos</p>
+<div class="psm-req-row">
+<div class="psm-req-item">${PSM_ICON_WIFI}<span>Internet com<br>boa conexão</span></div>
+<div class="psm-req-item">${PSM_ICON_HOME}<span>Lugar confortável<br>e reservado</span></div>
+</div></div>`;
+  if(index===3)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial')}
+<p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas no seguinte endereço:</p>
+<div class="psm-address-block">${PSM_ICON_HOME}<div class="psm-address-text"><strong>${escHtml(t.endereco.nome)}</strong>${t.endereco.linhas.map(l=>`<span>${escHtml(l)}</span>`).join('')}</div></div>
+</div>`;
+  if(index===4)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento')}<ul class="psm-list">${t.agendamento.map(i=>`<li>${PSM_SPRIG}<span>${escHtml(i)}</span></li>`).join('')}</ul></div>`;
+  if(index===5)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de pagamento')}<ul class="psm-list">${PSM_PAGAMENTO.map(i=>`<li>${PSM_SPRIG}<span>${escHtml(i)}</span></li>`).join('')}</ul></div>`;
+  if(index===6)return `<div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Valores')}
+<div class="psm-price-row">
+<div class="psm-price-item"><span class="psm-kicker">1 sessão</span><span class="psm-price-num">${escHtml(valorBR(individual)||'R$ 0,00')}</span></div>
+<div class="psm-price-div"></div>
+<div class="psm-price-item"><span class="psm-kicker">Pacote com 4 sessões</span><span class="psm-price-num psm-price-num-lg">${escHtml(valorBR(pacote)||'R$ 0,00')}</span></div>
+</div>
+<div class="psm-pay"><p class="psm-kicker">Pagamento</p><p>Pix: <strong>57.062.579/0001-34</strong></p><p class="psm-pay-note">Gentileza enviar o comprovante de pagamento até o dia da sessão a ser realizada.</p></div>
+</div>`;
+  if(index===7)return `<div class="psm-content"><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Agendamento')}
+<div class="psm-contact-block">
+${PSM_ICON_CALENDAR}
+<p class="psm-kicker">Agendamento e dúvidas</p>
+<div class="psm-contact-lines"><span>(16) 99746-7348</span><span>Jaqueline Vieira</span><span>psi.jaquelinev@gmail.com</span></div>
+</div></div>`;
+  return '';
+}
+function psmAcompanheSlide(){
+  return `<section class="psm-slide psm-slide-html"><div class="psm-content"><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Me acompanhe')}
+<div class="psm-photo-wrap"><img class="psm-photo" src="/assets/psm/shared/wife-photo.jpg" alt="Jaqueline Vieira"></div>
+<div class="psm-insta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg><span>@psi_jaquelinevieira</span></div>
+</div></section>`;
+}
+function psmSlidesNew(publico,individual,pacote){
+  return Array.from({length:10},(_,i)=>{
+    if(i===0)return psmCoverSlide(publico);
+    if(i===9)return psmClosingSlide();
+    if(i===8)return psmAcompanheSlide();
+    return `<section class="psm-slide psm-slide-html">${psmInnerSlide(i,publico,individual,pacote)}</section>`;
+  }).join('');
+}
+function psmSlidesLegacy(publico,individual,pacote){
   return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0'),overlay=i===6?`<div class="psm-price-overlay"><span>1 sessão</span><span>${escHtml(valorBR(individual)||'R$ 0,00')}</span><span>Pacote com 4 sessões</span><span>${escHtml(valorBR(pacote)||'R$ 0,00')}</span></div>`:'';return `<section class="psm-slide"><img src="/assets/psm/${publico}/page-${n}.png" alt="PSM ${publico}, página ${i+1}">${overlay}</section>`;}).join('');
+}
+function psmSlides(publico,individual,pacote){
+  return _uiTheme==='legacy'?psmSlidesLegacy(publico,individual,pacote):psmSlidesNew(publico,individual,pacote);
 }
 function atualizarPreviaPSM(){const publico=document.getElementById('psm-publico')?.value||'adulto',individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');const box=document.getElementById('psm-preview');if(box)box.innerHTML=psmSlides(publico,individual,pacote);}
 async function carregarPSMs(){const box=document.getElementById('psm-lista');if(!box)return;const r=await fetch('/api/forms?resource=documents&action=psm-list'),d=await r.json();_psms=r.ok?d:[];box.innerHTML=_psms.length?_psms.map(x=>`<div class="doc-record" role="button" tabindex="0" onclick="abrirPSM('${escHtmlAttr(x.id)}')" onkeydown="if(event.key==='Enter')abrirPSM('${escHtmlAttr(x.id)}')"><strong>${escHtml(x.titulo)}</strong><span>Salva em ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</span><div class="doc-record-actions"><button type="button" onclick="event.stopPropagation();excluirPSM('${escHtmlAttr(x.id)}')">Excluir</button></div></div>`).join(''):'<div class="alert-empty">Nenhuma PSM salva.</div>';}
 function abrirPSM(id){const x=_psms.find(p=>p.id===id);if(!x)return;document.getElementById('psm-publico').value=x.publico;document.getElementById('psm-valor-individual').value=x.valor_individual;document.getElementById('psm-valor-pacote').value=x.valor_pacote;atualizarPreviaPSM();document.getElementById('psm-preview').scrollIntoView({behavior:'smooth',block:'start'});}
 async function salvarPSM(){const publico=document.getElementById('psm-publico').value,valor_individual=Number(campo('psm-valor-individual')),valor_pacote=Number(campo('psm-valor-pacote'));if(!(valor_individual>0)||!(valor_pacote>0))return toast('Informe os dois valores da PSM.');const titulo=`PSM ${publico==='infantil'?'Infantil':'Adulto'} - Pacote ${valorBR(valor_pacote)}`;const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'psm-save',publico,titulo,valor_individual,valor_pacote})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar a PSM.');toast('✅ PSM salva para reutilização.');document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();}
-async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
+async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}&theme=${encodeURIComponent(_uiTheme)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
 async function excluirPSM(id){if(!confirm('Excluir esta PSM da biblioteca?'))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');toast('PSM excluída.');await carregarPSMs();}
 
 // Ditado por voz em todos os campos de texto
@@ -3160,7 +3367,18 @@ function switchTab(name) {
   if(name==='documentos'&&!_docInit){_docInit=true;initDocumentos();}
 }
 
-window.onload = ()=>{verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500);};
+let _uiTheme=localStorage.getItem('psi-ui-theme')==='new'?'new':'legacy';
+function applyUiTheme(){
+  document.body.classList.toggle('theme-legacy',_uiTheme==='legacy');
+  document.querySelectorAll('.ui-theme-switch').forEach(el=>{el.checked=_uiTheme==='new';});
+}
+function alternarUiTheme(checked){
+  _uiTheme=checked?'new':'legacy';
+  localStorage.setItem('psi-ui-theme',_uiTheme);
+  applyUiTheme();
+  if(document.getElementById('doc-main-panel-psm')?.classList.contains('active'))atualizarPreviaPSM();
+}
+window.onload = ()=>{applyUiTheme();verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500);};
 </script>
 <div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
   <div class="save-post-box">

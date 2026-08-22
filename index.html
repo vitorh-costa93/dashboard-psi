@@ -27,7 +27,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 /* ── Header ── */
 .app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #74845f;position:sticky;top:0;z-index:200;}
-.brand-lockup{display:flex;align-items:center;color:var(--olive);line-height:.82}.brand-symbol{display:block;width:92px;height:72px;object-fit:contain}.app-header .brand-lockup{color:#f5f1e8}.app-header .brand-symbol{filter:brightness(0) invert(1)}.brand-copy{font-family:'Playfair Display',serif;display:flex;flex-direction:column;align-items:flex-start}.brand-name{font-size:29px;letter-spacing:-.01em;font-weight:400;line-height:1.05}.brand-name strong{font-weight:700}.brand-role{display:flex;align-items:baseline;gap:10px;margin-top:9px;font-size:9px;white-space:nowrap;font-family:'DM Sans',sans-serif;color:var(--terracotta)}.brand-role strong{font-weight:700}.app-header-logo{max-width:48vw}.app-header-logo .brand-symbol{width:72px;height:58px}.app-header-logo .brand-name{font-size:23px}.app-header-logo .brand-role{font-size:7px;margin-top:7px;gap:7px}
+.brand-lockup{display:flex;align-items:center;color:var(--olive);line-height:.82}.brand-symbol{display:block;width:92px;height:72px;object-fit:contain}.app-header .brand-lockup{color:#f5f1e8}.app-header .brand-symbol{filter:brightness(0) invert(1)}.app-header .brand-role{color:#f5f1e8}.brand-copy{font-family:'Playfair Display',serif;display:flex;flex-direction:column;align-items:flex-start}.brand-name{font-size:29px;letter-spacing:-.01em;font-weight:400;line-height:1.05}.brand-name strong{font-weight:700}.brand-role{display:flex;align-items:baseline;gap:10px;margin-top:9px;font-size:9px;white-space:nowrap;font-family:'DM Sans',sans-serif;color:var(--terracotta)}.brand-role strong{font-weight:700}.app-header-logo{max-width:48vw}.app-header-logo .brand-symbol{width:72px;height:58px}.app-header-logo .brand-name{font-size:23px}.app-header-logo .brand-role{font-size:7px;margin-top:7px;gap:7px}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.04em;color:#f5f1e8;}
 .app-header p{font-size:.75rem;color:#d9cdb8;margin-top:2px;}
 .app-header-main{display:flex;align-items:center;gap:14px;flex:1;}
@@ -179,9 +179,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-slide.psm-slide-html{container-type:inline-size;display:flex;align-items:center;justify-content:center}
 .psm-cover-wrap{position:relative;width:100%;height:100%;background:#f5f1e8}
 .psm-cover{display:flex;align-items:center;gap:6cqw;width:100%;height:100%;justify-content:center}
-.psm-cover-cast{position:absolute;right:6.5cqw;bottom:6.5cqw;display:flex;gap:1.4cqw}
-.psm-cover-cast .psm-icon-badge{width:5.4cqw;height:5.4cqw}
-.psm-cover-cast .psm-icon-badge svg{width:2.8cqw;height:2.8cqw}
+.psm-cover-cast{position:absolute;right:5cqw;bottom:5cqw;display:flex;align-items:flex-end;gap:2.4cqw}
+.psm-cover-cast .psm-icon-badge{width:8cqw;height:8cqw;color:var(--emo)}
+.psm-cover-cast .psm-icon-badge svg{width:8cqw;height:8cqw}
+.psm-cover-cast .psm-icon-badge:nth-child(2){transform:translateY(-1cqw) rotate(-6deg)}
+.psm-cover-cast .psm-icon-badge:nth-child(4){transform:translateY(-.7cqw) rotate(5deg)}
 .psm-cover-logo img{width:22cqw;height:auto;display:block}
 .psm-cover-name{font:400 11cqw 'Playfair Display',serif;color:#4e553e;line-height:1.05}
 .psm-cover-name strong{font-weight:700}
@@ -201,6 +203,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-leaf-tr{top:-2.4cqw;right:-2.4cqw;width:19cqw;height:auto}
 .psm-leaf-bl{bottom:-2.8cqw;left:-2.8cqw;width:25cqw;height:auto}
 .psm-content-head{margin-bottom:4.8cqw;flex-shrink:0;display:flex;align-items:baseline;gap:1.3cqw}
+.psm-kids .psm-content-head{align-items:center;gap:2.4cqw}
 .psm-content-head h2{font:300 4.4cqw/1.15 'Fraunces',serif;font-style:italic;color:#4e553e;margin:0;letter-spacing:.002em}
 .psm-mark{display:inline-flex;color:#899776;transform:rotate(-12deg) translateY(.2cqw);flex-shrink:0}
 .psm-mark svg{width:2.4cqw;height:2.4cqw}
@@ -210,10 +213,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .psm-kids .psm-contact-lines{font-family:'Baloo 2',cursive;font-style:normal;font-weight:600}
 .psm-kids .psm-insta span{font-family:'Baloo 2',cursive;font-style:normal;font-weight:600}
 .psm-icon-badge{display:inline-flex;align-items:center;justify-content:center;color:#4e553e}
-.psm-kids .psm-icon-badge{background:var(--emo-bg);border:1.5px solid var(--emo);color:var(--emo);border-radius:50%;padding:1.3cqw}
+.psm-kids .psm-icon-badge{color:var(--emo)}
 .psm-kids .psm-icon-badge svg{color:var(--emo)}
-.psm-emo-badge{width:5cqw;height:5cqw;flex-shrink:0}
-.psm-emo-badge svg{width:2.6cqw;height:2.6cqw;display:block}
+.psm-kids .psm-req-item .psm-icon-badge,.psm-kids .psm-address-block>.psm-icon-badge,.psm-kids .psm-contact-block>.psm-icon-badge{width:9cqw;height:9cqw}
+.psm-kids .psm-req-item .psm-icon-badge svg,.psm-kids .psm-address-block>.psm-icon-badge svg,.psm-kids .psm-contact-block>.psm-icon-badge svg{width:9cqw;height:9cqw}
+.psm-emo-badge{width:10cqw;height:10cqw;flex-shrink:0}
+.psm-emo-badge svg{width:10cqw;height:10cqw;display:block}
 .psm-kicker{font:italic 400 1.75cqw 'Newsreader',serif;color:#899776;margin:0 0 1.6cqw;letter-spacing:.01em}
 .psm-kicker-center{text-align:center;margin:0 0 2.8cqw}
 .psm-content p{font:400 1.85cqw/1.7 'Newsreader',serif;color:#4a4234;margin:0 0 1.6cqw}
@@ -1406,9 +1411,9 @@ function processAndRender(){
   const fatArr=meses.map(m=>rows.filter(r=>r._anoMes===m).reduce((s,r)=>s+r._valorTotal,0));
   const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m).map(r=>r._paciente)).size);
   const fltArr=meses.map(m=>rows.filter(r=>r._anoMes===m&&r._falta).length);
-  renderBar('chart-fat',labels,fatArr,'R$','#c8bc96');
-  renderBar('chart-pac',labels,pacArr,'Pac','#c8bc96');
-  renderBar('chart-falta',labels,fltArr,'Flt','#c8bc96');
+  renderBar('chart-fat',labels,fatArr,'R$','#4e553e');
+  renderBar('chart-pac',labels,pacArr,'Pac','#4e553e');
+  renderBar('chart-falta',labels,fltArr,'Flt','#4e553e');
 
   // ── Saldo (badge, formato v1) ──
   const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
@@ -3286,11 +3291,11 @@ const PSM_TEXT={
 const PSM_PAGAMENTO=['Qualquer alteração do valor somente poderá acontecer com o conhecimento e acordo entre as partes','Sessões em que o cliente não comparece, sem aviso antecipado, serão cobradas normalmente, salvo, motivos de extrema urgência','O valor dos honorários pode ser revisto a cada 6 meses','O contrato poderá ser reincidindo por qualquer uma das partes a qualquer momento e não será cobrado nenhuma multa ou qualquer outro tipo de ônus.'];
 const PSM_SPRIG='<svg class="psm-sprig" viewBox="0 0 20 20"><path d="M10 18 C10 12 10 6 10 2 M10 8 C7 6 5 6 3 8 M10 6 C13 4 15 4 17 6 M10 12 C7 10 5 10 3 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
 const PSM_TOYS=[
-  {name:'Blocos',bg:'#fbf0c8',fg:'#c99a2e',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="4" y="12.5" width="7" height="7" rx="1"/><rect x="13" y="12.5" width="7" height="7" rx="1"/><rect x="8.5" y="4" width="7" height="7" rx="1"/></svg>'},
-  {name:'Pipa',bg:'#e4eef7',fg:'#6e9dc4',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 18 10 12 21 6 10z"/><path d="M6 10h12M12 3v18"/><path d="M12 21c.8.9.8 1.8 0 2.7"/></svg>'},
-  {name:'Bola',bg:'#fbe4e1',fg:'#d97066',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4c3 3 3 13 0 16M4 12c3-3 13-3 16 0"/></svg>'},
-  {name:'Catavento',bg:'#eee6f7',fg:'#a784cc',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.5 8.5c0-3 2.7-4.8 5.7-3.8z"/><path d="M12 12 15.5 4.5c3 0 4.8 2.7 3.8 5.7z"/><path d="M12 12 19.5 15.5c0 3-2.7 4.8-5.7 3.8z"/><path d="M12 12 8.5 19.5c-3 0-4.8-2.7-3.8-5.7z"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>'},
-  {name:'Ursinho',bg:'#e7f2e0',fg:'#7fa968',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.3" cy="6.3" r="2"/><circle cx="16.7" cy="6.3" r="2"/><circle cx="12" cy="13.5" r="7"/><circle cx="9.3" cy="12.5" r=".4" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.5" r=".4" fill="currentColor" stroke="none"/><path d="M10 16.3c1.2 1 2.8 1 4 0"/></svg>'},
+  {name:'Blocos',bg:'#fbf0c8',fg:'#c99a2e',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="4" y="12.5" width="7" height="7" rx="1" fill="currentColor" fill-opacity=".12"/><rect x="13" y="12.5" width="7" height="7" rx="1" fill="currentColor" fill-opacity=".12"/><rect x="8.5" y="4" width="7" height="7" rx="1" fill="currentColor" fill-opacity=".12"/></svg>'},
+  {name:'Pipa',bg:'#e4eef7',fg:'#6e9dc4',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 18 10 12 21 6 10z" fill="currentColor" fill-opacity=".12"/><path d="M6 10h12M12 3v18"/><path d="M12 21c.8.9.8 1.8 0 2.7"/></svg>'},
+  {name:'Bola',bg:'#fbe4e1',fg:'#d97066',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="8" fill="currentColor" fill-opacity=".12"/><path d="M12 4c3 3 3 13 0 16M4 12c3-3 13-3 16 0"/></svg>'},
+  {name:'Balão',bg:'#eee6f7',fg:'#a784cc',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c4.2 0 7 3.3 7 7.3S16.4 17 12 17s-7-3.2-7-7.2 2.8-7.3 7-7.3z" fill="currentColor" fill-opacity=".12"/><path d="M12 17l-1.3 2 1.3 1.3-1.3 2"/></svg>'},
+  {name:'Ursinho',bg:'#e7f2e0',fg:'#7fa968',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.3" cy="6.3" r="2" fill="currentColor" fill-opacity=".12"/><circle cx="16.7" cy="6.3" r="2" fill="currentColor" fill-opacity=".12"/><circle cx="12" cy="13.5" r="7" fill="currentColor" fill-opacity=".12"/><circle cx="9.3" cy="12.5" r=".4" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.5" r=".4" fill="currentColor" stroke="none"/><path d="M10 16.3c1.2 1 2.8 1 4 0"/></svg>'},
 ];
 function psmHeader(titulo,publico,emoIdx){
   if(publico==='infantil'){

@@ -3332,13 +3332,13 @@ ${publico==='infantil'?`<img class="psm-abordagem-brain psm-kids-inline-illus" s
 <div class="psm-req-row">
 <div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_WIFI}</span><span>Internet com<br>boa conexão</span></div>
 <div class="psm-req-item"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><span>Lugar confortável<br>e reservado</span></div>
-</div>${psmKidsIllus(publico,1)}</div>`;}
+</div></div>`;}
   if(index===3){const w=psmWrap(publico,2);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Terapia presencial',publico,2)}
 <p class="psm-content-lead">As sessões duram <strong>50 min</strong> e são realizadas no seguinte endereço:</p>
 <div class="psm-address-block"><span class="psm-icon-badge">${PSM_ICON_HOME}</span><div class="psm-address-text"><strong>${escHtml(t.endereco.nome)}</strong>${t.endereco.linhas.map(l=>`<span>${escHtml(l)}</span>`).join('')}</div></div>
-${psmKidsIllus(publico,2)}</div>`;}
-  if(index===4){const w=psmWrap(publico,3);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento',publico,3)}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul>${psmKidsIllus(publico,3)}</div>`;}
-  if(index===5){const w=psmWrap(publico,4);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento',publico,4)}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul>${psmKidsIllus(publico,4)}</div>`;}
+</div>`;}
+  if(index===4){const w=psmWrap(publico,3);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-tr" src="/assets/psm/shared/leaf-top-right.png" alt="">${psmHeader('Observações de agendamento',publico,3)}<ul class="psm-list">${psmListLi(t.agendamento,[-6,4,-3,7])}</ul></div>`;}
+  if(index===5){const w=psmWrap(publico,4);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Observações de pagamento',publico,4)}<ul class="psm-list">${psmListLi(PSM_PAGAMENTO,[5,-4,6,-3])}</ul></div>`;}
   if(index===6){const w=psmWrap(publico,0);return `<div class="${w.cls}"${w.style}><img class="psm-leaf psm-leaf-bl" src="/assets/psm/shared/leaf-bottom-left.png" alt="">${psmHeader('Valores',publico,0)}
 <div class="psm-price-row">
 <div class="psm-price-item"><span class="psm-kicker">1 sessão</span><span class="psm-price-num">${escHtml(valorBR(individual)||'R$ 0,00')}</span></div>
@@ -3352,7 +3352,7 @@ ${psmKidsIllus(publico,2)}</div>`;}
 <span class="psm-icon-badge">${PSM_ICON_CALENDAR}</span>
 <p class="psm-kicker">Agendamento e dúvidas</p>
 <div class="psm-contact-lines"><span>(16) 99746-7348</span><span>Jaqueline Vieira</span><span>psi.jaquelinev@gmail.com</span></div>
-</div>${psmKidsIllus(publico,1)}</div>`;}
+</div></div>`;}
   return '';
 }
 function psmAcompanheSlide(publico){

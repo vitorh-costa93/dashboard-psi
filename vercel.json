@@ -1,10 +1,15 @@
 {
-  "crons": [{"path":"/api/trends","schedule":"0 10 * * *"}],
+  "crons": [
+    {
+      "path": "/api/trends",
+      "schedule": "0 10 * * *"
+    }
+  ],
   "functions": {
     "api/forms.js": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": "assets/psm/infantil/emocoes-page-*.webp"
+      "includeFiles": "assets/{psm/infantil/**,fonts/**}"
     }
   }
 }

@@ -9,7 +9,10 @@
     "api/forms.js": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": "assets/psm/infantil/emocoes-page-*.png"
+      "includeFiles": [
+        "assets/psm/infantil-emocoes/**",
+        "assets/fonts/**"
+      ]
     }
   }
 }

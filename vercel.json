@@ -8,7 +8,8 @@
   "functions": {
     "api/forms.js": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "assets/psm/infantil/emocoes-page-*.png"
     }
   }
 }

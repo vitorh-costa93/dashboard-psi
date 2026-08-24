@@ -10,7 +10,7 @@
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": [
-        "assets/psm/infantil-emocoes/**",
+        "assets/psm/infantil/**",
         "assets/fonts/**"
       ]
     }

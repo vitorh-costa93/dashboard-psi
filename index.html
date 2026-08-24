@@ -3432,7 +3432,7 @@ function psmKidsPremiumSlides(individual,pacote){
 }
 
 function psmKidsApprovedSlides(individual,pacote){
-  return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0');const overlay=i===6?`<div class="psm-kids-values"><div class="psm-kids-value one">${escHtml(valorBR(individual)||'R$ 0,00')}</div><div class="psm-kids-value four">${escHtml(valorBR(pacote)||'R$ 0,00')}</div></div>`:'';return `<section class="psm-slide"><img src="/assets/psm/infantil-emocoes/page-${n}.webp" alt="PSM infantil, página ${i+1}">${overlay}</section>`;}).join('');
+  return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0');const overlay=i===6?`<div class="psm-kids-values"><div class="psm-kids-value one">${escHtml(valorBR(individual)||'R$ 0,00')}</div><div class="psm-kids-value four">${escHtml(valorBR(pacote)||'R$ 0,00')}</div></div>`:'';return `<section class="psm-slide"><img src="/assets/psm/infantil/emocoes-page-${n}.webp" alt="PSM infantil, página ${i+1}">${overlay}</section>`;}).join('');
 }
 function psmSlidesLegacy(publico,individual,pacote){
   return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0'),overlay=i===6?`<div class="psm-price-overlay"><span>1 sessão</span><span>${escHtml(valorBR(individual)||'R$ 0,00')}</span><span>Pacote com 4 sessões</span><span>${escHtml(valorBR(pacote)||'R$ 0,00')}</span></div>`:'';return `<section class="psm-slide"><img src="/assets/psm/${publico}/page-${n}.png" alt="PSM ${publico}, página ${i+1}">${overlay}</section>`;}).join('');

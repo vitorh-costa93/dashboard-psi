@@ -9,10 +9,7 @@
     "api/forms.js": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": [
-        "assets/psm/infantil/**",
-        "assets/fonts/**"
-      ]
+      "includeFiles": "assets/{psm/infantil/**,fonts/**}"
     }
   }
 }

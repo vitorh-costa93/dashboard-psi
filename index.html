@@ -430,6 +430,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 /* ── Alertas inteligentes ── */
 .alerts-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:12px;}
 .alerts-title{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.05rem;color:var(--olive);margin-bottom:10px;}
+.alerts-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 24px;align-items:start;}
 .alert-group{margin-top:10px;}
 .alert-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px;}
 .alert-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;background:var(--light);margin-bottom:5px;font-size:.8rem;}
@@ -1561,6 +1562,7 @@ function calcularAlertas() {
 
   renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);
   let html='';
+  if(renovacoes.length || (ultimaSemana&&dividas.length)) html+='<div class="alerts-columns">';
   if(renovacoes.length){
     html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
     html+=renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
@@ -1569,6 +1571,9 @@ function calcularAlertas() {
   if(ultimaSemana&&dividas.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
     html+=dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></div>`).join('');
+    html+='</div>';
+  }
+  if(renovacoes.length || (ultimaSemana&&dividas.length)){
     html+='</div>';
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
@@ -2357,7 +2362,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
       // Zona de marca protegida: centro superior, sempre no mesmo lugar.
       // Sem fundo sólido -- a cor do logo é escolhida pela luminância real do
       // fundo amostrado ali, e uma sombra discreta garante legibilidade.
-      const zoneW=canvas.width*.36, zoneH=canvas.height*.16;
+      const zoneW=canvas.width*.36, zoneH=canvas.height*.125;
       const zx=(canvas.width-zoneW)/2, zy=canvas.height*.018;
       const sampleX=Math.max(0,Math.round(zx)),sampleY=Math.max(0,Math.round(zy));
       const sampleW=Math.min(canvas.width-sampleX,Math.round(zoneW)),sampleH=Math.min(canvas.height-sampleY,Math.round(zoneH));
@@ -2368,7 +2373,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
       const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.olive;
 
       // Símbolo em alta resolução e lettering composto com a Agrandir Tight real.
-      const targetH=zoneH*.6,targetW=targetH*(logo.naturalWidth/logo.naturalHeight);
+      const targetH=zoneH*.72,targetW=targetH*(logo.naturalWidth/logo.naturalHeight);
       const groupW=targetW+zoneW*.55,x=(canvas.width-groupW)/2,y=zy+zoneH*.06;
       const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;
       const octx=off.getContext('2d');octx.drawImage(logo,0,0);
@@ -2385,9 +2390,10 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.shadowOffsetY=Math.max(1,zoneH*.012);
       ctx.drawImage(off,x,y,targetW,targetH);
       // Espaçamento entre nome e cargo alinhado à mesma proporção usada em
-      // .brand-lockup (margin-top ~31% do tamanho do nome).
-      const tx=x+targetW+zoneW*.025,nameSize=Math.round(targetH*.35),roleSize=Math.round(nameSize*.31);
-      const nameLine1Y=y+targetH*.04,nameLine2Y=nameLine1Y+nameSize*1.08,roleY=nameLine2Y+nameSize*1.31;
+      // .brand-lockup (margin-top ~31% do tamanho do nome), comprimido para
+      // caber na zona reduzida.
+      const tx=x+targetW+zoneW*.025,nameSize=Math.round(targetH*.30),roleSize=Math.round(nameSize*.31);
+      const nameLine1Y=y+targetH*.02,nameLine2Y=nameLine1Y+nameSize*1.05,roleY=nameLine2Y+nameSize*1.2;
       ctx.fillStyle=hex;ctx.textAlign='left';ctx.textBaseline='top';
       ctx.font=`700 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Jaqueline',tx,nameLine1Y);
       ctx.font=`400 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Vieira',tx,nameLine2Y);
@@ -2448,7 +2454,7 @@ async function gerarArtePost(){
     // identidade additionally locks typography/palette consistent across a
     // whole slide SET -- not relevant to a standalone Story image, and its
     // "premium magazine" framing actively fights the casual tone Story needs.
-    const safeZones=`Keep the top-center 16% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
+    const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
     const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — generous white space, thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
 
     for(let i=0;i<slides.length;i++){
@@ -2458,7 +2464,7 @@ async function gerarArtePost(){
         : isCarousel
           ? `This is an INTERNAL CAROUSEL SLIDE. Do not repeat the main post title. Do not create a new headline or heading. Show only the specific message supplied for this slide, with concise body copy if needed. Do not add any page number, counter, badge or logo. The top-left and top-center reserved zones must remain empty.`
           : isStory
-            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Break from the polished card-with-centered-title layout entirely: compose it like a single candid vertical phone photo or video-still moment that fills the full 9:16 frame edge to edge (no big empty background block behind the text). Treat any text as a casual overlay sitting directly on top of the photo -- off-center, one short line, handwritten-note or sticker-caption energy, not typeset editorial copy. Keep the very top ~16% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
+            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Break from the polished card-with-centered-title layout entirely: compose it like a single candid vertical phone photo or video-still moment that fills the full 9:16 frame edge to edge (no big empty background block behind the text). Treat any text as a casual overlay sitting directly on top of the photo -- off-center, one short line, handwritten-note or sticker-caption energy, not typeset editorial copy. Keep the very top ~12% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
             : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
       const formatDesc=isStory?'ONE vertical Instagram Story image (1080x1920, 9:16 portrait)':'ONE square Instagram editorial image (1080x1080)';
       const visualDirection=isStory

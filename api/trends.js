@@ -127,7 +127,7 @@ Para cada oportunidade retorne:
 - resumo: o que está acontecendo
 - por_que: por que vale abordar agora
 - faixa: Infância|Adolescência|Adultos|Idosos|Família|Ciclo vital
-- formato: Carrossel|Post|Story|Reel
+- formato: Carrossel|Post|Story
 - potencial: Alto|Médio
 - angulo: abordagem concreta para uma psicóloga, sem aconselhamento individual
 - fonte_index: índice da notícia usada

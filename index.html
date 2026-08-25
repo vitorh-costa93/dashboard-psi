@@ -63,7 +63,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .auth-loading{text-align:center;color:var(--muted);font-size:.82rem;}
 .ui-theme-toggle{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:20px;cursor:pointer;user-select:none;}
 .ui-theme-toggle input{position:absolute;opacity:0;width:0;height:0;}
-.ui-theme-track{width:34px;height:19px;border-radius:999px;background:#d9cdb8;position:relative;transition:background .2s;flex-shrink:0;}
+.ui-theme-track{width:34px;height:19px;border-radius:999px;background:#d9cdb8;border:1px solid rgba(0,0,0,.14);position:relative;transition:background .2s;flex-shrink:0;box-sizing:border-box;}
+.ui-theme-toggle-header .ui-theme-track{border-color:rgba(245,241,232,.55);}
 .ui-theme-thumb{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;}
 .ui-theme-toggle input:checked+.ui-theme-track{background:#899776;}
 .ui-theme-toggle input:checked+.ui-theme-track .ui-theme-thumb{transform:translateX(15px);}
@@ -1543,15 +1544,18 @@ function calcularAlertas() {
   const renovacoes=[],dividas=[];
   Object.values(ativos).forEach(p=>{
     const pacote=pacoteHabitual(p.compras);
-    // Quem normalmente compra uma única sessão não entra no alerta de renovação.
-    if(pacote<=1)return;
     const saldo=p.sessoes-p.comp;
-    const prox=proximaOcorrencia(p.horario);
-    if(prox && saldo>=0){
-      const renovacao=new Date(prox); renovacao.setDate(renovacao.getDate()+saldo*7);
-      if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
+    // Quem normalmente compra uma única sessão não entra no alerta de renovação,
+    // mas ainda deve aparecer em pendências caso esteja devendo.
+    if(pacote>1){
+      const prox=proximaOcorrencia(p.horario);
+      if(prox && saldo>=0){
+        const renovacao=new Date(prox); renovacao.setDate(renovacao.getDate()+saldo*7);
+        if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
+      }
     }
-    // Pendências só aparecem na última semana do mês.
+    // Pendências aparecem para todos os devedores na última semana do mês,
+    // não só quem tem sessão agendada nessa semana.
     if(ultimaSemana&&saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo)});
   });
 
@@ -1564,7 +1568,7 @@ function calcularAlertas() {
   }
   if(ultimaSemana&&dividas.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
-    html+=dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} sessão${x.qtd!==1?'ões':''}</span></div>`).join('');
+    html+=dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></div>`).join('');
     html+='</div>';
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
@@ -2316,14 +2320,6 @@ const POST_BRAND = {
   logoWhite:'#F5F1E8'
 };
 
-function contrasteLuminancia(hex){
-  const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');
-  if(!m) return 0.5;
-  const n=parseInt(m[1],16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
-  const lin=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
-  return 0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
-}
-
 function rgbToHsl(r,g,b){
   r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;
   if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
@@ -2359,40 +2355,46 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.drawImage(base,0,0,canvas.width,canvas.height);
 
       // Zona de marca protegida: centro superior, sempre no mesmo lugar.
-      // A faixa de respiro é muito discreta e serve apenas para garantir contraste.
-      const zoneW=canvas.width*.36, zoneH=canvas.height*.125;
+      // Sem fundo sólido -- a cor do logo é escolhida pela luminância real do
+      // fundo amostrado ali, e uma sombra discreta garante legibilidade.
+      const zoneW=canvas.width*.36, zoneH=canvas.height*.16;
       const zx=(canvas.width-zoneW)/2, zy=canvas.height*.018;
-      const grad=ctx.createLinearGradient(0,zy,0,zy+zoneH);
-      grad.addColorStop(0,'rgba(245,241,232,.96)');
-      grad.addColorStop(1,'rgba(245,241,232,.78)');
-      ctx.save();
-      ctx.fillStyle=grad;
-      ctx.beginPath();
-      ctx.roundRect(zx,zy,zoneW,zoneH,Math.min(24,zoneH*.22));
-      ctx.fill();
-      ctx.restore();
+      const sampleX=Math.max(0,Math.round(zx)),sampleY=Math.max(0,Math.round(zy));
+      const sampleW=Math.min(canvas.width-sampleX,Math.round(zoneW)),sampleH=Math.min(canvas.height-sampleY,Math.round(zoneH));
+      const sample=ctx.getImageData(sampleX,sampleY,Math.max(1,sampleW),Math.max(1,sampleH)).data;
+      let lumSum=0,lumCount=0;
+      for(let i=0;i<sample.length;i+=4*11){lumSum+=(0.2126*sample[i]+0.7152*sample[i+1]+0.0722*sample[i+2])/255;lumCount++;}
+      const useWhite=(lumCount?lumSum/lumCount:.75)<.55;
+      const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.olive;
 
       // Símbolo em alta resolução e lettering composto com a Agrandir Tight real.
-      const targetH=zoneH*.78,targetW=targetH*(logo.naturalWidth/logo.naturalHeight);
-      const groupW=targetW+zoneW*.55,x=(canvas.width-groupW)/2,y=zy+(zoneH-targetH)/2;
+      const targetH=zoneH*.6,targetW=targetH*(logo.naturalWidth/logo.naturalHeight);
+      const groupW=targetW+zoneW*.55,x=(canvas.width-groupW)/2,y=zy+zoneH*.06;
       const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;
       const octx=off.getContext('2d');octx.drawImage(logo,0,0);
       const px=octx.getImageData(0,0,off.width,off.height);
-      const useWhite=contrasteLuminancia(POST_BRAND.logo)>.55;
-      const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.logo;
       const rr=parseInt(hex.slice(1,3),16),gg=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
       for(let i=0;i<px.data.length;i+=4){
         if(px.data[i+3]>0){px.data[i]=rr;px.data[i+1]=gg;px.data[i+2]=bb;}
       }
       octx.putImageData(px,0,0);
+
+      ctx.save();
+      ctx.shadowColor=useWhite?'rgba(0,0,0,.4)':'rgba(255,255,255,.55)';
+      ctx.shadowBlur=Math.max(6,zoneH*.07);
+      ctx.shadowOffsetY=Math.max(1,zoneH*.012);
       ctx.drawImage(off,x,y,targetW,targetH);
-      const tx=x+targetW+zoneW*.025,nameSize=Math.round(zoneH*.27),roleSize=Math.round(zoneH*.083);
-      ctx.save();ctx.fillStyle=hex;ctx.textAlign='left';ctx.textBaseline='top';
-      ctx.font=`700 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Jaqueline',tx,y+targetH*.06);
-      ctx.font=`400 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Vieira',tx,y+targetH*.36);
+      // Espaçamento entre nome e cargo alinhado à mesma proporção usada em
+      // .brand-lockup (margin-top ~31% do tamanho do nome).
+      const tx=x+targetW+zoneW*.025,nameSize=Math.round(targetH*.35),roleSize=Math.round(nameSize*.31);
+      const nameLine1Y=y+targetH*.04,nameLine2Y=nameLine1Y+nameSize*1.08,roleY=nameLine2Y+nameSize*1.31;
+      ctx.fillStyle=hex;ctx.textAlign='left';ctx.textBaseline='top';
+      ctx.font=`700 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Jaqueline',tx,nameLine1Y);
+      ctx.font=`400 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Vieira',tx,nameLine2Y);
       ctx.fillStyle=useWhite?POST_BRAND.logoWhite:POST_BRAND.terracotta;
-      ctx.font=`700 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('PSICÓLOGA',tx,y+targetH*.72);
-      const roleW=ctx.measureText('PSICÓLOGA').width;ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+zoneW*.018,y+targetH*.72);ctx.restore();
+      ctx.font=`700 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('PSICÓLOGA',tx,roleY);
+      const roleW=ctx.measureText('PSICÓLOGA').width;ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+roleSize*1.1,roleY);
+      ctx.restore();
 
       // Paginação: componente fixo, desenhado pelo aplicativo, nunca pela IA.
       if(pageInfo?.current && pageInfo?.total){
@@ -2446,7 +2448,7 @@ async function gerarArtePost(){
     // identidade additionally locks typography/palette consistent across a
     // whole slide SET -- not relevant to a standalone Story image, and its
     // "premium magazine" framing actively fights the casual tone Story needs.
-    const safeZones=`Keep the top-center 12% of the canvas calm, light cream, low-detail and completely free of photos, illustrations, text, numbers, logos or decorative shapes because the application places the brand logo there. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
+    const safeZones=`Keep the top-center 16% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
     const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — generous white space, thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
 
     for(let i=0;i<slides.length;i++){
@@ -2456,7 +2458,7 @@ async function gerarArtePost(){
         : isCarousel
           ? `This is an INTERNAL CAROUSEL SLIDE. Do not repeat the main post title. Do not create a new headline or heading. Show only the specific message supplied for this slide, with concise body copy if needed. Do not add any page number, counter, badge or logo. The top-left and top-center reserved zones must remain empty.`
           : isStory
-            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Break from the polished card-with-centered-title layout entirely: compose it like a single candid vertical phone photo or video-still moment that fills the full 9:16 frame edge to edge (no big empty background block behind the text). Treat any text as a casual overlay sitting directly on top of the photo -- off-center, one short line, handwritten-note or sticker-caption energy, not typeset editorial copy. Keep the very top ~12% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
+            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Break from the polished card-with-centered-title layout entirely: compose it like a single candid vertical phone photo or video-still moment that fills the full 9:16 frame edge to edge (no big empty background block behind the text). Treat any text as a casual overlay sitting directly on top of the photo -- off-center, one short line, handwritten-note or sticker-caption energy, not typeset editorial copy. Keep the very top ~16% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
             : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
       const formatDesc=isStory?'ONE vertical Instagram Story image (1080x1920, 9:16 portrait)':'ONE square Instagram editorial image (1080x1080)';
       const visualDirection=isStory

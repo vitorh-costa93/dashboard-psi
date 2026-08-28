@@ -899,9 +899,17 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
           <label>Contexto</label>
           <input id="post-contexto" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:var(--light);" placeholder="Opcional"/>
         </div>
+        <div class="gen-field">
+          <label>Fundo das artes</label>
+          <select id="post-fundo" class="filter-select" style="width:100%;" onchange="atualizarUploadFundoPost()">
+            <option value="ia">Gerado por IA</option>
+            <option value="upload">Minhas fotos</option>
+          </select>
+        </div>
       </div>
       <div class="post-brand-preview" id="post-brand-preview"></div>
       <div class="post-brand-note">A identidade visual do carrossel é fixa: paleta, logo, paginação e composição seguem o mesmo padrão em todas as artes.</div>
+      <div id="post-upload-fundo" style="display:none;margin-top:10px;"></div>
       <div class="gen-actions">
         <button class="btn-primary" id="btn-post-generate" onclick="gerarPost()">✦ Gerar conteúdo</button>
         <span class="gen-status" id="post-status"></span>
@@ -2275,6 +2283,34 @@ function renderTendencias(){
       <div class="post-source">Fonte: ${escHtml(x.fonte?.source||'')} · ${escHtml(x.fonte?.title||'')}</div>
       <div class="gen-actions"><button class="btn-secondary" onclick="usarSugestaoPost(${i})">✦ Criar este post</button></div>
     </div>`).join('')}</div>`;
+}
+
+function atualizarUploadFundoPost(){
+  const usaUpload=document.getElementById('post-fundo').value==='upload';
+  const container=document.getElementById('post-upload-fundo');
+  container.style.display=usaUpload?'block':'none';
+  if(!usaUpload){container.innerHTML='';return;}
+  montarCamposUploadFundo();
+}
+let _fotosFundo={unica:null,porSlide:[]};
+function lerFotoComoB64(input,onDone){
+  const arquivo=input.files?.[0];if(!arquivo)return;
+  if(!arquivo.type.startsWith('image/'))return toast('Envie um arquivo de imagem.');
+  if(arquivo.size>10*1024*1024)return toast('Imagem muito grande (máximo 10MB).');
+  const reader=new FileReader();
+  reader.onload=()=>onDone(reader.result.split(',')[1]);
+  reader.readAsDataURL(arquivo);
+}
+function montarCamposUploadFundo(){
+  const formato=(document.getElementById('post-formato').value||'').toLowerCase();
+  const container=document.getElementById('post-upload-fundo');
+  _fotosFundo={unica:null,porSlide:[]};
+  if(formato!=='carrossel'){
+    container.innerHTML=`<label class="pront-label">Foto de fundo</label><input type="file" accept="image/*" id="post-foto-unica" onchange="lerFotoComoB64(this,b=>{_fotosFundo.unica=b;toast('Foto carregada.');})"/>`;
+    return;
+  }
+  // Carrossel: implementado na Task 5.
+  montarCamposUploadCarrossel(container);
 }
 
 function usarSugestaoPost(i){

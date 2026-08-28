@@ -175,6 +175,15 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 .prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
 .prompt-area:focus{outline:none;border-color:var(--accent);}
+.chat-refinamento{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff;}
+.chat-refinamento .chat-msgs{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;margin-bottom:8px;}
+.chat-refinamento .chat-msg{padding:6px 10px;border-radius:7px;font-size:.82rem;line-height:1.4;max-width:88%;}
+.chat-refinamento .chat-msg.usuario{align-self:flex-end;background:var(--accent);color:#fff;}
+.chat-refinamento .chat-msg.assistente{align-self:flex-start;background:var(--light);}
+.chat-refinamento .chat-row{display:flex;gap:8px;}
+.chat-refinamento .chat-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font:inherit;}
+.chat-refinamento .chat-row button{white-space:nowrap;}
+.chat-refinamento .chat-reset{margin-top:6px;background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;text-decoration:underline;padding:0;}
 .audio-input-wrap{display:flex;align-items:flex-start;gap:7px;width:100%;}
 .audio-input-wrap>input,.audio-input-wrap>textarea{flex:1;min-width:0;}
 .audio-input-btn{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:.92rem;display:inline-flex;align-items:center;justify-content:center;}
@@ -3198,8 +3207,8 @@ function montarFormularioDocumento(){
   if(tipo==='termo_adulto')html+=inputDoc('doc-cpf-paciente','CPF do paciente')+inputDoc('doc-anamnese-data','Data da entrevista inicial','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
   if(tipo==='orcamento')html+=inputDoc('doc-inicio','Data de início','date')+inputDoc('doc-valor-avulso','Valor da sessão individual','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote-sessao','Valor de cada sessão no pacote','number','min="0" step="0.01"');
   if(tipo==='recibo')html+=inputDoc('doc-valor-pago','Valor total pago','number','min="0" step="0.01"')+inputDoc('doc-qtd-sessoes','Total de sessões','number','min="1" max="20" value="1" onchange="renderSessoesRecibo()"')+inputDoc('doc-forma-pagamento','Forma de pagamento')+'<div class="full" id="doc-sessoes-recibo"></div>';
-  if(tipo==='relatorio_psicologico')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+areaDoc('doc-descricao-ia','Descreva os fatos, observações e objetivo do relatório','Você pode falar ou escrever. A IA organizará o texto sem inventar informações.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório');
-  if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+areaDoc('doc-descricao-ia','O que deseja solicitar à escola','Descreva o contexto e os aspectos que devem ser observados.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação');
+  if(tipo==='relatorio_psicologico')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+areaDoc('doc-descricao-ia','Descreva os fatos, observações e objetivo do relatório','Você pode falar ou escrever. A IA organizará o texto sem inventar informações.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
+  if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+areaDoc('doc-descricao-ia','O que deseja solicitar à escola','Descreva o contexto e os aspectos que devem ser observados.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
   editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();habilitarAudioGlobal();atualizarPreviaDocumento();
@@ -3244,7 +3253,34 @@ function atualizarPreviaDocumento(){
 async function gerarTextoDocumento(btn){
   const descricao=campo('doc-descricao-ia'),tipo=document.getElementById('doc-tipo').value;if(descricao.length<10)return toast('Descreva o conteúdo que deseja elaborar.');
   if(btn){btn.disabled=true;btn.textContent='Elaborando...';}
-  try{const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao})}),d=await r.json();if(!r.ok)throw new Error(d.error);document.getElementById('doc-texto-final').value=d.texto;atualizarPreviaDocumento();toast('Texto elaborado. Revise antes de salvar.');}catch(e){toast(e.message||'Não foi possível elaborar o texto.');}finally{if(btn){btn.disabled=false;btn.textContent='✦ Elaborar texto com IA';}}
+  try{const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao})}),d=await r.json();if(!r.ok)throw new Error(d.error);document.getElementById('doc-texto-final').value=d.texto;atualizarPreviaDocumento();mostrarChatDocumento();reiniciarChatDocumento();toast('Texto elaborado. Revise antes de salvar.');}catch(e){toast(e.message||'Não foi possível elaborar o texto.');}finally{if(btn){btn.disabled=false;btn.textContent='✦ Elaborar texto com IA';}}
+}
+let _docChatHistorico=[];
+function mostrarChatDocumento(){
+  document.getElementById('doc-chat').style.display='block';
+  renderChatDocumento();
+}
+function renderChatDocumento(){
+  const wrap=document.getElementById('doc-chat-msgs');if(!wrap)return;
+  wrap.innerHTML=_docChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join('');
+  wrap.scrollTop=wrap.scrollHeight;
+}
+function reiniciarChatDocumento(){_docChatHistorico=[];renderChatDocumento();}
+async function ajustarTextoDocumento(){
+  const input=document.getElementById('doc-chat-input'),pedido=input.value.trim();if(!pedido)return;
+  const tipo=document.getElementById('doc-tipo').value,descricaoOriginal=campo('doc-descricao-ia');
+  if(!_docChatHistorico.length)_docChatHistorico.push({papel:'usuario',texto:descricaoOriginal},{papel:'assistente',texto:campo('doc-texto-final')});
+  input.disabled=true;
+  try{
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedido,historico:_docChatHistorico})}),d=await r.json();
+    if(!r.ok)throw new Error(d.error);
+    _docChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:d.texto});
+    document.getElementById('doc-texto-final').value=d.texto;
+    atualizarPreviaDocumento();
+    input.value='';
+    renderChatDocumento();
+  }catch(e){toast(e.message||'Não foi possível ajustar o texto.');}
+  finally{input.disabled=false;}
 }
 
 async function salvarDocumento(){

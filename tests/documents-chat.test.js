@@ -58,3 +58,32 @@ test('generate valida historico malformado', async () => {
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Deixa mais curto', historico: 'não é array'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 400);
 });
+
+test('generate trunca historico com mais de 20 turnos para os ultimos 20', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); };
+  const res = response();
+  const historico = Array.from({length: 30}, (_, i) => ({
+    papel: i % 2 === 0 ? 'usuario' : 'assistente',
+    texto: `Turno ${i}`
+  }));
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Nova pergunta', historico}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(Array.isArray(capturedBody.input));
+  assert.equal(capturedBody.input.length, 21); // 20 turnos + novo pedido
+});
+
+test('generate trunca cada texto de historico em 4000 caracteres', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); };
+  const res = response();
+  const textoLongo = 'a'.repeat(5000);
+  const historico = [
+    {papel: 'usuario', texto: textoLongo},
+    {papel: 'assistente', texto: textoLongo}
+  ];
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Nova pergunta', historico}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.equal(capturedBody.input[0].content.length, 4000);
+  assert.equal(capturedBody.input[1].content.length, 4000);
+});

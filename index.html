@@ -2453,6 +2453,44 @@ function extrairCorAcento(b64){
     };img.onerror=()=>resolve('#9b5b46');img.src='data:image/png;base64,'+b64;
   });
 }
+function quebrarEmFrases(texto,maxFrases=4){
+  return texto.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0,maxFrases);
+}
+async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');canvas.width=largura;canvas.height=altura;
+      const ctx=canvas.getContext('2d');
+      // Foto preenchendo o canvas inteiro (cover), sem distorcer proporção.
+      const escala=Math.max(largura/img.naturalWidth,altura/img.naturalHeight);
+      const w=img.naturalWidth*escala,h=img.naturalHeight*escala;
+      ctx.drawImage(img,(largura-w)/2,(altura-h)/2,w,h);
+      const frases=quebrarEmFrases(textoSlide);
+      const tamanhoFonte=Math.round(largura*.052);
+      let y=altura*.42;
+      ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "DM Sans", sans-serif`;
+      frases.forEach(frase=>{
+        const largTexto=ctx.measureText(frase).width;
+        const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
+        const boxX=largura*.08,boxW=Math.min(largTexto+padX*2,largura*.84);
+        ctx.fillStyle=corDestaque;
+        ctx.beginPath();ctx.roundRect(boxX,y,boxW,tamanhoFonte+padY*2,10);ctx.fill();
+        ctx.fillStyle=corTexto;
+        ctx.fillText(frase,boxX+padX,y+padY,boxW-padX*2);
+        y+=tamanhoFonte+padY*2+tamanhoFonte*.3;
+      });
+      resolve(canvas.toDataURL('image/png').split(',')[1]);
+    };
+    img.onerror=reject;img.src='data:image/png;base64,'+fotoB64;
+  });
+}
+async function compositarFundoProprio(fotoB64,textoSlide,largura,altura){
+  const corAcento=await extrairCorAcento(fotoB64);
+  const marca=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.olive+'CC');
+  const adaptada=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',corAcento+'CC');
+  return {marca,adaptada};
+}
 async function aplicarLogoPost(b64, pageInfo=null){
   await Promise.all([document.fonts.load('700 48px "Playfair Display"'),document.fonts.load('400 48px "Playfair Display"')]);
   return new Promise((resolve,reject)=>{

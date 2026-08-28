@@ -885,7 +885,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
         </div>
         <div class="gen-field">
           <label>Formato</label>
-          <select id="post-formato" class="filter-select" style="width:100%;">
+          <select id="post-formato" class="filter-select" style="width:100%;" onchange="atualizarUploadFundoPost()">
             <option>Carrossel</option><option>Post</option><option>Story</option>
           </select>
         </div>
@@ -2300,6 +2300,28 @@ function lerFotoComoB64(input,onDone){
   const reader=new FileReader();
   reader.onload=()=>onDone(reader.result.split(',')[1]);
   reader.readAsDataURL(arquivo);
+}
+function montarCamposUploadCarrossel(container){
+  if(!_postAtual?.slides?.length){container.innerHTML='<p style="font-size:.8rem;color:var(--muted)">Gere o conteúdo do carrossel primeiro para escolher como enviar as fotos.</p>';return;}
+  container.innerHTML=`<label class="pront-label">Como usar suas fotos no carrossel?</label>
+    <select id="post-modo-foto-carrossel" class="filter-select" style="width:100%;margin-bottom:8px" onchange="atualizarCamposFotoCarrossel()">
+      <option value="unica">1 foto para todas as telas</option>
+      <option value="porSlide">1 foto por tela</option>
+    </select>
+    <div id="post-campos-foto-carrossel"></div>`;
+  atualizarCamposFotoCarrossel();
+}
+function atualizarCamposFotoCarrossel(){
+  const modo=document.getElementById('post-modo-foto-carrossel').value;
+  const wrap=document.getElementById('post-campos-foto-carrossel');
+  const n=_postAtual.slides.length;
+  _fotosFundo.porSlide=new Array(n).fill(null);
+  _fotosFundo.unica=null;
+  if(modo==='unica'){
+    wrap.innerHTML=`<input type="file" accept="image/*" onchange="lerFotoComoB64(this,b=>{_fotosFundo.unica=b;toast('Foto carregada.');})"/>`;
+    return;
+  }
+  wrap.innerHTML=Array.from({length:n},(_,i)=>`<div style="margin-bottom:6px"><label class="pront-label">Slide ${i+1}</label><input type="file" accept="image/*" onchange="lerFotoComoB64(this,b=>{_fotosFundo.porSlide[${i}]=b;toast('Foto do slide ${i+1} carregada.');})"/></div>`).join('');
 }
 function montarCamposUploadFundo(){
   const formato=(document.getElementById('post-formato').value||'').toLowerCase();

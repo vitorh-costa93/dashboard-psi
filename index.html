@@ -925,6 +925,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
       <div class="preview-img-wrap" id="post-img-wrap" style="margin-top:14px;min-height:220px;">
         <div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>
       </div>
+      <div class="chat-refinamento" id="post-chat" style="display:none"><div class="chat-msgs" id="post-chat-msgs"></div><div class="chat-row"><input id="post-chat-input" placeholder="Ex.: deixa o gancho mais curto, troca o CTA..." onkeydown="if(event.key==='Enter')ajustarPost()"/><button id="post-chat-btn" class="btn-secondary" onclick="ajustarPost()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatPost()">Nova conversa</button></div>
       <div class="preview-actions">
         <button class="btn-primary" onclick="gerarArtePost()">🎨 Gerar arte</button>
         <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
@@ -2308,6 +2309,7 @@ async function gerarPost(){
       publico:document.getElementById('post-publico').value,faixa:trendSelecionada?.faixa||document.getElementById('post-publico').value,img_b64:null,
       fonte_tendencia:trendSelecionada?.fonte?.link||''};
     renderPostPreview();
+    reiniciarChatPost();mostrarChatPost();
     status.textContent='Conteúdo gerado — revise antes de salvar.';
   }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
   finally{btn.disabled=false;}
@@ -2322,6 +2324,34 @@ function renderPostPreview(){
   document.getElementById('post-cta').textContent=_postAtual.cta||'';
   document.getElementById('post-preview-card').style.display='block';
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+let _postChatHistorico=[];
+function mostrarChatPost(){document.getElementById('post-chat').style.display='block';renderChatPost();}
+function renderChatPost(){
+  const wrap=document.getElementById('post-chat-msgs');if(!wrap)return;
+  wrap.innerHTML=_postChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join('');
+  wrap.scrollTop=wrap.scrollHeight;
+}
+function reiniciarChatPost(){_postChatHistorico=[];renderChatPost();}
+async function ajustarPost(){
+  if(!_postAtual)return;
+  const input=document.getElementById('post-chat-input'),pedido=input.value.trim();if(!pedido)return;
+  const btn=document.getElementById('post-chat-btn');
+  if(!_postChatHistorico.length){
+    const primeiroPedido=`Tema: ${_postAtual.tema}\nFaixa do ciclo vital: ${_postAtual.faixa||'Ciclo vital'}\nFormato: ${_postAtual.formato}\nPúblico: ${_postAtual.publico}\nContexto/tendência: nenhum`;
+    _postChatHistorico.push({papel:'usuario',texto:primeiroPedido},{papel:'assistente',texto:JSON.stringify({titulo:_postAtual.titulo,gancho:_postAtual.gancho,slides:_postAtual.slides,legenda:_postAtual.legenda,hashtags:_postAtual.hashtags,cta:_postAtual.cta})});
+  }
+  input.disabled=true;if(btn)btn.disabled=true;
+  try{
+    const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:_postChatHistorico,ajuste:pedido})}),d=await r.json();
+    if(!r.ok)throw new Error(d.error);
+    _postChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:JSON.stringify(d)});
+    _postAtual={..._postAtual,...d};
+    renderPostPreview();
+    input.value='';
+    renderChatPost();
+  }catch(e){toast(e.message||'Não foi possível ajustar o post.');}
+  finally{input.disabled=false;if(btn)btn.disabled=false;}
 }
 
 const POST_BRAND = {

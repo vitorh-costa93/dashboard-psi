@@ -2346,7 +2346,14 @@ async function ajustarPost(){
     const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:_postChatHistorico,ajuste:pedido})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
     _postChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:JSON.stringify(d)});
+    const tinhaArte=!!_postAtual.imagens_b64?.length;
     _postAtual={..._postAtual,...d};
+    if(tinhaArte){
+      _postAtual.imagens_b64=[];
+      _postAtual.img_b64=null;
+      renderArtesPost();
+      toast('Texto ajustado — gere a arte novamente para refletir a mudança.');
+    }
     renderPostPreview();
     input.value='';
     renderChatPost();
@@ -2476,7 +2483,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
 }
 function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${imgs.length===7?'Carrossel completo: 7 artes geradas.':'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+  const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
@@ -2484,8 +2491,8 @@ async function gerarArtePost(){
   const isCarousel=formato.toLowerCase()==='carrossel';
   const isStory=formato.toLowerCase()==='story';
   const imgSize=isStory?'1024x1536':'1024x1024';
-  const slides=isCarousel?(_postAtual.slides||[]).slice(0,7):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
-  if(isCarousel && slides.length!==7){toast('O carrossel precisa ter exatamente 7 slides. Gere o conteúdo novamente.');return;}
+  const slides=isCarousel?(_postAtual.slides||[]).slice(0,8):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
+  if(isCarousel && (slides.length<4 || slides.length>8)){toast('O carrossel precisa ter entre 4 e 8 slides. Gere o conteúdo novamente.');return;}
   try{
     document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
@@ -2525,11 +2532,10 @@ async function gerarArtePost(){
       _postAtual.imagens_b64.push(finalB64);
       _postAtual.logo_cor=POST_BRAND.logo;
       _postAtual.logo_posicao='centro-superior';
-      _postAtual.paginacao_estilo='02 / 07';
       renderArtesPost();
     }
     _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
-    _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?'Carrossel de 7 slides;':'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
+    _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?`Carrossel de ${slides.length} slides;`:'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
 }
 
@@ -2540,7 +2546,7 @@ async function exportarArtesPost(){
     const files=imgs.map((b,i)=>{
       const bytes=atob(b),arr=new Uint8Array(bytes.length);
       for(let j=0;j<bytes.length;j++) arr[j]=bytes.charCodeAt(j);
-      return new File([arr],`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});
+      return new File([arr],`jaqueline-post-${_postAtual.formato==='Carrossel'&&imgs.length>1?'slide-'+(i+1):'arte'}.png`,{type:'image/png'});
     });
     // Web Share usa os arquivos PNG originais, sem redimensionar ou recomprimir.
     if(navigator.share && navigator.canShare && navigator.canShare({files})){
@@ -2548,7 +2554,7 @@ async function exportarArtesPost(){
       return;
     }
     // Fallback para navegadores sem compartilhamento de arquivos.
-    imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${imgs.length===7?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});
+    imgs.forEach((b,i)=>{const a=document.createElement('a');a.href='data:image/png;base64,'+b;a.download=`jaqueline-post-${_postAtual.formato==='Carrossel'&&imgs.length>1?'slide-'+(i+1):'arte'}.png`;document.body.appendChild(a);a.click();a.remove();});
     toast('Seu navegador não oferece compartilhamento de arquivos; as artes foram baixadas em PNG na resolução original.');
   }catch(e){
     if(e?.name==='AbortError') return;
@@ -2684,6 +2690,7 @@ function abrirRascunhoNoEditor(){
   fecharRascunhoModal();
   const tema=document.getElementById('post-tema'),formato=document.getElementById('post-formato'),publico=document.getElementById('post-publico');
   if(tema)tema.value=p.tema||'';if(formato)formato.value=p.formato||'Post';if(publico)publico.value=p.publico||'Ciclo vital';
+  reiniciarChatPost();const chatEl=document.getElementById('post-chat');if(chatEl)chatEl.style.display='none';
   document.getElementById('post-preview-card').style.display='block';renderPostPreview();renderArtesPost();document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function excluirRascunhoAtual(){
@@ -2710,6 +2717,7 @@ function limparPost(){
   ['post-tema','post-contexto'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('post-preview-card').style.display='none';
   document.getElementById('post-img-wrap').innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';
+  reiniciarChatPost();const chatEl=document.getElementById('post-chat');if(chatEl)chatEl.style.display='none';
 }
 
 // ══════════════════════════════════════════════════════════

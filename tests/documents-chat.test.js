@@ -87,3 +87,26 @@ test('generate trunca cada texto de historico em 4000 caracteres', async () => {
   assert.equal(capturedBody.input[0].content.length, 4000);
   assert.equal(capturedBody.input[1].content.length, 4000);
 });
+
+test('generate aceita descricao curta quando historico não-vazio é enviado (pedido de ajuste do chat)', async () => {
+  global.fetch = async () => openaiResponsesReply('Texto ajustado.');
+  const res = response();
+  const historico = [
+    {papel: 'usuario', texto: 'A criança tem dificuldade de concentração em sala.'},
+    {papel: 'assistente', texto: 'Texto gerado.'},
+  ];
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'formal', historico}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.equal(res.body.texto, 'Texto ajustado.');
+});
+
+test('generate continua rejeitando descricao curta quando historico está ausente/vazio', async () => {
+  global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
+  const res1 = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'formal'}}, res1, {id: 'admin-1'});
+  assert.equal(res1.code, 400);
+
+  const res2 = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'formal', historico: []}}, res2, {id: 'admin-1'});
+  assert.equal(res2.code, 400);
+});

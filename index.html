@@ -2478,7 +2478,10 @@ function quebrarLinhas(ctx,texto,maxWidth){
 }
 async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
   const tamanhoFonte=Math.round(largura*.052);
-  await document.fonts.load(`600 ${tamanhoFonte}px "DM Sans"`);
+  // Tipografia elegante e delicada, coerente com a marca (mesma família serifada
+  // do nome na logo) -- DM Sans em peso 600 ficava grossa/genérica demais para
+  // uma frase inteira sobre uma foto pessoal.
+  await document.fonts.load(`600 ${tamanhoFonte}px "Playfair Display"`);
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
@@ -2489,7 +2492,7 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
       const w=img.naturalWidth*escala,h=img.naturalHeight*escala;
       ctx.drawImage(img,(largura-w)/2,(altura-h)/2,w,h);
       const frases=quebrarEmFrases(textoSlide);
-      ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "DM Sans", sans-serif`;
+      ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "Playfair Display", serif`;
       const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
       const boxX=largura*.08,maxBoxW=largura*.84,maxTextWidth=maxBoxW-padX*2;
       const lineHeight=tamanhoFonte*1.15;
@@ -2544,21 +2547,60 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.drawImage(base,0,0,canvas.width,canvas.height);
 
       // Zona de marca protegida: centro superior, sempre no mesmo lugar.
-      // Sem fundo sólido -- a cor do logo é escolhida pela luminância real do
-      // fundo amostrado ali, e uma sombra discreta garante legibilidade.
       const zoneW=canvas.width*.36, zoneH=canvas.height*.125;
       const zx=(canvas.width-zoneW)/2, zy=canvas.height*.018;
-      const sampleX=Math.max(0,Math.round(zx)),sampleY=Math.max(0,Math.round(zy));
-      const sampleW=Math.min(canvas.width-sampleX,Math.round(zoneW)),sampleH=Math.min(canvas.height-sampleY,Math.round(zoneH));
-      const sample=ctx.getImageData(sampleX,sampleY,Math.max(1,sampleW),Math.max(1,sampleH)).data;
-      let lumSum=0,lumCount=0;
-      for(let i=0;i<sample.length;i+=4*11){lumSum+=(0.2126*sample[i]+0.7152*sample[i+1]+0.0722*sample[i+2])/255;lumCount++;}
-      const useWhite=(lumCount?lumSum/lumCount:.75)<.55;
-      const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.olive;
 
-      // Símbolo em alta resolução e lettering composto com a Agrandir Tight real.
+      // Geometria do símbolo + lettering calculada ANTES da amostragem de cor,
+      // porque não depende dela -- assim a amostragem pode mirar exatamente no
+      // retângulo onde a marca vai ser desenhada, em vez da zona protegida
+      // inteira (mais larga, incluindo margem que não fica atrás do texto).
       const targetH=zoneH*.72,targetW=targetH*(logo.naturalWidth/logo.naturalHeight);
       const groupW=targetW+zoneW*.55,x=(canvas.width-groupW)/2,y=zy+zoneH*.06;
+      // Espaçamento entre nome e cargo alinhado à mesma proporção usada em
+      // .brand-lockup (line-height 1.05 do nome + margin-top ~31% do
+      // tamanho do nome = 1.36 do topo da 2ª linha até o cargo). Em canvas
+      // quadrado (Post) a zona de marca é bem menor que no Story, então a
+      // mesma fração vira poucos pixels reais e a folga "some" -- por isso
+      // o cálculo usa a proporção completa (1.36), não uma versão
+      // "comprimida", e nunca cai abaixo de um piso mínimo em pixels.
+      const tx=x+targetW+zoneW*.025,nameSize=Math.round(targetH*.30),roleSize=Math.round(nameSize*.31);
+      const nameLine1Y=y+targetH*.02,nameLine2Y=nameLine1Y+nameSize*1.05,roleGap=Math.max(nameSize*1.5,14),roleY=nameLine2Y+roleGap;
+      ctx.font=`700 ${nameSize}px "Playfair Display", serif`;const nameW1=ctx.measureText('Jaqueline').width;
+      ctx.font=`400 ${nameSize}px "Playfair Display", serif`;const nameW2=ctx.measureText('Vieira').width;
+      ctx.font=`700 ${roleSize}px "DM Sans", sans-serif`;const roleW=ctx.measureText('PSICÓLOGA').width;
+      ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;const roleTotalW=roleW+roleSize*1.1+ctx.measureText('CRP 06/191478').width;
+      const footLeft=Math.max(0,x-targetW*.08),footTop=Math.max(0,y-targetH*.12);
+      const footRight=Math.min(canvas.width,tx+Math.max(nameW1,nameW2,roleTotalW)),footBottom=Math.min(canvas.height,roleY+roleSize*1.3);
+
+      // Cor do logo escolhida pela luminância real do fundo atrás dele --
+      // amostrada exatamente no retângulo do símbolo+lettering (não na zona
+      // protegida inteira, que é maior e pode diluir a média com áreas que a
+      // marca nunca cobre), com um limiar que prefere a versão clara em caso
+      // de dúvida (fundo em foto real, não controlado, ao contrário do fundo
+      // gerado por IA que já respeita a zona calma pedida no prompt).
+      const sampleW=Math.max(1,Math.round(footRight-footLeft)),sampleH=Math.max(1,Math.round(footBottom-footTop));
+      const sample=ctx.getImageData(Math.round(footLeft),Math.round(footTop),sampleW,sampleH).data;
+      let lumSum=0,lumCount=0;
+      for(let i=0;i<sample.length;i+=4*11){lumSum+=(0.2126*sample[i]+0.7152*sample[i+1]+0.0722*sample[i+2])/255;lumCount++;}
+      const useWhite=(lumCount?lumSum/lumCount:.75)<.6;
+      const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.olive;
+
+      // Reforço de contraste: um véu suave (gradiente radial, sem borda dura)
+      // atrás do símbolo+lettering, na tonalidade oposta à escolhida acima.
+      // Garante legibilidade mesmo quando a foto tem textura/sombra irregular
+      // bem atrás da marca (a média de luminância pode "passar", mas um trecho
+      // pontual atrás de uma letra específica pode não).
+      const scrimPad=targetH*.55;
+      const scrimX=Math.max(0,footLeft-scrimPad),scrimY=Math.max(0,footTop-scrimPad*.6);
+      const scrimW=Math.min(canvas.width,footRight+scrimPad)-scrimX,scrimH=Math.min(canvas.height,footBottom+scrimPad*.6)-scrimY;
+      const scrimRgb=useWhite?'0,0,0':'255,255,255';
+      const scrimCx=scrimX+scrimW/2,scrimCy=scrimY+scrimH/2,scrimR=Math.max(scrimW,scrimH)*.65;
+      const scrimGrad=ctx.createRadialGradient(scrimCx,scrimCy,0,scrimCx,scrimCy,scrimR);
+      scrimGrad.addColorStop(0,`rgba(${scrimRgb},.32)`);
+      scrimGrad.addColorStop(1,`rgba(${scrimRgb},0)`);
+      ctx.save();ctx.fillStyle=scrimGrad;ctx.fillRect(scrimX,scrimY,scrimW,scrimH);ctx.restore();
+
+      // Símbolo em alta resolução e lettering composto com a Agrandir Tight real.
       const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;
       const octx=off.getContext('2d');octx.drawImage(logo,0,0);
       const px=octx.getImageData(0,0,off.width,off.height);
@@ -2573,21 +2615,12 @@ async function aplicarLogoPost(b64, pageInfo=null){
       ctx.shadowBlur=Math.max(6,zoneH*.07);
       ctx.shadowOffsetY=Math.max(1,zoneH*.012);
       ctx.drawImage(off,x,y,targetW,targetH);
-      // Espaçamento entre nome e cargo alinhado à mesma proporção usada em
-      // .brand-lockup (line-height 1.05 do nome + margin-top ~31% do
-      // tamanho do nome = 1.36 do topo da 2ª linha até o cargo). Em canvas
-      // quadrado (Post) a zona de marca é bem menor que no Story, então a
-      // mesma fração vira poucos pixels reais e a folga "some" -- por isso
-      // o cálculo usa a proporção completa (1.36), não uma versão
-      // "comprimida", e nunca cai abaixo de um piso mínimo em pixels.
-      const tx=x+targetW+zoneW*.025,nameSize=Math.round(targetH*.30),roleSize=Math.round(nameSize*.31);
-      const nameLine1Y=y+targetH*.02,nameLine2Y=nameLine1Y+nameSize*1.05,roleGap=Math.max(nameSize*1.5,14),roleY=nameLine2Y+roleGap;
       ctx.fillStyle=hex;ctx.textAlign='left';ctx.textBaseline='top';
       ctx.font=`700 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Jaqueline',tx,nameLine1Y);
       ctx.font=`400 ${nameSize}px "Playfair Display", serif`;ctx.fillText('Vieira',tx,nameLine2Y);
       ctx.fillStyle=useWhite?POST_BRAND.logoWhite:POST_BRAND.terracotta;
       ctx.font=`700 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('PSICÓLOGA',tx,roleY);
-      const roleW=ctx.measureText('PSICÓLOGA').width;ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+roleSize*1.1,roleY);
+      ctx.font=`400 ${roleSize}px "DM Sans", sans-serif`;ctx.fillText('CRP 06/191478',tx+roleW+roleSize*1.1,roleY);
       ctx.restore();
 
       // Paginação: componente fixo, desenhado pelo aplicativo, nunca pela IA.

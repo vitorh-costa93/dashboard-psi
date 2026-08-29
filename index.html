@@ -6,7 +6,7 @@
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Baloo+2:wght@600;700&family=Nunito:wght@600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Baloo+2:wght@600;700&family=Nunito:wght@600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet"/>
 <style>
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight-bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
@@ -2477,11 +2477,16 @@ function quebrarLinhas(ctx,texto,maxWidth){
   return linhas;
 }
 async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
-  const tamanhoFonte=Math.round(largura*.052);
-  // Tipografia elegante e delicada, coerente com a marca (mesma família serifada
-  // do nome na logo) -- DM Sans em peso 600 ficava grossa/genérica demais para
-  // uma frase inteira sobre uma foto pessoal.
-  await document.fonts.load(`600 ${tamanhoFonte}px "Playfair Display"`);
+  const tamanhoFonte=Math.round(largura*.052),tamanhoDestaque=Math.round(tamanhoFonte*1.12);
+  // Tipografia mista, como um recado escrito à mão sobre a foto: frases
+  // curtas (até 4 palavras) ganham um grifo (pill) num script caloroso --
+  // efeito de destaque pontual, não um parágrafo inteiro dentro de uma caixa.
+  // Frases mais longas ficam direto sobre a foto, sem caixa nenhuma, em
+  // Playfair Display com sombra para legibilidade.
+  await Promise.all([
+    document.fonts.load(`700 ${tamanhoDestaque}px "Caveat"`),
+    document.fonts.load(`600 ${tamanhoFonte}px "Playfair Display"`)
+  ]);
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
@@ -2491,38 +2496,46 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
       const escala=Math.max(largura/img.naturalWidth,altura/img.naturalHeight);
       const w=img.naturalWidth*escala,h=img.naturalHeight*escala;
       ctx.drawImage(img,(largura-w)/2,(altura-h)/2,w,h);
+
       const frases=quebrarEmFrases(textoSlide);
-      ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "Playfair Display", serif`;
-      const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
-      const boxX=largura*.08,maxBoxW=largura*.84,maxTextWidth=maxBoxW-padX*2;
-      const lineHeight=tamanhoFonte*1.15;
-      // Calcula a altura total do bloco de texto ANTES de desenhar para evitar
-      // que frases finais sejam empurradas para fora do canvas (overflow
-      // vertical): com várias frases de 2-3 linhas cada, o bloco pode ser
-      // mais alto do que sobra de espaço abaixo do y inicial padrão.
-      const espacamentoEntreFrases=tamanhoFonte*.3;
-      const linhasPorFrase=frases.map(frase=>quebrarLinhas(ctx,frase,maxTextWidth));
-      const alturaTotal=linhasPorFrase.reduce((soma,linhas)=>soma+lineHeight*linhas.length+padY*2+espacamentoEntreFrases,0)-espacamentoEntreFrases;
-      const yInicialPadrao=altura*.42,limiteInferior=altura*.9;
-      let y=yInicialPadrao;
-      if(y+alturaTotal>limiteInferior){
-        y=Math.max(altura*.06,limiteInferior-alturaTotal);
-      }
+      const boxX=largura*.08,maxBoxW=largura*.84;
+      const padX=tamanhoDestaque*.42,padY=tamanhoDestaque*.28;
+      // Cada frase recebe uma faixa vertical própria, distribuída da zona
+      // logo abaixo da marca até perto do rodapé -- espalhando o texto pela
+      // imagem em vez de empilhar tudo colado a partir de um único ponto
+      // (o efeito de "frase solta boiando no meio da tela").
+      const faixaTopo=altura*.30,faixaBase=altura*.88;
+      const alturaFaixa=(faixaBase-faixaTopo)/Math.max(1,frases.length);
+
       frases.forEach((frase,idx)=>{
-        // Quebra a frase em linhas que cabem em maxTextWidth, em vez de deixar
-        // o fillText espremer o texto horizontalmente via seu parâmetro maxWidth.
-        const linhas=linhasPorFrase[idx];
-        const largTexto=Math.max(...linhas.map(l=>ctx.measureText(l).width));
-        const boxW=Math.min(largTexto+padX*2,maxBoxW);
-        const boxH=lineHeight*linhas.length+padY*2;
-        ctx.fillStyle=corDestaque;
-        ctx.beginPath();ctx.roundRect(boxX,y,boxW,boxH,10);ctx.fill();
-        ctx.fillStyle=corTexto;
-        linhas.forEach((linha,i)=>{
-          ctx.fillText(linha,boxX+padX,y+padY+i*lineHeight);
-        });
-        y+=boxH+espacamentoEntreFrases;
+        const destaque=frase.split(/\s+/).filter(Boolean).length<=4;
+        ctx.font=destaque?`700 ${tamanhoDestaque}px "Caveat", cursive`:`600 ${tamanhoFonte}px "Playfair Display", serif`;
+        const lineHeight=(destaque?tamanhoDestaque:tamanhoFonte)*(destaque?1.05:1.2);
+        const maxTextWidth=destaque?maxBoxW-padX*2:maxBoxW;
+        const linhas=quebrarLinhas(ctx,frase,maxTextWidth);
+        const blocoH=lineHeight*linhas.length+(destaque?padY*2:0);
+        const centroFaixa=faixaTopo+alturaFaixa*(idx+.5);
+        // leve alternância horizontal entre frases para dar ar de composição
+        const alinhamentoX=boxX+(idx%2?largura*.05:0);
+        let y=centroFaixa-blocoH/2;
+        y=Math.max(altura*.02,Math.min(y,altura*.95-blocoH));
+        ctx.textAlign='left';ctx.textBaseline='top';
+        if(destaque){
+          const largTexto=Math.max(...linhas.map(l=>ctx.measureText(l).width));
+          const boxW=Math.min(largTexto+padX*2,maxBoxW);
+          ctx.fillStyle=corDestaque;
+          ctx.beginPath();ctx.roundRect(alinhamentoX,y,boxW,blocoH,blocoH*.4);ctx.fill();
+          ctx.fillStyle=corTexto;
+          linhas.forEach((linha,i)=>ctx.fillText(linha,alinhamentoX+padX,y+padY+i*lineHeight));
+        }else{
+          ctx.save();
+          ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=tamanhoFonte*.4;ctx.shadowOffsetY=tamanhoFonte*.06;
+          ctx.fillStyle=corTexto;
+          linhas.forEach((linha,i)=>ctx.fillText(linha,alinhamentoX,y+i*lineHeight));
+          ctx.restore();
+        }
       });
+
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };
     img.onerror=reject;img.src='data:image/png;base64,'+fotoB64;
@@ -2530,7 +2543,11 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
 }
 async function compositarFundoProprio(fotoB64,textoSlide,largura,altura){
   const [marca,corAcento]=await Promise.all([
-    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.olive+'CC'),
+    // Terracotta (não olive) no grifo da paleta da marca: olive escuro em
+    // cima de fotos de tom frio (azulado, acinzentado) lia como uma caixa
+    // esverdeada/acinzentada destoante; terracotta é mais quente e combina
+    // com uma faixa maior de fotos reais, além de já ser cor oficial da marca.
+    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.terracotta+'E6'),
     extrairCorAcento(fotoB64)
   ]);
   const adaptada=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',corAcento+'CC');
@@ -2584,21 +2601,10 @@ async function aplicarLogoPost(b64, pageInfo=null){
       for(let i=0;i<sample.length;i+=4*11){lumSum+=(0.2126*sample[i]+0.7152*sample[i+1]+0.0722*sample[i+2])/255;lumCount++;}
       const useWhite=(lumCount?lumSum/lumCount:.75)<.6;
       const hex=useWhite?POST_BRAND.logoWhite:POST_BRAND.olive;
-
-      // Reforço de contraste: um véu suave (gradiente radial, sem borda dura)
-      // atrás do símbolo+lettering, na tonalidade oposta à escolhida acima.
-      // Garante legibilidade mesmo quando a foto tem textura/sombra irregular
-      // bem atrás da marca (a média de luminância pode "passar", mas um trecho
-      // pontual atrás de uma letra específica pode não).
-      const scrimPad=targetH*.55;
-      const scrimX=Math.max(0,footLeft-scrimPad),scrimY=Math.max(0,footTop-scrimPad*.6);
-      const scrimW=Math.min(canvas.width,footRight+scrimPad)-scrimX,scrimH=Math.min(canvas.height,footBottom+scrimPad*.6)-scrimY;
-      const scrimRgb=useWhite?'0,0,0':'255,255,255';
-      const scrimCx=scrimX+scrimW/2,scrimCy=scrimY+scrimH/2,scrimR=Math.max(scrimW,scrimH)*.65;
-      const scrimGrad=ctx.createRadialGradient(scrimCx,scrimCy,0,scrimCx,scrimCy,scrimR);
-      scrimGrad.addColorStop(0,`rgba(${scrimRgb},.32)`);
-      scrimGrad.addColorStop(1,`rgba(${scrimRgb},0)`);
-      ctx.save();ctx.fillStyle=scrimGrad;ctx.fillRect(scrimX,scrimY,scrimW,scrimH);ctx.restore();
+      // (Um véu atrás da logo foi tentado aqui e removido: em fotos com fundo
+      // já claro/neutro ele aparecia como uma caixa visível e desnecessária.
+      // A cor adaptativa + sombra abaixo já garante contraste sem precisar
+      // de um retângulo.)
 
       // Símbolo em alta resolução e lettering composto com a Agrandir Tight real.
       const off=document.createElement('canvas');off.width=logo.naturalWidth;off.height=logo.naturalHeight;

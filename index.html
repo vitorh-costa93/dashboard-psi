@@ -484,6 +484,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .post-art-card .post-art-caption{padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .post-art-card .post-art-download{font-size:.7rem;color:var(--accent);text-decoration:none;}
 .post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
+.post-art-variantes{display:flex;gap:6px;padding:6px 10px;}
+.post-art-variantes button{flex:1;font-size:.72rem;padding:5px 6px;}
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 
@@ -2605,7 +2607,19 @@ async function aplicarLogoPost(b64, pageInfo=null){
 }
 function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
-  const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>`<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+  const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';
+  wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>{
+    const variantes=_postAtual.variantesFoto?.[i];
+    const seletorVariante=variantes?`<div class="post-art-variantes"><button class="btn-secondary" onclick="escolherVarianteFoto(${i},'marca')">Paleta da marca</button><button class="btn-secondary" onclick="escolherVarianteFoto(${i},'adaptada')">Paleta da foto</button></div>`:'';
+    return `<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/>${seletorVariante}<div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`;
+  }).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
+}
+async function escolherVarianteFoto(indice,qual){
+  const variantes=_postAtual.variantesFoto?.[indice];if(!variantes)return;
+  const semLogo=variantes[qual];
+  const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:_postAtual.imagens_b64.length}:null);
+  _postAtual.imagens_b64[indice]=comLogo;
+  renderArtesPost();
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}

@@ -2616,10 +2616,12 @@ function renderArtesPost(){
 }
 async function escolherVarianteFoto(indice,qual){
   const variantes=_postAtual.variantesFoto?.[indice];if(!variantes)return;
-  const semLogo=variantes[qual];
-  const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:_postAtual.imagens_b64.length}:null);
-  _postAtual.imagens_b64[indice]=comLogo;
-  renderArtesPost();
+  try{
+    const semLogo=variantes[qual];
+    const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:_postAtual.imagens_b64.length}:null);
+    _postAtual.imagens_b64[indice]=comLogo;
+    renderArtesPost();
+  }catch(e){toast('Erro ao aplicar a variante: '+e.message);}
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}

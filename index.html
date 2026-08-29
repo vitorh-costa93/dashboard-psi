@@ -2448,14 +2448,36 @@ function extrairCorAcento(b64){
     img.onload=()=>{
       const c=document.createElement('canvas'),w=64,h=64;c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
       const data=ctx.getImageData(0,0,w,h).data;const bins=new Map();
-      for(let i=0;i<data.length;i+=4){const a=data[i+3];if(a<180)continue;const [hh,ss,ll]=rgbToHsl(data[i],data[i+1],data[i+2]);
+      let lumSum=0,lumCount=0;
+      for(let i=0;i<data.length;i+=4){
+        const a=data[i+3];if(a<180)continue;
+        const [hh,ss,ll]=rgbToHsl(data[i],data[i+1],data[i+2]);
+        lumSum+=ll;lumCount++;
         if(ss<.18||ll<.22||ll>.72)continue;const hb=Math.round(hh/10)*10;const score=ss*(1-Math.abs(ll-.5));bins.set(hb,(bins.get(hb)||0)+score);
       }
-      let best=[30,0];for(const [hue,score] of bins)if(score>best[1])best=[hue,score];
-      const rgb=hslToRgb(best[1] ? best[0] : 25,best[1] ? .45 : .35,best[1] ? .43 : .40);
-      resolve('#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join(''));
-    };img.onerror=()=>resolve('#9b5b46');img.src='data:image/png;base64,'+b64;
+      let best=[0,0];for(const [hue,score] of bins)if(score>best[1])best=[hue,score];
+      if(best[1]){
+        const rgb=hslToRgb(best[0],.45,.43);
+        resolve('#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join(''));
+      }else{
+        // Foto sem cor dominante (neutra/dessaturada, comum em fotos reais de
+        // ambiente) -- em vez de sempre cair no mesmo tom fixo (o que fazia a
+        // "paleta da foto" parecer igual em qualquer foto, como se a cor
+        // tivesse sido forçada), usa a luminância média real DESSA foto para
+        // escolher entre as duas cores já estabelecidas na identidade da
+        // marca, pelo contraste que cada uma dá: sand (clara) sobre foto
+        // escura, olive (escura) sobre foto clara.
+        const lumMedia=lumCount?lumSum/lumCount:.5;
+        resolve(lumMedia<.45?POST_BRAND.sand:POST_BRAND.olive);
+      }
+    };img.onerror=()=>resolve(POST_BRAND.sand);img.src='data:image/png;base64,'+b64;
   });
+}
+function corContraste(hex){
+  const h=String(hex||'').replace('#','');
+  const r=parseInt(h.slice(0,2),16)||0,g=parseInt(h.slice(2,4),16)||0,b=parseInt(h.slice(4,6),16)||0;
+  const lum=(0.2126*r+0.7152*g+0.0722*b)/255;
+  return lum<.55?POST_BRAND.bg:POST_BRAND.olive;
 }
 function quebrarEmFrases(texto,maxFrases=4){
   return texto.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0,maxFrases);
@@ -2525,7 +2547,12 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
           const boxW=Math.min(largTexto+padX*2,maxBoxW);
           ctx.fillStyle=corDestaque;
           ctx.beginPath();ctx.roundRect(alinhamentoX,y,boxW,blocoH,blocoH*.4);ctx.fill();
-          ctx.fillStyle=corTexto;
+          // Texto do grifo com contraste calculado a partir da própria cor do
+          // grifo (não a corTexto do corpo, que é sempre clara para ficar
+          // direto sobre a foto) -- necessário porque o grifo tanto pode ser
+          // claro (sand, paleta da marca) quanto escuro (olive ou acento
+          // extraído da foto), dependendo da variante escolhida.
+          ctx.fillStyle=corContraste(corDestaque);
           linhas.forEach((linha,i)=>ctx.fillText(linha,alinhamentoX+padX,y+padY+i*lineHeight));
         }else{
           ctx.save();
@@ -2543,11 +2570,12 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
 }
 async function compositarFundoProprio(fotoB64,textoSlide,largura,altura){
   const [marca,corAcento]=await Promise.all([
-    // Terracotta (não olive) no grifo da paleta da marca: olive escuro em
-    // cima de fotos de tom frio (azulado, acinzentado) lia como uma caixa
-    // esverdeada/acinzentada destoante; terracotta é mais quente e combina
-    // com uma faixa maior de fotos reais, além de já ser cor oficial da marca.
-    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.terracotta+'E6'),
+    // Paleta "da marca" = a identidade já consolidada no resto do app: sand
+    // (creme/areia) como cor de destaque dominante, com olive como texto --
+    // não terracotta sólido (que na identidade da marca é só um acento
+    // restrito, nunca uma cor de preenchimento) nem olive sólido (que sobre
+    // fotos de tom frio lia como uma caixa acinzentada destoante).
+    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.sand+'F0'),
     extrairCorAcento(fotoB64)
   ]);
   const adaptada=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',corAcento+'CC');

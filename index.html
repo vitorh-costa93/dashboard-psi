@@ -2498,6 +2498,55 @@ function quebrarLinhas(ctx,texto,maxWidth){
   if(linhaAtual)linhas.push(linhaAtual);
   return linhas;
 }
+function calcularMapaRuido(ctx,largura,altura){
+  // Mapa de "ruído visual" da foto já desenhada em ctx: quanto a luminância
+  // varia de um pixel pro vizinho, numa grade de baixa resolução. Bordas,
+  // costuras de almofada, pelo de bicho etc. têm variação alta (ruidoso);
+  // parede, cortina lisa, céu desfocado têm variação baixa (calmo). Usado
+  // para preferir colocar o texto nas regiões calmas da foto, em vez de
+  // sempre num ponto fixo que pode cair em cima da parte mais poluída.
+  const w=48,h=Math.max(1,Math.round(w*altura/largura));
+  const small=document.createElement('canvas');small.width=w;small.height=h;
+  const sctx=small.getContext('2d');sctx.drawImage(ctx.canvas,0,0,w,h);
+  const data=sctx.getImageData(0,0,w,h).data;
+  const lum=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++){const o=i*4;lum[i]=(0.2126*data[o]+0.7152*data[o+1]+0.0722*data[o+2])/255;}
+  const grid=new Float32Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const idx=y*w+x;let soma=0,n=0;
+    if(x>0){soma+=Math.abs(lum[idx]-lum[idx-1]);n++;}
+    if(x<w-1){soma+=Math.abs(lum[idx]-lum[idx+1]);n++;}
+    if(y>0){soma+=Math.abs(lum[idx]-lum[idx-w]);n++;}
+    if(y<h-1){soma+=Math.abs(lum[idx]-lum[idx+w]);n++;}
+    grid[idx]=n?soma/n:0;
+  }
+  return {grid,w,h};
+}
+function ruidoRegiao(mapa,largura,altura,x0,x1,y0,y1){
+  const {grid,w,h}=mapa;
+  const gx0=Math.max(0,Math.floor(x0/largura*w)),gx1=Math.min(w,Math.max(gx0+1,Math.ceil(x1/largura*w)));
+  const gy0=Math.max(0,Math.floor(y0/altura*h)),gy1=Math.min(h,Math.max(gy0+1,Math.ceil(y1/altura*h)));
+  let soma=0,n=0;
+  for(let y=gy0;y<gy1;y++)for(let x=gx0;x<gx1;x++){soma+=grid[y*w+x];n++;}
+  return n?soma/n:0;
+}
+function melhorY(mapaRuido,largura,altura,x0,larguraTexto,bandTop,bandBottom,blocoH){
+  const yMin=Math.max(altura*.02,bandTop),yMax=Math.min(altura*.95-blocoH,bandBottom-blocoH);
+  if(yMax<yMin){
+    // Banda menor que o bloco de texto (frase muito alta pro espaço
+    // reservado a ela): cai no comportamento antigo, centralizado na banda.
+    const centro=(bandTop+bandBottom)/2;
+    return Math.max(altura*.02,Math.min(centro-blocoH/2,altura*.95-blocoH));
+  }
+  const passos=6,passo=(yMax-yMin)/passos;
+  let melhor=yMin,melhorScore=Infinity;
+  for(let i=0;i<=passos;i++){
+    const y=yMin+passo*i;
+    const score=ruidoRegiao(mapaRuido,largura,altura,x0,x0+larguraTexto,y,y+blocoH);
+    if(score<melhorScore){melhorScore=score;melhor=y;}
+  }
+  return melhor;
+}
 async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
   const tamanhoFonte=Math.round(largura*.052),tamanhoDestaque=Math.round(tamanhoFonte*1.12);
   // Tipografia mista, como um recado escrito à mão sobre a foto: frases
@@ -2528,6 +2577,12 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
       // (o efeito de "frase solta boiando no meio da tela").
       const faixaTopo=altura*.30,faixaBase=altura*.88;
       const alturaFaixa=(faixaBase-faixaTopo)/Math.max(1,frases.length);
+      // Dentro da própria faixa, busca a região mais "calma" da foto (menos
+      // variação de luminância) em vez de sempre centralizar no mesmo ponto
+      // -- assim o texto tende a cair sobre parede/cortina lisa em vez de
+      // em cima da parte mais poluída da imagem (pelo de bicho, costura de
+      // almofada etc.).
+      const mapaRuido=calcularMapaRuido(ctx,largura,altura);
 
       frases.forEach((frase,idx)=>{
         const destaque=frase.split(/\s+/).filter(Boolean).length<=4;
@@ -2536,14 +2591,15 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
         const maxTextWidth=destaque?maxBoxW-padX*2:maxBoxW;
         const linhas=quebrarLinhas(ctx,frase,maxTextWidth);
         const blocoH=lineHeight*linhas.length+(destaque?padY*2:0);
-        const centroFaixa=faixaTopo+alturaFaixa*(idx+.5);
+        const bandTop=faixaTopo+alturaFaixa*idx,bandBottom=faixaTopo+alturaFaixa*(idx+1);
         // leve alternância horizontal entre frases para dar ar de composição
         const alinhamentoX=boxX+(idx%2?largura*.05:0);
-        let y=centroFaixa-blocoH/2;
-        y=Math.max(altura*.02,Math.min(y,altura*.95-blocoH));
+        const largTextoReal=Math.max(...linhas.map(l=>ctx.measureText(l).width));
+        const larguraRegiao=Math.min((destaque?largTextoReal+padX*2:largTextoReal),maxBoxW);
+        const y=melhorY(mapaRuido,largura,altura,alinhamentoX,larguraRegiao,bandTop,bandBottom,blocoH);
         ctx.textAlign='left';ctx.textBaseline='top';
         if(destaque){
-          const largTexto=Math.max(...linhas.map(l=>ctx.measureText(l).width));
+          const largTexto=largTextoReal;
           const boxW=Math.min(largTexto+padX*2,maxBoxW);
           ctx.fillStyle=corDestaque;
           ctx.beginPath();ctx.roundRect(alinhamentoX,y,boxW,blocoH,blocoH*.4);ctx.fill();

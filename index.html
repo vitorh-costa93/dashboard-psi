@@ -484,8 +484,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .post-art-card .post-art-caption{padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .post-art-card .post-art-download{font-size:.7rem;color:var(--accent);text-decoration:none;}
 .post-art-progress{font-size:.76rem;color:var(--muted);margin-top:8px;}
-.post-art-variantes{display:flex;gap:6px;padding:6px 10px;}
-.post-art-variantes button{flex:1;font-size:.72rem;padding:5px 6px;}
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 
@@ -1779,6 +1777,40 @@ async function gerarImagem(prompt, size) {
   if (!data.b64) throw new Error('Nenhuma imagem retornada');
   return data.b64;
 }
+function prepararFotoParaEdicaoIA(fotoB64, maxLado=1536){
+  // A foto enviada pode vir de uma câmera de celular moderna (vários MB) --
+  // reduz e reencoda em JPEG antes de mandar pra API de edição de imagem,
+  // tanto pelo limite de payload da função serverless quanto pelo limite de
+  // tamanho de arquivo da própria OpenAI. O overlay em canvas nunca precisou
+  // disso porque rodava só no navegador; a edição por IA precisa enviar a
+  // foto pela rede.
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const escala=Math.min(1,maxLado/Math.max(img.naturalWidth,img.naturalHeight));
+      const w=Math.max(1,Math.round(img.naturalWidth*escala)),h=Math.max(1,Math.round(img.naturalHeight*escala));
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg',.85).split(',')[1]);
+    };
+    img.onerror=reject;img.src='data:image/png;base64,'+fotoB64;
+  });
+}
+async function gerarImagemEdicao(fotoB64, prompt, size){
+  const fotoPreparada=await prepararFotoParaEdicaoIA(fotoB64);
+  const res=await fetch('/api/gemini',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({type:'image-edit',prompt,size,imageB64:fotoPreparada})
+  });
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err?.error||'Erro ao editar imagem');
+  }
+  const data=await res.json();
+  if(!data.b64) throw new Error('Nenhuma imagem retornada');
+  return data.b64;
+}
 
 async function regenerar() {
   if (!_lastPrompt) return;
@@ -2433,46 +2465,6 @@ const POST_BRAND = {
   logoWhite:'#F5F1E8'
 };
 
-function rgbToHsl(r,g,b){
-  r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;
-  if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
-  return [h*360,s,l];
-}
-function hslToRgb(h,s,l){
-  h/=360;let r,g,b;
-  if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];
-}
-function extrairCorAcento(b64){
-  return new Promise((resolve)=>{
-    const img=new Image();
-    img.onload=()=>{
-      const c=document.createElement('canvas'),w=64,h=64;c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
-      const data=ctx.getImageData(0,0,w,h).data;const bins=new Map();
-      let lumSum=0,lumCount=0;
-      for(let i=0;i<data.length;i+=4){
-        const a=data[i+3];if(a<180)continue;
-        const [hh,ss,ll]=rgbToHsl(data[i],data[i+1],data[i+2]);
-        lumSum+=ll;lumCount++;
-        if(ss<.18||ll<.22||ll>.72)continue;const hb=Math.round(hh/10)*10;const score=ss*(1-Math.abs(ll-.5));bins.set(hb,(bins.get(hb)||0)+score);
-      }
-      let best=[0,0];for(const [hue,score] of bins)if(score>best[1])best=[hue,score];
-      if(best[1]){
-        const rgb=hslToRgb(best[0],.45,.43);
-        resolve('#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join(''));
-      }else{
-        // Foto sem cor dominante (neutra/dessaturada, comum em fotos reais de
-        // ambiente) -- em vez de sempre cair no mesmo tom fixo (o que fazia a
-        // "paleta da foto" parecer igual em qualquer foto, como se a cor
-        // tivesse sido forçada), usa a luminância média real DESSA foto para
-        // escolher entre as duas cores já estabelecidas na identidade da
-        // marca, pelo contraste que cada uma dá: sand (clara) sobre foto
-        // escura, olive (escura) sobre foto clara.
-        const lumMedia=lumCount?lumSum/lumCount:.5;
-        resolve(lumMedia<.45?POST_BRAND.sand:POST_BRAND.olive);
-      }
-    };img.onerror=()=>resolve(POST_BRAND.sand);img.src='data:image/png;base64,'+b64;
-  });
-}
 function corContraste(hex){
   const h=String(hex||'').replace('#','');
   const r=parseInt(h.slice(0,2),16)||0,g=parseInt(h.slice(2,4),16)||0,b=parseInt(h.slice(4,6),16)||0;
@@ -2624,18 +2616,11 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
     img.onerror=reject;img.src='data:image/png;base64,'+fotoB64;
   });
 }
-async function compositarFundoProprio(fotoB64,textoSlide,largura,altura){
-  const [marca,corAcento]=await Promise.all([
-    // Paleta "da marca" = a identidade já consolidada no resto do app: sand
-    // (creme/areia) como cor de destaque dominante, com olive como texto --
-    // não terracotta sólido (que na identidade da marca é só um acento
-    // restrito, nunca uma cor de preenchimento) nem olive sólido (que sobre
-    // fotos de tom frio lia como uma caixa acinzentada destoante).
-    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.sand+'F0'),
-    extrairCorAcento(fotoB64)
-  ]);
-  const adaptada=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',corAcento+'CC');
-  return {marca,adaptada};
+async function compositarFundoFallback(fotoB64,textoSlide,largura,altura){
+  // Usado apenas quando a edição por IA falha para um slide (ver
+  // gerarArtePost) -- overlay em canvas local, sem custo e sem depender de
+  // rede, com a paleta já consolidada da marca (sand/olive).
+  return desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.sand+'F0');
 }
 async function aplicarLogoPost(b64, pageInfo=null){
   await Promise.all([document.fonts.load('700 48px "Playfair Display"'),document.fonts.load('400 48px "Playfair Display"')]);
@@ -2745,20 +2730,9 @@ async function aplicarLogoPost(b64, pageInfo=null){
 function renderArtesPost(){
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
   const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';
-  wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>{
-    const variantes=_postAtual.variantesFoto?.[i];
-    const seletorVariante=variantes?`<div class="post-art-variantes"><button class="btn-secondary" onclick="escolherVarianteFoto(${i},'marca')">Paleta da marca</button><button class="btn-secondary" onclick="escolherVarianteFoto(${i},'adaptada')">Paleta da foto</button></div>`:'';
-    return `<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/>${seletorVariante}<div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`;
-  }).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
-}
-async function escolherVarianteFoto(indice,qual){
-  const variantes=_postAtual.variantesFoto?.[indice];if(!variantes)return;
-  try{
-    const semLogo=variantes[qual];
-    const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:(_postAtual.slides||[]).length}:null);
-    _postAtual.imagens_b64[indice]=comLogo;
-    renderArtesPost();
-  }catch(e){toast('Erro ao aplicar a variante: '+e.message);}
+  wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>
+    `<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`
+  ).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
 async function gerarArtePost(){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
@@ -2787,7 +2761,6 @@ async function gerarArtePost(){
     const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
     const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
     const [largura,altura]=imgSize.split('x').map(Number);
-    _postAtual.variantesFoto={};
     let avisoFallbackFotoMostrado=false;
 
     for(let i=0;i<slides.length;i++){
@@ -2813,9 +2786,22 @@ async function gerarArtePost(){
       const fotoDoSlide=fonteFundo==='upload'?(_fotosFundo.porSlide?.[i]||_fotosFundo.unica):null;
       let finalB64;
       if(fotoDoSlide){
-        const {marca,adaptada}=await compositarFundoProprio(fotoDoSlide,slides[i],largura,altura);
-        finalB64=await aplicarLogoPost(marca,isCarousel?{current:i+1,total}:null);
-        _postAtual.variantesFoto[i]={marca,adaptada};
+        // Edição por IA de verdade sobre a foto real (mesmo modelo do caminho
+        // 100% IA), em vez de só desenhar texto por cima em canvas: a IA lê a
+        // própria foto e decide onde/como compor o texto com qualidade
+        // equivalente ao que uma geração do zero produziria. Reserva as
+        // mesmas zonas de logo/paginação; a marca em si é sempre desenhada
+        // depois pelo app, nunca pela IA.
+        const zonaContador=isCarousel?` Keep the top-left 14% of the frame calm, low-detail and completely free of numbers, labels, badges, icons or decorative marks because the application places a fixed page counter there afterwards.`:'';
+        const promptFoto=`You are given the user's own real photo as the base image to edit. Preserve the same real scene, people, pets and objects clearly recognizable -- do not invent a different photo or replace the subject. Subtle enhancements (light color grading, gentle depth, soft vignette) are welcome, but the actual photographed content must stay the same. Add the following message as elegant overlay text directly on the photo, broken into 2-4 short separate phrases spread across different parts of the frame (never one single paragraph block). Look at the photo first and place each phrase over its calmest, least cluttered area -- avoid covering faces, eyes, or busy textured regions. Mix a warm handwritten-script accent for at most one short emotional phrase with a clean elegant serif or sans-serif for the rest, in a color that contrasts well with whatever is directly behind each phrase (light text with a soft dark shadow over darker/busier spots, or a small soft rounded highlight strip behind a short phrase when needed for legibility). Keep the color feel harmonious with the photo's own tones rather than forcing an unrelated palette. Message for this image: "${slides[i]}". ${coverRule} ${safeZones}${zonaContador} Make it look like a genuine, professional Instagram ${isStory?'Story':isCarousel?'carousel slide':'post'} for a Brazilian psychologist -- warm and human, never a generic AI template. No mockups, no Instagram UI, no device frames, no fabricated logos, handles or watermarks.`;
+        try{
+          const editado=await gerarImagemEdicao(fotoDoSlide,promptFoto,imgSize);
+          finalB64=await aplicarLogoPost(editado,isCarousel?{current:i+1,total}:null);
+        }catch(e){
+          toast(`Não foi possível editar a foto do slide ${i+1} por IA (${e.message}); usando um fundo simples com a mesma foto.`);
+          const fallback=await compositarFundoFallback(fotoDoSlide,slides[i],largura,altura);
+          finalB64=await aplicarLogoPost(fallback,isCarousel?{current:i+1,total}:null);
+        }
       }else{
         if(fonteFundo==='upload' && !avisoFallbackFotoMostrado){
           avisoFallbackFotoMostrado=true;

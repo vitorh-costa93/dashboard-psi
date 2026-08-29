@@ -2644,6 +2644,9 @@ async function gerarArtePost(){
     // "premium magazine" framing actively fights the casual tone Story needs.
     const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
     const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
+    const [largura,altura]=imgSize.split('x').map(Number);
+    const fonteFundo=document.getElementById('post-fundo')?.value||'ia';
+    _postAtual.variantesFoto={};
 
     for(let i=0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
@@ -2665,8 +2668,16 @@ async function gerarArtePost(){
       // set, so it doesn't need that consistency contract; skip it there.
       const brandBlock=isStory?safeZones:identidade;
       const prompt=`Create ${formatDesc} for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${brandBlock} ${visualDirection} Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
-      const raw=await gerarImagem(prompt,imgSize);
-      const finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
+      const fotoDoSlide=fonteFundo==='upload'?(_fotosFundo.porSlide?.[i]||_fotosFundo.unica):null;
+      let finalB64;
+      if(fotoDoSlide){
+        const {marca,adaptada}=await compositarFundoProprio(fotoDoSlide,slides[i],largura,altura);
+        finalB64=await aplicarLogoPost(marca,isCarousel?{current:i+1,total}:null);
+        _postAtual.variantesFoto[i]={marca,adaptada};
+      }else{
+        const raw=await gerarImagem(prompt,imgSize);
+        finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
+      }
       _postAtual.imagens_b64.push(finalB64);
       _postAtual.logo_cor=POST_BRAND.logo;
       _postAtual.logo_posicao='centro-superior';

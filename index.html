@@ -2301,6 +2301,7 @@ function lerFotoComoB64(input,onDone){
   if(arquivo.size>10*1024*1024)return toast('Imagem muito grande (máximo 10MB).');
   const reader=new FileReader();
   reader.onload=()=>onDone(reader.result.split(',')[1]);
+  reader.onerror=()=>toast('Não foi possível ler o arquivo.');
   reader.readAsDataURL(arquivo);
 }
 function montarCamposUploadCarrossel(container){
@@ -2369,6 +2370,7 @@ async function gerarPost(){
       publico:document.getElementById('post-publico').value,faixa:trendSelecionada?.faixa||document.getElementById('post-publico').value,img_b64:null,
       fonte_tendencia:trendSelecionada?.fonte?.link||''};
     renderPostPreview();
+    atualizarUploadFundoPost();
     reiniciarChatPost();mostrarChatPost();
     status.textContent='Conteúdo gerado — revise antes de salvar.';
   }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
@@ -2475,6 +2477,8 @@ function quebrarLinhas(ctx,texto,maxWidth){
   return linhas;
 }
 async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
+  const tamanhoFonte=Math.round(largura*.052);
+  await document.fonts.load(`600 ${tamanhoFonte}px "DM Sans"`);
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
@@ -2485,16 +2489,26 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
       const w=img.naturalWidth*escala,h=img.naturalHeight*escala;
       ctx.drawImage(img,(largura-w)/2,(altura-h)/2,w,h);
       const frases=quebrarEmFrases(textoSlide);
-      const tamanhoFonte=Math.round(largura*.052);
-      let y=altura*.42;
       ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "DM Sans", sans-serif`;
       const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
       const boxX=largura*.08,maxBoxW=largura*.84,maxTextWidth=maxBoxW-padX*2;
       const lineHeight=tamanhoFonte*1.15;
-      frases.forEach(frase=>{
+      // Calcula a altura total do bloco de texto ANTES de desenhar para evitar
+      // que frases finais sejam empurradas para fora do canvas (overflow
+      // vertical): com várias frases de 2-3 linhas cada, o bloco pode ser
+      // mais alto do que sobra de espaço abaixo do y inicial padrão.
+      const espacamentoEntreFrases=tamanhoFonte*.3;
+      const linhasPorFrase=frases.map(frase=>quebrarLinhas(ctx,frase,maxTextWidth));
+      const alturaTotal=linhasPorFrase.reduce((soma,linhas)=>soma+lineHeight*linhas.length+padY*2+espacamentoEntreFrases,0)-espacamentoEntreFrases;
+      const yInicialPadrao=altura*.42,limiteInferior=altura*.9;
+      let y=yInicialPadrao;
+      if(y+alturaTotal>limiteInferior){
+        y=Math.max(altura*.06,limiteInferior-alturaTotal);
+      }
+      frases.forEach((frase,idx)=>{
         // Quebra a frase em linhas que cabem em maxTextWidth, em vez de deixar
         // o fillText espremer o texto horizontalmente via seu parâmetro maxWidth.
-        const linhas=quebrarLinhas(ctx,frase,maxTextWidth);
+        const linhas=linhasPorFrase[idx];
         const largTexto=Math.max(...linhas.map(l=>ctx.measureText(l).width));
         const boxW=Math.min(largTexto+padX*2,maxBoxW);
         const boxH=lineHeight*linhas.length+padY*2;
@@ -2504,7 +2518,7 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
         linhas.forEach((linha,i)=>{
           ctx.fillText(linha,boxX+padX,y+padY+i*lineHeight);
         });
-        y+=boxH+tamanhoFonte*.3;
+        y+=boxH+espacamentoEntreFrases;
       });
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };
@@ -2618,7 +2632,7 @@ async function escolherVarianteFoto(indice,qual){
   const variantes=_postAtual.variantesFoto?.[indice];if(!variantes)return;
   try{
     const semLogo=variantes[qual];
-    const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:_postAtual.imagens_b64.length}:null);
+    const comLogo=await aplicarLogoPost(semLogo,_postAtual.formato==='Carrossel'?{current:indice+1,total:(_postAtual.slides||[]).length}:null);
     _postAtual.imagens_b64[indice]=comLogo;
     renderArtesPost();
   }catch(e){toast('Erro ao aplicar a variante: '+e.message);}
@@ -2631,6 +2645,11 @@ async function gerarArtePost(){
   const imgSize=isStory?'1024x1536':'1024x1024';
   const slides=isCarousel?(_postAtual.slides||[]).slice(0,8):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
   if(isCarousel && (slides.length<4 || slides.length>8)){toast('O carrossel precisa ter entre 4 e 8 slides. Gere o conteúdo novamente.');return;}
+  const fonteFundo=document.getElementById('post-fundo')?.value||'ia';
+  if(fonteFundo==='upload' && !_fotosFundo.unica && !(_fotosFundo.porSlide||[]).some(Boolean)){
+    toast('Envie ao menos uma foto ou volte para "Gerado por IA".');
+    return;
+  }
   try{
     document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
     _postAtual.imagens_b64=[];
@@ -2645,8 +2664,8 @@ async function gerarArtePost(){
     const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
     const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
     const [largura,altura]=imgSize.split('x').map(Number);
-    const fonteFundo=document.getElementById('post-fundo')?.value||'ia';
     _postAtual.variantesFoto={};
+    let avisoFallbackFotoMostrado=false;
 
     for(let i=0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
@@ -2675,6 +2694,10 @@ async function gerarArtePost(){
         finalB64=await aplicarLogoPost(marca,isCarousel?{current:i+1,total}:null);
         _postAtual.variantesFoto[i]={marca,adaptada};
       }else{
+        if(fonteFundo==='upload' && !avisoFallbackFotoMostrado){
+          avisoFallbackFotoMostrado=true;
+          toast('Alguns slides usarão fundo gerado por IA por falta de foto própria enviada.');
+        }
         const raw=await gerarImagem(prompt,imgSize);
         finalB64=await aplicarLogoPost(raw,isCarousel?{current:i+1,total}:null);
       }

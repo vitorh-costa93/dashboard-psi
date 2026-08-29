@@ -2456,6 +2456,22 @@ function extrairCorAcento(b64){
 function quebrarEmFrases(texto,maxFrases=4){
   return texto.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0,maxFrases);
 }
+function quebrarLinhas(ctx,texto,maxWidth){
+  const palavras=texto.split(/\s+/).filter(Boolean);
+  const linhas=[];
+  let linhaAtual='';
+  palavras.forEach(palavra=>{
+    const tentativa=linhaAtual?linhaAtual+' '+palavra:palavra;
+    if(ctx.measureText(tentativa).width>maxWidth && linhaAtual){
+      linhas.push(linhaAtual);
+      linhaAtual=palavra;
+    }else{
+      linhaAtual=tentativa;
+    }
+  });
+  if(linhaAtual)linhas.push(linhaAtual);
+  return linhas;
+}
 async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,corDestaque){
   return new Promise((resolve,reject)=>{
     const img=new Image();
@@ -2470,15 +2486,23 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
       const tamanhoFonte=Math.round(largura*.052);
       let y=altura*.42;
       ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`600 ${tamanhoFonte}px "DM Sans", sans-serif`;
+      const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
+      const boxX=largura*.08,maxBoxW=largura*.84,maxTextWidth=maxBoxW-padX*2;
+      const lineHeight=tamanhoFonte*1.15;
       frases.forEach(frase=>{
-        const largTexto=ctx.measureText(frase).width;
-        const padX=tamanhoFonte*.5,padY=tamanhoFonte*.35;
-        const boxX=largura*.08,boxW=Math.min(largTexto+padX*2,largura*.84);
+        // Quebra a frase em linhas que cabem em maxTextWidth, em vez de deixar
+        // o fillText espremer o texto horizontalmente via seu parâmetro maxWidth.
+        const linhas=quebrarLinhas(ctx,frase,maxTextWidth);
+        const largTexto=Math.max(...linhas.map(l=>ctx.measureText(l).width));
+        const boxW=Math.min(largTexto+padX*2,maxBoxW);
+        const boxH=lineHeight*linhas.length+padY*2;
         ctx.fillStyle=corDestaque;
-        ctx.beginPath();ctx.roundRect(boxX,y,boxW,tamanhoFonte+padY*2,10);ctx.fill();
+        ctx.beginPath();ctx.roundRect(boxX,y,boxW,boxH,10);ctx.fill();
         ctx.fillStyle=corTexto;
-        ctx.fillText(frase,boxX+padX,y+padY,boxW-padX*2);
-        y+=tamanhoFonte+padY*2+tamanhoFonte*.3;
+        linhas.forEach((linha,i)=>{
+          ctx.fillText(linha,boxX+padX,y+padY+i*lineHeight);
+        });
+        y+=boxH+tamanhoFonte*.3;
       });
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };
@@ -2486,8 +2510,10 @@ async function desenharFundoComTexto(fotoB64,textoSlide,largura,altura,corTexto,
   });
 }
 async function compositarFundoProprio(fotoB64,textoSlide,largura,altura){
-  const corAcento=await extrairCorAcento(fotoB64);
-  const marca=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.olive+'CC');
+  const [marca,corAcento]=await Promise.all([
+    desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',POST_BRAND.olive+'CC'),
+    extrairCorAcento(fotoB64)
+  ]);
   const adaptada=await desenharFundoComTexto(fotoB64,textoSlide,largura,altura,'#FFFFFF',corAcento+'CC');
   return {marca,adaptada};
 }

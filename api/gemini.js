@@ -53,7 +53,10 @@ export default async function handler(req, res) {
           prompt,
           n: 1,
           size: finalSize,
-          quality: 'high',
+          // 'high' custa ~4x mais que 'medium' por imagem -- 'medium' foi o
+          // equilíbrio escolhido explicitamente pelo usuário depois de ver
+          // o custo estimado de cada nível.
+          quality: 'medium',
         }),
       });
       if (!r.ok) {
@@ -103,7 +106,7 @@ export default async function handler(req, res) {
       form.append('prompt', promptFinal);
       form.append('size', finalSize);
       form.append('n', '1');
-      form.append('quality', 'high');
+      form.append('quality', 'medium');
       const r = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },

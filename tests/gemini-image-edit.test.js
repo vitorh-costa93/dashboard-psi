@@ -77,7 +77,7 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   assert.equal(capturedForm.get('model'), 'gpt-image-2');
   assert.equal(capturedForm.get('size'), '1024x1536');
   assert.equal(capturedForm.get('n'), '1');
-  assert.equal(capturedForm.get('quality'), 'high');
+  assert.equal(capturedForm.get('quality'), 'medium');
   // Prompt original preservado (com o prefixo de duas imagens na frente,
   // quando a referência de estilo está disponível no deploy).
   assert.ok(capturedForm.get('prompt').includes('Edite esta foto'));
@@ -108,7 +108,7 @@ test('type=image (geração normal) continua funcionando', async () => {
     const body = JSON.parse(options.body);
     assert.equal(body.model, 'gpt-image-2');
     assert.equal(body.prompt, 'Um prompt qualquer');
-    assert.equal(body.quality, 'high');
+    assert.equal(body.quality, 'medium');
     return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'GERADO_B64'}]})};
   });
   const req = baseReq({type: 'image', prompt: 'Um prompt qualquer', size: '1024x1024'});

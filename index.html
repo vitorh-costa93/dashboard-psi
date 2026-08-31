@@ -2457,7 +2457,11 @@ let _postChatHistorico=[];
 function mostrarChatPost(){document.getElementById('post-chat').style.display='block';renderChatPost();}
 function renderChatPost(){
   const wrap=document.getElementById('post-chat-msgs');if(!wrap)return;
-  wrap.innerHTML=_postChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join('');
+  // "interno" (o snapshot inicial do conteúdo, em JSON) alimenta o histórico
+  // que vai pra API, mas nunca aparece pra psicóloga -- ela não deveria ver
+  // código nenhum, só uma conversa. Turnos reais mostram "exibicao" (um
+  // resumo humano) quando existir, e caem pro texto puro só como fallback.
+  wrap.innerHTML=_postChatHistorico.filter(h=>!h.interno).map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.exibicao||h.texto)}</div>`).join('');
   wrap.scrollTop=wrap.scrollHeight;
 }
 function reiniciarChatPost(){_postChatHistorico=[];renderChatPost();}
@@ -2467,13 +2471,19 @@ async function ajustarPost(){
   const btn=document.getElementById('post-chat-btn');
   if(!_postChatHistorico.length){
     const primeiroPedido=`Tema: ${_postAtual.tema}\nFaixa do ciclo vital: ${_postAtual.faixa||'Ciclo vital'}\nFormato: ${_postAtual.formato}\nPúblico: ${_postAtual.publico}\nContexto/tendência: nenhum`;
-    _postChatHistorico.push({papel:'usuario',texto:primeiroPedido},{papel:'assistente',texto:JSON.stringify({titulo:_postAtual.titulo,gancho:_postAtual.gancho,slides:_postAtual.slides,legenda:_postAtual.legenda,hashtags:_postAtual.hashtags,cta:_postAtual.cta})});
+    _postChatHistorico.push(
+      {papel:'usuario',texto:primeiroPedido,interno:true},
+      {papel:'assistente',texto:JSON.stringify({titulo:_postAtual.titulo,gancho:_postAtual.gancho,slides:_postAtual.slides,legenda:_postAtual.legenda,hashtags:_postAtual.hashtags,cta:_postAtual.cta}),interno:true}
+    );
   }
   input.disabled=true;if(btn)btn.disabled=true;
   try{
     const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:_postChatHistorico,ajuste:pedido})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
-    _postChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:JSON.stringify(d)});
+    // texto guarda o JSON bruto (histórico real mandado pra API a cada novo
+    // pedido); exibicao é só o que a psicóloga vê -- uma confirmação em
+    // linguagem natural, não o objeto de dados por trás da geração.
+    _postChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Ajustei o texto conforme pedido — veja a prévia atualizada acima.'});
     const tinhaArte=!!_postAtual.imagens_b64?.length;
     _postAtual={..._postAtual,...d};
     if(tinhaArte){
@@ -2858,7 +2868,7 @@ async function gerarArtePost(){
         // estilo). O resto do acabamento visual fica por conta do próprio
         // modelo, orientado pela imagem de referência de estilo (anexada no
         // backend em api/gemini.js) em vez de uma lista de regras de CSS.
-        const promptFoto=`You are given two images: the FIRST is the user's own real photo -- preserve the real scene, people, pets and objects clearly recognizable, do not invent a different photo or replace the subject. The SECOND (if present) is a style reference showing the exact design quality, craftsmanship and typography pairing to aim for -- use your own creative judgment to match that level of polish; do not copy its actual content, words or exact colors, only its quality bar. Add this message as elegant overlay text on the photo, split ONLY at these exact sentence boundaries already decided for you -- do not merge them, split any further, reorder, add or remove any: ${listaFrases}. Spread the sentences across different calm, uncluttered parts of the frame (never one single paragraph block, never covering faces or busy textures). ${coverRule} ${safeZones}${zonaContador} Make it a genuine, professional Instagram ${isStory?'Story':isCarousel?'carousel slide':'post'} for a Brazilian psychologist -- warm and human, never a generic AI template. No mockups, no Instagram UI, no device frames, no fabricated logos, handles or watermarks.`;
+        const promptFoto=`You are given two images: the FIRST is the user's own real photo -- preserve the real scene, people, pets and objects clearly recognizable, do not invent a different photo or replace the subject. The SECOND (if present) is a style reference showing the exact design quality, craftsmanship and typography pairing to aim for -- use your own creative judgment to match that level of polish; do not copy its actual content, words or exact colors, only its quality bar. Add this message as elegant overlay text on the photo. It has already been split into exactly ${frasesSlide.length} complete sentence${frasesSlide.length===1?'':'s'} for you, listed below in order: ${listaFrases}. This split is final -- do not merge them, do not reorder, add or remove any, and critically: do NOT break any of these sentences further into smaller pieces. Each listed sentence, however long, stays together as ONE single text block/box (it can wrap onto multiple lines within that one box, that's fine -- it just can never be torn apart into several separate boxes). Spread these ${frasesSlide.length} block${frasesSlide.length===1?'':'s'} across different calm, uncluttered parts of the frame (never one single paragraph block, never covering faces or busy textures). ${coverRule} ${safeZones}${zonaContador} Make it a genuine, professional Instagram ${isStory?'Story':isCarousel?'carousel slide':'post'} for a Brazilian psychologist -- warm and human, never a generic AI template. No mockups, no Instagram UI, no device frames, no fabricated logos, handles or watermarks.`;
         try{
           const editado=await gerarImagemEdicao(fotoDoSlide,promptFoto,imgSize);
           finalB64=await aplicarLogoPost(editado,isCarousel?{current:i+1,total}:null);

@@ -6,7 +6,9 @@ import { applySheetImport } from '../lib/sheet-import.js';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
 const OPENAI_KEY = process.env.OPENAI_KEY;
-const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-4.1-mini';
+// gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI --
+// gpt-5.6-sol é o flagship atual.
+const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-sol';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
@@ -127,7 +129,7 @@ Para cada oportunidade retorne:
 - resumo: o que está acontecendo
 - por_que: por que vale abordar agora
 - faixa: Infância|Adolescência|Adultos|Idosos|Família|Ciclo vital
-- formato: Carrossel|Post|Story
+- formato: Carrossel|Post|Story -- entre as 8 oportunidades, inclua pelo menos 1 ou 2 em Story sempre que o tema permitir: Story não é uma versão curta do conteúdo educativo do Carrossel/Post, é a psicóloga reagindo a esse assunto de forma pessoal e no calor do momento (um pensamento, sentimento ou bastidor genuíno do dia dela relacionado ao tema), nunca uma explicação em terceira pessoa. Não force um Story quando nenhum tema realmente render essa abordagem pessoal, mas não deixe de considerar essa opção antes de escolher só Carrossel/Post por padrão.
 - potencial: Alto|Médio
 - angulo: abordagem concreta para uma psicóloga, sem aconselhamento individual
 - fonte_index: índice da notícia usada

@@ -1749,10 +1749,14 @@ async function gerarAtividade() {
 
   setGenerating(true, 'Gerando imagem...');
   try {
+    // Sem logo aqui: o prompt de Atividade não reserva nenhuma zona calma
+    // pra IA (diferente do fluxo de Posts), então a marca acabava caindo
+    // em cima do título da atividade. Também rouba espaço numa folha que
+    // já é pra imprimir e usar com a criança -- "regenerar" já não
+    // aplicava a logo (inconsistência corrigida aqui de quebra).
     const imgB64 = await gerarImagem(prompt);
-    const brandedB64 = await aplicarLogoPost(imgB64);
-    _currentImg = { b64: brandedB64, prompt };
-    mostrarPreview(brandedB64);
+    _currentImg = { b64: imgB64, prompt };
+    mostrarPreview(imgB64);
     setGenerating(false, '');
     document.getElementById('btn-regen').disabled       = false;
     document.getElementById('btn-edit-prompt').disabled = false;

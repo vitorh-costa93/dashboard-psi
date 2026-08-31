@@ -2262,6 +2262,35 @@ let _postAtual=null;
 let _postTrends=[];
 function escHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+// Geração de arte (sobretudo com foto própria, via IA real) leva minutos e
+// pode ser interrompida se o navegador recarregar a página enquanto o app
+// fica em segundo plano por tempo suficiente (comum em iOS ao trocar de
+// app) -- perdendo _postAtual inteiro da memória sem aviso. Salva o
+// progresso a cada arte concluída pra poder retomar depois de um reload.
+const CHAVE_GERACAO_EM_ANDAMENTO='psi_post_geracao_em_andamento';
+function assinaturaGeracao(slides,formato,fonteFundo){return `${formato}|${fonteFundo}|${slides.join('¦')}`;}
+function salvarProgressoGeracao(assinatura){
+  try{localStorage.setItem(CHAVE_GERACAO_EM_ANDAMENTO,JSON.stringify({at:Date.now(),assinatura,postAtual:_postAtual}));}catch{}
+}
+function limparProgressoGeracao(){try{localStorage.removeItem(CHAVE_GERACAO_EM_ANDAMENTO);}catch{}}
+function restaurarGeracaoInterrompida(){
+  try{
+    const raw=localStorage.getItem(CHAVE_GERACAO_EM_ANDAMENTO);
+    if(!raw)return;
+    const {at,postAtual}=JSON.parse(raw)||{};
+    if(!postAtual||!Array.isArray(postAtual.imagens_b64)||!postAtual.imagens_b64.length){limparProgressoGeracao();return;}
+    // Só oferece retomar por um tempo razoável, pra não reaparecer dias depois.
+    if(!at||Date.now()-at>6*60*60*1000){limparProgressoGeracao();return;}
+    _postAtual=postAtual;
+    renderPostPreview();
+    renderArtesPost();
+    atualizarUploadFundoPost();
+    const isCarousel=(postAtual.formato||'').toLowerCase()==='carrossel';
+    const total=isCarousel?(postAtual.slides||[]).length:1;
+    toast(`Uma geração de arte foi interrompida (o app foi pra segundo plano) -- ${postAtual.imagens_b64.length} de ${total} artes já prontas. Clique em "Gerar arte" pra concluir as que faltam.`,8000);
+  }catch{}
+}
+
 async function initPosts(){
   await carregarPostsSalvos();
   const brand=document.getElementById('post-brand-preview');
@@ -2269,6 +2298,7 @@ async function initPosts(){
     brand.innerHTML=`<div class="post-logo-preview">${brandMarkup()}<span style="font-size:.72rem;color:var(--muted)">Logo aplicada automaticamente às artes</span></div>`;
   }
   buscarTendencias(false);
+  restaurarGeracaoInterrompida();
 }
 
 async function buscarTendencias(force=false){
@@ -2749,7 +2779,20 @@ async function gerarArtePost(){
   }
   try{
     document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
-    _postAtual.imagens_b64=[];
+    // Se já existe progresso salvo pra esse EXATO conteúdo (mesmo
+    // formato/fonte/slides), retoma de onde parou em vez de gerar tudo de
+    // novo -- cobre o caso de a página ter recarregado no meio da geração
+    // (comum no iOS ao trocar de app) e a psicóloga clicar em "Gerar arte"
+    // de novo.
+    const assinatura=assinaturaGeracao(slides,formato,fonteFundo);
+    const retomando=_postAtual._assinaturaGeracao===assinatura && Array.isArray(_postAtual.imagens_b64) && _postAtual.imagens_b64.length>0 && _postAtual.imagens_b64.length<slides.length;
+    if(!retomando){
+      _postAtual.imagens_b64=[];
+      toast('A geração pode levar alguns minutos -- evite trocar de app ou bloquear a tela até terminar, senão o progresso pode ficar incompleto.',6000);
+    }else{
+      toast(`Retomando: ${_postAtual.imagens_b64.length} de ${slides.length} artes já prontas.`);
+    }
+    _postAtual._assinaturaGeracao=assinatura;
 
     const total=slides.length;
     // safeZones is non-negotiable regardless of format: aplicarLogoPost()
@@ -2763,7 +2806,7 @@ async function gerarArtePost(){
     const [largura,altura]=imgSize.split('x').map(Number);
     let avisoFallbackFotoMostrado=false;
 
-    for(let i=0;i<slides.length;i++){
+    for(let i=retomando?_postAtual.imagens_b64.length:0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
       const coverRule=isCarousel&&i===0
         ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
@@ -2822,9 +2865,14 @@ async function gerarArtePost(){
       _postAtual.logo_cor=POST_BRAND.logo;
       _postAtual.logo_posicao='centro-superior';
       renderArtesPost();
+      // Salva o progresso a cada arte concluída -- se a página recarregar
+      // no meio da geração (app em segundo plano por tempo demais), o que
+      // já foi feito não se perde.
+      salvarProgressoGeracao(assinatura);
     }
     _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
     _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?`Carrossel de ${slides.length} slides;`:'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
+    limparProgressoGeracao();
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
 }
 
@@ -3003,6 +3051,7 @@ async function carregarPostsSalvos(){
 
 function limparPost(){
   _postAtual=null;
+  limparProgressoGeracao();
   ['post-tema','post-contexto'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('post-preview-card').style.display='none';
   document.getElementById('post-img-wrap').innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';

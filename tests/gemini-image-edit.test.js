@@ -81,7 +81,7 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   // Prompt original preservado (com o prefixo de duas imagens na frente,
   // quando a referência de estilo está disponível no deploy).
   assert.ok(capturedForm.get('prompt').includes('Edite esta foto'));
-  const imagens = capturedForm.getAll('image');
+  const imagens = capturedForm.getAll('image[]');
   assert.equal(imagens[0].type, 'image/jpeg');
   assert.equal(imagens[0].name, 'foto.jpg');
   // A referência de estilo (assets/reference-quality/story-dia-do-psicologo.jpg)

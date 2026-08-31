@@ -84,12 +84,15 @@ export default async function handler(req, res) {
     try {
       const form = new FormData();
       form.append('model', 'gpt-image-2');
-      form.append('image', new Blob([buffer], { type: 'image/jpeg' }), 'foto.jpg');
+      // A OpenAI rejeita duas entradas 'image' repetidas ("Duplicate
+      // parameter") -- múltiplas imagens precisam usar a sintaxe de array
+      // 'image[]', mesmo quando só uma é enviada.
+      form.append('image[]', new Blob([buffer], { type: 'image/jpeg' }), 'foto.jpg');
 
       let promptFinal = prompt;
       try {
         const refBuffer = await readFile(REFERENCIA_ESTILO_PATH);
-        form.append('image', new Blob([refBuffer], { type: 'image/jpeg' }), 'referencia-estilo.jpg');
+        form.append('image[]', new Blob([refBuffer], { type: 'image/jpeg' }), 'referencia-estilo.jpg');
         promptFinal = `You are given two images. The FIRST image is the user's own real photo -- this is the actual scene/subject to preserve, edit and add text onto, exactly as instructed below. The SECOND image is ONLY a style and craftsmanship reference showing the target quality bar for how text labels, typography pairing, spacing and small decorative accents should look -- do NOT copy its actual photo, its specific words, its exact colors, or any of its content; take from it only the general design language and level of polish. ${prompt}`;
       } catch {
         // Se o arquivo de referência não puder ser lido por algum motivo,

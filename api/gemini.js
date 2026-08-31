@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { requireAuth } from './_auth.js';
 
 // The prompt text can *describe* an aspect ratio, but only this API parameter
@@ -5,6 +7,14 @@ import { requireAuth } from './_auth.js';
 // Story image still came out perfectly square before because this was
 // hardcoded to 1024x1024 regardless of what the prompt asked for.
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
+
+// Referência de ESTILO (nunca de conteúdo) para a edição de fotos próprias --
+// um exemplo aprovado pela psicóloga do nível de acabamento desejado
+// (etiquetas limpas, tipografia mista, acentos discretos). O modelo GPT
+// Image aceita múltiplas imagens de entrada num mesmo pedido de edição; o
+// prompt deixa explícito que essa segunda imagem é só uma referência visual,
+// nunca para copiar seu conteúdo real.
+const REFERENCIA_ESTILO_PATH = path.join(process.cwd(), 'assets/reference-quality/story-dia-do-psicologo.jpg');
 
 async function extrairB64(data) {
   let b64 = data.data?.[0]?.b64_json;
@@ -43,6 +53,7 @@ export default async function handler(req, res) {
           prompt,
           n: 1,
           size: finalSize,
+          quality: 'high',
         }),
       });
       if (!r.ok) {
@@ -73,10 +84,23 @@ export default async function handler(req, res) {
     try {
       const form = new FormData();
       form.append('model', 'gpt-image-2');
-      form.append('prompt', prompt);
+      form.append('image', new Blob([buffer], { type: 'image/jpeg' }), 'foto.jpg');
+
+      let promptFinal = prompt;
+      try {
+        const refBuffer = await readFile(REFERENCIA_ESTILO_PATH);
+        form.append('image', new Blob([refBuffer], { type: 'image/jpeg' }), 'referencia-estilo.jpg');
+        promptFinal = `You are given two images. The FIRST image is the user's own real photo -- this is the actual scene/subject to preserve, edit and add text onto, exactly as instructed below. The SECOND image is ONLY a style and craftsmanship reference showing the target quality bar for how text labels, typography pairing, spacing and small decorative accents should look -- do NOT copy its actual photo, its specific words, its exact colors, or any of its content; take from it only the general design language and level of polish. ${prompt}`;
+      } catch {
+        // Se o arquivo de referência não puder ser lido por algum motivo,
+        // segue com a edição de uma imagem só -- não é motivo pra falhar a
+        // geração inteira.
+      }
+
+      form.append('prompt', promptFinal);
       form.append('size', finalSize);
       form.append('n', '1');
-      form.append('image', new Blob([buffer], { type: 'image/jpeg' }), 'foto.jpg');
+      form.append('quality', 'high');
       const r = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },

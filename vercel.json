@@ -5,6 +5,9 @@
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "assets/psm/infantil/emocoes-page-*.webp"
+    },
+    "api/gemini.js": {
+      "includeFiles": "assets/reference-quality/*.jpg"
     }
   }
 }

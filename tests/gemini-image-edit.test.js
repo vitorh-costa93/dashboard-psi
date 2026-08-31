@@ -62,10 +62,9 @@ test('image-edit com imagem maior que 4MB retorna 400 sem chamar OpenAI', async 
 });
 
 test('image-edit monta multipart com model/prompt/size/image e retorna b64', async () => {
-  let capturedUrl, capturedForm;
+  let capturedForm;
   global.fetch = authFetchStub(async (url, options) => {
     assert.equal(url, 'https://api.openai.com/v1/images/edits');
-    capturedUrl = url;
     capturedForm = options.body;
     assert.ok(capturedForm instanceof FormData);
     return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'RESULTADO_B64'}]})};
@@ -76,12 +75,20 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   assert.equal(res.code, 200);
   assert.equal(res.body.b64, 'RESULTADO_B64');
   assert.equal(capturedForm.get('model'), 'gpt-image-2');
-  assert.equal(capturedForm.get('prompt'), 'Edite esta foto');
   assert.equal(capturedForm.get('size'), '1024x1536');
   assert.equal(capturedForm.get('n'), '1');
-  const imagem = capturedForm.get('image');
-  assert.equal(imagem.type, 'image/jpeg');
-  assert.equal(imagem.name, 'foto.jpg');
+  assert.equal(capturedForm.get('quality'), 'high');
+  // Prompt original preservado (com o prefixo de duas imagens na frente,
+  // quando a referência de estilo está disponível no deploy).
+  assert.ok(capturedForm.get('prompt').includes('Edite esta foto'));
+  const imagens = capturedForm.getAll('image');
+  assert.equal(imagens[0].type, 'image/jpeg');
+  assert.equal(imagens[0].name, 'foto.jpg');
+  // A referência de estilo (assets/reference-quality/story-dia-do-psicologo.jpg)
+  // faz parte do repositório -- deve sempre estar disponível e ser anexada.
+  assert.equal(imagens.length, 2);
+  assert.equal(imagens[1].name, 'referencia-estilo.jpg');
+  assert.ok(capturedForm.get('prompt').includes('SECOND image is ONLY a style'));
 });
 
 test('image-edit propaga erro da OpenAI com a mensagem original', async () => {
@@ -101,6 +108,7 @@ test('type=image (geração normal) continua funcionando', async () => {
     const body = JSON.parse(options.body);
     assert.equal(body.model, 'gpt-image-2');
     assert.equal(body.prompt, 'Um prompt qualquer');
+    assert.equal(body.quality, 'high');
     return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'GERADO_B64'}]})};
   });
   const req = baseReq({type: 'image', prompt: 'Um prompt qualquer', size: '1024x1024'});

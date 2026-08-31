@@ -43,10 +43,11 @@ Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto 
   }
   try{
     // gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI
-    // (developers.openai.com/api/docs/models/compare) -- gpt-5.6-sol é o
-    // flagship atual, usado aqui porque a qualidade do conteúdo gerado
-    // importa mais que o custo marginal por chamada de texto.
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-sol',temperature:.65,messages,response_format:{type:'json_object'}})});
+    // (developers.openai.com/api/docs/models/compare). gpt-5.6-terra (não o
+    // gpt-5.6-sol, o flagship mais caro) é o meio-termo atual: $2/$12 por
+    // milhão de tokens entrada/saída contra $4/$20 do Sol, mantendo boa
+    // qualidade sem o custo do topo de linha.
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',temperature:.65,messages,response_format:{type:'json_object'}})});
     const data=await r.json();
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;

@@ -6,9 +6,10 @@ import { applySheetImport } from '../lib/sheet-import.js';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
 const OPENAI_KEY = process.env.OPENAI_KEY;
-// gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI --
-// gpt-5.6-sol é o flagship atual.
-const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-sol';
+// gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI.
+// gpt-5.6-terra (não o gpt-5.6-sol, o flagship mais caro) é o meio-termo
+// atual: $2/$12 por milhão de tokens entrada/saída contra $4/$20 do Sol.
+const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 

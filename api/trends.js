@@ -69,7 +69,8 @@ async function askAI(body){
     headers:{Authorization:`Bearer ${OPENAI_KEY}`,'Content-Type':'application/json'},
     body:JSON.stringify({
       model:MODEL,
-      temperature:.35,
+      // gpt-5.6-terra rejeita temperature customizado ("Only the default (1)
+      // value is supported") -- diferente do gpt-4.1-mini anterior.
       response_format:{type:'json_object'},
       messages:[
         {role:'system',content:`Você é estrategista de conteúdo ético para uma psicóloga brasileira que atende todo o ciclo vital: crianças, adolescentes, adultos e alguns idosos.

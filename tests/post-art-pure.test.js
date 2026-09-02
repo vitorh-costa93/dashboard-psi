@@ -10,7 +10,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
-const filePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../lib/post-art-pure.js');
+const filePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../assets/post-art-pure.js');
 const source = readFileSync(filePath, 'utf8');
 const {escHtml, escHtmlAttr, assinaturaGeracao, quebrarEmFrases, quebrarLinhas} =
   new Function(`${source}\nreturn {escHtml, escHtmlAttr, assinaturaGeracao, quebrarEmFrases, quebrarLinhas};`)();

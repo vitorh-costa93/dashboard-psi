@@ -2072,8 +2072,8 @@ async function gerarPPT() {
     const list = document.getElementById('ppt-slides-list');
     list.innerHTML = data.slides.map((s,i) => `
       <div class="ppt-slide-preview">
-        <h4>Slide ${i+1}: ${s.titulo}</h4>
-        <ul>${s.conteudo.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <h4>Slide ${i+1}: ${escHtml(s.titulo)}</h4>
+        <ul>${s.conteudo.map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul>
       </div>
     `).join('');
 
@@ -2446,7 +2446,7 @@ async function gerarPost(){
 function renderPostPreview(){
   if(!_postAtual)return;
   document.getElementById('post-preview-title').textContent=_postAtual.titulo||'Prévia do post';
-  document.getElementById('post-slides').innerHTML=(_postAtual.slides||[]).map((x,i)=>`<div class="post-slide"><strong>${i+1}.</strong> ${x}</div>`).join('');
+  document.getElementById('post-slides').innerHTML=(_postAtual.slides||[]).map((x,i)=>`<div class="post-slide"><strong>${i+1}.</strong> ${escHtml(x)}</div>`).join('');
   document.getElementById('post-legenda').textContent=_postAtual.legenda||'';
   document.getElementById('post-hashtags').textContent=(_postAtual.hashtags||[]).join(' ');
   document.getElementById('post-cta').textContent=_postAtual.cta||'';
@@ -3367,8 +3367,8 @@ function renderGridPacientes() {
       const n=p.sessoes.length;
       const ativo=id===_pacAtual;
       const inativo=p.ativo===false;
-      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${id}')">
-        <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${p.label||p.nome}</div>
+      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${escHtmlAttr(id)}')">
+        <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${escHtml(p.label||p.nome)}</div>
         <div style="font-size:.72rem;color:var(--muted);">${n} sessão${n!==1?'ões':''} registrada${n!==1?'s':''}${inativo?' · inativo':''}</div>
       </div>`;
     }).join('');
@@ -3435,8 +3435,8 @@ function verProntuario(id){
     const [y,m,d]=s.data.split('-');
     tbody.innerHTML+=`<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
       <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
-      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${String(s.relato||'').replace(/\n/g,'<br>')}</td>
-      <td style="padding:10px 14px;vertical-align:top;text-align:right;"><button onclick="deletarSessao('${s.id}','${id}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
+      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${escHtml(String(s.relato||'')).replace(/\n/g,'<br>')}</td>
+      <td style="padding:10px 14px;vertical-align:top;text-align:right;"><button onclick="deletarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
     </tr>`;
   });
   document.getElementById('pront-busca').value=id;

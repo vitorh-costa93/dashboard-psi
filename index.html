@@ -6,6 +6,7 @@
 <title>Visão Geral — Consultório</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="/lib/post-art-pure.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Baloo+2:wght@600;700&family=Nunito:wght@600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet"/>
 <style>
 @font-face{font-family:'Agrandir Tight';src:url('/assets/fonts/agrandir-tight.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
@@ -2289,7 +2290,6 @@ async function deletarApresentacao(id) {
 // ══════════════════════════════════════════════════════════
 let _postAtual=null;
 let _postTrends=[];
-function escHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 // Geração de arte (sobretudo com foto própria, via IA real) leva minutos e
 // pode ser interrompida se o navegador recarregar a página enquanto o app
@@ -2297,7 +2297,6 @@ function escHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 // app) -- perdendo _postAtual inteiro da memória sem aviso. Salva o
 // progresso a cada arte concluída pra poder retomar depois de um reload.
 const CHAVE_GERACAO_EM_ANDAMENTO='psi_post_geracao_em_andamento';
-function assinaturaGeracao(slides,formato,fonteFundo){return `${formato}|${fonteFundo}|${slides.join('¦')}`;}
 function salvarProgressoGeracao(assinatura){
   try{localStorage.setItem(CHAVE_GERACAO_EM_ANDAMENTO,JSON.stringify({at:Date.now(),assinatura,postAtual:_postAtual}));}catch{}
 }
@@ -2539,25 +2538,6 @@ function corContraste(hex){
   const r=parseInt(h.slice(0,2),16)||0,g=parseInt(h.slice(2,4),16)||0,b=parseInt(h.slice(4,6),16)||0;
   const lum=(0.2126*r+0.7152*g+0.0722*b)/255;
   return lum<.55?POST_BRAND.bg:POST_BRAND.olive;
-}
-function quebrarEmFrases(texto,maxFrases=4){
-  return texto.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0,maxFrases);
-}
-function quebrarLinhas(ctx,texto,maxWidth){
-  const palavras=texto.split(/\s+/).filter(Boolean);
-  const linhas=[];
-  let linhaAtual='';
-  palavras.forEach(palavra=>{
-    const tentativa=linhaAtual?linhaAtual+' '+palavra:palavra;
-    if(ctx.measureText(tentativa).width>maxWidth && linhaAtual){
-      linhas.push(linhaAtual);
-      linhaAtual=palavra;
-    }else{
-      linhaAtual=tentativa;
-    }
-  });
-  if(linhaAtual)linhas.push(linhaAtual);
-  return linhas;
 }
 function calcularMapaRuido(ctx,largura,altura){
   // Mapa de "ruído visual" da foto já desenhada em ctx: quanto a luminância
@@ -3023,8 +3003,6 @@ function fecharRascunhoModal(e){
   if(!ov)return;
   if(!e || e.target===ov)ov.classList.remove('open');
 }
-function escHtmlAttr(v){return escHtml(v).replace(/`/g,'&#96;');}
-
 async function abrirRascunho(id){
   try{
     const r=await fetch(`/api/data?table=posts&action=detail&id=${encodeURIComponent(id)}`);

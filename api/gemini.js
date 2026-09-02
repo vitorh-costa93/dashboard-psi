@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { requireAuth } from './_auth.js';
+import { fetchComRetentativa } from './_openai-retry.js';
 
 // The prompt text can *describe* an aspect ratio, but only this API parameter
 // actually controls the output pixel dimensions -- a request for a vertical
@@ -42,7 +43,7 @@ export default async function handler(req, res) {
 
   if (type === 'image') {
     try {
-      const r = await fetch('https://api.openai.com/v1/images/generations', {
+      const r = await fetchComRetentativa('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
           // o custo estimado de cada nível.
           quality: 'medium',
         }),
-      });
+      }, {tentativas: 1, timeoutMs: 45000});
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2' });
@@ -107,11 +108,11 @@ export default async function handler(req, res) {
       form.append('size', finalSize);
       form.append('n', '1');
       form.append('quality', 'medium');
-      const r = await fetch('https://api.openai.com/v1/images/edits', {
+      const r = await fetchComRetentativa('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },
         body: form,
-      });
+      }, {tentativas: 1, timeoutMs: 45000});
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro ao editar imagem' });

@@ -4,6 +4,7 @@
 // clínico ou de paciente é enviado à IA.
 
 import { requireAuthOrCron } from './_auth.js';
+import { fetchComRetentativa } from './_openai-retry.js';
 import { applySheetImport } from '../lib/sheet-import.js';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
@@ -76,7 +77,12 @@ Também considere assuntos sazonais, datas relevantes e temas que estejam ganhan
 ${TEMAS.map((t, i) => `${i + 1}) ${t}`).join('\n')}
 
 Selecione no máximo 8 oportunidades de conteúdo reais, cada uma com a fonte real (título, URL e publicação) que você encontrou na busca.`;
-  const r = await fetch('https://api.openai.com/v1/responses', {
+  // Sem retentativa aqui (tentativas:0): uma chamada real já leva ~60s por
+  // causa da busca na web ao vivo -- tentar de novo dobraria o tempo e
+  // arriscaria estourar o maxDuration da função (120s, ver vercel.json).
+  // Uma falha isolada só significa que o radar não atualiza nesta rodada
+  // (roda de novo amanhã sozinho, ou a psicóloga clica em "Atualizar").
+  const r = await fetchComRetentativa('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json'},
     body: JSON.stringify({
@@ -87,7 +93,7 @@ Selecione no máximo 8 oportunidades de conteúdo reais, cada uma com a fonte re
       text: {format: SUGGESTIONS_SCHEMA},
       max_output_tokens: 6000
     })
-  });
+  }, {tentativas: 0, timeoutMs: 100000});
   const d = await r.json();
   if(!r.ok) throw new Error(d?.error?.message || 'Erro ao analisar tendências');
   const text = (d.output || []).flatMap(x => x.content || []).find(x => x.type === 'output_text')?.text;

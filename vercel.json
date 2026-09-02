@@ -7,6 +7,7 @@
       "includeFiles": "assets/psm/infantil/emocoes-page-*.webp"
     },
     "api/gemini.js": {
+      "maxDuration": 100,
       "includeFiles": "assets/reference-quality/*.jpg"
     },
     "api/trends.js": {

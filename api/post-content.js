@@ -1,5 +1,6 @@
 // Gera conteúdo educativo para posts. A publicação no Instagram não é feita.
 import { requireAuth } from './_auth.js';
+import { fetchComRetentativa } from './_openai-retry.js';
 
 // Structured Outputs (json_schema + strict:true) em vez do antigo
 // response_format:{type:'json_object'}: json_object só garante "isto é JSON
@@ -72,7 +73,7 @@ Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto 
     // qualidade sem o custo do topo de linha. Diferente do gpt-4.1-mini, ele
     // rejeita temperature customizado ("Only the default (1) value is
     // supported") -- por isso o parâmetro foi removido daqui.
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})});
+    const r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:2,timeoutMs:30000});
     const data=await r.json();
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;

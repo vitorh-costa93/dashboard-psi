@@ -18,7 +18,9 @@ const POST_SCHEMA = {
       gancho: {type: 'string'},
       slides: {type: 'array', items: {type: 'string'}, minItems: 1, maxItems: 8},
       legenda: {type: 'string'},
-      hashtags: {type: 'array', items: {type: 'string'}},
+      // maxItems 5: nunca o "bloco de 20-30 hashtags" -- ver regra de
+      // dimensionamento (2-3 nicho + 1-2 médias + 0-1 ampla) no system prompt.
+      hashtags: {type: 'array', items: {type: 'string'}, maxItems: 5},
       cta: {type: 'string'}
     },
     required: ['titulo', 'gancho', 'slides', 'legenda', 'hashtags', 'cta'],
@@ -45,6 +47,19 @@ CARROSSEL (feed, várias imagens deslizáveis, fica salvo no perfil): conteúdo 
 POST (feed, imagem única, fica salvo no perfil): UMA única mensagem editorial, mais atemporal e reflexiva — como uma afirmação ou citação forte que resume um conceito, pensada para ser bonita, compartilhável e ainda fazer sentido daqui a meses. Legenda de apoio com profundidade, hashtags de descoberta.
 
 STORY (some em 24h, tela cheia vertical, consumida em poucos segundos por toque): NÃO é uma dica educativa para o seguidor nem uma explicação técnica — é uma frase de impacto, calorosa e reflexiva sobre o tema, pensada pra ressoar em quem lê em poucos segundos. Tom acolhedor, humano, direto — nunca uma citação genérica de painel motivacional. Relato pessoal em primeira pessoa sobre "o dia/bastidor da psicóloga" (ex.: "Hoje eu percebi...", "Hoje eu senti...") NÃO é o padrão — vira repetitivo e só faz sentido em contextos bem específicos (uma data comemorativa como o Dia do Psicólogo, por exemplo), não em toda Story. Por padrão, prefira uma afirmação, reflexão ou pergunta mais impessoal sobre o tema (ex.: "Nem toda pausa precisa ser justificada — às vezes, parar já é suficiente." / "Ansiedade não é fraqueza: é o corpo pedindo atenção."). A frase principal deve ter começo, meio e fim (aproximadamente 15 a 25 palavras). A legenda de apoio complementa com 1 a 2 frases curtas no mesmo tom. Hashtags não fazem sentido em Stories (não são pesquisáveis nesse formato). O CTA deve ser uma ação típica de Story ("manda uma mensagem", "responde na enquete", "arrasta pra cima"), nunca "salve o post" ou "compartilhe no feed".
+
+REGRAS PARA SOAR HUMANO, NÃO GERADO POR IA (baseadas na skill ig-humanizer, aplique sempre, em "gancho", "slides", "legenda" e "cta"):
+- Nunca use travessão (—) nem "--" para separar ideias; prefira ponto final, vírgula ou quebra de frase.
+- Nunca use estas palavras/expressões (troque pelo equivalente natural): "leverage/alavancar" -> use, "utilizar" -> usar, "facilitar" quando genérico -> ajudar, "streamline/otimizar fluxo" -> simplificar, "fomentar" -> construir, "aprofundar-se" -> olhar para, "elevar" -> melhorar, "empoderar" -> ajudar, "desbloquear" -> abrir caminho, "robusto" -> sólido, "cultivar" (fora de jardinagem) -> desenvolver.
+- Nunca use advérbios de enchimento: fundamentalmente, essencialmente, basicamente, crucialmente, notavelmente.
+- Nunca use frases batidas: "no mundo agitado de hoje", "na era digital", "no fim das contas", "divisor de águas", "um mergulho profundo em", "subir de nível", "não é só X, é Y" (paralelismo negativo -- vá direto à afirmação).
+- Nunca feche com engajamento vazio: "o que você acha?", "conta pra gente", "compartilhe se concordar", "marque um amigo". O CTA deve ser uma ação específica e real (ver regra de CTA por formato acima).
+- Evite listas genéricas de três itens sem especificidade (“mais rápido, mais fácil, melhor”) -- se usar uma lista, cada item precisa dizer algo concreto.
+- Varie o tamanho das frases; texto onde toda frase tem o mesmo tamanho soa mecânico. Deixe pelo menos uma frase curta e direta se o formato permitir.
+- O "gancho" (e a legenda de STORY) precisa fazer sentido sozinho nos primeiros ~125 caracteres, sem depender de continuação.
+- Emojis: no máximo 2-3 no total, usados com intenção -- nunca um por linha, nunca "tempestade de emoji".
+
+Para CARROSSEL e POST, "hashtags" segue o modelo de dimensionamento por tamanho, não volume: monte um conjunto de 3 a 5 tags (nunca mais) combinando 2-3 tags de nicho (específicas, de cauda longa, onde um perfil pequeno/médio realmente rankeia), 1-2 tags médias (públicó relevante mas competição batível) e no máximo 1 tag ampla/genérica (só se fizer sentido -- prefira omitir a forçar). Nunca gere um bloco de 15-30 hashtags genéricas, e nunca inclua tags de troca de seguidores/curtidas (ex.: #seguebrasil, #curtacurta). Para STORY, "hashtags" continua sendo lista vazia (não fazem sentido nesse formato).
 
 Se a mensagem do usuário pedir um AJUSTE sobre um conteúdo já gerado (você verá o conteúdo anterior no histórico da conversa), reescreva o objeto JSON inteiro aplicando o que foi pedido e mantendo tudo o que não foi pedido para mudar.
 

@@ -158,6 +158,39 @@ test('historico trunca para os ultimos 20 turnos', async () => {
   assert.equal(capturedBody.messages.length, 22); // 1 system + 20 turnos + 1 user (novo pedido)
 });
 
+test('system prompt inclui as regras de humanizacao e o limite de 5 hashtags no schema', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => {
+    if (url.includes('api.openai.com')) {
+      capturedBody = JSON.parse(options.body);
+      return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
+    }
+    if (url.includes('/auth/v1/user')) {
+      return supabaseReply({id: 'test-user'});
+    }
+    if (url.includes('app_admin')) {
+      return supabaseReply([{user_id: 'test-user'}]);
+    }
+    if (url.includes('supabase')) {
+      return supabaseReply([]);
+    }
+    return {ok: false, status: 404};
+  };
+  const req = {
+    method: 'POST',
+    body: {tema: 'Ansiedade'},
+    headers: {cookie: createIdleCookie()}
+  };
+  const res = response();
+  await postContent(req, res);
+  assert.equal(res.code, 200);
+  const systemMsg = capturedBody.messages[0].content;
+  assert.ok(systemMsg.includes('HUMANO'), 'deve trazer a secao de regras anti-tom-de-IA');
+  assert.ok(systemMsg.includes('travessão'));
+  assert.ok(systemMsg.includes('3 a 5 tags'));
+  assert.equal(capturedBody.response_format.json_schema.schema.properties.hashtags.maxItems, 5);
+});
+
 test('historico trunca cada texto em 4000 caracteres', async () => {
   let capturedBody;
   global.fetch = async (url, options) => {

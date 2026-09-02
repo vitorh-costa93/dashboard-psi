@@ -550,6 +550,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
     <div class="brand-lockup app-header-logo" aria-label="Jaqueline Vieira Psicóloga"><img class="brand-symbol" src="/assets/logo-symbol.svg" alt=""><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>
   </div>
   <label class="ui-theme-toggle ui-theme-toggle-header"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade</span></label>
+  <button class="btn-secondary" type="button" onclick="exportarBackupCompleto(this)" title="Baixa uma cópia de segurança de pacientes, prontuários, atividades, posts e radar de tendências, em JSON">💾 Backup</button>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
 
@@ -1259,6 +1260,30 @@ async function sair(){
   clearTimeout(_idleTimer);
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
   window.location.reload();
+}
+// Cópia de segurança sob demanda: não há backup automático nem exportação
+// em massa configurados (achado numa avaliação geral) -- essa é a versão
+// gratuita disso, um botão que qualquer hora baixa um JSON com pacientes,
+// prontuários (já descriptografados), atividades, posts e radar de
+// tendências. Cobre as tabelas geridas por api/data.js; documentos
+// clínicos, anamnese e formulários (que vivem em api/forms.js com sua
+// própria criptografia) ficam de fora por ora -- um passo real, não a
+// solução completa.
+async function exportarBackupCompleto(btn){
+  if(btn){btn.disabled=true;btn.textContent='Gerando…';}
+  try{
+    const r=await fetch('/api/data?action=export-tudo');
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Não foi possível gerar o backup.');
+    const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`backup-dashboard-psi-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+    toast('✅ Backup baixado.');
+  }catch(e){toast('Erro ao gerar backup: '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent='💾 Backup';}}
 }
 
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];

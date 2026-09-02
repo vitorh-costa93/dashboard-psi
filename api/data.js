@@ -45,6 +45,25 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'SUPABASE_URL ou SUPABASE_SERVICE_KEY não configuradas no Vercel' });
   }
   const { table, action } = req.query;
+
+  // Backup sob demanda (não precisa de "table": exporta todas de uma vez).
+  // Dobrado aqui em vez de virar uma rota própria porque o projeto já está
+  // no limite de 12 funções serverless do plano gratuito da Vercel.
+  if (req.method === 'GET' && action === 'export-tudo') {
+    try {
+      const dados = {};
+      for (const t of TABLES) {
+        const order = t === 'pacientes' ? 'nome.asc' : 'criado_em.desc';
+        const r = await supaFetch(`${t}?select=*&order=${order}`);
+        const rows = await r.json();
+        dados[t] = r.ok ? (t === 'prontuarios' ? rows.map(decriptarProntuario) : rows) : [];
+      }
+      return res.status(200).json({gerado_em: new Date().toISOString(), dados});
+    } catch (e) {
+      return res.status(500).json({error: e.message});
+    }
+  }
+
   if (!TABLES.includes(table)) return res.status(400).json({ error: 'Tabela inválida' });
 
   try {

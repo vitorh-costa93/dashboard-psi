@@ -2,11 +2,28 @@
 // Proxy do Supabase. A chave sensível permanece somente no servidor.
 
 import { requireAuth } from './_auth.js';
+import { encryptClinicalData, decryptClinicalData } from './_clinical-crypto.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
 const TABLES = ['atividades', 'prontuarios', 'pacientes', 'posts', 'trend_radar', 'post_artes'];
+
+// "relato" é o registro da sessão em si -- o dado mais sensível deste app --
+// e por uma inconsistência foi deixado de fora da criptografia que
+// documentos_clinicos/anamnese/formulário externo já tinham. Corrigido aqui
+// só para esse campo (paciente_id/data_sessao/etc. continuam em texto
+// simples, como já eram, pois precisam ser filtráveis). decryptClinicalData
+// já devolve o valor original quando não é um envelope criptografado, então
+// prontuários antigos (salvos em texto puro antes desta mudança) continuam
+// legíveis normalmente -- não é preciso migrar nada, a criptografia passa a
+// valer só a partir da próxima vez que cada prontuário for salvo.
+function decriptarProntuario(row) {
+  return row && 'relato' in row ? {...row, relato: decryptClinicalData(row.relato)} : row;
+}
+function encriptarRelato(body) {
+  return body && 'relato' in body ? {...body, relato: encryptClinicalData(body.relato)} : body;
+}
 
 async function supaFetch(path, options = {}) {
   const legacyAuthorization = SUPABASE_KEY?.startsWith('sb_secret_') ? {} : { 'Authorization': `Bearer ${SUPABASE_KEY}` };
@@ -57,7 +74,7 @@ export default async function handler(req, res) {
       const order = table === 'pacientes' ? 'nome.asc' : 'criado_em.desc';
       const r = await supaFetch(`${table}?select=${select}&order=${order}`);
       const data = await r.json(); if(!r.ok)return res.status(r.status).json({error:data});
-      return res.status(200).json(data);
+      return res.status(200).json(table === 'prontuarios' ? data.map(decriptarProntuario) : data);
     }
 
     if (req.method === 'POST') {
@@ -74,14 +91,18 @@ export default async function handler(req, res) {
         const r=await supaFetch(`${table}?on_conflict=nome`,{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(req.body)});
         const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});return res.status(200).json(data);
       }
-      const r=await supaFetch(table,{method:'POST',body:JSON.stringify(req.body)});
-      const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});return res.status(200).json(data);
+      const body = table === 'prontuarios' ? encriptarRelato(req.body) : req.body;
+      const r=await supaFetch(table,{method:'POST',body:JSON.stringify(body)});
+      const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});
+      return res.status(200).json(table === 'prontuarios' ? data.map(decriptarProntuario) : data);
     }
 
     if (req.method === 'PATCH') {
       const { id } = req.query;if(!id)return res.status(400).json({error:'id obrigatório'});
-      const r=await supaFetch(`${table}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify(req.body)});
-      const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});return res.status(200).json(data);
+      const body = table === 'prontuarios' ? encriptarRelato(req.body) : req.body;
+      const r=await supaFetch(`${table}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify(body)});
+      const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});
+      return res.status(200).json(table === 'prontuarios' ? data.map(decriptarProntuario) : data);
     }
 
     if (req.method === 'DELETE') {

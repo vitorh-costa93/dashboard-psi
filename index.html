@@ -2846,8 +2846,10 @@ async function gerarArtePost(){
     // vivo -- texto sobre redes sociais em cima de foto de caderno de
     // planejamento pessoal, sem conexão nenhuma). A cena agora é escolhida
     // por categoria de acordo com o tema/conteúdo real do slide -- só cai no
-    // fallback genérico quando nenhuma categoria bate.
-    const CENAS_STORY_POR_CATEGORIA=[
+    // fallback genérico quando nenhuma categoria bate. Vale pra qualquer
+    // arte do Instagram (Story, Carrossel e Post), não só Story -- o
+    // problema de imagem descolada do texto não é específico de formato.
+    const CENAS_ARTE_POR_CATEGORIA=[
       {
         chaves: ['rede social','redes sociais','celular','smartphone','internet','aplicativo','app ','tela','mídia social','midia social','instagram','tiktok','whatsapp','online','digital','notificação','notificacao'],
         cenas: [
@@ -2883,7 +2885,7 @@ async function gerarArtePost(){
         ]
       }
     ];
-    const CENAS_STORY_PADRAO=[
+    const CENAS_ARTE_PADRAO=[
       'a close-up of hands writing in a notebook with a pen',
       'an open journal resting on a wooden desk with a pen laid across the page',
       'a plant leaf backlit by soft afternoon light near a window',
@@ -2897,10 +2899,10 @@ async function gerarArtePost(){
       'a notepad with a to-do list and a pair of reading glasses on a desk',
       'a soft-focus view of a bookshelf corner with warm light'
     ];
-    function escolherCenaStory(tema,textoSlide){
+    function escolherCenaVisual(tema,textoSlide){
       const alvo=`${tema||''} ${textoSlide||''}`.toLowerCase();
-      const categoria=CENAS_STORY_POR_CATEGORIA.find(c=>c.chaves.some(k=>alvo.includes(k)));
-      const opcoes=categoria?categoria.cenas:CENAS_STORY_PADRAO;
+      const categoria=CENAS_ARTE_POR_CATEGORIA.find(c=>c.chaves.some(k=>alvo.includes(k)));
+      const opcoes=categoria?categoria.cenas:CENAS_ARTE_PADRAO;
       return opcoes[Math.floor(Math.random()*opcoes.length)];
     }
 
@@ -2916,7 +2918,7 @@ async function gerarArtePost(){
       // excesso; com ela, cada frase ficou inteira na sua própria caixa.
       const frasesSlide=quebrarEmFrases(slides[i]);
       const listaFrases=frasesSlide.map((f,idx)=>`${idx+1}) "${f}"`).join(' ');
-      const cenaStorySorteada=escolherCenaStory(_postAtual.tema,slides[i]);
+      const cenaSorteada=escolherCenaVisual(_postAtual.tema,slides[i]);
       const coverRule=isCarousel&&i===0
         ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
         : isCarousel
@@ -2926,8 +2928,8 @@ async function gerarArtePost(){
             : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
       const formatDesc=isStory?'ONE vertical Instagram Story image (1080x1920, 9:16 portrait)':'ONE square Instagram editorial image (1080x1080)';
       const visualDirection=isStory
-        ? `Visual direction: candid, immediate, phone-native -- the opposite of a polished magazine card. The background photo for THIS image must be exactly this scene, shot like a real first-person phone photo: ${cenaStorySorteada}. Filling the entire vertical frame edge to edge, natural warm light, a little imperfect/off-center rather than symmetrically composed, coherent with a psychotherapy clinic brand, never a posed stock model looking at camera, never like a designed graphic or stock-template. Do NOT show hands holding a coffee mug or cup -- that specific composition has already been overused and must not appear. Prefer a cream/sage/terracotta color feel within the photo without turning it into a flat graphic background.`
-        : `Visual direction: sophisticated clinical-editorial design, one strong photographic or illustrated focal point filling the full frame edge to edge, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Avoid large flat empty margins around the edges -- the artwork itself is the full canvas, not a card centered on a bigger blank page.`;
+        ? `Visual direction: candid, immediate, phone-native -- the opposite of a polished magazine card. The background photo for THIS image must be exactly this scene, shot like a real first-person phone photo: ${cenaSorteada}. Filling the entire vertical frame edge to edge, natural warm light, a little imperfect/off-center rather than symmetrically composed, coherent with a psychotherapy clinic brand, never a posed stock model looking at camera, never like a designed graphic or stock-template. Do NOT show hands holding a coffee mug or cup -- that specific composition has already been overused and must not appear. Prefer a cream/sage/terracotta color feel within the photo without turning it into a flat graphic background.`
+        : `Visual direction: sophisticated clinical-editorial design, one strong photographic or illustrated focal point filling the full frame edge to edge, organic botanical forms used sparingly, refined asymmetry, premium magazine/art-direction feel, coherent with a psychotherapy clinic brand, never like a generic AI dashboard or stock-template. The photographic subject/focal point should connect to this exact theme and message rather than being a generic unrelated lifestyle scene -- for inspiration (adapt freely, do not copy verbatim, translate it into the refined editorial style described above rather than a candid phone photo): ${cenaSorteada}. Prefer a cream background with sage and terracotta accents rather than changing the background hue from slide to slide. Avoid large flat empty margins around the edges -- the artwork itself is the full canvas, not a card centered on a bigger blank page.`;
       // The full "identidade" block mandates a fixed typography/palette
       // system meant to keep a multi-slide carousel visually consistent --
       // it also forces a polished editorial look, which directly fights the

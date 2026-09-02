@@ -8,6 +8,9 @@
     },
     "api/gemini.js": {
       "includeFiles": "assets/reference-quality/*.jpg"
+    },
+    "api/trends.js": {
+      "maxDuration": 120
     }
   }
 }

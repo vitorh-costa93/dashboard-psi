@@ -2840,12 +2840,50 @@ async function gerarArtePost(){
     // O prompt já descreveu "her own hands holding a coffee mug" como UM
     // exemplo entre vários de cena candida -- na prática o modelo travou
     // nesse exemplo específico e passou a gerar a mesma composição (mão +
-    // xícara de café) quase toda vez, em vez de variar. Dar uma lista de
-    // opções pro modelo escolher não funciona bem aqui; sortear UMA cena
-    // concreta por geração e proibir explicitamente o clichê que já estourou
-    // resolve de fato -- o modelo não tem mais margem pra "preferir" sempre
-    // a mesma.
-    const CENAS_STORY_IA=[
+    // xícara de café) quase toda vez, em vez de variar. Sortear resolveu a
+    // repetição, mas criou um problema novo: a cena saía de uma lista fixa
+    // sem nenhuma relação com o que o texto realmente falava (relatado ao
+    // vivo -- texto sobre redes sociais em cima de foto de caderno de
+    // planejamento pessoal, sem conexão nenhuma). A cena agora é escolhida
+    // por categoria de acordo com o tema/conteúdo real do slide -- só cai no
+    // fallback genérico quando nenhuma categoria bate.
+    const CENAS_STORY_POR_CATEGORIA=[
+      {
+        chaves: ['rede social','redes sociais','celular','smartphone','internet','aplicativo','app ','tela','mídia social','midia social','instagram','tiktok','whatsapp','online','digital','notificação','notificacao'],
+        cenas: [
+          'a hand loosely holding a phone with a blurred, unreadable social-media feed glowing on the screen, thumb mid-scroll',
+          'a phone lying face-up on a wooden desk showing a blurred, out-of-focus app feed, screen glow visible',
+          'a close-up over-the-shoulder view of a phone screen with a blurred colorful grid of app icons, soft focus',
+          'a phone resting on an open notebook page, screen dimly lit, next to a pen'
+        ]
+      },
+      {
+        chaves: ['família','familia','pais','filho','filha','criança','crianca','mãe','mae ','pai ','adolescente','em casa','lar '],
+        cenas: [
+          "a child's crayon drawing pinned to a soft cork board with colorful pencils nearby",
+          'a pair of small children\'s shoes placed next to adult shoes by a front door',
+          'a family photo frame softly out of focus on a shelf, warm afternoon light',
+          "a stack of children's picture books on a low shelf with a soft plush toy nearby"
+        ]
+      },
+      {
+        chaves: ['trabalho','rotina','produtividade','agenda','organização','organizacao','estudo','escola','tempo ','tarefa'],
+        cenas: [
+          'an open weekly planner with a few days filled in by hand and a pen resting on the page',
+          'a desk with a closed laptop, an open notebook, and a warm desk-lamp glow',
+          'a wall calendar with a couple of days softly circled in colored ink'
+        ]
+      },
+      {
+        chaves: ['relacionamento','casal','conflito','comunicação','comunicacao','amizade','divórcio','divorcio','separação','separacao'],
+        cenas: [
+          'two chairs placed close together near a sunlit window',
+          'a handwritten letter partially visible on a table beside a pen',
+          'a pair of house keys resting on a small table by the door'
+        ]
+      }
+    ];
+    const CENAS_STORY_PADRAO=[
       'a close-up of hands writing in a notebook with a pen',
       'an open journal resting on a wooden desk with a pen laid across the page',
       'a plant leaf backlit by soft afternoon light near a window',
@@ -2859,7 +2897,12 @@ async function gerarArtePost(){
       'a notepad with a to-do list and a pair of reading glasses on a desk',
       'a soft-focus view of a bookshelf corner with warm light'
     ];
-    const cenaStorySorteada=CENAS_STORY_IA[Math.floor(Math.random()*CENAS_STORY_IA.length)];
+    function escolherCenaStory(tema,textoSlide){
+      const alvo=`${tema||''} ${textoSlide||''}`.toLowerCase();
+      const categoria=CENAS_STORY_POR_CATEGORIA.find(c=>c.chaves.some(k=>alvo.includes(k)));
+      const opcoes=categoria?categoria.cenas:CENAS_STORY_PADRAO;
+      return opcoes[Math.floor(Math.random()*opcoes.length)];
+    }
 
     for(let i=retomando?_postAtual.imagens_b64.length:0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
@@ -2873,6 +2916,7 @@ async function gerarArtePost(){
       // excesso; com ela, cada frase ficou inteira na sua própria caixa.
       const frasesSlide=quebrarEmFrases(slides[i]);
       const listaFrases=frasesSlide.map((f,idx)=>`${idx+1}) "${f}"`).join(' ');
+      const cenaStorySorteada=escolherCenaStory(_postAtual.tema,slides[i]);
       const coverRule=isCarousel&&i===0
         ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
         : isCarousel

@@ -84,7 +84,7 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   const imagens = capturedForm.getAll('image[]');
   assert.equal(imagens[0].type, 'image/jpeg');
   assert.equal(imagens[0].name, 'foto.jpg');
-  // A referência de estilo (assets/reference-quality/story-dia-do-psicologo.jpg)
+  // A referência de estilo (assets/reference-quality/story-referencia-estilo.jpg)
   // faz parte do repositório -- deve sempre estar disponível e ser anexada.
   assert.equal(imagens.length, 2);
   assert.equal(imagens[1].name, 'referencia-estilo.jpg');

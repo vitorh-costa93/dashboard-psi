@@ -1,6 +1,7 @@
 // Gera conteúdo educativo para posts. A publicação no Instagram não é feita.
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
+import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 
 // Structured Outputs (json_schema + strict:true) em vez do antigo
 // response_format:{type:'json_object'}: json_object só garante "isto é JSON
@@ -56,7 +57,9 @@ Retorne APENAS JSON válido:
   "hashtags":["#..."],
   "cta":"..."
 }
-Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto o tema realmente sustentar de conteúdo com continuidade conceitual; nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.`;
+Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto o tema realmente sustentar de conteúdo com continuidade conceitual; nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.
+
+${PERFIL_JAQUELINE}`;
   const primeiroPedido=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato||'Carrossel'}\nPúblico: ${publico||'público geral'}\nContexto/tendência: ${contexto||'nenhum'}`;
   const messages=[{role:'system',content:system}];
   if(historico.length){

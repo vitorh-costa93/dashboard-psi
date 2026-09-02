@@ -1,9 +1,11 @@
 // api/ppt-content.js
-// Usa a API da OpenAI (texto, gpt-4o-mini) para estruturar o conteúdo de slides
-// a partir de uma descrição da psicóloga. Retorna JSON estruturado que o
-// frontend usa para montar o .pptx com a biblioteca PptxGenJS.
+// Usa a API da OpenAI (texto) para estruturar o conteúdo de slides a partir de
+// uma descrição da psicóloga. Retorna JSON estruturado que o frontend usa
+// para montar o .pptx com a biblioteca PptxGenJS.
 
 import { requireAuth } from './_auth.js';
+import { fetchComRetentativa } from './_openai-retry.js';
+import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 
 export default async function handler(req, res) {
   if (!await requireAuth(req, res)) return;
@@ -23,37 +25,65 @@ export default async function handler(req, res) {
 
   const systemPrompt = `Você é especialista em criar apresentações terapêuticas para psicólogos mostrarem a pacientes (incluindo crianças).
 Gere o conteúdo de uma apresentação de slides em formato JSON.
-Responda APENAS com um JSON válido, sem markdown, sem explicações, no formato:
-{
-  "titulo": "Título da apresentação",
-  "slides": [
-    { "titulo": "Título do slide", "conteudo": ["ponto 1", "ponto 2", "ponto 3"] }
-  ]
-}
 Gere entre 4 e 8 slides. Linguagem simples e acolhedora, adequada ao público informado.
-Cada slide deve ter no máximo 4 pontos curtos (max 12 palavras cada).`;
+Cada slide deve ter no máximo 4 pontos curtos (max 12 palavras cada).
+Entregue sempre uma proposta pronta pra aplicar no consultório, com aplicabilidade real -- nunca só uma ideia abstrata.
+
+${PERFIL_JAQUELINE}`;
 
   const userPrompt = `Público: ${publico || 'paciente'}
 Tema: ${tema || 'geral'}
 Descrição do que a psicóloga quer na apresentação: ${descricao}`;
 
   try {
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    // gpt-4o-mini não consta mais na lista de modelos disponíveis da OpenAI;
+    // gpt-5.6-terra (mesmo modelo já usado em post-content.js) rejeita
+    // temperature customizado, por isso o parâmetro foi removido daqui.
+    // Structured Outputs (json_schema+strict) no lugar do antigo json_object,
+    // mesma melhoria já aplicada em post-content.js.
+    const r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.7,
-        response_format: { type: 'json_object' },
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'apresentacao',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                titulo: {type: 'string'},
+                slides: {
+                  type: 'array',
+                  minItems: 4,
+                  maxItems: 8,
+                  items: {
+                    type: 'object',
+                    properties: {
+                      titulo: {type: 'string'},
+                      conteudo: {type: 'array', items: {type: 'string'}, minItems: 1, maxItems: 4}
+                    },
+                    required: ['titulo', 'conteudo'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['titulo', 'slides'],
+              additionalProperties: false
+            }
+          }
+        },
       }),
-    });
+    }, {tentativas: 2, timeoutMs: 30000});
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));

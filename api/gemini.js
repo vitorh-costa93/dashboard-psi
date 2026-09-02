@@ -10,12 +10,16 @@ import { fetchComRetentativa } from './_openai-retry.js';
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
 
 // Referência de ESTILO (nunca de conteúdo) para a edição de fotos próprias --
-// um exemplo aprovado pela psicóloga do nível de acabamento desejado
-// (etiquetas limpas, tipografia mista, acentos discretos). O modelo GPT
-// Image aceita múltiplas imagens de entrada num mesmo pedido de edição; o
-// prompt deixa explícito que essa segunda imagem é só uma referência visual,
-// nunca para copiar seu conteúdo real.
-const REFERENCIA_ESTILO_PATH = path.join(process.cwd(), 'assets/reference-quality/story-dia-do-psicologo.jpg');
+// desenhada com a skill canvas-design (filosofia "Calor Editorial": paleta
+// terrosa, tipografia dupla serifada+manuscrita, etiquetas 100% flat/2D,
+// bandas verticais bem espaçadas) com texto de exemplo genérico, não um
+// print de uma data comemorativa específica -- evita qualquer risco de a IA
+// "vazar" conteúdo de ocasião pontual pro resto do ano, e pode ser
+// regenerada a qualquer momento sem depender de a psicóloga mandar um novo
+// print. O modelo GPT Image aceita múltiplas imagens de entrada num mesmo
+// pedido de edição; o prompt deixa explícito que essa segunda imagem é só
+// uma referência visual, nunca para copiar seu conteúdo real.
+const REFERENCIA_ESTILO_PATH = path.join(process.cwd(), 'assets/reference-quality/story-referencia-estilo.jpg');
 
 async function extrairB64(data) {
   let b64 = data.data?.[0]?.b64_json;

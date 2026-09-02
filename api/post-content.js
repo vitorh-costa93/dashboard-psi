@@ -1,6 +1,29 @@
 // Gera conteúdo educativo para posts. A publicação no Instagram não é feita.
 import { requireAuth } from './_auth.js';
 
+// Structured Outputs (json_schema + strict:true) em vez do antigo
+// response_format:{type:'json_object'}: json_object só garante "isto é JSON
+// válido", não garante que os campos certos existem com o tipo certo --
+// strict:true fecha essa lacuna (nunca falta campo, nunca vem tipo errado),
+// sem custo adicional.
+const POST_SCHEMA = {
+  name: 'post_content',
+  strict: true,
+  schema: {
+    type: 'object',
+    properties: {
+      titulo: {type: 'string'},
+      gancho: {type: 'string'},
+      slides: {type: 'array', items: {type: 'string'}, minItems: 1, maxItems: 8},
+      legenda: {type: 'string'},
+      hashtags: {type: 'array', items: {type: 'string'}},
+      cta: {type: 'string'}
+    },
+    required: ['titulo', 'gancho', 'slides', 'legenda', 'hashtags', 'cta'],
+    additionalProperties: false
+  }
+};
+
 export default async function handler(req,res){
   if (!await requireAuth(req, res)) return;
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
@@ -49,7 +72,7 @@ Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto 
     // qualidade sem o custo do topo de linha. Diferente do gpt-4.1-mini, ele
     // rejeita temperature customizado ("Only the default (1) value is
     // supported") -- por isso o parâmetro foi removido daqui.
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_object'}})});
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})});
     const data=await r.json();
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;

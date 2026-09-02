@@ -551,7 +551,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
     <div class="brand-lockup app-header-logo" aria-label="Jaqueline Vieira Psicóloga"><img class="brand-symbol" src="/assets/logo-symbol.svg" alt=""><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>
   </div>
   <label class="ui-theme-toggle ui-theme-toggle-header"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade</span></label>
-  <button class="btn-secondary" type="button" onclick="exportarBackupCompleto(this)" title="Baixa uma cópia de segurança de pacientes, prontuários, atividades, posts e radar de tendências, em JSON">💾 Backup</button>
+  <button class="logout-btn" type="button" onclick="exportarBackupCompleto(this)" title="Baixa uma cópia de segurança de pacientes, prontuários, atividades, posts e radar de tendências, em JSON">💾 Backup</button>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
 
@@ -1306,7 +1306,11 @@ function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v
 function setComp(id,atual,ant,suffix){
   const el=document.getElementById(id);
   if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
-  if(ant===0&&atual===0){el.textContent='—';el.className='kpi-comp neu';return;}
+  // Quando os dois lados da comparação são zero (comum logo no começo do
+  // mês, quando "até hoje" ainda cobre poucos dias), o retorno antecipado
+  // aqui cortava o texto pra so um traço, sem nenhuma referência de mês/ano
+  // -- mesmo já tendo o "suffix" pronto pra mostrar, igual os outros casos.
+  if(ant===0&&atual===0){el.textContent='— sem dados '+suffix;el.className='kpi-comp neu';return;}
   if(ant===0){el.textContent='▲ +100% '+suffix;el.className='kpi-comp up';return;}
   const pct=((atual-ant)/Math.abs(ant)*100).toFixed(1);
   const up=atual>=ant;
@@ -2827,12 +2831,22 @@ async function gerarArtePost(){
 
     for(let i=retomando?_postAtual.imagens_b64.length:0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
+      // A IA repetidamente interpretava "quebre em frases curtas" com
+      // liberdade demais, fatiando UMA frase em varias caixas nos pontos de
+      // vírgula/pausa -- mesmo quando o fundo também é gerado por IA, não só
+      // no caminho de foto própria. A quebra já vem pronta daqui e é
+      // enumerada explicitamente no prompt -- a IA só posiciona cada item já
+      // pronto, não decide mais onde cortar o texto. Testado ao vivo antes
+      // de publicar: sem a lista enumerada a IA fragmentava a frase em
+      // excesso; com ela, cada frase ficou inteira na sua própria caixa.
+      const frasesSlide=quebrarEmFrases(slides[i]);
+      const listaFrases=frasesSlide.map((f,idx)=>`${idx+1}) "${f}"`).join(' ');
       const coverRule=isCarousel&&i===0
         ? `This is the COVER. Show the post title prominently once, and only on this slide. Do not add any page number or logo. The top-left and top-center reserved zones must remain empty.`
         : isCarousel
           ? `This is an INTERNAL CAROUSEL SLIDE. Do not repeat the main post title. Do not create a new headline or heading. Show only the specific message supplied for this slide, with concise body copy if needed. Do not add any page number, counter, badge or logo. The top-left and top-center reserved zones must remain empty.`
           : isStory
-            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Compose it like a real candid vertical phone photo of a genuine personal moment (her own hands holding a coffee mug, her desk, a detail of her office, a candid portrait) filling the full 9:16 frame edge to edge -- no big empty background block, no stock-photo model posing, no generic "wellness influencer" staging. Lay the text directly over the photo as 2-4 short separate lines/phrases stacked down the frame (not one paragraph block), each short phrase sitting on its own soft semi-opaque cream or sand rounded-rectangle highlight strip just big enough to hug that phrase (like a highlighter mark), so the photo stays visible around and between the phrases. A clean sans-serif for the text is the default -- only mix in a casual handwritten-script accent for a single emotional word when that specific word genuinely calls for it (this is occasional, not a rule to apply every time; most phrases should stay entirely in the clean sans-serif with no script accent at all). Warm cream/white text with a subtle dark shadow for legibility. Keep the very top ~12% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
+            ? `This is an INSTAGRAM STORY, not a feed post -- it must NOT look like a designed editorial card or magazine cover. Compose it like a real candid vertical phone photo of a genuine personal moment (her own hands holding a coffee mug, her desk, a detail of her office, a candid portrait) filling the full 9:16 frame edge to edge -- no big empty background block, no stock-photo model posing, no generic "wellness influencer" staging. Lay the text directly over the photo as elegant overlay text. It has already been split into exactly ${frasesSlide.length} complete sentence${frasesSlide.length===1?'':'s'} for you, listed below in order: ${listaFrases}. This split is final -- do not merge them, do not reorder, add or remove any, and critically: do NOT break any of these sentences further into smaller pieces. Each listed sentence, however long, stays together as ONE single text block/box (it can wrap onto multiple lines within that one box, that's fine -- it just can never be torn apart into several separate boxes). Spread these ${frasesSlide.length} block${frasesSlide.length===1?'':'s'} across different calm, uncluttered parts of the frame, each on its own soft semi-opaque cream or sand rounded-rectangle highlight strip sized to hug just that block (like a highlighter mark), so the photo stays visible around and between the blocks. A clean sans-serif for the text is the default -- only mix in a casual handwritten-script accent for a single emotional word when that specific word genuinely calls for it (this is occasional, not a rule to apply every time; most text should stay entirely in the clean sans-serif with no script accent at all). Warm cream/white text with a subtle dark shadow for legibility. Keep the very top ~12% and very bottom ~12% of the frame free of text or key visual elements (Instagram's own UI overlays those areas). Do not add any page number, counter or logo. Keep the top-center brand zone empty.`
             : `This is a SINGLE POST. Do not add any page number, counter or logo. Use one strong editorial title and one short supporting sentence. Keep the top-center brand zone empty.`;
       const formatDesc=isStory?'ONE vertical Instagram Story image (1080x1920, 9:16 portrait)':'ONE square Instagram editorial image (1080x1080)';
       const visualDirection=isStory
@@ -2855,14 +2869,9 @@ async function gerarArtePost(){
         // mesmas zonas de logo/paginação; a marca em si é sempre desenhada
         // depois pelo app, nunca pela IA.
         const zonaContador=isCarousel?` Keep the top-left 14% of the frame calm, low-detail and completely free of numbers, labels, badges, icons or decorative marks because the application places a fixed page counter there afterwards.`:'';
-        // A IA repetidamente interpretava "quebre em frases curtas" com
-        // liberdade demais, fatiando UMA frase em varias caixas nos pontos de
-        // vírgula/pausa. Em vez de pedir pra ela mesma decidir onde quebrar,
-        // a quebra já vem pronta daqui (mesma função usada no fallback local)
-        // e é enumerada explicitamente no prompt -- a IA só posiciona cada
-        // item já pronto, não decide mais onde cortar o texto.
-        const frasesSlide=quebrarEmFrases(slides[i]);
-        const listaFrases=frasesSlide.map((f,idx)=>`${idx+1}) "${f}"`).join(' ');
+        // frasesSlide/listaFrases já calculadas acima (compartilhadas com o
+        // coverRule do caminho 100% IA, que tem o mesmo problema de
+        // fragmentação de frase).
         // Depois de varias rodadas de correcao, o prompt tinha acumulado
         // microgerenciamento de estilo demais (bisel, cor solida em hex,
         // graus de inclinacao...) -- o tipo de instrucao literal que compete

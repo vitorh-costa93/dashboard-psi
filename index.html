@@ -1082,7 +1082,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
     <h3>📄 Novo documento</h3>
     <div class="doc-form-grid">
       <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="doc-paciente" onchange="carregarDocumentos()"><option value="">Selecione...</option></select></div>
-      <div class="pront-field"><label class="pront-label">Tipo de documento</label><select class="pront-input" id="doc-tipo" onchange="montarFormularioDocumento()"><option value="">Selecione...</option><option value="termo_infantil">Termo de Compromisso - Infantil</option><option value="termo_adulto">Termo de Compromisso - Adulto</option><option value="orcamento">Orçamento de atendimento</option><option value="recibo">Comprovante de pagamento</option><option value="relatorio_psicologico">Relatório psicológico</option><option value="solicitacao_escolar">Solicitação de relatório escolar</option><option value="declaracao_comparecimento">Declaração de comparecimento</option></select></div>
+      <div class="pront-field"><label class="pront-label">Tipo de documento</label><select class="pront-input" id="doc-tipo" onchange="montarFormularioDocumento()"><option value="">Selecione...</option><option value="termo_infantil">Termo de Compromisso - Infantil</option><option value="termo_adulto">Termo de Compromisso - Adulto</option><option value="orcamento">Orçamento de atendimento</option><option value="recibo">Comprovante de pagamento</option><option value="relatorio_psicologico">Relatório psicológico</option><option value="solicitacao_escolar">Solicitação de relatório escolar</option><option value="declaracao_comparecimento">Declaração de comparecimento</option><option value="declaracao_frequencia">Declaração de frequência (múltiplas sessões)</option></select></div>
       <div class="pront-field"><label class="pront-label">Data de emissão</label><input class="pront-input" type="date" id="doc-emissao" oninput="atualizarPreviaDocumento()"/></div>
       <div class="pront-field"><label class="pront-label">Estilo do documento</label><select class="pront-input" id="doc-estilo" onchange="atualizarPreviaDocumento()"><option value="colorido">Colorido</option><option value="preto-branco">Preto e branco</option></select></div>
     </div>
@@ -3659,7 +3659,7 @@ function exportarProntDOCX() {
 // Documentos por paciente
 // ══════════════════════════════════════════════════════════
 let _documentos=[],_docAtual=null,_docInit=false,_audioTarget=null,_audioButton=null,_psms=[];
-const DOC_NAMES={termo_infantil:'Termo de Compromisso - Infantil',termo_adulto:'Termo de Compromisso - Adulto',orcamento:'Orçamento de atendimento',recibo:'Comprovante de pagamento',relatorio_psicologico:'Relatório psicológico',solicitacao_escolar:'Solicitação de relatório escolar',declaracao_comparecimento:'Declaração de comparecimento'};
+const DOC_NAMES={termo_infantil:'Termo de Compromisso - Infantil',termo_adulto:'Termo de Compromisso - Adulto',orcamento:'Orçamento de atendimento',recibo:'Comprovante de pagamento',relatorio_psicologico:'Relatório psicológico',solicitacao_escolar:'Solicitação de relatório escolar',declaracao_comparecimento:'Declaração de comparecimento',declaracao_frequencia:'Declaração de frequência'};
 const TERM_COMMON=[
   {titulo:'I. Sessões de psicoterapia',texto:'O tratamento será realizado em sessões de aproximadamente 50 minutos, com atividades e técnicas cientificamente reconhecidas na psicologia. A duração do processo depende das necessidades apresentadas, não sendo possível definir previamente um número exato de sessões.'},
   {titulo:'I.I Sigilo',texto:'A psicóloga mantém sigilo profissional para proteger a intimidade das pessoas às quais tenha acesso no exercício profissional, observadas as disposições do Código de Ética Profissional.'},
@@ -3700,13 +3700,19 @@ function montarFormularioDocumento(){
   if(tipo==='relatorio_psicologico')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+areaDoc('doc-descricao-ia','Descreva os fatos, observações e objetivo do relatório','Você pode falar ou escrever. A IA organizará o texto sem inventar informações.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button id="doc-chat-btn" class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
   if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+areaDoc('doc-descricao-ia','O que deseja solicitar à escola','Descreva o contexto e os aspectos que devem ser observados.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button id="doc-chat-btn" class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
+  if(tipo==='declaracao_frequencia')html+=inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
-  editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();habilitarAudioGlobal();atualizarPreviaDocumento();
+  editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();if(tipo==='declaracao_frequencia')renderSessoesFrequencia();habilitarAudioGlobal();atualizarPreviaDocumento();
 }
 
 function renderSessoesRecibo(){
   const box=document.getElementById('doc-sessoes-recibo');if(!box)return;const n=Math.min(20,Math.max(1,Number(campo('doc-qtd-sessoes'))||1));
   box.innerHTML='<label class="pront-label">Sessões pagas</label><div class="doc-form-grid" style="margin-top:6px">'+Array.from({length:n},(_,i)=>inputDoc(`doc-sessao-${i}-data`,`Data da sessão ${i+1}`,'date')+inputDoc(`doc-sessao-${i}-valor`,`Valor da sessão ${i+1}`,'number','min="0" step="0.01"')).join('')+'</div>';atualizarPreviaDocumento();
+}
+
+function renderSessoesFrequencia(){
+  const box=document.getElementById('doc-sessoes-frequencia');if(!box)return;const n=Math.min(40,Math.max(1,Number(campo('doc-qtd-sessoes-freq'))||1));
+  box.innerHTML='<label class="pront-label">Sessões realizadas</label><div class="doc-form-grid" style="margin-top:6px">'+Array.from({length:n},(_,i)=>inputDoc(`doc-sessao-freq-${i}-data`,`Data da sessão ${i+1}`,'date')+inputDoc(`doc-sessao-freq-${i}-realizado`,`O que foi realizado na sessão ${i+1}`)).join('')+'</div>';atualizarPreviaDocumento();
 }
 
 function conteudoDocumento(){
@@ -3724,6 +3730,15 @@ function conteudoDocumento(){
     campos['Destinatário']=campo('doc-destinatario');secoes.push({titulo:'Solicitação',texto:campo('doc-texto-final')});
   } else if(tipo==='declaracao_comparecimento'){
     campos['Dia da sessão']=dataBR(campo('doc-sessao-data'));campos['Horário']=`${campo('doc-hora-inicio')} às ${campo('doc-hora-fim')}`;secoes.push({titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} compareceu ao consultório para atendimento psicológico na data e horário informados.`});
+  } else if(tipo==='declaracao_frequencia'){
+    // Mescla de declaracao_comparecimento (texto de atestado) com o layout
+    // de sessoes do recibo (lista data-a-data) -- sem valor/forma de
+    // pagamento, que nao fazem sentido aqui; no lugar de "valor", cada
+    // sessao registra o que foi realizado. A data da anamnese entra como
+    // primeira linha adicional, antes do total de sessoes.
+    campos['Data de preenchimento da anamnese e coleta de dados']=dataBR(campo('doc-anamnese-coleta-data'));
+    const n=Math.min(40,Math.max(1,Number(campo('doc-qtd-sessoes-freq'))||1));campos['Total de sessões']=String(n);
+    secoes.push({titulo:'Sessões realizadas',texto:Array.from({length:n},(_,i)=>`${dataBR(campo(`doc-sessao-freq-${i}-data`))||'Data não informada'} - ${campo(`doc-sessao-freq-${i}-realizado`)||'Não informado'}`).join('\n')},{titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} esteve em acompanhamento psicológico, comparecendo às sessões relacionadas acima.`});
   }
   return {estilo:document.getElementById('doc-estilo')?.value||'colorido',campos,secoes};
 }

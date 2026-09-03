@@ -3712,7 +3712,7 @@ function renderSessoesRecibo(){
 
 function renderSessoesFrequencia(){
   const box=document.getElementById('doc-sessoes-frequencia');if(!box)return;const n=Math.min(40,Math.max(1,Number(campo('doc-qtd-sessoes-freq'))||1));
-  box.innerHTML='<label class="pront-label">Sessões realizadas</label><div class="doc-form-grid" style="margin-top:6px">'+Array.from({length:n},(_,i)=>inputDoc(`doc-sessao-freq-${i}-data`,`Data da sessão ${i+1}`,'date')+inputDoc(`doc-sessao-freq-${i}-realizado`,`O que foi realizado na sessão ${i+1}`)).join('')+'</div>';atualizarPreviaDocumento();
+  box.innerHTML='<label class="pront-label">Sessões realizadas</label><div class="doc-form-grid" style="margin-top:6px">'+Array.from({length:n},(_,i)=>inputDoc(`doc-sessao-freq-${i}-data`,`Data da sessão ${i+1}`,'date')+inputDoc(`doc-sessao-freq-${i}-realizado`,`O que foi realizado na sessão ${i+1} (opcional)`)).join('')+'</div>';atualizarPreviaDocumento();
 }
 
 function conteudoDocumento(){
@@ -3738,7 +3738,7 @@ function conteudoDocumento(){
     // primeira linha adicional, antes do total de sessoes.
     campos['Data de preenchimento da anamnese e coleta de dados']=dataBR(campo('doc-anamnese-coleta-data'));
     const n=Math.min(40,Math.max(1,Number(campo('doc-qtd-sessoes-freq'))||1));campos['Total de sessões']=String(n);
-    secoes.push({titulo:'Sessões realizadas',texto:Array.from({length:n},(_,i)=>`${dataBR(campo(`doc-sessao-freq-${i}-data`))||'Data não informada'} - ${campo(`doc-sessao-freq-${i}-realizado`)||'Não informado'}`).join('\n')},{titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} esteve em acompanhamento psicológico, comparecendo às sessões relacionadas acima.`});
+    secoes.push({titulo:'Sessões realizadas',texto:Array.from({length:n},(_,i)=>{const realizado=campo(`doc-sessao-freq-${i}-realizado`);return `${dataBR(campo(`doc-sessao-freq-${i}-data`))||'Data não informada'}${realizado?` - ${realizado}`:''}`;}).join('\n')},{titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} esteve em acompanhamento psicológico, comparecendo às sessões relacionadas acima.`});
   }
   return {estilo:document.getElementById('doc-estilo')?.value||'colorido',campos,secoes};
 }

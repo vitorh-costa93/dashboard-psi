@@ -593,11 +593,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <h3>Faltas | % por Paciente (ativos)</h3>
       <div class="motivos-wrap" id="motivos-list"></div>
     </div>
-
-    <div class="panel">
-      <h3>Faltas | Por motivo</h3>
-      <div class="motivos-wrap" id="faltas-motivo-list"></div>
-    </div>
   </div>
 </div>
 </div>
@@ -1488,27 +1483,6 @@ function processAndRender(){
     .map(([,v])=>({label:v.iniciais+(v.horario?' | '+v.horario:''),pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
     .sort((a,b)=>b.pct-a.pct);
 
-  // ── Faltas por motivo (todo o histórico) ──
-  // O campo "Motivo" já é preenchido pela psicóloga, mas nunca tinha
-  // aparecido em lugar nenhum do dashboard -- só o total de faltas.
-  // Categorias amplas de propósito (não uma lista de 29 motivos distintos):
-  // cancelamento dela mesma fica fora do % de faltas (calculado acima),
-  // "sem justificativa" é o sinal de risco real de abandono, o resto é
-  // motivo informado (saúde, viagem, trabalho...) ou não foi registrado.
-  const categoriaMotivo=r=>{
-    if(r._canceladaPsicologa)return 'Cancelada pela psicóloga';
-    if(r._motivo==='Sem justificativa'||r._motivo==='Sem justificativa - Cobrado')return 'Sem justificativa';
-    if(r._motivo)return 'Motivo informado (saúde, viagem, trabalho...)';
-    return 'Sem motivo registrado';
-  };
-  const motivoOrdem=['Sem justificativa','Sem motivo registrado','Motivo informado (saúde, viagem, trabalho...)','Cancelada pela psicóloga'];
-  const motivoCount={};
-  rows.filter(r=>r._comparecimento==='Não').forEach(r=>{
-    const cat=categoriaMotivo(r);
-    motivoCount[cat]=(motivoCount[cat]||0)+1;
-  });
-  const totalNaoComp=Object.values(motivoCount).reduce((s,v)=>s+v,0);
-  const motivoArr=motivoOrdem.filter(k=>motivoCount[k]).map(k=>({label:k,qty:motivoCount[k],pct:totalNaoComp?motivoCount[k]/totalNaoComp*100:0}));
   const ml=document.getElementById('motivos-list');ml.innerHTML='';
   faltaPacArr.forEach(({label,pct,faltas,total})=>{
     const pctFmt=pct.toFixed(1)+'%';
@@ -1522,18 +1496,6 @@ function processAndRender(){
     </div>`;
   });
 
-  const fmL=document.getElementById('faltas-motivo-list');fmL.innerHTML='';
-  const corMotivo={'Sem justificativa':'#c0392b','Sem motivo registrado':'#e0a95e','Motivo informado (saúde, viagem, trabalho...)':'#899776','Cancelada pela psicóloga':'#c8bc96'};
-  motivoArr.forEach(({label,qty,pct})=>{
-    fmL.innerHTML+=`<div class="motivo-row" title="${qty} de ${totalNaoComp} sessões não comparecidas">
-      <span class="motivo-nome">${label}</span>
-      <div style="flex:1;height:6px;background:#f0ece6;border-radius:3px;margin:0 8px;align-self:center;">
-        <div style="width:${Math.min(pct,100)}%;height:100%;background:${corMotivo[label]||'#c8bc96'};border-radius:3px;"></div>
-      </div>
-      <span class="motivo-qty">${qty}</span>
-    </div>`;
-  });
-  if(!motivoArr.length)fmL.innerHTML='<div class="alert-empty">Sem faltas registradas.</div>';
   calcularAlertas();
 }
 

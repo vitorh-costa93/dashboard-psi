@@ -91,7 +91,12 @@ ${PERFIL_JAQUELINE}`;
     // qualidade sem o custo do topo de linha. Diferente do gpt-4.1-mini, ele
     // rejeita temperature customizado ("Only the default (1) value is
     // supported") -- por isso o parâmetro foi removido daqui.
-    const r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:2,timeoutMs:30000});
+    // vercel.json define maxDuration:45 pra esta função -- 2 tentativas de
+    // 20s (+ backoff) cabem em ~40.5s, com folga. O antigo {tentativas:2,
+    // timeoutMs:30000} podia chegar a ~91s de retentativa interna sem
+    // nenhum limite explícito no vercel.json (achado numa varredura depois
+    // que a geração de imagem estourou o próprio limite dela em produção).
+    const r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:1,timeoutMs:20000});
     const data=await r.json();
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;

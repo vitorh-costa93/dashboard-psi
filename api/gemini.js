@@ -9,6 +9,15 @@ import { fetchComRetentativa } from './_openai-retry.js';
 // hardcoded to 1024x1024 regardless of what the prompt asked for.
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
 
+// AbortError vira "This operation was aborted" (ou variações) na mensagem
+// crua do Node/undici -- ilegível pra quem está usando o app. Reportado ao
+// vivo: geração de atividade infantil estourou o timeout e essa mensagem
+// técnica apareceu direto na tela da psicóloga.
+function mensagemErro(e) {
+  if (e?.name === 'AbortError') return 'A geração demorou mais do que o esperado e foi interrompida. Tente novamente.';
+  return e.message;
+}
+
 // Referência de ESTILO (nunca de conteúdo) para a edição de fotos próprias --
 // desenhada com a skill canvas-design (filosofia "Calor Editorial": paleta
 // terrosa, tipografia dupla serifada+manuscrita, etiquetas 100% flat/2D,
@@ -63,7 +72,15 @@ export default async function handler(req, res) {
           // o custo estimado de cada nível.
           quality: 'medium',
         }),
-      }, {tentativas: 1, timeoutMs: 45000});
+      // gpt-image-2 as vezes passa de 45s pra gerar (relatado ao vivo: um
+      // prompt de atividade infantil mais elaborado estourou esse limite e
+      // devolveu "This operation was aborted" direto pra tela). A funcao
+      // serverless (vercel.json) tem orcamento de 100s -- uma tentativa so,
+      // com quase todo esse orcamento, evita abortar uma geracao que so
+      // precisava de mais tempo. Sem retentativa: se a 1a chamada gastar
+      // 90s so pra falhar, uma 2a tentativa nunca caberia no orcamento
+      // mesmo assim.
+      }, {tentativas: 0, timeoutMs: 90000});
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2' });
@@ -72,7 +89,7 @@ export default async function handler(req, res) {
       if (!b64) return res.status(500).json({ error: 'Nenhuma imagem retornada' });
       return res.status(200).json({ b64 });
     } catch (e) {
-      return res.status(500).json({ error: e.message });
+      return res.status(500).json({ error: mensagemErro(e) });
     }
   }
 
@@ -116,7 +133,15 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },
         body: form,
-      }, {tentativas: 1, timeoutMs: 45000});
+      // gpt-image-2 as vezes passa de 45s pra gerar (relatado ao vivo: um
+      // prompt de atividade infantil mais elaborado estourou esse limite e
+      // devolveu "This operation was aborted" direto pra tela). A funcao
+      // serverless (vercel.json) tem orcamento de 100s -- uma tentativa so,
+      // com quase todo esse orcamento, evita abortar uma geracao que so
+      // precisava de mais tempo. Sem retentativa: se a 1a chamada gastar
+      // 90s so pra falhar, uma 2a tentativa nunca caberia no orcamento
+      // mesmo assim.
+      }, {tentativas: 0, timeoutMs: 90000});
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro ao editar imagem' });
@@ -125,7 +150,7 @@ export default async function handler(req, res) {
       if (!b64) return res.status(500).json({ error: 'Nenhuma imagem retornada' });
       return res.status(200).json({ b64 });
     } catch (e) {
-      return res.status(500).json({ error: e.message });
+      return res.status(500).json({ error: mensagemErro(e) });
     }
   }
 

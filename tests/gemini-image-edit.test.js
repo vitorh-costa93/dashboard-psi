@@ -118,6 +118,19 @@ test('type=image (geração normal) continua funcionando', async () => {
   assert.equal(res.body.b64, 'GERADO_B64');
 });
 
+test('timeout (AbortError) retorna mensagem amigavel, nao o texto cru do erro', async () => {
+  global.fetch = authFetchStub(async () => {
+    const err = new Error('This operation was aborted');
+    err.name = 'AbortError';
+    throw err;
+  });
+  const req = baseReq({type: 'image', prompt: 'Um prompt qualquer', size: '1024x1024'});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 500);
+  assert.equal(res.body.error, 'A geração demorou mais do que o esperado e foi interrompida. Tente novamente.');
+});
+
 test('tipo invalido retorna 400', async () => {
   global.fetch = authFetchStub(() => { throw new Error('não deveria chamar OpenAI'); });
   const req = baseReq({type: 'algo-invalido'});

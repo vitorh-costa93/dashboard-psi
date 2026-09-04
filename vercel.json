@@ -12,6 +12,12 @@
     },
     "api/trends.js": {
       "maxDuration": 120
+    },
+    "api/post-content.js": {
+      "maxDuration": 45
+    },
+    "api/ppt-content.js": {
+      "maxDuration": 45
     }
   }
 }

@@ -83,7 +83,11 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
           }
         },
       }),
-    }, {tentativas: 2, timeoutMs: 30000});
+    // vercel.json define maxDuration:45 pra esta função -- 2 tentativas de
+    // 20s (+ backoff) cabem em ~40.5s. Antes não havia limite explícito no
+    // vercel.json e o retry interno podia chegar a ~91s (achado numa
+    // varredura depois que a geração de imagem estourou o limite dela).
+    }, {tentativas: 1, timeoutMs: 20000});
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));

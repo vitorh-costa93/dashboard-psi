@@ -62,17 +62,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .auth-submit:disabled{opacity:.6;cursor:wait;}
 .auth-message{min-height:20px;margin-top:12px;font-size:.76rem;color:var(--danger);text-align:center;}
 .auth-loading{text-align:center;color:var(--muted);font-size:.82rem;}
-.ui-theme-toggle{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:20px;cursor:pointer;user-select:none;}
-.ui-theme-toggle input{position:absolute;opacity:0;width:0;height:0;}
-.ui-theme-track{width:34px;height:19px;border-radius:999px;background:#d9cdb8;border:1px solid rgba(0,0,0,.14);position:relative;transition:background .2s;flex-shrink:0;box-sizing:border-box;}
-.ui-theme-toggle-header .ui-theme-track{border-color:rgba(245,241,232,.55);}
-.ui-theme-thumb{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;}
-.ui-theme-toggle input:checked+.ui-theme-track{background:#899776;}
-.ui-theme-toggle input:checked+.ui-theme-track .ui-theme-thumb{transform:translateX(15px);}
-.ui-theme-label{font-size:.72rem;color:var(--muted);}
-.ui-theme-toggle-header{margin-top:0;margin-left:14px;}
-.ui-theme-toggle-header .ui-theme-label{color:#e5e0d3;}
-
 /* ── Nav tabs ── */
 .nav-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 24px;position:sticky;top:57px;z-index:190;overflow:hidden;}
 .nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition-property:color,border-color;transition-duration:.2s;white-space:nowrap;}
@@ -87,13 +76,13 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .sub-tab:hover:not(.active){color:var(--text);}
 .sub-page{display:none;}
 .sub-page.active{display:block;}
-.pront-sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow:hidden;scrollbar-width:none}.pront-sub-tabs::-webkit-scrollbar{display:none}
+.pront-sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow:hidden;scrollbar-width:none;position:relative}.pront-sub-tabs::-webkit-scrollbar{display:none}
 .pront-sub-tab{padding:9px 16px;font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;}
 .pront-sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .pront-sub-page{display:none}.pront-sub-page.active{display:block}
 .notification-badge{display:none;min-width:18px;height:18px;margin-left:5px;padding:0 5px;border-radius:999px;background:#d93025;color:#fff;font-size:.66rem;font-weight:700;line-height:18px;text-align:center;vertical-align:middle;}
 .response-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
-.response-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-top:12px}.response-field{padding:9px 10px;background:var(--light);border-radius:7px}.response-label{display:block;font-size:.67rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}.response-value{white-space:pre-wrap;line-height:1.45;word-break:break-word}@media(max-width:600px){.pront-sub-tabs{overflow-x:auto}.response-grid{grid-template-columns:1fr}}
+.response-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-top:12px}.response-field{padding:9px 10px;background:var(--light);border-radius:7px}.response-label{display:block;font-size:.67rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}.response-value{white-space:pre-wrap;line-height:1.45;word-break:break-word}@media(max-width:600px){.pront-sub-tabs{overflow-x:auto}.pront-sub-tabs::after{content:'';position:absolute;top:0;right:0;bottom:1px;width:28px;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none}.response-grid{grid-template-columns:1fr}}
 
 /* ── Páginas ── */
 .page{display:none;}
@@ -488,39 +477,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 @media(max-width:760px){.post-art-grid{grid-template-columns:1fr;}}
 @media(max-width:760px){.post-grid,.post-editor{grid-template-columns:1fr;}.post-editor .full{grid-column:auto;}}
 
-/* ══════════════════════════════════════════════════════════
-   TEMA ATUAL (pré-rebranding) -- toggle "Nova identidade visual".
-   Documentos (lib/documents.js) e Atividades (geração de imagem)
-   não têm variante própria aqui: eles nunca foram alterados pelo
-   rebranding, então ficam iguais nos dois temas.
-   ══════════════════════════════════════════════════════════ */
-body.theme-legacy{--accent:#899776;--header-bg:#d9cdb8;}
-body.theme-legacy .app-header{border-bottom-color:#bfb89a}
-body.theme-legacy .brand-lockup{color:#30291f}
-body.theme-legacy .brand-copy{font-family:'Agrandir Tight','Arial Narrow',sans-serif}
-body.theme-legacy .brand-name{letter-spacing:-.035em;font-weight:400}
-body.theme-legacy .brand-role{font-family:inherit;color:inherit}
-body.theme-legacy .app-header .brand-lockup{color:#30291f}
-body.theme-legacy .app-header .brand-symbol{filter:none}
-body.theme-legacy .app-header h1{color:#3a3020}
-body.theme-legacy .auth-brand h1{color:#3a3020}
-body.theme-legacy .kpi-main{color:var(--text)}
-body.theme-legacy .view-bar h2{color:var(--text)}
-body.theme-legacy .pront-section-title{color:var(--text)}
-body.theme-legacy .generator-card h3{color:var(--text)}
-body.theme-legacy .logout-btn{border:1px solid rgba(78,85,62,.25);background:rgba(255,255,255,.35);color:#4e553e}
-body.theme-legacy .logout-btn:hover{background:rgba(255,255,255,.6)}
-body.theme-legacy .ui-theme-toggle-header .ui-theme-label{color:#5a5040}
-body.theme-legacy .nav-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.82rem}
-body.theme-legacy .nav-tab.active{border-bottom-color:var(--accent)}
-body.theme-legacy .sub-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem}
-body.theme-legacy .pront-sub-tab{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem}
-body.theme-legacy .doc-main-tab{font:500 .82rem 'DM Sans',sans-serif}
-body.theme-legacy .chart-card h3{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem;color:var(--text)}
-body.theme-legacy .panel h3{font-family:'DM Sans',sans-serif;font-weight:500;font-size:.8rem;color:var(--text)}
-body.theme-legacy .draft-title{font-family:'Newsreader',Georgia,serif;font-weight:600;color:var(--text)}
-body.theme-legacy .save-post-title{font-family:'Newsreader',serif;font-weight:400;color:var(--text)}
-body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12vw,17px) 'Agrandir Values','Arial Narrow',sans-serif}
 </style>
 </head>
 <body>
@@ -540,7 +496,6 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
       <button class="auth-submit" id="auth-submit" type="submit">Entrar</button>
       <div class="auth-message" id="auth-message" role="alert"></div>
     </form>
-    <label class="ui-theme-toggle"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade visual</span></label>
   </div>
 </div>
 
@@ -550,7 +505,6 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
   <div class="app-header-main">
     <div class="brand-lockup app-header-logo" aria-label="Jaqueline Vieira Psicóloga"><img class="brand-symbol" src="/assets/logo-symbol.svg" alt=""><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>
   </div>
-  <label class="ui-theme-toggle ui-theme-toggle-header"><input type="checkbox" class="ui-theme-switch" onchange="alternarUiTheme(this.checked)"><span class="ui-theme-track"><span class="ui-theme-thumb"></span></span><span class="ui-theme-label">Nova identidade</span></label>
   <button class="logout-btn" type="button" onclick="exportarBackupCompleto(this)" title="Baixa uma cópia de segurança de pacientes, prontuários, atividades, posts e radar de tendências, em JSON">💾 Backup</button>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
@@ -3967,18 +3921,15 @@ function psmSlidesNew(publico,individual,pacote){
 function psmKidsApprovedSlides(individual,pacote){
   return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0');const overlay=i===6?`<div class="psm-kids-values"><div class="psm-kids-value one">${escHtml(valorBR(individual)||'R$ 0,00')}</div><div class="psm-kids-value four">${escHtml(valorBR(pacote)||'R$ 0,00')}</div></div>`:'';return `<section class="psm-slide psm-kids-approved"><img src="/assets/psm/infantil/emocoes-page-${n}.png" alt="PSM infantil, página ${i+1}">${overlay}</section>`;}).join('');
 }
-function psmSlidesLegacy(publico,individual,pacote){
-  return Array.from({length:10},(_,i)=>{const n=String(i+1).padStart(2,'0'),overlay=i===6?`<div class="psm-price-overlay"><span>1 sessão</span><span>${escHtml(valorBR(individual)||'R$ 0,00')}</span><span>Pacote com 4 sessões</span><span>${escHtml(valorBR(pacote)||'R$ 0,00')}</span></div>`:'';return `<section class="psm-slide"><img src="/assets/psm/${publico}/page-${n}.png" alt="PSM ${publico}, página ${i+1}">${overlay}</section>`;}).join('');
-}
 function psmSlides(publico,individual,pacote){
-  if(publico==='infantil'&&_uiTheme!=='legacy')return psmKidsApprovedSlides(individual,pacote);
-  return _uiTheme==='legacy'?psmSlidesLegacy(publico,individual,pacote):psmSlidesNew(publico,individual,pacote);
+  if(publico==='infantil')return psmKidsApprovedSlides(individual,pacote);
+  return psmSlidesNew(publico,individual,pacote);
 }
 function atualizarPreviaPSM(){const publico=document.getElementById('psm-publico')?.value||'adulto',individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');const box=document.getElementById('psm-preview');if(box)box.innerHTML=psmSlides(publico,individual,pacote);}
 async function carregarPSMs(){const box=document.getElementById('psm-lista');if(!box)return;const r=await fetch('/api/forms?resource=documents&action=psm-list'),d=await r.json();_psms=r.ok?d:[];box.innerHTML=_psms.length?_psms.map(x=>`<div class="doc-record" role="button" tabindex="0" onclick="abrirPSM('${escHtmlAttr(x.id)}')" onkeydown="if(event.key==='Enter')abrirPSM('${escHtmlAttr(x.id)}')"><strong>${escHtml(x.titulo)}</strong><span>Salva em ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</span><div class="doc-record-actions"><button type="button" onclick="event.stopPropagation();excluirPSM('${escHtmlAttr(x.id)}')">Excluir</button></div></div>`).join(''):'<div class="alert-empty">Nenhuma PSM salva.</div>';}
 function abrirPSM(id){const x=_psms.find(p=>p.id===id);if(!x)return;document.getElementById('psm-publico').value=x.publico;document.getElementById('psm-valor-individual').value=x.valor_individual;document.getElementById('psm-valor-pacote').value=x.valor_pacote;atualizarPreviaPSM();document.getElementById('psm-preview').scrollIntoView({behavior:'smooth',block:'start'});}
 async function salvarPSM(){const publico=document.getElementById('psm-publico').value,valor_individual=Number(campo('psm-valor-individual')),valor_pacote=Number(campo('psm-valor-pacote'));if(!(valor_individual>0)||!(valor_pacote>0))return toast('Informe os dois valores da PSM.');const titulo=`PSM ${publico==='infantil'?'Infantil':'Adulto'} - Pacote ${valorBR(valor_pacote)}`;const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'psm-save',publico,titulo,valor_individual,valor_pacote})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar a PSM.');toast('✅ PSM salva para reutilização.');document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();}
-async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}&theme=${encodeURIComponent(_uiTheme)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
+async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
 async function excluirPSM(id){if(!confirm('Excluir esta PSM da biblioteca?'))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');toast('PSM excluída.');await carregarPSMs();}
 
 // Ditado por voz em todos os campos de texto
@@ -4020,18 +3971,7 @@ function switchTab(name) {
   if(name==='documentos'&&!_docInit){_docInit=true;initDocumentos();}
 }
 
-let _uiTheme=localStorage.getItem('psi-ui-theme')==='new'?'new':'legacy';
-function applyUiTheme(){
-  document.body.classList.toggle('theme-legacy',_uiTheme==='legacy');
-  document.querySelectorAll('.ui-theme-switch').forEach(el=>{el.checked=_uiTheme==='new';});
-}
-function alternarUiTheme(checked){
-  _uiTheme=checked?'new':'legacy';
-  localStorage.setItem('psi-ui-theme',_uiTheme);
-  applyUiTheme();
-  if(document.getElementById('doc-main-panel-psm')?.classList.contains('active'))atualizarPreviaPSM();
-}
-window.onload = ()=>{applyUiTheme();verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500);};
+window.onload = ()=>{verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500);};
 </script>
 <div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
   <div class="save-post-box">

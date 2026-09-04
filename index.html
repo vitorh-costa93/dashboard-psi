@@ -18,7 +18,7 @@
      circle, terracotta script, deep olive ink). --accent2/--accent3 were
      dead (never referenced anywhere) -- repurposed as terracotta/olive. */
   --bg:#f5f1e8;--card:#fff;--header-bg:#899776;
-  --text:#2a2a2a;--muted:#888;--light:#f9f7f2;
+  --text:#2a2a2a;--muted:#6b6b6b;--light:#f9f7f2;
   --accent:#4e553e;--accent2:#b86a49;--accent3:#4e553e;--sage:#899776;
   --danger:#c0392b;--border:#e0d9cc;--shadow:0 1px 8px rgba(0,0,0,.07);
   --sand:#d9cdb8;--terracotta:#b86a49;--olive:#4e553e;
@@ -347,7 +347,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .tag.faixa{background:#fef9ec;color:#8a6820;border-color:#e8d898;}
 .tag.tema{background:#f0edf8;color:#6a4fa0;border-color:#ccc0e8;}
 .ativ-card-actions{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
-.btn-xs{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
+.btn-xs{background:none;border:1px solid var(--border);border-radius:5px;padding:6px 8px;min-height:24px;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
 .btn-xs.pdf{border-color:#4e553e;color:#4e553e;}
 .btn-xs.del{border-color:var(--danger);color:var(--danger);}
@@ -368,7 +368,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .modal img{width:100%;border-radius:8px;margin-bottom:14px;}
 .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
 .modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+.btn-modal-close{position:absolute;top:4px;right:8px;background:none;border:none;font-size:1.2rem;padding:8px;min-width:24px;min-height:24px;cursor:pointer;color:var(--muted);}
 
 /* ── Galeria de rascunhos de posts ── */
 .draft-modal{max-width:980px;width:min(980px,96vw);max-height:92vh;overflow-y:auto;}
@@ -1116,7 +1116,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
 <!-- Modal visualização atividade -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal">
-    <button class="btn-modal-close" onclick="closeModalBtn()">✕</button>
+    <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="closeModalBtn()">✕</button>
     <h3 id="modal-title">—</h3>
     <img id="modal-img" src="" alt=""/>
     <div class="modal-tags" id="modal-tags"></div>
@@ -1130,7 +1130,7 @@ body.theme-legacy .psm-price-overlay{background:#b68a77;font:700 clamp(9px,1.12v
 <!-- Modal de visualização de rascunho -->
 <div class="modal-overlay" id="post-draft-overlay" onclick="fecharRascunhoModal(event)">
   <div class="modal draft-modal">
-    <button class="btn-modal-close" onclick="fecharRascunhoModal()">✕</button>
+    <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharRascunhoModal()">✕</button>
     <div class="draft-header">
       <div>
         <div class="draft-title" id="draft-modal-title">Rascunho</div>
@@ -1997,44 +1997,52 @@ function renderBiblioteca() {
     : `<div class="list-view">${filtered.map(cardList).join('')}</div>`;
 }
 
+function exportarPDFCard(id){
+  // Le do estado em vez de embutir titulo/img_b64 (potencialmente com aspas
+  // ou aspas simples) direto dentro de um atributo onclick -- o mesmo
+  // padrao ja usado por exportarPDFModal(). Evita tanto quebra de sintaxe
+  // quanto injecao via titulo de atividade.
+  const ativ=_atividades.find(a=>a.id===id);
+  if(ativ)exportarPDF(ativ.img_b64,ativ.titulo);
+}
 function cardGrid(a) {
   const img = a.img_b64
-    ? `<img class="ativ-card-img" src="data:image/png;base64,${a.img_b64}" alt="${a.titulo}"/>`
+    ? `<img class="ativ-card-img" src="data:image/png;base64,${a.img_b64}" alt="${escHtmlAttr(a.titulo)}"/>`
     : `<div class="ativ-card-img-placeholder">🎨</div>`;
-  return `<div class="ativ-card" onclick="openModal('${a.id}')">
+  return `<div class="ativ-card" role="button" tabindex="0" onclick="openModal('${escHtmlAttr(a.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${escHtmlAttr(a.id)}')}">
     ${img}
     <div class="ativ-card-body">
-      <div class="ativ-card-title">${a.titulo}</div>
+      <div class="ativ-card-title">${escHtml(a.titulo)}</div>
       <div class="ativ-card-tags">
-        <span class="tag tipo">${a.tipo}</span>
-        <span class="tag faixa">${a.faixa}</span>
-        <span class="tag tema">${a.tema}</span>
+        <span class="tag tipo">${escHtml(a.tipo)}</span>
+        <span class="tag faixa">${escHtml(a.faixa)}</span>
+        <span class="tag tema">${escHtml(a.tema)}</span>
       </div>
     </div>
     <div class="ativ-card-actions" onclick="event.stopPropagation()">
-      <button class="btn-xs pdf" onclick="exportarPDF('${a.img_b64}','${a.titulo}')">⬇ PDF</button>
-      <button class="btn-xs del" onclick="deletarAtividade('${a.id}')">Excluir</button>
+      <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
+      <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>
   </div>`;
 }
 
 function cardList(a) {
   const img = a.img_b64
-    ? `<img class="ativ-row-thumb" src="data:image/png;base64,${a.img_b64}" alt="${a.titulo}"/>`
+    ? `<img class="ativ-row-thumb" src="data:image/png;base64,${a.img_b64}" alt="${escHtmlAttr(a.titulo)}"/>`
     : `<div class="ativ-row-thumb-placeholder">🎨</div>`;
   return `<div class="ativ-row">
     ${img}
-    <div class="ativ-row-info" onclick="openModal('${a.id}')" style="cursor:pointer;">
-      <div class="ativ-row-title">${a.titulo}</div>
+    <div class="ativ-row-info" role="button" tabindex="0" onclick="openModal('${escHtmlAttr(a.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${escHtmlAttr(a.id)}')}" style="cursor:pointer;">
+      <div class="ativ-row-title">${escHtml(a.titulo)}</div>
       <div class="ativ-card-tags">
-        <span class="tag tipo">${a.tipo}</span>
-        <span class="tag faixa">${a.faixa}</span>
-        <span class="tag tema">${a.tema}</span>
+        <span class="tag tipo">${escHtml(a.tipo)}</span>
+        <span class="tag faixa">${escHtml(a.faixa)}</span>
+        <span class="tag tema">${escHtml(a.tema)}</span>
       </div>
     </div>
     <div class="ativ-row-actions">
-      <button class="btn-xs pdf" onclick="exportarPDF('${a.img_b64}','${a.titulo}')">⬇ PDF</button>
-      <button class="btn-xs del" onclick="deletarAtividade('${a.id}')">Excluir</button>
+      <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
+      <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>
   </div>`;
 }
@@ -2052,6 +2060,13 @@ function openModal(id) {
 function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); }
 function closeModalBtn() { document.getElementById('modal-overlay').classList.remove('open'); _modalId = null; }
 function deletarModal() { if (_modalId) { deletarAtividade(_modalId); closeModalBtn(); } }
+// Esc fecha qualquer modal aberto -- padrao esperado de teclado que nenhum
+// dos dois modais tinha (so existia clique no X ou fora da caixa).
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(document.getElementById('modal-overlay')?.classList.contains('open'))closeModalBtn();
+  if(document.getElementById('post-draft-overlay')?.classList.contains('open'))fecharRascunhoModal();
+});
 
 async function deletarAtividade(id) {
   if (!confirm('Excluir esta atividade da biblioteca?')) return;
@@ -3159,7 +3174,7 @@ async function carregarPostsSalvos(){
   try{
     const r=await fetch('/api/data?table=posts');const rows=r.ok?await r.json():[];
     if(!rows.length){el.innerHTML='<div class="alert-empty">Nenhum post salvo ainda.</div>';return;}
-    el.innerHTML=rows.slice(0,12).map(p=>`<div class="alert-item post-draft-row" onclick="abrirRascunho('${escHtmlAttr(p.id)}')">\n      <span><strong>${escHtml(p.titulo||'Post sem título')}</strong><br><small>${escHtml(p.formato||'Post')} · ${p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):''}</small></span>\n      <span class="alert-badge alert-yellow">Abrir</span>\n    </div>`).join('');
+    el.innerHTML=rows.slice(0,12).map(p=>`<div class="alert-item post-draft-row" role="button" tabindex="0" onclick="abrirRascunho('${escHtmlAttr(p.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirRascunho('${escHtmlAttr(p.id)}')}">\n      <span><strong>${escHtml(p.titulo||'Post sem título')}</strong><br><small>${escHtml(p.formato||'Post')} · ${p.criado_em?new Date(p.criado_em).toLocaleDateString('pt-BR'):''}</small></span>\n      <span class="alert-badge alert-yellow">Abrir</span>\n    </div>`).join('');
   }catch(e){el.innerHTML='<div class="alert-empty">Não foi possível carregar os rascunhos agora.</div>';}
 }
 
@@ -3457,7 +3472,7 @@ function renderGridPacientes() {
       const n=p.sessoes.length;
       const ativo=id===_pacAtual;
       const inativo=p.ativo===false;
-      return `<div class="pront-lib-card ${ativo?'ativo':''}" onclick="verProntuario('${escHtmlAttr(id)}')">
+      return `<div class="pront-lib-card ${ativo?'ativo':''}" role="button" tabindex="0" onclick="verProntuario('${escHtmlAttr(id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();verProntuario('${escHtmlAttr(id)}')}">
         <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${escHtml(p.label||p.nome)}</div>
         <div style="font-size:.72rem;color:var(--muted);">${n} sessão${n!==1?'ões':''} registrada${n!==1?'s':''}${inativo?' · inativo':''}</div>
       </div>`;

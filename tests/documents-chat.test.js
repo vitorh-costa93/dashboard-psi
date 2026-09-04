@@ -100,6 +100,25 @@ test('generate aceita descricao curta quando historico não-vazio é enviado (pe
   assert.equal(res.body.texto, 'Texto ajustado.');
 });
 
+test('generate relatorio_psicologico sem formato (ou "estruturado") usa as instrucoes de 4 secoes', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
+});
+
+test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto corrido e curto', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.', formato: 'orientacao'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.instructions.includes('sem dividir em seções tituladas'));
+  assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
+});
+
 test('generate continua rejeitando descricao curta quando historico está ausente/vazio', async () => {
   global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
   const res1 = response();

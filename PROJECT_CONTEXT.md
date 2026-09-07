@@ -132,3 +132,11 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - A API reutiliza `/api/operational?resource=agenda`, preservando o limite de funções da Vercel.
 - A geração é idempotente por paciente + data + horário. A sugestão usa 180 dias e não substitui regras já existentes.
 - Rollback funcional: remover a aba e o recurso da API; as tabelas aditivas podem permanecer sem uso.
+
+
+## Agenda — espelhamento histórico (07/09/2026)
+
+- A agenda pode importar sessões já existentes como linhas históricas, sem modificar `sessoes` nem os KPIs atuais.
+- Cada linha histórica mantém vínculo único com `sessoes.id`, o que torna a importação idempotente e impede duplicidade.
+- O status é mapeado a partir de comparecimento (realizado, falta ou cancelado); registros sem data/horário válido são relatados como ignorados.
+- Recorrências continuam sendo somente projeções e não são usadas para fabricar o passado.

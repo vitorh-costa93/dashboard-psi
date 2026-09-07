@@ -152,3 +152,11 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - Ao confirmar uma projeção, uma função transacional cria a sessão operacional e, quando aplicável, o pacote; só então ela passa a alimentar os KPIs existentes.
 - Uma linha já ligada a uma sessão histórica fica somente para leitura, evitando recontagem ou reescrita da base legado.
 - Faltas e cancelamentos não aceitam consumo, cobrança ou valor recebido.
+
+
+## Agenda — edição estilo planilha (07/09/2026)
+
+- A geração automática do mês pela recorrência continua igual; o que mudou foi a edição das linhas geradas.
+- A coluna "Status" virou "Comparecimento" (Sim/Não/Cancelado/Agendado), igual ao vocabulário da planilha original.
+- O consumo de sessão deixou de ser um campo manual: é derivado do comparecimento (Sim = consome 1, Não/Cancelado = 0).
+- Cada campo (Comparecimento, Cobrou, Recebido) salva sozinho ao ser alterado — não existe mais botão "Confirmar". A liquidação (criação da sessão/pacote) acontece automaticamente assim que o comparecimento sai de "Agendado".

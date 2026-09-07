@@ -121,3 +121,14 @@ Na rodada final de refinamento visual, o cabeçalho dos documentos foi ajustado 
 ## PSM infantil — identidade visual Emoções (24/08/2026)
 
 Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “Emoções”: dez páginas em tons pastel, ilustração da Jaqueline e mascotes originais que representam estados emocionais. A PSM adulta e o modo legado permanecem inalterados. Os novos fundos ficam em `assets/psm/infantil-emocoes/` e a prévia aplica sobreposições HTML nas páginas cujo conteúdo infantil difere do mockup visual (abordagem TCC, endereço, regras de agendamento e valores), preservando os textos e parâmetros já existentes no sistema. A página de valores continua dinâmica e respeita os campos de sessão individual e pacote de quatro sessões. A exportação PDF da nova UI usa a mesma identidade e as mesmas sobreposições; o modo legado continua exportando os PNGs históricos.
+
+
+## Agenda interna e gestão de pacientes (07/09/2026)
+
+- Nova fase aditiva: a Agenda administra pacientes, recorrências e linhas mensais sem alterar o histórico em `sessoes`.
+- Pacientes têm status ativo, pausado ou inativo; a inativação é lógica e preserva prontuários e sessões.
+- Recorrências semanais/quinzenais possuem vigência. Uma mudança fecha a regra anterior sem reescrever o passado.
+- Linhas planejadas ficam em `agenda_atendimentos`, separadas dos KPIs até serem efetivamente integradas ao registro operacional.
+- A API reutiliza `/api/operational?resource=agenda`, preservando o limite de funções da Vercel.
+- A geração é idempotente por paciente + data + horário. A sugestão usa 180 dias e não substitui regras já existentes.
+- Rollback funcional: remover a aba e o recurso da API; as tabelas aditivas podem permanecer sem uso.

@@ -144,3 +144,11 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - Na importação inicial foram espelhadas 2.415 linhas históricas. Horários textuais foram normalizados; horários ausentes ficam como `00:00` internamente e aparecem como “Não informado” na Agenda. Duplicatas do mesmo paciente/data/horário são consolidadas apenas na Agenda; `sessoes` permanece integral e é a fonte dos painéis.
 
 - Regra de status da Agenda: a partir da data corrente no fuso `America/Sao_Paulo`, linhas históricas são `agendado`; antes dessa data, o status vem de `comparecimento` da sessão de origem.
+
+
+## Agenda — liquidação operacional (07/09/2026)
+
+- A Agenda passou a separar confirmação do atendimento, consumo de sessão, cobrança de pacote e valor recebido.
+- Ao confirmar uma projeção, uma função transacional cria a sessão operacional e, quando aplicável, o pacote; só então ela passa a alimentar os KPIs existentes.
+- Uma linha já ligada a uma sessão histórica fica somente para leitura, evitando recontagem ou reescrita da base legado.
+- Faltas e cancelamentos não aceitam consumo, cobrança ou valor recebido.

@@ -140,3 +140,5 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - Cada linha histórica mantém vínculo único com `sessoes.id`, o que torna a importação idempotente e impede duplicidade.
 - O status é mapeado a partir de comparecimento (realizado, falta ou cancelado); registros sem data/horário válido são relatados como ignorados.
 - Recorrências continuam sendo somente projeções e não são usadas para fabricar o passado.
+
+- Na importação inicial foram espelhadas 2.415 linhas históricas. Horários textuais foram normalizados; horários ausentes ficam como `00:00` internamente e aparecem como “Não informado” na Agenda. Duplicatas do mesmo paciente/data/horário são consolidadas apenas na Agenda; `sessoes` permanece integral e é a fonte dos painéis.

@@ -142,3 +142,5 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - Recorrências continuam sendo somente projeções e não são usadas para fabricar o passado.
 
 - Na importação inicial foram espelhadas 2.415 linhas históricas. Horários textuais foram normalizados; horários ausentes ficam como `00:00` internamente e aparecem como “Não informado” na Agenda. Duplicatas do mesmo paciente/data/horário são consolidadas apenas na Agenda; `sessoes` permanece integral e é a fonte dos painéis.
+
+- Regra de status da Agenda: a partir da data corrente no fuso `America/Sao_Paulo`, linhas históricas são `agendado`; antes dessa data, o status vem de `comparecimento` da sessão de origem.

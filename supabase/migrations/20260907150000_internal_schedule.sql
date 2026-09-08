@@ -1,5 +1,5 @@
 -- Agenda interna aditiva; o histórico em sessoes não é alterado.
-DO $ BEGIN
+DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_schema='public' AND table_name='pacientes' AND column_name='status_operacional'
@@ -7,7 +7,7 @@ DO $ BEGIN
     ALTER TABLE public.pacientes ADD COLUMN status_operacional text NOT NULL DEFAULT 'ativo';
     UPDATE public.pacientes SET status_operacional=CASE WHEN ativo THEN 'ativo' ELSE 'inativo' END;
   END IF;
-END $;
+END $$;
 ALTER TABLE public.pacientes ADD COLUMN IF NOT EXISTS pausado_ate date;
 ALTER TABLE public.pacientes ADD COLUMN IF NOT EXISTS inativo_em timestamptz;
 DO $$ BEGIN ALTER TABLE public.pacientes ADD CONSTRAINT pacientes_status_operacional_check CHECK(status_operacional IN('ativo','pausado','inativo'));EXCEPTION WHEN duplicate_object THEN NULL;END $$;

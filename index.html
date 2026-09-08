@@ -1711,7 +1711,7 @@ function renderSessoesDetalhado(){
   const rows=pacienteId?_dsessRows.filter(x=>x.paciente_id===pacienteId):_dsessRows;
   tbody.innerHTML=rows.length?rows.map(x=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${(x.horario||'').slice(0,5)}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Cobrado">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
+    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Cobrado">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
 }
 function abrirModalSessao(id){

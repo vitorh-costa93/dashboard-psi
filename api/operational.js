@@ -19,4 +19,22 @@ async function agenda(req,res){
  if(b.action==='update_appointment'){const id=text(b.id,80),payload={atualizado_em:new Date().toISOString()};if(['agendado','realizado','falta','cancelado'].includes(b.status))payload.status=b.status;const rows=await rest(`agenda_atendimentos?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(payload)},'Falha ao atualizar atendimento');return res.status(200).json(rows[0]);}
  throw new Error('Ação inválida');
 }
-export default async function handler(req,res){if(!await requireAuth(req,res))return;try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions();return res.status(200).json(rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':r.valor_sessao,'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não'})));}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}
+async function sessions(req,res){
+ if(req.method==='GET'){
+  const month=normalizeMonth(req.query.month||new Date().toISOString().slice(0,7)),{first,last}=monthBounds(month);
+  let path=`sessoes?select=id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,pacientes(nome),convenios(nome)&data_sessao=gte.${first}&data_sessao=lte.${last}&order=data_sessao.asc,horario.asc`;
+  if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
+  return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));
+ }
+ if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
+ if(b.action==='update_session'){
+  const id=text(b.id,80),comparecimento=['Sim','Não'].includes(b.comparecimento)?b.comparecimento:null;
+  if(!comparecimento)throw new Error('Comparecimento inválido');
+  const cobradas=Number(b.sessoes_cobradas||0),final=Number(b.valor_final||0);
+  if(![cobradas,final].every(Number.isFinite)||cobradas<0||final<0)throw new Error('Valores inválidos');
+  const rows=await rest(`sessoes?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({comparecimento,sessoes_cobradas:cobradas,sessao_consumida:comparecimento==='Sim'?1:0,valor_final:final,atualizado_em:new Date().toISOString()})},'Falha ao atualizar atendimento');
+  return res.status(200).json(rows[0]);
+ }
+ throw new Error('Ação inválida');
+}
+export default async function handler(req,res){if(!await requireAuth(req,res))return;try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions();return res.status(200).json(rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':r.valor_sessao,'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não'})));}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}

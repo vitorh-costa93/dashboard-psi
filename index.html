@@ -597,9 +597,35 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="motivos-wrap" id="motivos-list"></div>
     </div>
   </div>
+
+  <div class="generator-card" style="margin-top:20px">
+    <h3>Atendimentos — detalhado</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="gen-field" style="min-width:220px"><label>Paciente</label><select id="dsess-paciente" onchange="carregarSessoesDetalhado()"><option value="">Todos</option></select></div>
+      <div class="gen-field" style="width:150px"><label>Mês</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+    </div>
+    <div class="agenda-table-wrap">
+      <table class="agenda-table">
+        <thead><tr><th>Data</th><th>Horário</th><th>Paciente</th><th>Convênio</th><th>Modalidade</th><th>Comparecimento</th><th>Sessões Pagas</th><th>Valor Cobrado</th><th></th></tr></thead>
+        <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 </div>
 </div><!-- /page-dashboard -->
+
+<div class="modal-overlay" id="dsess-modal-overlay" onclick="if(event.target===this)fecharModalSessao()">
+  <div class="modal" style="max-width:420px">
+    <h3>Editar atendimento</h3>
+    <div id="dsess-modal-info" style="font-size:.8rem;color:var(--muted);margin-bottom:14px"></div>
+    <input type="hidden" id="dsess-edit-id">
+    <div class="gen-field" style="margin-bottom:10px"><label>Comparecimento</label><select id="dsess-edit-comp" onchange="recalcularValorCobrado()"><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+    <div class="gen-field" style="margin-bottom:10px"><label>Sessões Pagas</label><input type="number" min="0" step="1" id="dsess-edit-cobradas" oninput="recalcularValorCobrado()"></div>
+    <div class="gen-field" style="margin-bottom:14px"><label>Valor Cobrado</label><input type="number" min="0" step=".01" id="dsess-edit-valor"></div>
+    <div class="modal-actions"><button class="btn-primary" onclick="salvarEdicaoSessao()">Salvar</button><button class="btn-secondary" onclick="fecharModalSessao()">Cancelar</button></div>
+  </div>
+</div>
 
 <!-- ── PÁGINA AGENDA ── -->
 <div class="page" id="page-agenda"><div class="section-wrap">
@@ -1259,7 +1285,7 @@ async function exportarBackupCompleto(btn){
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
-let charts={},_rows=[],_ativosArr=[];
+let charts={},_rows=[],_ativosArr=[],_dsessRows=[],_dsessInit=false;
 let _pacientesMap = {}; // nome -> {id, nome, ativo, ultima_chave, ultimo_label}
 
 
@@ -1342,6 +1368,7 @@ async function loadData(){
     }
     processAndRender();
     carregarAlertaProntuarios();
+    popularFiltroDsess();
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
     document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1633,6 +1660,67 @@ async function carregarAlertaProntuarios(){
       +'</div>';
     el.insertAdjacentHTML('beforeend',html);
   }catch(e){console.warn('Não foi possível checar prontuários desatualizados:',e);}
+}
+
+function popularFiltroDsess(){
+  const sel=document.getElementById('dsess-paciente');
+  if(!sel)return;
+  const old=sel.value;
+  const pacientes=Object.values(_pacientesMap).sort((a,b)=>a.nome.localeCompare(b.nome));
+  sel.innerHTML='<option value="">Todos</option>'+pacientes.map(p=>`<option value="${p.id}">${agendaEscape(p.nome)}</option>`).join('');
+  if([...sel.options].some(o=>o.value===old))sel.value=old;
+  const mes=document.getElementById('dsess-mes');
+  if(mes&&!mes.value)mes.value=new Date().toISOString().slice(0,7);
+  if(!_dsessInit){_dsessInit=true;carregarSessoesDetalhado();}
+}
+async function carregarSessoesDetalhado(){
+  const tbody=document.getElementById('dsess-tbody');
+  if(!tbody)return;
+  const mes=document.getElementById('dsess-mes').value;
+  if(!mes){tbody.innerHTML='<tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr>';return;}
+  const pacienteId=document.getElementById('dsess-paciente').value;
+  tbody.innerHTML='<tr><td colspan="9" class="agenda-empty">Carregando...</td></tr>';
+  try{
+    let url='/api/operational?resource=sessions&month='+encodeURIComponent(mes);
+    if(pacienteId)url+='&paciente_id='+encodeURIComponent(pacienteId);
+    const r=await fetch(url),rows=await r.json();
+    if(!r.ok)throw new Error(rows.error||'Falha ao carregar');
+    _dsessRows=rows;
+    tbody.innerHTML=rows.length?rows.map(x=>{
+      const date=x.data_sessao.split('-').reverse().join('/');
+      return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${(x.horario||'').slice(0,5)}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Cobrado">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
+    }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
+  }catch(e){tbody.innerHTML=`<tr><td colspan="9" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`;}
+}
+function abrirModalSessao(id){
+  const row=_dsessRows.find(x=>x.id===id);
+  if(!row)return;
+  document.getElementById('dsess-edit-id').value=id;
+  document.getElementById('dsess-edit-comp').value=row.comparecimento==='Não'?'Não':'Sim';
+  document.getElementById('dsess-edit-cobradas').value=row.sessoes_cobradas||0;
+  document.getElementById('dsess-edit-valor').value=row.valor_final||0;
+  document.getElementById('dsess-modal-info').textContent=(row.pacientes?.nome||'')+' — '+row.data_sessao.split('-').reverse().join('/')+' '+(row.horario||'').slice(0,5);
+  document.getElementById('dsess-modal-overlay').classList.add('open');
+}
+function fecharModalSessao(){document.getElementById('dsess-modal-overlay').classList.remove('open');}
+function recalcularValorCobrado(){
+  const id=document.getElementById('dsess-edit-id').value,row=_dsessRows.find(x=>x.id===id);
+  if(!row)return;
+  const comp=document.getElementById('dsess-edit-comp').value,cobradas=Number(document.getElementById('dsess-edit-cobradas').value||0);
+  if(comp==='Sim')document.getElementById('dsess-edit-valor').value=(Number(row.valor_sessao||0)*cobradas).toFixed(2);
+  else document.getElementById('dsess-edit-valor').value='0.00';
+}
+async function salvarEdicaoSessao(){
+  const id=document.getElementById('dsess-edit-id').value,comparecimento=document.getElementById('dsess-edit-comp').value,sessoes_cobradas=Number(document.getElementById('dsess-edit-cobradas').value||0),valor_final=Number(document.getElementById('dsess-edit-valor').value||0);
+  try{
+    const r=await fetch('/api/operational?resource=sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update_session',id,comparecimento,sessoes_cobradas,valor_final})}),d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Não foi possível salvar');
+    const row=_dsessRows.find(x=>x.id===id);
+    if(row)Object.assign(row,d);
+    fecharModalSessao();
+    toast('Atendimento atualizado.');
+    carregarSessoesDetalhado();
+  }catch(e){toast(e.message,5000)}
 }
 
 function updateDonut(){

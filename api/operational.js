@@ -23,7 +23,7 @@ async function agenda(req,res){
 async function sessions(req,res){
  if(req.method==='GET'){
   const month=normalizeMonth(req.query.month||new Date().toISOString().slice(0,7)),{first,last}=monthBounds(month);
-  let path=`sessoes?select=id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,pacientes(nome),convenios(nome)&data_sessao=gte.${first}&data_sessao=lte.${last}&order=data_sessao.asc,horario.asc`;
+  let path=`sessoes?select=id,paciente_id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,pacientes(nome),convenios(nome)&data_sessao=gte.${first}&data_sessao=lte.${last}&order=data_sessao.asc,horario.asc`;
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
   return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));
  }

@@ -167,3 +167,15 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - As únicas linhas editáveis da Agenda eram as geradas por recorrência (`generate_month`); sem recorrência configurada, todas as linhas visíveis vinham do espelhamento histórico e ficavam travadas (somente leitura), impedindo marcar comparecimento.
 - Nova ação `add_appointment`: cria uma linha avulsa (paciente + data + horário, origem `manual`) sem depender de recorrência, já nascendo destravada para marcar comparecimento.
 - A UI ganhou um mini-formulário "Novo atendimento" no topo da tabela do mês.
+
+
+## Agenda — gestão de pacientes e visão semanal (08/09/2026)
+
+- Migration `20260908000000_agenda_patient_registry.sql` (precisa ser aplicada no Supabase antes destas mudanças funcionarem): cria `planos_pacote` (catálogo "Pacote Pn" por valor de sessão, criado/associado automaticamente ao salvar uma recorrência) e a função `excluir_paciente_definitivo`, que apaga um paciente e todo o histórico vinculado (sessões, pacotes, prontuários, agenda, documentos clínicos, anamneses/formulários) em uma única transação, na ordem exigida pelas foreign keys.
+- Topo da Agenda ganhou um dropdown com todos os pacientes (ativos e inativos); selecionar um carrega o formulário completo para editar status, recorrência etc.
+- Botão "Excluir paciente" no formulário chama a exclusão definitiva acima — irreversível, com confirmação por digitação do nome. Diferente de inativar (`status_operacional='inativo'`, reversível e preserva histórico), aqui não sobra nada.
+- A tabela de atendimentos por padrão mostra só a semana atual + pendências sem registro da semana passada (checkbox para voltar à visão do mês completo).
+
+### Observação sobre retenção de prontuários
+
+A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `anamneses_versoes` do paciente. O Conselho Federal de Psicologia recomenda guarda de prontuários por período mínimo (a psicóloga deve confirmar o prazo aplicável ao seu caso). Esta função existe porque foi pedida explicitamente, mas vale considerar usar a inativação (reversível) como padrão e reservar a exclusão definitiva para casos excepcionais (ex.: cadastro duplicado, pedido do próprio paciente).

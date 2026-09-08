@@ -468,6 +468,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .save-post-track{height:8px;background:#e8e3d8;border-radius:999px;overflow:hidden;}
 .save-post-bar{height:100%;width:0;background:var(--accent);transition:width .2s ease;}
 .save-post-step{margin-top:9px;font-size:.74rem;color:var(--muted);text-align:right;}
+.dash-refresh-box{width:min(300px,calc(100vw - 40px));background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 16px 42px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.dash-refresh-box .spinner{margin:0;}
+.dash-refresh-box span{font-size:.8rem;color:var(--muted);}
 .post-art-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
 .post-art-card{border:1px solid var(--border);border-radius:10px;background:#fff;overflow:hidden;}
 .post-art-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
@@ -1672,9 +1675,12 @@ function popularFiltroDsess(){
   // A lista de pacientes do filtro agora vem de dsessAtualizarListaPacientes,
   // construida a partir dos dados do proprio mes carregado -- so aparece
   // quem teve sessao naquele mes (pedido explicito: filtro reativo ao mes).
+  // Recarrega a cada loadData() (nao so na primeira vez) -- senao a tabela
+  // detalhada ficava presa nos dados da primeira carga, mesmo clicando em
+  // "Atualizar" ou apos liquidar um atendimento pela Agenda.
   const mes=document.getElementById('dsess-mes');
   if(mes&&!mes.value)mes.value=new Date().toISOString().slice(0,7);
-  if(!_dsessInit){_dsessInit=true;carregarSessoesDetalhado();}
+  _dsessInit=true;carregarSessoesDetalhado();
 }
 let _dsessPacienteNomeParaId={};
 function dsessAtualizarListaPacientes(rows){
@@ -4124,11 +4130,21 @@ function agendaBuscarPacienteSelecionado(){const input=document.getElementById('
 function editarPacienteAgenda(id){const p=_agendaState.patients.find(x=>x.id===id),r=agendaRule(id);document.getElementById('agenda-paciente-id').value=p.id;document.getElementById('agenda-nome').value=p.nome;document.getElementById('agenda-paciente-status').value=p.status_operacional||(p.ativo?'ativo':'inativo');document.getElementById('agenda-pausado-ate').value=p.pausado_ate||'';document.getElementById('agenda-frequencia').value=r?.frequencia||'';document.getElementById('agenda-dia').value=r?.dia_semana||1;document.getElementById('agenda-horario').value=String(r?.horario||'').slice(0,5);document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value=r?.modalidade||'';document.getElementById('agenda-convenio').value=r?.convenio_id||'';document.getElementById('agenda-valor').value=r?.valor_sessao||'';document.getElementById('agenda-form-title').textContent='Editar paciente';document.getElementById('agenda-excluir-btn').style.display='inline-block';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields();scrollTo({top:0,behavior:'smooth'})}
 function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-convenio').value='';document.getElementById('agenda-form-title').textContent='Novo paciente';document.getElementById('agenda-excluir-btn').style.display='none';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
 async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),convenio_id:document.getElementById('agenda-convenio').value||null,modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;}toast(planoNome?`Paciente salvo. ${planoNome} associado.`:'Paciente salvo.');limparPacienteAgenda();await carregarAgenda()}catch(e){toast(e.message,5000)}}
-async function excluirPacienteAgenda(){const id=document.getElementById('agenda-paciente-id').value;if(!id)return;const p=_agendaState.patients.find(x=>x.id===id);if(!p)return;const digitado=prompt('Isso apaga o paciente e TODO o histórico (sessões, pacotes, prontuários, documentos) para sempre. Não tem como desfazer.\n\nPara confirmar, digite o nome exato do paciente:\n'+p.nome);if(digitado===null)return;try{await agendaApi({action:'delete_patient',id,nome_confirmacao:digitado});toast('Paciente excluído.');limparPacienteAgenda();await carregarAgenda()}catch(e){toast(e.message,5000)}}
+async function excluirPacienteAgenda(){const id=document.getElementById('agenda-paciente-id').value;if(!id)return;const p=_agendaState.patients.find(x=>x.id===id);if(!p)return;const digitado=prompt('Isso apaga o paciente e TODO o histórico (sessões, pacotes, prontuários, documentos) para sempre. Não tem como desfazer.\n\nPara confirmar, digite o nome exato do paciente:\n'+p.nome);if(digitado===null)return;try{await agendaApi({action:'delete_patient',id,nome_confirmacao:digitado});toast('Paciente excluído.');limparPacienteAgenda();await carregarAgenda();await atualizarDashboardAposAgenda()}catch(e){toast(e.message,5000)}}
 async function inferirRecorrencias(){if(!confirm('Usar os últimos 180 dias para sugerir padrões? Regras existentes não serão alteradas.'))return;try{const r=await agendaApi({action:'infer_recurrences'});toast(`${r.created} padrão(ões) sugerido(s). Revise antes de gerar.`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
 async function importarHistoricoAgenda(){if(!confirm('Importar todos os atendimentos já registrados para a Agenda? Esta ação preserva status e não altera as sessões originais.'))return;try{const r=await agendaApi({action:'seed_history'});toast(`${r.processed} atendimento(s) histórico(s) processado(s).`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
 async function gerarAgendaMes(){try{const r=await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value});toast(`${r.generated} ocorrência(s) processada(s).`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
-async function finalizarAgenda(id){const status=document.getElementById('agenda-status-'+id).value;if(status==='agendado')return toast('Escolha o comparecimento (Sim/Não/Cancelado) antes de salvar.');const sessoes_cobradas=status==='realizado'?Number(document.getElementById('agenda-cobranca-'+id).value||0):0,valor_recebido=status==='realizado'?Number(document.getElementById('agenda-recebido-'+id).value||0):0;try{const row=await agendaApi({action:'settle_appointment',id,status,sessoes_cobradas,valor_recebido}),appt=_agendaState.appointments.find(x=>x.id===id);if(appt){Object.assign(appt,row);appt.sessoes={sessoes_cobradas:row.sessoes_cobradas,sessao_consumida:row.sessao_consumida,valor_final:row.valor_recebido}}toast('Salvo.');renderAgenda()}catch(e){toast(e.message,5000)}}
+// Liquidar (ou excluir) na Agenda grava direto em sessoes/pacotes -- tabelas que
+// alimentam o Dashboard -- mas o Dashboard só relia num loadData() manual. Isso
+// fazia a psicóloga salvar na Agenda, abrir o Dashboard e ver dados desatualizados.
+// Agora toda liquidação já dispara um refresh completo do Dashboard em segundo
+// plano (com popup de aviso), então ao trocar de aba já está tudo em dia.
+async function atualizarDashboardAposAgenda(){
+  const ov=document.getElementById('dash-refresh-overlay');
+  if(ov)ov.classList.add('open');
+  try{await loadData();}finally{if(ov)ov.classList.remove('open');}
+}
+async function finalizarAgenda(id){const status=document.getElementById('agenda-status-'+id).value;if(status==='agendado')return toast('Escolha o comparecimento (Sim/Não/Cancelado) antes de salvar.');const sessoes_cobradas=status==='realizado'?Number(document.getElementById('agenda-cobranca-'+id).value||0):0,valor_recebido=status==='realizado'?Number(document.getElementById('agenda-recebido-'+id).value||0):0;try{const row=await agendaApi({action:'settle_appointment',id,status,sessoes_cobradas,valor_recebido}),appt=_agendaState.appointments.find(x=>x.id===id);if(appt){Object.assign(appt,row);appt.sessoes={sessoes_cobradas:row.sessoes_cobradas,sessao_consumida:row.sessao_consumida,valor_final:row.valor_recebido}}toast('Salvo.');renderAgenda();await atualizarDashboardAposAgenda()}catch(e){toast(e.message,5000)}}
 async function atualizarStatusAgenda(id,status){try{await agendaApi({action:'update_appointment',id,status});_agendaState.appointments.find(x=>x.id===id).status=status;renderAgenda();toast('Status atualizado.')}catch(e){toast(e.message,5000);await carregarAgenda()}}
 async function adicionarAtendimentoAvulso(){const paciente_id=document.getElementById('agenda-novo-paciente').value,data_atendimento=document.getElementById('agenda-novo-data').value,horario=document.getElementById('agenda-novo-horario').value;if(!paciente_id)return toast('Selecione um paciente.');if(!data_atendimento)return toast('Informe a data.');if(!horario)return toast('Informe o horário.');try{await agendaApi({action:'add_appointment',paciente_id,data_atendimento,horario});const mes=data_atendimento.slice(0,7);if(document.getElementById('agenda-mes').value!==mes)document.getElementById('agenda-mes').value=mes;document.getElementById('agenda-novo-horario').value='';toast('Atendimento adicionado.');await carregarAgenda()}catch(e){toast(e.message,5000)}}
 
@@ -4161,6 +4177,12 @@ function switchTab(name) {
 
 window.onload = ()=>{verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500);};
 </script>
+<div id="dash-refresh-overlay" class="save-post-overlay" aria-live="polite">
+  <div class="dash-refresh-box">
+    <div class="spinner"></div>
+    <span>Atualizando o Dashboard…</span>
+  </div>
+</div>
 <div id="save-post-overlay" class="save-post-overlay" aria-live="polite">
   <div class="save-post-box">
     <div class="save-post-title">Salvando rascunho</div>

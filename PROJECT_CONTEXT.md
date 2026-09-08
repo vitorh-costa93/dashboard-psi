@@ -160,3 +160,10 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 - A coluna "Status" virou "Comparecimento" (Sim/Não/Cancelado/Agendado), igual ao vocabulário da planilha original.
 - O consumo de sessão deixou de ser um campo manual: é derivado do comparecimento (Sim = consome 1, Não/Cancelado = 0).
 - Cada campo (Comparecimento, Cobrou, Recebido) salva sozinho ao ser alterado — não existe mais botão "Confirmar". A liquidação (criação da sessão/pacote) acontece automaticamente assim que o comparecimento sai de "Agendado".
+
+
+## Agenda — atendimento avulso (08/09/2026)
+
+- As únicas linhas editáveis da Agenda eram as geradas por recorrência (`generate_month`); sem recorrência configurada, todas as linhas visíveis vinham do espelhamento histórico e ficavam travadas (somente leitura), impedindo marcar comparecimento.
+- Nova ação `add_appointment`: cria uma linha avulsa (paciente + data + horário, origem `manual`) sem depender de recorrência, já nascendo destravada para marcar comparecimento.
+- A UI ganhou um mini-formulário "Novo atendimento" no topo da tabela do mês.

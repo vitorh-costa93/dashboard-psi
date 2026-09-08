@@ -67,7 +67,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition-property:color,border-color;transition-duration:.2s;white-space:nowrap;}
 .nav-tab.active{color:var(--accent);border-bottom-color:var(--terracotta);}
 .nav-tab:hover:not(.active){color:var(--text);}
-@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:5px}}
+@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:5px}.kpi-row,.charts-row{grid-template-columns:1fr}}
 
 /* ── Sub-tabs (dentro de Atividades) ── */
 .sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
@@ -117,7 +117,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;min-width:0;}
 .chart-card h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:10px;}
-.chart-card canvas{width:100%!important;max-height:200px;}
+.chart-card canvas{width:100%!important;height:180px!important;}
 
 /* ── Bottom row — 3 colunas iguais ── */
 .bottom-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
@@ -1704,8 +1704,11 @@ async function carregarSessoesDetalhado(){
   try{
     const r=await fetch('/api/operational?resource=sessions&month='+encodeURIComponent(mes)),rows=await r.json();
     if(!r.ok)throw new Error(rows.error||'Falha ao carregar');
-    _dsessRows=rows;
-    dsessAtualizarListaPacientes(rows);
+    // Só sessões com registro de comparecimento feito -- as ainda "agendadas"
+    // (sem comparecimento preenchido) pertencem à Agenda, não a este histórico.
+    const registradas=rows.filter(x=>String(x.comparecimento||'').trim());
+    _dsessRows=registradas;
+    dsessAtualizarListaPacientes(registradas);
     renderSessoesDetalhado();
   }catch(e){tbody.innerHTML=`<tr><td colspan="9" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`;}
 }
@@ -1747,7 +1750,10 @@ async function salvarEdicaoSessao(){
     if(row)Object.assign(row,d);
     fecharModalSessao();
     toast('Atendimento atualizado.');
-    carregarSessoesDetalhado();
+    // loadData() já recarrega a tabela detalhada (via popularFiltroDsess) além dos
+    // KPIs/gráficos/ranking -- editar aqui sem isso deixava tudo o resto parado
+    // na carga anterior, mesmo a própria tabela detalhada refletindo a mudança.
+    await atualizarDashboardAposAgenda();
   }catch(e){toast(e.message,5000)}
 }
 
@@ -1830,7 +1836,7 @@ function renderBar(id,labels,data,yLabel,color){
     type:'bar',
     data:{labels,datasets:[{data,backgroundColor:color,borderRadius:2}]},
     options:{
-      responsive:true,maintainAspectRatio:true,
+      responsive:true,maintainAspectRatio:false,
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>yLabel==='R$'?' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:0}):(` ${ctx.parsed.y}`)}}

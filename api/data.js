@@ -82,6 +82,11 @@ export default async function handler(req, res) {
         else post.imagens_b64 = Array.isArray(post.imagens_b64)?post.imagens_b64.filter(Boolean):[];
         return res.status(200).json(post);
       }
+      if (table === 'prontuarios' && action === 'resumo') {
+        const r = await supaFetch('prontuarios?select=paciente_id,criado_em&order=criado_em.desc');
+        const data = await r.json(); if(!r.ok)return res.status(r.status).json({error:data});
+        return res.status(200).json(data);
+      }
       if (table === 'post_artes') {
         const { post_id } = req.query;
         if (!post_id) return res.status(400).json({ error: 'post_id obrigatório' });

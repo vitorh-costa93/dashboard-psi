@@ -437,6 +437,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .alert-badge{font-size:.68rem;padding:3px 7px;border-radius:12px;white-space:nowrap;}
 .alert-green{background:#eef4eb;color:#557548;}
 .alert-red{background:#fdecea;color:var(--danger);}
+.alert-item-red{background:#fdecea;color:var(--danger);}
 .alert-yellow{background:#fef9ec;color:#9a7724;}
 .alert-empty{color:var(--muted);font-size:.78rem;font-style:italic;padding:5px 0;}
 
@@ -1340,6 +1341,7 @@ async function loadData(){
       await carregarProntuarios();
     }
     processAndRender();
+    carregarAlertaProntuarios();
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
     document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1605,6 +1607,32 @@ function calcularAlertas() {
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
   el.innerHTML=html;
+}
+
+async function carregarAlertaProntuarios(){
+  const el=document.getElementById('alerts-content');
+  if(!el||!_ativosArr.length)return;
+  try{
+    const r=await fetch('/api/data?table=prontuarios&action=resumo');
+    if(!r.ok)return;
+    const rows=await r.json();
+    const ultimoPorPaciente={};
+    rows.forEach(x=>{if(x.paciente_id&&!ultimoPorPaciente[x.paciente_id])ultimoPorPaciente[x.paciente_id]=x.criado_em;});
+    const seteDiasMs=7*24*60*60*1000,agora=Date.now();
+    const atrasados=_ativosArr.map(r=>{
+      const p=_pacientesMap[r._paciente];
+      if(!p)return null;
+      const ultimo=ultimoPorPaciente[p.id];
+      const diasAtras=ultimo?Math.floor((agora-new Date(ultimo).getTime())/86400000):null;
+      if(ultimo&&agora-new Date(ultimo).getTime()<=seteDiasMs)return null;
+      return {label:(r._iniciais||r._paciente)+(r._horario?' | '+r._horario:''),dias:diasAtras};
+    }).filter(Boolean).sort((a,b)=>(b.dias??9e9)-(a.dias??9e9));
+    if(!atrasados.length)return;
+    const html='<div class="alert-group"><div class="alert-group-title">📋 Prontuários desatualizados</div>'
+      +atrasados.map(x=>`<div class="alert-item alert-item-red"><span>${x.label}</span><span class="alert-badge alert-red">${x.dias===null?'sem registro':'há '+x.dias+' dias'}</span></div>`).join('')
+      +'</div>';
+    el.insertAdjacentHTML('beforeend',html);
+  }catch(e){console.warn('Não foi possível checar prontuários desatualizados:',e);}
 }
 
 function updateDonut(){

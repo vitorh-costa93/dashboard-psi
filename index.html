@@ -637,6 +637,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div class="agenda-form-grid">
       <div class="gen-field"><label>Status</label><select id="perfil-status" onchange="perfilStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div>
       <div class="gen-field" id="perfil-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="perfil-pausado-ate"></div>
+      <div class="gen-field"><label>Contabiliza para o CNPJ?</label><select id="perfil-cnpj"><option value="false">Não</option><option value="true">Sim</option></select></div>
       <div class="gen-field"><label>Frequência</label><select id="perfil-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div>
       <div class="gen-field"><label>Dia</label><select id="perfil-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
       <div class="gen-field"><label>Horário</label><input type="time" id="perfil-horario"></div>
@@ -4172,6 +4173,7 @@ async function abrirPerfilPaciente(id){
   document.getElementById('perfil-paciente-nome').textContent=p.nome;
   document.getElementById('perfil-status').value=p.status_operacional||(p.ativo?'ativo':'inativo');
   document.getElementById('perfil-pausado-ate').value=p.pausado_ate||'';
+  document.getElementById('perfil-cnpj').value=p.contabiliza_cnpj?'true':'false';
   document.getElementById('perfil-frequencia').value=r?.frequencia||'';
   document.getElementById('perfil-dia').value=r?.dia_semana||1;
   document.getElementById('perfil-horario').value=String(r?.horario||'').slice(0,5);
@@ -4200,7 +4202,7 @@ function renderHistoricoPaciente(rows){
 async function salvarPerfilPaciente(){
   const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-paciente-nome').textContent;
   try{
-    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,cancel_future:true});
+    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',cancel_future:true});
     const freq=document.getElementById('perfil-frequencia').value;
     if(freq){
       await agendaApi({action:'save_recurrence',paciente_id:id,frequencia:freq,dia_semana:+document.getElementById('perfil-dia').value,horario:document.getElementById('perfil-horario').value,vigencia_inicio:document.getElementById('perfil-vigencia').value||agendaHoje(),modalidade:document.getElementById('perfil-modalidade').value,valor_sessao:+document.getElementById('perfil-valor').value||0});

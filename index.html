@@ -602,16 +602,39 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 
   <div class="generator-card" style="margin-top:20px">
-    <h3>Atendimentos — detalhado</h3>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <div class="gen-field" style="min-width:220px"><label>Paciente</label><input list="dsess-paciente-list" id="dsess-paciente-input" placeholder="Todos" autocomplete="off" oninput="dsessFiltrarPaciente()"><datalist id="dsess-paciente-list"></datalist></div>
-      <div class="gen-field" style="width:150px"><label>Mês</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" id="dashsub-btn-atend" onclick="switchDashSubTab('atend')">Atendimentos — detalhado</button>
+      <button class="sub-tab" id="dashsub-btn-cnpj" onclick="switchDashSubTab('cnpj')">🧾 Notas Fiscais (CNPJ)</button>
     </div>
-    <div class="agenda-table-wrap">
-      <table class="agenda-table">
-        <thead><tr><th>Data</th><th>Horário</th><th>Paciente</th><th>Convênio</th><th>Modalidade</th><th>Comparecimento</th><th>Sessões Pagas</th><th>Valor Cobrado</th><th></th></tr></thead>
-        <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
-      </table>
+
+    <div id="dashsub-atend">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="gen-field" style="min-width:220px"><label>Paciente</label><input list="dsess-paciente-list" id="dsess-paciente-input" placeholder="Todos" autocomplete="off" oninput="dsessFiltrarPaciente()"><datalist id="dsess-paciente-list"></datalist></div>
+        <div class="gen-field" style="width:150px"><label>Mês</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+      </div>
+      <div class="agenda-table-wrap">
+        <table class="agenda-table">
+          <thead><tr><th>Data</th><th>Horário</th><th>Paciente</th><th>Convênio</th><th>Modalidade</th><th>Comparecimento</th><th>Sessões Pagas</th><th>Valor Cobrado</th><th></th></tr></thead>
+          <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="dashsub-cnpj" style="display:none">
+      <p style="font-size:.78rem;color:var(--muted);margin:-4px 0 12px">
+        Soma, por paciente marcado como "Contabiliza para o CNPJ" no perfil, o valor recebido em todo o histórico —
+        útil para conferir contra as notas fiscais já emitidas de um mês específico.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="cnpj-mes" onchange="renderCnpjResumo()"></div>
+      </div>
+      <div class="agenda-table-wrap">
+        <table class="agenda-table">
+          <thead><tr><th>Paciente</th><th>Sessões</th><th>Valor recebido</th></tr></thead>
+          <tbody id="cnpj-tbody"><tr><td colspan="3" class="agenda-empty">Carregando…</td></tr></tbody>
+          <tfoot><tr style="font-weight:700"><td>Total</td><td id="cnpj-total-sessoes">—</td><td id="cnpj-total-valor">—</td></tr></tfoot>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -1393,12 +1416,16 @@ async function loadData(){
     raw.filter(r=>r._ativo==='Ativo').forEach(r=>{ativosMap[r._paciente]=r;});
     _ativosArr=Object.values(ativosMap);
     await sincronizarPacientesPlanilha(raw);
+    // carregarPacientes() precisa rodar sempre (não só quando a aba Prontuários
+    // já foi aberta) -- a sub-aba de CNPJ do Dashboard depende do
+    // contabiliza_cnpj de cada paciente.
+    await carregarPacientes();
     if (window._prontInit) {
-      await carregarPacientes();
       preencherDropdownProntuarios();
       await carregarProntuarios();
     }
     processAndRender();
+    renderCnpjResumo();
     carregarAlertaProntuarios();
     popularFiltroDsess();
     document.getElementById('loading').style.display='none';
@@ -1710,6 +1737,42 @@ function popularFiltroDsess(){
   const mes=document.getElementById('dsess-mes');
   if(mes&&!mes.value)mes.value=new Date().toISOString().slice(0,7);
   _dsessInit=true;carregarSessoesDetalhado();
+}
+function switchDashSubTab(name){
+  document.querySelectorAll('#page-dashboard .sub-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('dashsub-btn-'+name).classList.add('active');
+  document.getElementById('dashsub-atend').style.display=name==='atend'?'block':'none';
+  document.getElementById('dashsub-cnpj').style.display=name==='cnpj'?'block':'none';
+  if(name==='cnpj')renderCnpjResumo();
+}
+// Sub-aba "Notas Fiscais (CNPJ)": soma, por paciente marcado com
+// contabiliza_cnpj=true no perfil, o valor recebido (mesmo cálculo do
+// gráfico "Valor Recebido": sessões cobradas × valor da sessão) em TODO o
+// histórico já carregado em _rows -- não só no mês corrente -- para a
+// psicóloga poder escolher um mês passado (ex.: agosto) e conferir contra
+// as notas fiscais que já emitiu.
+function renderCnpjResumo(){
+  const tbody=document.getElementById('cnpj-tbody');
+  if(!tbody)return;
+  const mes=document.getElementById('cnpj-mes')?.value||'';
+  const elegiveis=new Set(Object.values(_pacientesById||{}).filter(p=>p.contabiliza_cnpj).map(p=>p.nome));
+  const rows=(_rows||[]).filter(r=>elegiveis.has(r._paciente)&&(!mes||r._anoMes===mes));
+  const porPaciente={};
+  rows.forEach(r=>{
+    if(!porPaciente[r._paciente])porPaciente[r._paciente]={sessoes:0,valor:0};
+    porPaciente[r._paciente].sessoes+=r._sessoesCob;
+    porPaciente[r._paciente].valor+=r._valorTotal;
+  });
+  const entradas=Object.entries(porPaciente).sort((a,b)=>b[1].valor-a[1].valor);
+  if(!elegiveis.size){
+    tbody.innerHTML='<tr><td colspan="3" class="agenda-empty">Nenhum paciente marcado como "Contabiliza para o CNPJ" no perfil ainda.</td></tr>';
+  }else if(!entradas.length){
+    tbody.innerHTML='<tr><td colspan="3" class="agenda-empty">Nenhuma sessão registrada '+(mes?'nesse mês.':'ainda.')+'</td></tr>';
+  }else{
+    tbody.innerHTML=entradas.map(([nome,v])=>`<tr><td>${escHtml(nome)}</td><td>${v.sessoes}</td><td>R$ ${v.valor.toFixed(2)}</td></tr>`).join('');
+  }
+  document.getElementById('cnpj-total-sessoes').textContent=entradas.reduce((s,[,v])=>s+v.sessoes,0);
+  document.getElementById('cnpj-total-valor').textContent='R$ '+entradas.reduce((s,[,v])=>s+v.valor,0).toFixed(2);
 }
 let _dsessPacienteNomeParaId={};
 function dsessAtualizarListaPacientes(rows){

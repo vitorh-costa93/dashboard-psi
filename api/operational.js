@@ -11,7 +11,9 @@ function rotuloAgenda(nome,diaSemana,horario){
   const primeiroNome=String(nome||'').trim().split(/\s+/)[0]||'';
   const [h,m]=String(horario||'').split(':');
   if(!h)return primeiroNome;
-  const horaLabel=Number(h)+'h'+(m&&m!=='00'?m:'');
+  // h já vem com dois dígitos ("09") -- NÃO usar Number(h) aqui, senão vira "9h"
+  // em vez de "09h" (padrão da planilha legada, ex.: "Ter 09h", "Sex 07h30").
+  const horaLabel=h+'h'+(m&&m!=='00'?m:'');
   return primeiroNome+' | '+(DIA_ABREV[diaSemana]||'')+' '+horaLabel;
 }
 function historicalStatus(value,date){if(String(date)>=agendaToday())return'agendado';const v=String(value||'').toLowerCase();if(/cancel/.test(v))return'cancelado';if(/falta|faltou|ausente|não compareceu|nao compareceu/.test(v))return'falta';return'realizado';}

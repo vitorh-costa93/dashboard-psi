@@ -14,8 +14,11 @@ prontuários ou quaisquer dados pessoais nele.
 - Verificação feita em 03/09/2026: GitHub CLI autenticado como
   `vitorh-costa93`, protocolo HTTPS e escopos `gist`, `read:org` e `repo`.
   `git ls-remote --heads origin` confirmou o acesso à branch remota `main`.
-- Não faça push, deploy ou alterações no Supabase sem confirmação explícita e
-  sem revisar o diff correspondente.
+- Push, deploy e alterações no Supabase (migrations/schema) estão
+  pré-autorizados pelo usuário (vitorh-costa93, 09/09/2026) — não é preciso
+  pedir confirmação antes de subir. Ainda assim, rode os testes (`npm test`)
+  e revise o diff/migration antes de subir, e nunca pule essa checagem só
+  porque a autorização já existe.
 
 ## Comandos úteis
 

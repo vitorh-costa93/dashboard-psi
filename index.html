@@ -621,10 +621,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
 
     <div id="dashsub-cnpj" style="display:none">
-      <p style="font-size:.78rem;color:var(--muted);margin:-4px 0 12px">
-        Soma, por paciente marcado como "Contabiliza para o CNPJ" no perfil, o valor recebido em todo o histórico —
-        útil para conferir contra as notas fiscais já emitidas de um mês específico.
-      </p>
+      <p id="cnpj-servico-texto" style="font-size:.78rem;color:var(--muted);margin:-4px 0 12px;white-space:pre-line"></p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="cnpj-mes" onchange="renderCnpjResumo()"></div>
       </div>
@@ -1795,6 +1792,13 @@ function switchDashSubTab(name){
   document.getElementById('dashsub-cnpj').style.display=name==='cnpj'?'block':'none';
   if(name==='cnpj')renderCnpjResumo();
 }
+// Último mês inteiramente fechado (se hoje é setembro, retorna agosto) --
+// mês padrão da sub-aba de CNPJ: é o mês que já está completo para
+// conferir contra nota fiscal, o mês corrente ainda está em andamento.
+function mesUltimoCompleto(){
+  const d=new Date(); d.setDate(1); d.setDate(0);
+  return anoMes(d);
+}
 // Sub-aba "Notas Fiscais (CNPJ)": soma, por paciente marcado com
 // contabiliza_cnpj=true no perfil, o valor recebido (mesmo cálculo do
 // gráfico "Valor Recebido": sessões cobradas × valor da sessão) em TODO o
@@ -1804,7 +1808,19 @@ function switchDashSubTab(name){
 function renderCnpjResumo(){
   const tbody=document.getElementById('cnpj-tbody');
   if(!tbody)return;
-  const mes=document.getElementById('cnpj-mes')?.value||'';
+  const mesEl=document.getElementById('cnpj-mes');
+  if(mesEl&&!mesEl.value)mesEl.value=mesUltimoCompleto();
+  const mes=mesEl?.value||'';
+  const textoEl=document.getElementById('cnpj-servico-texto');
+  if(textoEl){
+    if(mes){
+      const [ano,mesNum]=mes.split('-').map(Number),ultimoDia=new Date(ano,mesNum,0).getDate();
+      const brData=(dia)=>String(dia).padStart(2,'0')+'/'+String(mesNum).padStart(2,'0')+'/'+ano;
+      textoEl.textContent=`Serviço de 8650-0/03 - Atividades de psicologia e psicanálise prestado entre os dias ${brData(1)} e ${brData(ultimoDia)}\n\nObs.: Transferência realizada por`;
+    }else{
+      textoEl.textContent='Selecione um mês para gerar o texto do serviço prestado.';
+    }
+  }
   const elegiveis=new Set(Object.values(_pacientesById||{}).filter(p=>p.contabiliza_cnpj).map(p=>p.nome));
   const rows=(_rows||[]).filter(r=>elegiveis.has(r._paciente)&&(!mes||r._anoMes===mes));
   const porPaciente={};

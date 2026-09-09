@@ -23,3 +23,20 @@ test('mantém leitura de registros anteriores ainda não criptografados', () => 
   const legacy = {campo:'valor'};
   assert.equal(decryptClinicalData(legacy), legacy);
 });
+
+// Bug real: prontuarios.relato é `text`, não `jsonb` -- ao gravar o
+// envelope (um objeto) numa coluna texto, o Supabase serializa para uma
+// STRING JSON, e sem essa checagem o envelope nunca era reconhecido (a
+// string não tem propriedade .v), então o relato aparecia na tela como o
+// JSON cru em vez do texto decifrado.
+test('descriptografa envelope que veio como string JSON (coluna text)', () => {
+  process.env.CLINICAL_DATA_KEY = randomBytes(32).toString('base64');
+  const original = 'Relato da sessão';
+  const encryptedAsString = JSON.stringify(encryptClinicalData(original));
+  assert.equal(decryptClinicalData(encryptedAsString), original);
+});
+
+test('mantém leitura de texto legado que não é JSON válido', () => {
+  const legacy = 'Relato antigo em texto puro, salvo antes da criptografia';
+  assert.equal(decryptClinicalData(legacy), legacy);
+});

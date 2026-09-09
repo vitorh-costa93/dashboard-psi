@@ -1056,7 +1056,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
     <div class="pront-field" style="margin-top:12px;">
       <label class="pront-label">Relato da sessão</label>
-      <textarea class="pront-input pront-textarea" id="pront-relato" placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..."></textarea>
+      <textarea class="pront-input pront-textarea" id="pront-relato" placeholder="Descreva o que aconteceu na sessão, comportamentos observados, temas abordados, evolução do paciente..." spellcheck="true" autocorrect="on" autocapitalize="sentences" lang="pt-BR"></textarea>
     </div>
     <div class="pront-audio-bar">
       <button class="btn-secondary" id="btn-gravar" onclick="toggleGravacao()" style="display:flex;align-items:center;gap:6px;font-size:.8rem;">🎙 Gravar relato</button>
@@ -3618,7 +3618,7 @@ let _anamneseVersoes=[];
 
 function renderCamposAnamnese(){
   const host=document.getElementById('anamnese-campos');if(!host||host.childElementCount)return;
-  host.innerHTML=_anamneseSecoes.map(([titulo,campos])=>`<section style="margin-top:18px"><h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">${escHtml(titulo)}</h4><div class="pront-fields-grid">${campos.map(([key,label,type='text',options=[]])=>{const id='anamnese-'+key;if(type==='textarea')return `<div class="pront-field" style="grid-column:1/-1"><label class="pront-label">${escHtml(label)}</label><textarea class="pront-input pront-textarea" id="${id}"></textarea></div>`;if(type==='yesno')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option><option>Sim</option><option>Não</option></select></div>`;if(type==='select')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option>${options.map(o=>`<option>${escHtml(o)}</option>`).join('')}</select></div>`;return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><input class="pront-input" id="${id}" type="${type}"></div>`;}).join('')}</div></section>`).join('');
+  host.innerHTML=_anamneseSecoes.map(([titulo,campos])=>`<section style="margin-top:18px"><h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">${escHtml(titulo)}</h4><div class="pront-fields-grid">${campos.map(([key,label,type='text',options=[]])=>{const id='anamnese-'+key;if(type==='textarea')return `<div class="pront-field" style="grid-column:1/-1"><label class="pront-label">${escHtml(label)}</label><textarea class="pront-input pront-textarea" id="${id}" spellcheck="true" autocorrect="on" autocapitalize="sentences" lang="pt-BR"></textarea></div>`;if(type==='yesno')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option><option>Sim</option><option>Não</option></select></div>`;if(type==='select')return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><select class="pront-input" id="${id}"><option value="">Não informado</option>${options.map(o=>`<option>${escHtml(o)}</option>`).join('')}</select></div>`;return `<div class="pront-field"><label class="pront-label">${escHtml(label)}</label><input class="pront-input" id="${id}" type="${type}"></div>`;}).join('')}</div></section>`).join('');
 }
 
 function initAnamnese(){
@@ -4060,7 +4060,7 @@ function inputDoc(id,label,type='text',extra=''){
   return `<div class="pront-field"><label class="pront-label">${label}</label><input class="pront-input doc-input" id="${id}" type="${type}" ${extra} oninput="atualizarPreviaDocumento()"/></div>`;
 }
 function areaDoc(id,label,placeholder=''){
-  return `<div class="pront-field full"><label class="pront-label">${label}</label><textarea class="pront-input pront-textarea doc-input" id="${id}" placeholder="${placeholder}" oninput="atualizarPreviaDocumento()"></textarea></div>`;
+  return `<div class="pront-field full"><label class="pront-label">${label}</label><textarea class="pront-input pront-textarea doc-input" id="${id}" placeholder="${placeholder}" oninput="atualizarPreviaDocumento()" spellcheck="true" autocorrect="on" autocapitalize="sentences" lang="pt-BR"></textarea></div>`;
 }
 function valorBR(value){const n=Number(String(value||'').replace(',','.'));return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';}
 function dataBR(value){return String(value||'').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,'$3/$2/$1');}

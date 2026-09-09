@@ -129,6 +129,12 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .saldo-table tr{border-bottom:1px solid var(--border);}
 .saldo-table tr:last-child{border:none;}
 .saldo-table td{padding:7px 8px;vertical-align:middle;}
+/* Cabeçalhos ordenáveis (Dashboard e Agenda) -- clicáveis, com seta indicando a coluna/direção ativa */
+[data-tabela]{cursor:pointer;user-select:none;white-space:nowrap;}
+[data-tabela]:hover{color:var(--accent);}
+[data-tabela]::after{content:'⇅';opacity:.35;font-size:.85em;margin-left:4px;}
+[data-tabela].sort-asc::after{content:'▲';opacity:1;}
+[data-tabela].sort-desc::after{content:'▼';opacity:1;}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:500;}
 .badge-red{background:#fdecea;color:var(--danger);}
 .badge-yellow{background:#fef9ec;color:#b38a2a;}
@@ -575,9 +581,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <h3>Sessões Restantes | Pacote</h3>
       <table class="saldo-table">
         <thead><tr>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
-          <td style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
+          <td data-tabela="saldo" data-col="paciente" onclick="ordenarTabela('saldo','paciente');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
+          <td data-tabela="saldo" data-col="horario" onclick="ordenarTabela('saldo','horario');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
+          <td data-tabela="saldo" data-col="saldo" onclick="ordenarTabela('saldo','saldo');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
         </tr></thead>
         <tbody id="tabela-saldo"></tbody>
       </table>
@@ -614,7 +620,17 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </div>
       <div class="agenda-table-wrap">
         <table class="agenda-table">
-          <thead><tr><th>Data</th><th>Horário</th><th>Paciente</th><th>Convênio</th><th>Modalidade</th><th>Comparecimento</th><th>Sessões Pagas</th><th>Valor Recebido</th><th></th></tr></thead>
+          <thead><tr>
+            <th data-tabela="dsess" data-col="data" onclick="ordenarTabela('dsess','data');renderSessoesDetalhado()">Data</th>
+            <th data-tabela="dsess" data-col="horario" onclick="ordenarTabela('dsess','horario');renderSessoesDetalhado()">Horário</th>
+            <th data-tabela="dsess" data-col="paciente" onclick="ordenarTabela('dsess','paciente');renderSessoesDetalhado()">Paciente</th>
+            <th data-tabela="dsess" data-col="convenio" onclick="ordenarTabela('dsess','convenio');renderSessoesDetalhado()">Convênio</th>
+            <th data-tabela="dsess" data-col="modalidade" onclick="ordenarTabela('dsess','modalidade');renderSessoesDetalhado()">Modalidade</th>
+            <th data-tabela="dsess" data-col="comparecimento" onclick="ordenarTabela('dsess','comparecimento');renderSessoesDetalhado()">Comparecimento</th>
+            <th data-tabela="dsess" data-col="cobradas" onclick="ordenarTabela('dsess','cobradas');renderSessoesDetalhado()">Sessões Pagas</th>
+            <th data-tabela="dsess" data-col="valor" onclick="ordenarTabela('dsess','valor');renderSessoesDetalhado()">Valor Recebido</th>
+            <th></th>
+          </tr></thead>
           <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
         </table>
       </div>
@@ -627,7 +643,11 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </div>
       <div class="agenda-table-wrap">
         <table class="agenda-table">
-          <thead><tr><th>Paciente</th><th>Sessões</th><th>Valor recebido</th></tr></thead>
+          <thead><tr>
+            <th data-tabela="cnpj" data-col="paciente" onclick="ordenarTabela('cnpj','paciente');renderCnpjResumo()">Paciente</th>
+            <th data-tabela="cnpj" data-col="sessoes" onclick="ordenarTabela('cnpj','sessoes');renderCnpjResumo()">Sessões</th>
+            <th data-tabela="cnpj" data-col="valor" onclick="ordenarTabela('cnpj','valor');renderCnpjResumo()">Valor recebido</th>
+          </tr></thead>
           <tbody id="cnpj-tbody"><tr><td colspan="3" class="agenda-empty">Carregando…</td></tr></tbody>
           <tfoot><tr style="font-weight:700"><td>Total</td><td id="cnpj-total-sessoes">—</td><td id="cnpj-total-valor">—</td></tr></tfoot>
         </table>
@@ -688,7 +708,15 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 <div class="gen-field"><label>Frequência</label><select id="agenda-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div><div class="gen-field"><label>Dia</label><select id="agenda-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div><div class="gen-field"><label>Horário</label><input type="time" id="agenda-horario"></div><div class="gen-field"><label>Vigência (início)</label><input type="date" id="agenda-vigencia"></div>
 <div class="gen-field"><label>Modalidade</label><select id="agenda-modalidade"><option value="">Não informada</option><option>Online</option><option>Presencial</option></select></div><div class="gen-field"><label>Valor da sessão acordada</label><input type="number" min="0" step=".01" id="agenda-valor"></div><label class="full" style="font-size:.72rem;color:var(--muted)"><input type="checkbox" id="agenda-cancelar-futuros" checked> Cancelar agendamentos futuros ao pausar/inativar</label></div><div id="agenda-plano-info" style="font-size:.72rem;color:var(--muted);margin-top:6px"></div><div class="pront-form-actions"><button class="btn-primary" onclick="salvarPacienteAgenda()">Salvar</button><button class="btn-secondary" onclick="limparPacienteAgenda()">Limpar</button></div></div>
 <div class="generator-card"><h3>Pacientes</h3><div class="agenda-patient-list" id="agenda-pacientes"></div></div></div>
-<div class="generator-card"><h3>Atendimentos</h3><p style="font-size:.74rem;color:var(--muted);margin:-6px 0 10px">Mostrando a semana atual e pendências da semana passada sem registro. <label style="font-weight:600;cursor:pointer"><input type="checkbox" id="agenda-semana-toggle" checked onchange="renderAgenda()"> Só semana atual + pendências</label></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px"><div class="gen-field" style="flex:1;min-width:160px"><label>Novo atendimento — Paciente</label><select id="agenda-novo-paciente"></select></div><div class="gen-field" style="width:150px"><label>Data</label><input type="date" id="agenda-novo-data"></div><div class="gen-field" style="width:110px"><label>Horário</label><input type="time" id="agenda-novo-horario"></div><button class="btn-secondary" onclick="adicionarAtendimentoAvulso()">+ Adicionar</button></div><div class="agenda-summary" id="agenda-summary">—</div><div class="agenda-table-wrap"><table class="agenda-table"><thead><tr><th>Data</th><th>Horário</th><th>Paciente</th><th>Comparecimento</th><th>Sessões Pagas</th><th>Valor Recebido</th><th>Ação</th></tr></thead><tbody id="agenda-tbody"></tbody></table></div></div></div>
+<div class="generator-card"><h3>Atendimentos</h3><p style="font-size:.74rem;color:var(--muted);margin:-6px 0 10px">Mostrando a semana atual e pendências da semana passada sem registro. <label style="font-weight:600;cursor:pointer"><input type="checkbox" id="agenda-semana-toggle" checked onchange="renderAgenda()"> Só semana atual + pendências</label></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px"><div class="gen-field" style="flex:1;min-width:160px"><label>Novo atendimento — Paciente</label><select id="agenda-novo-paciente"></select></div><div class="gen-field" style="width:150px"><label>Data</label><input type="date" id="agenda-novo-data"></div><div class="gen-field" style="width:110px"><label>Horário</label><input type="time" id="agenda-novo-horario"></div><button class="btn-secondary" onclick="adicionarAtendimentoAvulso()">+ Adicionar</button></div><div class="agenda-summary" id="agenda-summary">—</div><div class="agenda-table-wrap"><table class="agenda-table"><thead><tr>
+  <th data-tabela="agenda" data-col="data" onclick="ordenarTabela('agenda','data');renderAgenda()">Data</th>
+  <th data-tabela="agenda" data-col="horario" onclick="ordenarTabela('agenda','horario');renderAgenda()">Horário</th>
+  <th data-tabela="agenda" data-col="paciente" onclick="ordenarTabela('agenda','paciente');renderAgenda()">Paciente</th>
+  <th data-tabela="agenda" data-col="comparecimento" onclick="ordenarTabela('agenda','comparecimento');renderAgenda()">Comparecimento</th>
+  <th data-tabela="agenda" data-col="cobradas" onclick="ordenarTabela('agenda','cobradas');renderAgenda()">Sessões Pagas</th>
+  <th data-tabela="agenda" data-col="valor" onclick="ordenarTabela('agenda','valor');renderAgenda()">Valor Recebido</th>
+  <th>Ação</th>
+</tr></thead><tbody id="agenda-tbody"></tbody></table></div></div></div>
 </div></div><!-- /page-agenda -->
 
 <!-- ── PÁGINA ATIVIDADES ── -->
@@ -1337,7 +1365,7 @@ async function exportarBackupCompleto(btn){
 const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
-let charts={},_rows=[],_ativosArr=[],_dsessRows=[],_dsessInit=false;
+let charts={},_rows=[],_ativosArr=[],_dsessRows=[],_dsessInit=false,_saldoArrRaw=[];
 let _pacientesMap = {}; // nome -> {id, nome, ativo, ultima_chave, ultimo_label}
 
 
@@ -1349,6 +1377,35 @@ function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.
 function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
 function iniciais(nome){return String(nome).trim().split(/\s+/).filter(Boolean)[0]||'';}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
+
+// ── Ordenação por clique no cabeçalho, reutilizável em qualquer tabela ──
+// Uso: <th data-tabela="X" data-col="nome" onclick="ordenarTabela('X','nome');renderX()">
+// dentro da função de render, chamar aplicarOrdenacao('X', arrayCru, {nome:getter,...})
+// no lugar do array cru, e no fim chamar marcarSetaOrdenacao('X').
+const _sortState={};
+function ordenarTabela(tabelaId,col){
+  const st=_sortState[tabelaId]||{col:null,dir:1};
+  st.dir=(st.col===col)?-st.dir:1;
+  st.col=col;
+  _sortState[tabelaId]=st;
+}
+function aplicarOrdenacao(tabelaId,arr,getters){
+  const st=_sortState[tabelaId];
+  if(!st||!st.col||!getters[st.col])return arr;
+  const get=getters[st.col];
+  return [...arr].sort((a,b)=>{
+    const va=get(a),vb=get(b);
+    if(typeof va==='string')return va.localeCompare(vb,'pt-BR')*st.dir;
+    return((va||0)-(vb||0))*st.dir;
+  });
+}
+function marcarSetaOrdenacao(tabelaId){
+  const st=_sortState[tabelaId];
+  document.querySelectorAll(`[data-tabela="${tabelaId}"]`).forEach(th=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(st&&th.dataset.col===st.col)th.classList.add(st.dir===1?'sort-asc':'sort-desc');
+  });
+}
 
 function setComp(id,atual,ant,suffix){
   const el=document.getElementById(id);
@@ -1469,6 +1526,23 @@ async function sincronizarPacientesPlanilha(rows) {
   }catch(e){console.warn('Não foi possível sincronizar pacientes:',e);}
 }
 
+// Ordenação padrão (saldo crescente) só quando o usuário ainda não clicou
+// em nenhum cabeçalho da tabela "saldo".
+function renderSaldoTable(){
+  const tb=document.getElementById('tabela-saldo');
+  if(!tb)return;
+  const base=_sortState.saldo?.col?_saldoArrRaw:[..._saldoArrRaw].sort((a,b)=>a.saldo-b.saldo);
+  const arr=aplicarOrdenacao('saldo',base,{paciente:x=>x.paciente,horario:x=>x.horario,saldo:x=>x.saldo});
+  tb.innerHTML=arr.map(({paciente,horario,saldo})=>{
+    const cls=saldo<0?'badge-red':saldo===0?'badge-yellow':'badge-green';
+    return `<tr>
+      <td><strong>${escHtml(paciente)}</strong></td>
+      <td style="color:var(--muted);font-size:.77rem;">${escHtml(horario)}</td>
+      <td><span class="badge ${cls}">${saldo}</span></td>
+    </tr>`;
+  }).join('');
+  marcarSetaOrdenacao('saldo');
+}
 function processAndRender(){
   const rows=_rows;
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
@@ -1556,18 +1630,9 @@ function processAndRender(){
     saldoMap[k].sessoes+=r._sessoesCob;
     saldoMap[k].comp+=r._compSim;
   });
-  const saldoArr=Object.entries(saldoMap)
-    .map(([k,v])=>({iniciais:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.comp}))
-    .sort((a,b)=>a.saldo-b.saldo);
-  const tb=document.getElementById('tabela-saldo');tb.innerHTML='';
-  saldoArr.forEach(({iniciais,horario,saldo})=>{
-    const cls=saldo<0?'badge-red':saldo===0?'badge-yellow':'badge-green';
-    tb.innerHTML+=`<tr>
-      <td><strong>${iniciais}</strong></td>
-      <td style="color:var(--muted);font-size:.77rem;">${horario}</td>
-      <td><span class="badge ${cls}">${saldo}</span></td>
-    </tr>`;
-  });
+  _saldoArrRaw=Object.entries(saldoMap)
+    .map(([k,v])=>({paciente:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.comp}));
+  renderSaldoTable();
 
   // ── Donut ──
   updateDonut();
@@ -1829,7 +1894,8 @@ function renderCnpjResumo(){
     porPaciente[r._paciente].sessoes+=r._sessoesCob;
     porPaciente[r._paciente].valor+=r._valorTotal;
   });
-  const entradas=Object.entries(porPaciente).sort((a,b)=>b[1].valor-a[1].valor);
+  const base=_sortState.cnpj?.col?Object.entries(porPaciente):Object.entries(porPaciente).sort((a,b)=>b[1].valor-a[1].valor);
+  const entradas=aplicarOrdenacao('cnpj',base,{paciente:x=>x[0],sessoes:x=>x[1].sessoes,valor:x=>x[1].valor});
   if(!elegiveis.size){
     tbody.innerHTML='<tr><td colspan="3" class="agenda-empty">Nenhum paciente marcado como "Contabiliza para o CNPJ" no perfil ainda.</td></tr>';
   }else if(!entradas.length){
@@ -1839,6 +1905,7 @@ function renderCnpjResumo(){
   }
   document.getElementById('cnpj-total-sessoes').textContent=entradas.reduce((s,[,v])=>s+v.sessoes,0);
   document.getElementById('cnpj-total-valor').textContent='R$ '+entradas.reduce((s,[,v])=>s+v.valor,0).toFixed(2);
+  marcarSetaOrdenacao('cnpj');
 }
 let _dsessPacienteNomeParaId={};
 function dsessAtualizarListaPacientes(rows){
@@ -1875,11 +1942,22 @@ function renderSessoesDetalhado(){
   if(!tbody)return;
   const nomeDigitado=document.getElementById('dsess-paciente-input')?.value.trim()||'';
   const pacienteId=nomeDigitado?_dsessPacienteNomeParaId[nomeDigitado]:'';
-  const rows=pacienteId?_dsessRows.filter(x=>x.paciente_id===pacienteId):_dsessRows;
+  const filtradas=pacienteId?_dsessRows.filter(x=>x.paciente_id===pacienteId):_dsessRows;
+  const rows=aplicarOrdenacao('dsess',filtradas,{
+    data:x=>x.data_sessao+' '+(x.horario||''),
+    horario:x=>x.horario||'',
+    paciente:x=>x.pacientes?.nome||'',
+    convenio:x=>x.convenios?.nome||'',
+    modalidade:x=>x.modalidade||'',
+    comparecimento:x=>x.comparecimento||'',
+    cobradas:x=>x.sessoes_cobradas||0,
+    valor:x=>x.valor_final||0
+  });
   tbody.innerHTML=rows.length?rows.map(x=>{
     const date=x.data_sessao.split('-').reverse().join('/');
     return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
+  marcarSetaOrdenacao('dsess');
 }
 function abrirModalSessao(id){
   const row=_dsessRows.find(x=>x.id===id);
@@ -4293,7 +4371,7 @@ async function agendaApi(body){const month=document.getElementById('agenda-mes')
 async function initAgenda(){if(!_agendaInit){_agendaInit=true;document.getElementById('agenda-mes').value=agendaMesAtual();document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-novo-data').value=agendaHoje()}await carregarAgenda()}
 async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))!=='inativo').map(p=>`<option value="${p.id}">${agendaEscape(p.nome)}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
 function agendaLimitesSemana(){const hoje=new Date();hoje.setHours(0,0,0,0);const diaSemana=hoje.getDay(),desloc=diaSemana===0?-6:1-diaSemana,inicioSemana=new Date(hoje);inicioSemana.setDate(hoje.getDate()+desloc);const fimSemana=new Date(inicioSemana);fimSemana.setDate(inicioSemana.getDate()+6);const inicioSemanaPassada=new Date(inicioSemana);inicioSemanaPassada.setDate(inicioSemana.getDate()-7);const fimSemanaPassada=new Date(inicioSemana);fimSemanaPassada.setDate(inicioSemana.getDate()-1);const iso=d=>d.toISOString().slice(0,10);return{inicioSemana:iso(inicioSemana),fimSemana:iso(fimSemana),inicioSemanaPassada:iso(inicioSemanaPassada),fimSemanaPassada:iso(fimSemanaPassada)};}
-function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Ação">'+(locked?'—':'<button class="btn-xs" onclick="finalizarAgenda(\''+x.id+'\')">💾 Salvar</button>')+'</td></tr>'}).join(''):'<tr><td colspan="7" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const dl=document.getElementById('agenda-buscar-paciente-list');if(dl){_agendaBuscaMapa={};dl.innerHTML=_agendaState.patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),label=p.nome+' ('+state+')';_agendaBuscaMapa[label]=p.id;return'<option value="'+agendaEscape(label)+'">';}).join('');}}
+function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Ação">'+(locked?'—':'<button class="btn-xs" onclick="finalizarAgenda(\''+x.id+'\')">💾 Salvar</button>')+'</td></tr>'}).join(''):'<tr><td colspan="7" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const dl=document.getElementById('agenda-buscar-paciente-list');if(dl){_agendaBuscaMapa={};dl.innerHTML=_agendaState.patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),label=p.nome+' ('+state+')';_agendaBuscaMapa[label]=p.id;return'<option value="'+agendaEscape(label)+'">';}).join('');}marcarSetaOrdenacao('agenda');}
 let _agendaBuscaMapa={};
 function agendaBuscarPacienteSelecionado(){const input=document.getElementById('agenda-buscar-paciente-input'),id=_agendaBuscaMapa[input.value.trim()];if(id){abrirPerfilPaciente(id);input.value='';}}
 // Perfil do paciente: popup com cadastro, historico de valores (cada mudanca de

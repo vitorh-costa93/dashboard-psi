@@ -1871,9 +1871,12 @@ function abrirModalSessao(id){
   document.getElementById('dsess-edit-id').value=id;
   document.getElementById('dsess-edit-comp').value=['Sim','Não','Cancelado'].includes(row.comparecimento)?row.comparecimento:'Sim';
   document.getElementById('dsess-edit-cobradas').value=row.sessoes_cobradas||0;
-  document.getElementById('dsess-edit-valor').value=row.valor_final||0;
   document.getElementById('dsess-modal-info').textContent=(row.pacientes?.nome||'')+' — '+row.data_sessao.split('-').reverse().join('/')+' '+(row.horario||'').slice(0,5);
   document.getElementById('dsess-modal-overlay').classList.add('open');
+  // Sugere sessões pagas × valor da sessão ao abrir -- não confia no
+  // valor_final já salvo, que podia ficar em 0 (nunca recalculado) mesmo
+  // com sessões pagas > 0. Continua editável manualmente depois.
+  recalcularValorRecebido();
 }
 function fecharModalSessao(){document.getElementById('dsess-modal-overlay').classList.remove('open');}
 // Valor recebido = sessões pagas × valor acordado -- independente do

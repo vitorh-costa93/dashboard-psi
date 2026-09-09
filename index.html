@@ -1650,10 +1650,17 @@ function calcularAlertas() {
     for(const[k,v]of Object.entries(diaIdx))if(x.startsWith(k))return v;
     return null;
   }
-  function proximaOcorrencia(h){
+  // Data do atendimento do paciente DENTRO da semana atual (âncora em
+  // inicioSemana, não em "hoje") -- ao contrário da antiga proximaOcorrencia
+  // (que buscava a próxima ocorrência a partir de hoje), essa não "pula" para
+  // a semana seguinte quando o dia do atendimento é hoje ou já passou nesta
+  // mesma semana. Isso é o que mantém alguém que renova pacote (ou que tem
+  // sessão essa semana) visível do início ao fim da semana, até a virada.
+  function ocorrenciaSemana(h){
     const idx=horarioDia(h); if(idx===null)return null;
-    const d=new Date(hoje); let diff=idx-d.getDay(); if(diff<=0)diff+=7;
-    d.setDate(d.getDate()+diff); return d;
+    const offsetSegunda=idx===0?6:idx-1; // Segunda=0 ... Domingo=6
+    const d=new Date(inicioSemana); d.setDate(d.getDate()+offsetSegunda);
+    return d;
   }
   function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
@@ -1661,34 +1668,34 @@ function calcularAlertas() {
   Object.values(ativos).forEach(p=>{
     const pacote=pacoteHabitual(p.compras);
     const saldo=p.sessoes-p.comp;
+    const ocorreEstaSemana=ocorrenciaSemana(p.horario);
     // Quem normalmente compra uma única sessão não entra no alerta de renovação,
     // mas ainda deve aparecer em pendências caso esteja devendo.
-    if(pacote>1){
-      const prox=proximaOcorrencia(p.horario);
-      if(prox && saldo>=0){
-        const renovacao=new Date(prox); renovacao.setDate(renovacao.getDate()+saldo*7);
-        if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
-      }
+    if(pacote>1 && ocorreEstaSemana && saldo>=0){
+      const renovacao=new Date(ocorreEstaSemana); renovacao.setDate(renovacao.getDate()+saldo*7);
+      if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
     }
-    // Pendências aparecem para todos os devedores na última semana do mês,
-    // não só quem tem sessão agendada nessa semana.
-    if(ultimaSemana&&saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo)});
+    // Devedores com atendimento nesta semana aparecem toda semana (aviso
+    // antecipado); na última semana do mês, aparecem TODOS os devedores,
+    // mesmo quem não tem sessão agendada para essa semana.
+    if(saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo),temSessaoEstaSemana:!!ocorreEstaSemana});
   });
 
   renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);
+  const dividasVisiveis=dividas.filter(x=>ultimaSemana||x.temSessaoEstaSemana);
   let html='';
-  if(renovacoes.length || (ultimaSemana&&dividas.length)) html+='<div class="alerts-columns">';
+  if(renovacoes.length || dividasVisiveis.length) html+='<div class="alerts-columns">';
   if(renovacoes.length){
     html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
     html+=renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
     html+='</div>';
   }
-  if(ultimaSemana&&dividas.length){
+  if(dividasVisiveis.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
-    html+=dividas.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></div>`).join('');
+    html+=dividasVisiveis.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></div>`).join('');
     html+='</div>';
   }
-  if(renovacoes.length || (ultimaSemana&&dividas.length)){
+  if(renovacoes.length || dividasVisiveis.length){
     html+='</div>';
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';

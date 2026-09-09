@@ -1,0 +1,24 @@
+name: Limpar deploys antigos da Vercel
+
+# Plano Hobby da Vercel nao tem controle nativo de retencao de deploy --
+# cada deploy fica guardado pra sempre e conta pro limite gratuito de 10GB
+# de "Deployment Storage" (foi o que disparou um alerta de 75% de uso, com
+# 216 deploys acumulados em ~26 dias). Mantem so o de producao atual + as
+# ultimas entregas mais recentes (ver DEPLOYMENTS_TO_KEEP abaixo).
+on:
+  schedule:
+    - cron: '0 6 * * 0' # todo domingo as 06:00 UTC (03:00 em Brasilia)
+  workflow_dispatch: {} # permite rodar manualmente pela aba Actions no GitHub
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/cleanup-vercel-deployments.mjs
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DEPLOYMENTS_TO_KEEP: '5'

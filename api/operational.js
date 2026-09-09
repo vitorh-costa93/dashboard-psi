@@ -41,7 +41,7 @@ async function sessions(req,res){
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='update_session'){
-  const id=text(b.id,80),comparecimento=['Sim','Não'].includes(b.comparecimento)?b.comparecimento:null;
+  const id=text(b.id,80),comparecimento=['Sim','Não','Cancelado'].includes(b.comparecimento)?b.comparecimento:null;
   if(!comparecimento)throw new Error('Comparecimento inválido');
   const cobradas=Number(b.sessoes_cobradas||0),final=Number(b.valor_final||0);
   if(![cobradas,final].every(Number.isFinite)||cobradas<0||final<0)throw new Error('Valores inválidos');

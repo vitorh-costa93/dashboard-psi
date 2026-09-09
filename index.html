@@ -1426,7 +1426,13 @@ async function loadData(){
     }
     processAndRender();
     renderCnpjResumo();
-    carregarAlertaProntuarios();
+    // calcularAlertas() é assíncrona (consulta a Agenda p/ saber quem tem
+    // atendimento nesta semana) -- precisa terminar antes de
+    // carregarAlertaProntuarios(), que só ANEXA ao final de #alerts-content
+    // (senão a ordem de chegada das duas respostas de rede poderia fazer uma
+    // sobrescrever o que a outra já tinha desenhado).
+    await calcularAlertas();
+    await carregarAlertaProntuarios();
     popularFiltroDsess();
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
@@ -1598,10 +1604,40 @@ function processAndRender(){
     </div>`;
   });
 
-  calcularAlertas();
 }
 
-function calcularAlertas() {
+function isoDate(d){return d.toISOString().slice(0,10);}
+// Fonte de verdade sobre quem tem atendimento REALMENTE nesta semana:
+// a Agenda (agenda_atendimentos), que já sabe lidar com frequência
+// quinzenal -- ao contrário de um cálculo baseado só no dia da semana
+// (que faria um paciente quinzenal aparecer toda semana, mesmo na semana
+// "de folga" -- foi o que aconteceu com Aline e Juliana). Para paciente
+// que ainda não tem recorrência cadastrada na Agenda (não migrado), cai
+// de volta no cálculo por dia da semana (heurística antiga).
+async function buscarAgendaSemana(inicioSemana,fimSemana){
+  const inicioISO=isoDate(inicioSemana),fimISO=isoDate(fimSemana);
+  const meses=[...new Set([anoMes(inicioSemana),anoMes(fimSemana)])];
+  const datasEstaSemana=new Map(),migrados=new Set();
+  for(const mes of meses){
+    try{
+      const r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(mes));
+      if(!r.ok)continue;
+      const d=await r.json();
+      const nomePorId={};
+      (d.patients||[]).forEach(p=>{nomePorId[p.id]=p.nome;});
+      (d.rules||[]).forEach(rule=>{const nome=nomePorId[rule.paciente_id];if(nome)migrados.add(nome);});
+      (d.appointments||[]).forEach(a=>{
+        const nome=a.pacientes?.nome;
+        if(!nome||a.status==='cancelado')return;
+        if(a.data_atendimento<inicioISO||a.data_atendimento>fimISO)return;
+        const dt=new Date(a.data_atendimento+'T12:00:00');
+        if(!datasEstaSemana.has(nome)||dt<datasEstaSemana.get(nome))datasEstaSemana.set(nome,dt);
+      });
+    }catch(e){console.warn('Não foi possível carregar a agenda da semana:',e);}
+  }
+  return{datasEstaSemana,migrados};
+}
+async function calcularAlertas() {
   const el=document.getElementById('alerts-content');
   if(!el)return;
 
@@ -1611,6 +1647,7 @@ function calcularAlertas() {
   const desloc=diaSemana===0?-6:1-diaSemana;
   inicioSemana.setDate(hoje.getDate()+desloc);
   const fimSemana=new Date(inicioSemana); fimSemana.setDate(inicioSemana.getDate()+6);
+  const {datasEstaSemana,migrados}=await buscarAgendaSemana(inicioSemana,fimSemana);
 
   const ultimoDia=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
   const inicioUltimaSemana=new Date(ultimoDia); inicioUltimaSemana.setDate(ultimoDia.getDate()-6);
@@ -1665,20 +1702,26 @@ function calcularAlertas() {
   function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
   const renovacoes=[],dividas=[];
-  Object.values(ativos).forEach(p=>{
+  Object.entries(ativos).forEach(([nome,p])=>{
     const pacote=pacoteHabitual(p.compras);
     const saldo=p.sessoes-p.comp;
-    const ocorreEstaSemana=ocorrenciaSemana(p.horario);
+    // Paciente migrado para a Agenda: só conta "tem sessão essa semana" se a
+    // Agenda de fato tem um atendimento essa semana (respeita quinzenal).
+    // Ainda não migrado: cai na heurística por dia da semana.
+    const dataAgenda=datasEstaSemana.get(nome);
+    const dataHeuristica=ocorrenciaSemana(p.horario);
+    const temEstaSemana=migrados.has(nome)?!!dataAgenda:!!dataHeuristica;
+    const dataOcorrencia=dataAgenda||dataHeuristica;
     // Quem normalmente compra uma única sessão não entra no alerta de renovação,
     // mas ainda deve aparecer em pendências caso esteja devendo.
-    if(pacote>1 && ocorreEstaSemana && saldo>=0){
-      const renovacao=new Date(ocorreEstaSemana); renovacao.setDate(renovacao.getDate()+saldo*7);
+    if(pacote>1 && temEstaSemana && dataOcorrencia && saldo>=0){
+      const renovacao=new Date(dataOcorrencia); renovacao.setDate(renovacao.getDate()+saldo*7);
       if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
     }
     // Devedores com atendimento nesta semana aparecem toda semana (aviso
     // antecipado); na última semana do mês, aparecem TODOS os devedores,
     // mesmo quem não tem sessão agendada para essa semana.
-    if(saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo),temSessaoEstaSemana:!!ocorreEstaSemana});
+    if(saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo),temSessaoEstaSemana:temEstaSemana});
   });
 
   renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);

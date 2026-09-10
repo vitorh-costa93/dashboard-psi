@@ -548,6 +548,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
   <div class="reload-bar">
     <span id="last-update">—</span>
+    <button id="btn-notif" class="btn-secondary" onclick="alternarNotificacoes()" style="display:none">🔔 Ativar notificações</button>
     <button id="btn-reload" onclick="loadData()">↻ Atualizar</button>
   </div>
 
@@ -4540,8 +4541,44 @@ window.onload = ()=>{verificarAcesso();setTimeout(()=>habilitarAudioGlobal(),500
   </div>
 </div>
 <script>
+const VAPID_PUBLIC_KEY='BI2ZG0TEK3GUeg3lp5BwcFLhshtdVlJHOpO1YHgcPgyYv4hzokR-Jb0q83hbOmtiwf06_d58-ICfYKweNRUsGt4';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64),out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function atualizarBotaoNotificacoes(){
+  const btn=document.getElementById('btn-notif');
+  if(!btn||!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  if(Notification.permission==='denied'){btn.style.display='none';return;}
+  btn.style.display='inline-block';
+  try{
+    const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
+    btn.textContent=sub?'🔔 Notificações ativadas':'🔔 Ativar notificações';
+  }catch{}
+}
+async function alternarNotificacoes(){
+  const btn=document.getElementById('btn-notif');
+  try{
+    const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
+    if(sub){
+      await fetch('/api/operational?resource=push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'unsubscribe',endpoint:sub.endpoint})});
+      await sub.unsubscribe();
+      toast('Notificações desativadas.');
+    }else{
+      const permission=await Notification.requestPermission();
+      if(permission!=='granted'){toast('Permissão de notificação negada.',5000);return;}
+      const novaSub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+      await fetch('/api/operational?resource=push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'subscribe',subscription:novaSub.toJSON()})});
+      toast('Notificações ativadas.');
+    }
+  }catch(e){toast('Não foi possível alterar as notificações.',5000)}
+  atualizarBotaoNotificacoes();
+}
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').then(()=>atualizarBotaoNotificacoes()).catch(()=>{});});
 }
 </script>
 </body>

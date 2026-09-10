@@ -6,6 +6,7 @@
 import { requireAuthOrCron } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { applySheetImport } from '../lib/sheet-import.js';
+import webpush from 'web-push';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
 const OPENAI_KEY = process.env.OPENAI_KEY;
@@ -15,6 +16,12 @@ const OPENAI_KEY = process.env.OPENAI_KEY;
 const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+// Chave pública não é secreta (vai embutida no index.html também, pra
+// pushManager.subscribe) -- só a privada precisa ficar só no Vercel.
+const VAPID_PUBLIC_KEY = 'BI2ZG0TEK3GUeg3lp5BwcFLhshtdVlJHOpO1YHgcPgyYv4hzokR-Jb0q83hbOmtiwf06_d58-ICfYKweNRUsGt4';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:psi.jaquelinev@gmail.com';
+if (VAPID_PRIVATE_KEY) webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 // Áreas temáticas que orientam a busca do próprio modelo -- antes eram 9
 // queries fixas de RSS; agora são só um guia de cobertura, a busca em si é
@@ -128,8 +135,85 @@ async function handleImportSheet(req,res){
   }
 }
 
+// Notificações push. Dobrado aqui pelo mesmo motivo do import-sheet: a
+// Vercel Hobby já está no limite de 12 funções serverless.
+function spAgora(){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());
+  const get=t=>parts.find(x=>x.type===t)?.value;
+  return {data:`${get('year')}-${get('month')}-${get('day')}`, minutos:Number(get('hour'))*60+Number(get('minute'))};
+}
+function addDiasISO(dataStr,dias){
+  const d=new Date(`${dataStr}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+dias);return d.toISOString().slice(0,10);
+}
+function horarioParaMinutos(h){
+  const [hh,mm]=String(h||'0:0').split(':').map(Number);
+  return (hh||0)*60+(mm||0);
+}
+async function restTrends(path,options={}){
+  const legacyAuthorization=SUPABASE_KEY.startsWith('sb_secret_')?{}:{Authorization:`Bearer ${SUPABASE_KEY}`};
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...options,headers:{apikey:SUPABASE_KEY,...legacyAuthorization,'Content-Type':'application/json',...(options.headers||{})}});
+  const data=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(`Falha no banco (${path}): ${r.status}`);
+  return data;
+}
+async function enviarPushParaTodos(payload){
+  if(!VAPID_PRIVATE_KEY) return;
+  const subs=await restTrends('push_subscriptions?select=id,endpoint,p256dh,auth');
+  for(const s of subs){
+    try{
+      await webpush.sendNotification({endpoint:s.endpoint,keys:{p256dh:s.p256dh,auth:s.auth}},JSON.stringify(payload));
+    }catch(e){
+      // 404/410 = inscrição expirada/revogada pelo navegador -- limpa do banco.
+      if(e.statusCode===404||e.statusCode===410){
+        await restTrends(`push_subscriptions?id=eq.${encodeURIComponent(s.id)}`,{method:'DELETE',headers:{Prefer:'return=minimal'}}).catch(()=>{});
+      }
+    }
+  }
+}
+async function lembretesProntuario(){
+  const {data:hoje,minutos:agora}=spAgora();
+  const rows=await restTrends(`agenda_atendimentos?select=id,horario,pacientes(nome)&data_atendimento=eq.${hoje}&status=in.(agendado,realizado)&lembrete_prontuario_enviado_em=is.null`);
+  for(const r of rows){
+    if(agora<horarioParaMinutos(r.horario)+90) continue;
+    await enviarPushParaTodos({title:'Atualizar prontuário',body:`Lembrete: atualize o prontuário de ${r.pacientes?.nome||'paciente'}.`,url:'/'});
+    await restTrends(`agenda_atendimentos?id=eq.${encodeURIComponent(r.id)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({lembrete_prontuario_enviado_em:new Date().toISOString()})}).catch(()=>{});
+  }
+}
+async function resumoDoDiaSeguinte(){
+  const {data:hoje,minutos:agora}=spAgora();
+  if(agora<9*60) return;
+  const existente=await restTrends(`notificacoes_diarias?select=data&data=eq.${hoje}`);
+  if(existente.length) return;
+  const amanha=addDiasISO(hoje,1);
+  const resumo=await restTrends(`rpc/resumo_agenda_dia`,{method:'POST',body:JSON.stringify({p_data:amanha})});
+  // Registra sempre (mesmo sem sessões) pra não recalcular a cada 15min o dia todo.
+  await restTrends('notificacoes_diarias',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({data:hoje})}).catch(()=>{});
+  if(!resumo.length) return;
+  const nomes=resumo.map(r=>r.nome).join(', ');
+  const emDebito=resumo.filter(r=>r.saldo<0).map(r=>`${r.nome} (${Math.abs(r.saldo)} sessõe${Math.abs(r.saldo)===1?'':'s'} em débito)`);
+  const renovam=resumo.filter(r=>r.pacote_habitual>1&&r.saldo===1).map(r=>r.nome);
+  let body=`Amanhã tem sessão com ${nomes}.`;
+  if(emDebito.length) body+=` Em débito: ${emDebito.join(', ')}.`;
+  if(renovam.length) body+=` Renova pacote: ${renovam.join(', ')}.`;
+  await enviarPushParaTodos({title:'Agenda de amanhã',body,url:'/'});
+}
+async function handleSendNotifications(req,res){
+  if (!await requireAuthOrCron(req, res)) return;
+  if (req.method !== 'GET') return res.status(405).json({error: 'Method not allowed'});
+  if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({error: 'SUPABASE_URL ou SUPABASE_SERVICE_KEY não configuradas no Vercel'});
+  try {
+    await lembretesProntuario();
+    await resumoDoDiaSeguinte();
+    return res.status(200).json({ok:true});
+  } catch (error) {
+    console.error('send-notifications error:', error);
+    return res.status(500).json({error: 'Não foi possível processar notificações'});
+  }
+}
+
 export default async function handler(req,res){
   if(req.query?.job==='import-sheet') return handleImportSheet(req,res);
+  if(req.query?.job==='send-notifications') return handleSendNotifications(req,res);
   if (!await requireAuthOrCron(req, res)) return;
   if(req.method!=='GET') return res.status(405).json({error:'Method not allowed'});
   try{

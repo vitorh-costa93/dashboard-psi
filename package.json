@@ -13,11 +13,10 @@
     "supabase": "2.115.0"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^131.0.1",
     "docx": "^9.5.1",
-    "pdf-lib": "^1.17.1",
+    "@sparticuz/chromium": "^131.0.1",
     "puppeteer-core": "^23.11.1",
-    "sharp": "^0.33.5",
-    "web-push": "^3.6.7"
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.33.5"
   }
 }

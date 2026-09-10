@@ -41,29 +41,3 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(req).then((cached) => cached || caches.match('/')))
   );
 });
-
-self.addEventListener('push', (event) => {
-  let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Dashboard Psi', {
-      body: data.body || '',
-      icon: '/assets/pwa/icon-192.png',
-      badge: '/assets/pwa/icon-192.png',
-      data: { url: data.url || '/' },
-    })
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const url = event.notification.data?.url || '/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const client of list) {
-        if ('focus' in client) return client.focus();
-      }
-      return clients.openWindow(url);
-    })
-  );
-});

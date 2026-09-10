@@ -12,3 +12,10 @@ test('quinzenal continua o ciclo em meses seguintes, mesmo fora do mês de iníc
   assert.deepEqual(buildOccurrences(rule,'2026-09'),['2026-09-10','2026-09-24']);
   assert.deepEqual(buildOccurrences(rule,'2026-10'),['2026-10-08','2026-10-22']);
 });
+// Troca de semanal p/ quinzenal a partir de 17/09 (caso Yasmin Garcia):
+// a semana de 24/09 é de folga e não deve ter ocorrência.
+test('quinzenal a partir de 17/09 pula a semana de folga',()=>{
+  const rule={frequencia:'quinzenal',dia_semana:4,vigencia_inicio:'2026-09-17'};
+  assert.deepEqual(buildOccurrences(rule,'2026-09'),['2026-09-17']);
+  assert.deepEqual(buildOccurrences(rule,'2026-10'),['2026-10-01','2026-10-15','2026-10-29']);
+});

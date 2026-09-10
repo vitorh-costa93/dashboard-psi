@@ -19,6 +19,16 @@ prontuários ou quaisquer dados pessoais nele.
   pedir confirmação antes de subir. Ainda assim, rode os testes (`npm test`)
   e revise o diff/migration antes de subir, e nunca pule essa checagem só
   porque a autorização já existe.
+- Verificação de 10/09/2026: `HEAD` e `origin/main` apontam para o mesmo
+  commit (`9ef8ad4`); não há atualização remota pendente. Arquivos PSM não
+  rastreados e a alteração local de `assets/logo-jaqueline-dark.png` foram
+  preservados, sem sobrescrita.
+- Supabase CLI: `npm run supabase -- projects list` confirma o projeto ativo
+  `dashboard-psi` (`tanluftwqzckzqiwqkhw`) e o checkout permanece vinculado.
+- Vercel CLI: instalada localmente como `vercel@59.5.0`, exposta por
+  `npm run vercel -- …`, autenticada como `vitorh-costa93` e vinculada ao
+  projeto `consultorio-jaqueline`. Não registrar valores de variáveis de
+  ambiente da Vercel neste arquivo.
 
 ## Comandos úteis
 

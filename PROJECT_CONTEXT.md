@@ -20,6 +20,9 @@ Documento vivo para continuidade técnica. Leia também `ROADMAP_MIGRACAO_SUPABA
 - Aplicação estática com funções serverless em `api/`, publicada pela Vercel.
 - Projeto Supabase: `dashboard-psi` (`tanluftwqzckzqiwqkhw`), região `us-west-2`, PostgreSQL 17.
 - O Supabase CLI está fixado como dependência de desenvolvimento na versão `2.115.0`.
+- O Vercel CLI está fixado como dependência de desenvolvimento na versão `59.5.0`
+  e é acionado por `npm run vercel -- ...`; em 10/09/2026 o checkout foi
+  confirmado como vinculado ao projeto `consultorio-jaqueline`.
 - Em 19/08/2026, o checkout foi vinculado ao projeto remoto e o schema `public` existente foi exportado, sem dados ou secrets, para `supabase/migrations/20260819000000_remote_schema.sql`.
 - A baseline foi registrada como já aplicada no histórico remoto. `supabase db push --dry-run` confirmou que o banco está atualizado e que não há migrations, seeds ou roles pendentes.
 - O vínculo local fica em `supabase/.temp` e nunca deve ser versionado.

@@ -5,18 +5,20 @@
   "type": "module",
   "scripts": {
     "supabase": "supabase",
+    "vercel": "vercel",
     "test": "node --test",
     "import:sheet": "node scripts/import-sheet.mjs",
     "reconcile:sheet": "node scripts/reconcile-sheet.mjs"
   },
   "devDependencies": {
-    "supabase": "2.115.0"
+    "supabase": "2.115.0",
+    "vercel": "59.5.0"
   },
   "dependencies": {
-    "docx": "^9.5.1",
     "@sparticuz/chromium": "^131.0.1",
-    "puppeteer-core": "^23.11.1",
+    "docx": "^9.5.1",
     "pdf-lib": "^1.17.1",
+    "puppeteer-core": "^23.11.1",
     "sharp": "^0.33.5"
   }
 }

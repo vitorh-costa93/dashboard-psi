@@ -176,6 +176,24 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .gen-field select,.gen-field input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);}
 .gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent);}
 
+/* ── Combobox pesquisável (dropdown com busca), no lugar do <input list> nativo do navegador (feio e inconsistente entre navegadores) ── */
+.combo{position:relative;width:100%;}
+.combo-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--light);cursor:pointer;text-align:left;}
+.combo-trigger:hover{border-color:var(--accent);}
+.combo.open .combo-trigger{border-color:var(--accent);}
+.combo-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.combo-value.placeholder{color:var(--muted);}
+.combo-caret{color:var(--muted);font-size:.7em;flex:0 0 auto;transition:transform .15s;}
+.combo.open .combo-caret{transform:rotate(180deg);}
+.combo-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:60;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;}
+.combo.open .combo-panel{display:block;}
+.combo-search{width:100%;box-sizing:border-box;padding:9px 12px;border:none;border-bottom:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:.82rem;background:transparent;color:var(--text);outline:none;}
+.combo-list{max-height:240px;overflow:auto;padding:4px 0;}
+.combo-item{padding:8px 12px;cursor:pointer;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.combo-item:hover,.combo-item.active{background:var(--light);}
+.combo-item.selected{color:var(--accent);font-weight:600;}
+.combo-empty{padding:14px 12px;color:var(--muted);font-size:.8rem;text-align:center;}
+
 .prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
 .prompt-area:focus{outline:none;border-color:var(--accent);}
 .chat-refinamento{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff;}
@@ -622,7 +640,13 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
     <div id="dashsub-atend">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <div class="gen-field" style="min-width:220px"><label>Paciente</label><input list="dsess-paciente-list" id="dsess-paciente-input" placeholder="Todos" autocomplete="off" oninput="dsessFiltrarPaciente()"><datalist id="dsess-paciente-list"></datalist></div>
+        <div class="gen-field" style="min-width:220px"><label>Paciente</label>
+          <div class="combo" id="dsess-paciente-combo">
+            <button type="button" class="combo-trigger" onclick="comboToggle('dsess-paciente-combo')"><span class="combo-value placeholder" id="dsess-paciente-combo-value">Todos</span><span class="combo-caret">▾</span></button>
+            <div class="combo-panel"><input type="text" class="combo-search" id="dsess-paciente-combo-search" placeholder="Buscar paciente…" oninput="comboFiltrar('dsess-paciente-combo')"><div class="combo-list" id="dsess-paciente-combo-list"></div></div>
+          </div>
+          <input type="hidden" id="dsess-paciente-input">
+        </div>
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
       </div>
       <div id="dsess-totais" style="display:none;font-size:.78rem;color:var(--muted);margin:-6px 0 12px"></div>
@@ -712,7 +736,12 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 <!-- ── PÁGINA AGENDA ── -->
 <div class="page" id="page-agenda"><div class="section-wrap">
 <div class="view-bar"><h2>🗓 Agenda de atendimentos</h2></div><p style="color:var(--muted);margin:8px 0 16px">Cadastre pacientes e gere as linhas mensais pela frequência. O histórico realizado permanece intacto.</p>
-<div class="agenda-toolbar"><div class="gen-field" style="min-width:240px"><label>Buscar paciente (ativos e inativos)</label><input list="agenda-buscar-paciente-list" id="agenda-buscar-paciente-input" placeholder="Digite o nome…" autocomplete="off" oninput="agendaBuscarPacienteSelecionado()"><datalist id="agenda-buscar-paciente-list"></datalist></div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-secondary" onclick="inferirRecorrencias()">Sugerir padrões</button><button class="btn-secondary" onclick="importarHistoricoAgenda()">Importar histórico</button><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button></div>
+<div class="agenda-toolbar"><div class="gen-field" style="min-width:240px"><label>Buscar paciente (ativos e inativos)</label>
+  <div class="combo" id="agenda-busca-combo">
+    <button type="button" class="combo-trigger" onclick="comboToggle('agenda-busca-combo')"><span class="combo-value placeholder" id="agenda-busca-combo-value">Digite o nome…</span><span class="combo-caret">▾</span></button>
+    <div class="combo-panel"><input type="text" class="combo-search" id="agenda-busca-combo-search" placeholder="Buscar paciente…" oninput="comboFiltrar('agenda-busca-combo')"><div class="combo-list" id="agenda-busca-combo-list"></div></div>
+  </div>
+</div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-secondary" onclick="inferirRecorrencias()">Sugerir padrões</button><button class="btn-secondary" onclick="importarHistoricoAgenda()">Importar histórico</button><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button></div>
 <div class="agenda-layout"><div><div class="generator-card"><h3 id="agenda-form-title">Novo paciente</h3><input type="hidden" id="agenda-paciente-id"><div class="agenda-form-grid">
 <div class="gen-field full"><label>Nome</label><input id="agenda-nome" maxlength="120"></div><div class="gen-field"><label>Status</label><select id="agenda-paciente-status" onchange="agendaStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div><div class="gen-field" id="agenda-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="agenda-pausado-ate"></div>
 <div class="gen-field"><label>Frequência</label><select id="agenda-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div><div class="gen-field"><label>Dia</label><select id="agenda-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div><div class="gen-field"><label>Horário</label><input type="time" id="agenda-horario"></div><div class="gen-field"><label>Vigência (início)</label><input type="date" id="agenda-vigencia"></div>
@@ -1418,6 +1447,64 @@ function marcarSetaOrdenacao(tabelaId){
   });
 }
 
+// ── Combobox pesquisável (substitui <input list>+<datalist>, cuja aparência
+// nativa do navegador é feia/inconsistente) ── Uso:
+//   <div class="combo" id="X"><button type="button" class="combo-trigger" onclick="comboToggle('X')">
+//     <span class="combo-value placeholder" id="X-value">Todos</span><span class="combo-caret">▾</span></button>
+//   <div class="combo-panel"><input class="combo-search" id="X-search" oninput="comboFiltrar('X')">
+//     <div class="combo-list" id="X-list"></div></div></div>
+// comboCriar('X',{items:[{value,label}],placeholder,onSelect,allowAll})
+const _combos={};
+function comboCriar(id,{items=[],placeholder='Todos',onSelect,allowAll=true}={}){
+  _combos[id]={items,placeholder,onSelect,allowAll,selected:''};
+  const valueEl=document.getElementById(id+'-value');
+  if(valueEl){valueEl.textContent=placeholder;valueEl.classList.add('placeholder');}
+  const list=document.getElementById(id+'-list');
+  if(list)list.addEventListener('click',e=>{
+    const item=e.target.closest('.combo-item');
+    if(item)comboSelecionar(id,item.dataset.value);
+  });
+}
+function comboAtualizarItens(id,items){
+  const c=_combos[id];if(!c)return;
+  c.items=items;
+  // Seleção atual não existe mais na lista (ex.: trocou o mês do filtro) -- limpa.
+  if(c.selected&&!items.some(x=>x.value===c.selected))comboSelecionar(id,'',{silent:true});
+}
+function comboToggle(id){
+  const el=document.getElementById(id);if(!el)return;
+  const abrir=!el.classList.contains('open');
+  document.querySelectorAll('.combo.open').forEach(x=>x.classList.remove('open'));
+  if(!abrir)return;
+  el.classList.add('open');
+  const search=document.getElementById(id+'-search');
+  if(search){search.value='';comboRenderizar(id,'');requestAnimationFrame(()=>search.focus());}
+}
+function comboFechar(id){document.getElementById(id)?.classList.remove('open');}
+function comboFiltrar(id){comboRenderizar(id,document.getElementById(id+'-search')?.value||'');}
+function comboRenderizar(id,termo){
+  const c=_combos[id];if(!c)return;
+  const t=termo.trim().toLowerCase();
+  const list=document.getElementById(id+'-list');if(!list)return;
+  const itens=c.items.filter(x=>!t||x.label.toLowerCase().includes(t));
+  let html='';
+  if(c.allowAll&&(!t||c.placeholder.toLowerCase().includes(t)))
+    html+=`<div class="combo-item${!c.selected?' selected':''}" data-value="">${!c.selected?'✓ ':''}${escHtml(c.placeholder)}</div>`;
+  html+=itens.map(x=>`<div class="combo-item${c.selected===x.value?' selected':''}" data-value="${escHtmlAttr(x.value)}">${c.selected===x.value?'✓ ':''}${escHtml(x.label)}</div>`).join('');
+  list.innerHTML=html||'<div class="combo-empty">Nada encontrado.</div>';
+}
+function comboSelecionar(id,value,{silent=false}={}){
+  const c=_combos[id];if(!c)return;
+  c.selected=value;
+  const item=c.items.find(x=>x.value===value);
+  const valueEl=document.getElementById(id+'-value');
+  if(valueEl){valueEl.textContent=item?item.label:c.placeholder;valueEl.classList.toggle('placeholder',!item);}
+  comboFechar(id);
+  if(!silent)c.onSelect?.(value);
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.combo'))document.querySelectorAll('.combo.open').forEach(x=>x.classList.remove('open'));});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.combo.open').forEach(x=>x.classList.remove('open'));});
+
 function setComp(id,atual,ant,suffix){
   const el=document.getElementById(id);
   if(ant===null||ant===undefined){el.textContent='—';el.className='kpi-comp neu';return;}
@@ -1925,12 +2012,18 @@ function dsessAtualizarListaPacientes(rows){
   const mapa={};
   rows.forEach(x=>{const nome=x.pacientes?.nome;if(nome&&x.paciente_id)mapa[nome]=x.paciente_id;});
   _dsessPacienteNomeParaId=mapa;
-  const dl=document.getElementById('dsess-paciente-list');
-  if(dl)dl.innerHTML=Object.keys(mapa).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${agendaEscape(n)}">`).join('');
-  const input=document.getElementById('dsess-paciente-input');
-  // Paciente filtrado nao tem sessao nesse mes (ex.: trocou de mes) -- limpa
-  // o filtro em vez de mostrar uma tabela vazia sem explicacao.
-  if(input&&input.value&&!mapa[input.value])input.value='';
+  const itens=Object.keys(mapa).sort((a,b)=>a.localeCompare(b)).map(n=>({value:n,label:n}));
+  if(!_combos['dsess-paciente-combo']){
+    comboCriar('dsess-paciente-combo',{items:itens,placeholder:'Todos',onSelect:(nome)=>{
+      document.getElementById('dsess-paciente-input').value=nome;
+      dsessFiltrarPaciente();
+    }});
+  }else{
+    // Paciente filtrado nao tem sessao nesse mes (ex.: trocou de mes) --
+    // comboAtualizarItens ja limpa a selecao nesse caso.
+    comboAtualizarItens('dsess-paciente-combo',itens);
+  }
+  document.getElementById('dsess-paciente-input').value=_combos['dsess-paciente-combo'].selected;
 }
 function dsessFiltrarPaciente(){renderSessoesDetalhado();}
 async function carregarSessoesDetalhado(){
@@ -4397,9 +4490,7 @@ async function agendaApi(body){const month=document.getElementById('agenda-mes')
 async function initAgenda(){if(!_agendaInit){_agendaInit=true;document.getElementById('agenda-mes').value=agendaMesAtual();document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-novo-data').value=agendaHoje()}await carregarAgenda()}
 async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))!=='inativo').map(p=>`<option value="${p.id}">${agendaEscape(p.nome)}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
 function agendaLimitesSemana(){const hoje=new Date();hoje.setHours(0,0,0,0);const diaSemana=hoje.getDay(),desloc=diaSemana===0?-6:1-diaSemana,inicioSemana=new Date(hoje);inicioSemana.setDate(hoje.getDate()+desloc);const fimSemana=new Date(inicioSemana);fimSemana.setDate(inicioSemana.getDate()+6);const inicioSemanaPassada=new Date(inicioSemana);inicioSemanaPassada.setDate(inicioSemana.getDate()-7);const fimSemanaPassada=new Date(inicioSemana);fimSemanaPassada.setDate(inicioSemana.getDate()-1);const iso=d=>d.toISOString().slice(0,10);return{inicioSemana:iso(inicioSemana),fimSemana:iso(fimSemana),inicioSemanaPassada:iso(inicioSemanaPassada),fimSemanaPassada:iso(fimSemanaPassada)};}
-function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+(locked?'—':'<button class="btn-xs" onclick="finalizarAgenda(\''+x.id+'\')">💾 Salvar</button>')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const dl=document.getElementById('agenda-buscar-paciente-list');if(dl){_agendaBuscaMapa={};dl.innerHTML=_agendaState.patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),label=p.nome+' ('+state+')';_agendaBuscaMapa[label]=p.id;return'<option value="'+agendaEscape(label)+'">';}).join('');}marcarSetaOrdenacao('agenda');}
-let _agendaBuscaMapa={};
-function agendaBuscarPacienteSelecionado(){const input=document.getElementById('agenda-buscar-paciente-input'),id=_agendaBuscaMapa[input.value.trim()];if(id){abrirPerfilPaciente(id);input.value='';}}
+function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+(locked?'—':'<button class="btn-xs" onclick="finalizarAgenda(\''+x.id+'\')">💾 Salvar</button>')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const itensBusca=_agendaState.patients.map(p=>({value:p.id,label:p.nome+' ('+(p.status_operacional||(p.ativo?'ativo':'inativo'))+')'}));if(!_combos['agenda-busca-combo'])comboCriar('agenda-busca-combo',{items:itensBusca,placeholder:'Digite o nome…',allowAll:false,onSelect:id=>{if(id){abrirPerfilPaciente(id);comboSelecionar('agenda-busca-combo','',{silent:true});}}});else comboAtualizarItens('agenda-busca-combo',itensBusca);marcarSetaOrdenacao('agenda');}
 // Perfil do paciente: popup com cadastro, historico de valores (cada mudanca de
 // valor/dia/horario fecha o periodo atual na vigencia escolhida e abre um novo --
 // mesma logica que save_recurrence ja fazia, so que agora com uma data escolhivel

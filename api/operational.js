@@ -58,10 +58,21 @@ async function agenda(req,res){
 }
 async function sessions(req,res){
  if(req.method==='GET'){
-  const month=normalizeMonth(req.query.month||new Date().toISOString().slice(0,7)),{first,last}=monthBounds(month);
-  let path=`sessoes?select=id,paciente_id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome),convenios(nome)&data_sessao=gte.${first}&data_sessao=lte.${last}&order=data_sessao.asc,horario.asc`;
+  // Mês em branco = todo o histórico (pedido: "ver tudo o que foi feito e
+  // tudo o que foi acertado"). Sem filtro de data, a tabela sessoes já
+  // passa de 1000 linhas -- pagina em blocos de 1000 igual allSessions(),
+  // senão o PostgREST corta silenciosamente no limite padrão.
+  let path=`sessoes?select=id,paciente_id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome),convenios(nome)&order=data_sessao.asc,horario.asc`;
+  if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
-  return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));
+  if(req.query.month)return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));
+  const rows=[];
+  for(let from=0;;from+=1000){
+    const page=await rest(path,{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar atendimentos');
+    rows.push(...page);
+    if(page.length<1000)break;
+  }
+  return res.status(200).json(rows);
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='update_session'){

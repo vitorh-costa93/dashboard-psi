@@ -623,8 +623,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div id="dashsub-atend">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <div class="gen-field" style="min-width:220px"><label>Paciente</label><input list="dsess-paciente-list" id="dsess-paciente-input" placeholder="Todos" autocomplete="off" oninput="dsessFiltrarPaciente()"><datalist id="dsess-paciente-list"></datalist></div>
-        <div class="gen-field" style="width:150px"><label>Mês</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+        <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
       </div>
+      <div id="dsess-totais" style="display:none;font-size:.78rem;color:var(--muted);margin:-6px 0 12px"></div>
       <div class="agenda-table-wrap">
         <table class="agenda-table">
           <thead><tr>
@@ -1857,8 +1858,8 @@ function popularFiltroDsess(){
   // Recarrega a cada loadData() (nao so na primeira vez) -- senao a tabela
   // detalhada ficava presa nos dados da primeira carga, mesmo clicando em
   // "Atualizar" ou apos liquidar um atendimento pela Agenda.
-  const mes=document.getElementById('dsess-mes');
-  if(mes&&!mes.value)mes.value=new Date().toISOString().slice(0,7);
+  // Mês fica em branco por padrão (= todo o histórico); só carrega um mês
+  // específico se a psicóloga escolher um no filtro.
   _dsessInit=true;carregarSessoesDetalhado();
 }
 function switchDashSubTab(name){
@@ -1936,10 +1937,9 @@ async function carregarSessoesDetalhado(){
   const tbody=document.getElementById('dsess-tbody');
   if(!tbody)return;
   const mes=document.getElementById('dsess-mes').value;
-  if(!mes){tbody.innerHTML='<tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr>';return;}
   tbody.innerHTML='<tr><td colspan="9" class="agenda-empty">Carregando...</td></tr>';
   try{
-    const r=await fetch('/api/operational?resource=sessions&month='+encodeURIComponent(mes)),rows=await r.json();
+    const r=await fetch('/api/operational?resource=sessions'+(mes?'&month='+encodeURIComponent(mes):'')),rows=await r.json();
     if(!r.ok)throw new Error(rows.error||'Falha ao carregar');
     // Só sessões com registro de comparecimento feito -- as ainda "agendadas"
     // (sem comparecimento preenchido) pertencem à Agenda, não a este histórico.
@@ -1970,6 +1970,19 @@ function renderSessoesDetalhado(){
     return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
+  // Totais só fazem sentido com um paciente escolhido (senão seria a soma
+  // de todo mundo misturado).
+  const totaisEl=document.getElementById('dsess-totais');
+  if(totaisEl){
+    if(pacienteId){
+      const comparecimentos=filtradas.filter(x=>x.comparecimento==='Sim').length;
+      const pagas=filtradas.reduce((s,x)=>s+Number(x.sessoes_cobradas||0),0);
+      totaisEl.style.display='block';
+      totaisEl.textContent=`Total no filtro: ${comparecimentos} comparecimento(s) · ${pagas} sessão(ões) paga(s)`;
+    }else{
+      totaisEl.style.display='none';
+    }
+  }
 }
 function abrirModalSessao(id){
   const row=_dsessRows.find(x=>x.id===id);

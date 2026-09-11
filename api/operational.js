@@ -70,7 +70,14 @@ async function sessions(req,res){
   const cobradas=Number(b.sessoes_cobradas||0),final=Number(b.valor_final||0);
   if(![cobradas,final].every(Number.isFinite)||cobradas<0||final<0)throw new Error('Valores inválidos');
   const comentario=String(b.comentario||'').trim().slice(0,500)||null;
-  const rows=await rest(`sessoes?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({comparecimento,sessoes_cobradas:cobradas,sessao_consumida:comparecimento==='Sim'?1:0,valor_final:final,comentario,atualizado_em:new Date().toISOString()})},'Falha ao atualizar atendimento');
+  const consumida=comparecimento==='Sim'?1:0;
+  const rows=await rest(`sessoes?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({comparecimento,sessoes_cobradas:cobradas,sessao_consumida:consumida,valor_final:final,comentario,atualizado_em:new Date().toISOString()})},'Falha ao atualizar atendimento');
+  // Se essa sessão estiver vinculada a um atendimento da Agenda, sincroniza o
+  // status/valores de volta -- sem isso, editar por aqui deixava a Agenda
+  // (e o status "Cancelado"/"Não"/"Sim" mostrado lá) permanentemente
+  // desatualizada em relação ao que foi corrigido no Dashboard.
+  const statusAgenda={Sim:'realizado',Não:'falta',Cancelado:'cancelado'}[comparecimento];
+  await rest(`agenda_atendimentos?sessao_id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:statusAgenda,sessoes_cobradas:cobradas,sessao_consumida:consumida,valor_recebido:final,atualizado_em:new Date().toISOString()})});
   return res.status(200).json(rows[0]);
  }
  throw new Error('Ação inválida');

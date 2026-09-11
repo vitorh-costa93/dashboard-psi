@@ -1945,8 +1945,13 @@ function popularFiltroDsess(){
   // Recarrega a cada loadData() (nao so na primeira vez) -- senao a tabela
   // detalhada ficava presa nos dados da primeira carga, mesmo clicando em
   // "Atualizar" ou apos liquidar um atendimento pela Agenda.
-  // Mês fica em branco por padrão (= todo o histórico); só carrega um mês
-  // específico se a psicóloga escolher um no filtro.
+  // Vem com o mês atual filtrado por padrão -- mas só na primeira carga,
+  // pra não sobrescrever se a psicóloga já limpou o filtro (pra ver tudo)
+  // ou escolheu outro mês.
+  if(!_dsessInit){
+    const mes=document.getElementById('dsess-mes');
+    if(mes)mes.value=new Date().toISOString().slice(0,7);
+  }
   _dsessInit=true;carregarSessoesDetalhado();
 }
 function switchDashSubTab(name){

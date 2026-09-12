@@ -4258,9 +4258,27 @@ function conteudoDocumento(){
   return {estilo:document.getElementById('doc-estilo')?.value||'colorido',campos,secoes};
 }
 
+// A IA agora escolhe títulos de seção livres (ex.: "Justificativa do
+// encaminhamento", "Fundamentação ética"), não mais uma lista fixa de 4
+// palavras -- então em vez de casar palavras específicas, uma linha conta
+// como título quando é curta e não termina em pontuação de frase (só um
+// título de verdade tem essa forma; um parágrafo real sempre é mais longo
+// ou termina em ponto). Só considera título logo após uma linha em branco
+// (início de texto ou fim do parágrafo anterior), pra não confundir uma
+// frase curta no meio de um parágrafo já em andamento com um novo título.
 function separarTextoIA(texto){
-  if(!texto)return[];const partes=texto.split(/\n(?=(?:Descrição|Análise|Conclusão|Orientações)[\s:])/i),out=[];
-  partes.forEach((p,i)=>{const m=p.match(/^(Descrição|Análise|Conclusão|Orientações)[\s:.-]*(.*)$/is);out.push(m?{titulo:m[1],texto:m[2].trim()}:{titulo:i?'Continuação':'Descrição',texto:p.trim()});});return out.filter(x=>x.texto);
+  if(!texto)return[];
+  const pareceTitulo=l=>l&&l.length<=70&&!/[.!?,;:]$/.test(l)&&!/^[-•*\d"“]/.test(l);
+  const out=[];let atual=null,aposQuebra=true;
+  texto.split(/\r?\n/).forEach(linha=>{
+    const l=linha.trim();
+    if(!l){aposQuebra=true;if(atual&&atual.texto)atual.texto+='\n\n';return;}
+    if(aposQuebra&&pareceTitulo(l)){atual={titulo:l.replace(/:\s*$/,''),texto:''};out.push(atual);}
+    else if(atual)atual.texto+=(atual.texto&&!atual.texto.endsWith('\n\n')?' ':'')+l;
+    else{atual={titulo:'Desenvolvimento do acompanhamento',texto:l};out.push(atual);}
+    aposQuebra=false;
+  });
+  return out.map(x=>({titulo:x.titulo,texto:x.texto.trim()})).filter(x=>x.texto);
 }
 
 function tituloDocumentoAtual(tipo){

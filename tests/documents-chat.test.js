@@ -109,6 +109,19 @@ test('generate relatorio_psicologico sem formato (ou "estruturado") usa as instr
   assert.ok(capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
 });
 
+test('generate encaminhamento usa a estrutura fixa propria (Desenvolvimento/Justificativa/Fundamentacao etica/Encaminhamento)', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'encaminhamento', descricao: 'Paciente apresenta dificuldade de manter o enquadre terapeutico.'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
+  assert.ok(capturedBody.instructions.includes('Desenvolvimento do acompanhamento'));
+  assert.ok(capturedBody.instructions.includes('Justificativa do encaminhamento'));
+  assert.ok(capturedBody.instructions.includes('Fundamentação ética'));
+  assert.ok(capturedBody.instructions.includes('Resolução CFP nº 010/2005'));
+});
+
 test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto corrido e curto', async () => {
   let capturedBody;
   global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };

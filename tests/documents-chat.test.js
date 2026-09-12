@@ -100,15 +100,13 @@ test('generate aceita descricao curta quando historico não-vazio é enviado (pe
   assert.equal(res.body.texto, 'Texto ajustado.');
 });
 
-test('generate relatorio_psicologico sem formato (ou "estruturado") pede titulos livres por finalidade, nao o esqueleto fixo antigo', async () => {
+test('generate relatorio_psicologico sem formato (ou "estruturado") usa as instrucoes de 4 secoes (estrutura consolidada -- so a linguagem foi recalibrada)', async () => {
   let capturedBody;
   global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
-  assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
-  assert.ok(capturedBody.instructions.includes('títulos livres'));
-  assert.ok(capturedBody.instructions.includes('Conclusão'));
+  assert.ok(capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
 });
 
 test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto corrido e curto', async () => {

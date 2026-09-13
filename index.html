@@ -4345,6 +4345,7 @@ function atualizarPreviaDocumento(){
 
 let _docChatHistorico=[],_docEditandoId=null,_docChatAnexo=null;
 function abrirChatIA(){
+  if(!campo('doc-nome-completo'))return toast('Informe o nome completo que deve aparecer no documento antes de elaborar o texto com IA.');
   document.getElementById('doc-chat-modal-overlay').classList.add('open');
   renderChatIA();
   setTimeout(()=>document.getElementById('doc-chat-modal-input')?.focus(),50);
@@ -4394,6 +4395,7 @@ async function enviarChatIA(){
     _docChatHistorico.push({papel:'assistente',texto:d.texto});
     input.value='';removerAnexoChatIA();
     renderChatIA();
+    persistirRascunhoChat();
   }catch(e){
     _docChatHistorico.pop();renderChatIA();
     toast(e.message||'Não foi possível elaborar o texto.');
@@ -4408,20 +4410,54 @@ function usarTextoChatIA(){
   toast('Texto elaborado. Revise antes de salvar.');
 }
 
+// A conversa com a IA (historico do chat) antes vivia só em _docChatHistorico
+// (memoria do navegador) -- se recarregasse a pagina ou fechasse a aba antes
+// de clicar em "Salvar documento", perdia tudo. Agora, a cada resposta da IA
+// dentro do chat, o documento é salvo/atualizado (como rascunho) no banco em
+// segundo plano, sem esperar o clique final em "Salvar documento". Isso cria
+// o registro já na primeira troca (usando _docEditandoId pra saber se já
+// existe) e so faz PATCH nas trocas seguintes -- silencioso, sem toast, pra
+// nao incomodar durante a conversa.
+async function persistirRascunhoChat(){
+  const paciente_id=document.getElementById('doc-paciente').value,tipo=document.getElementById('doc-tipo').value,emitido_em=document.getElementById('doc-emissao').value;
+  if(!paciente_id||!tipo||!emitido_em||!campo('doc-nome-completo'))return;
+  const conteudo=conteudoDocumento();
+  conteudo.promptHistorico=_docChatHistorico;
+  conteudo.rascunho=true;
+  if(tipo==='relatorio_psicologico')conteudo.metadados={formato:campo('doc-relatorio-formato')||'estruturado'};
+  const titulo=tituloDocumentoAtual(tipo);
+  try{
+    if(_docEditandoId){
+      await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(_docEditandoId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo,emitido_em,conteudo})});
+    }else{
+      const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo,emitido_em,conteudo})}),d=await r.json().catch(()=>null);
+      if(r.ok&&d?.id){_docEditandoId=d.id;await carregarDocumentos();}
+    }
+  }catch(e){console.error('persistirRascunhoChat:',e);}
+}
 async function salvarDocumento(){
   const paciente_id=document.getElementById('doc-paciente').value,tipo=document.getElementById('doc-tipo').value,emitido_em=document.getElementById('doc-emissao').value;if(!paciente_id||!tipo||!emitido_em)return toast('Selecione paciente, tipo e data de emissão.');if(!campo('doc-nome-completo'))return toast('Informe o nome completo que deve aparecer no documento.');
   const conteudo=conteudoDocumento();
   if(_docChatHistorico.length)conteudo.promptHistorico=_docChatHistorico;
   if(tipo==='relatorio_psicologico')conteudo.metadados={formato:campo('doc-relatorio-formato')||'estruturado'};
-  const titulo=tituloDocumentoAtual(tipo);
-  const r=_docEditandoId
-    ?await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(_docEditandoId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo,emitido_em,conteudo})})
-    :await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo,emitido_em,conteudo})});
-  const d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar.');toast('✅ Documento salvo.');await resetarDocumentoCompleto(paciente_id);
+  const titulo=tituloDocumentoAtual(tipo),btn=document.querySelector('#doc-editor .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    const r=_docEditandoId
+      ?await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(_docEditandoId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo,emitido_em,conteudo})})
+      :await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo,emitido_em,conteudo})});
+    const d=await r.json().catch(()=>null);
+    if(!r.ok)return toast(d?.error||`Não foi possível salvar (erro ${r.status}).`,5000);
+    toast('✅ Documento salvo.');
+    await resetarDocumentoCompleto(paciente_id);
+  }catch(e){
+    console.error('salvarDocumento:',e);
+    toast('Não foi possível salvar. Verifique sua conexão e tente novamente.',5000);
+  }finally{if(btn){btn.disabled=false;btn.textContent='💾 Salvar documento';}}
 }
 async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
-  const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
+  const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${x.conteudo?.rascunho?'🕓 Rascunho — ':''}${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 function abrirDocumento(id,button){
   const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
@@ -4468,7 +4504,7 @@ async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=do
 async function exportarDocumentoPDF(){if(!_docAtual?.id)return toast('Salve o documento antes de exportar o PDF.');const btn=document.querySelector('.doc-preview .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=export-pdf&id=${encodeURIComponent(_docAtual.id)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`documento-${_docAtual.tipo||'documento'}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF para assinatura';}}}
 async function excluirDocumento(id){if(!confirm('Excluir este documento da visualização?'))return;const r=await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir.');_docAtual=null;document.getElementById('doc-preview').innerHTML='<div class="alert-empty">Documento excluído.</div>';await carregarDocumentos();toast('Documento excluído.');}
 function limparDocumento(){montarFormularioDocumento();}
-async function resetarDocumentoCompleto(pacienteId=''){_docAtual=null;document.getElementById('doc-paciente').value=pacienteId;document.getElementById('doc-tipo').value='';document.getElementById('doc-estilo').value='colorido';document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);document.getElementById('doc-editor').innerHTML='<div class="alert-empty">Escolha o paciente e o tipo de documento.</div>';const preview=document.getElementById('doc-preview');preview.className='doc-preview';preview.innerHTML=pacienteId?'<div class="alert-empty">Documento salvo. A pasta do paciente foi atualizada ao lado.</div>':'<div class="alert-empty">Documento salvo. Selecione um paciente para consultar a pasta.</div>';if(pacienteId)await carregarDocumentos();else{_documentos=[];document.getElementById('doc-lista').innerHTML='<div class="alert-empty">Selecione um paciente.</div>';}}
+async function resetarDocumentoCompleto(pacienteId=''){_docAtual=null;_docEditandoId=null;_docChatHistorico=[];_docChatAnexo=null;document.getElementById('doc-paciente').value=pacienteId;document.getElementById('doc-tipo').value='';document.getElementById('doc-estilo').value='colorido';document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);document.getElementById('doc-editor').innerHTML='<div class="alert-empty">Escolha o paciente e o tipo de documento.</div>';const preview=document.getElementById('doc-preview');preview.className='doc-preview';preview.innerHTML=pacienteId?'<div class="alert-empty">Documento salvo. A pasta do paciente foi atualizada ao lado.</div>':'<div class="alert-empty">Documento salvo. Selecione um paciente para consultar a pasta.</div>';if(pacienteId)await carregarDocumentos();else{_documentos=[];document.getElementById('doc-lista').innerHTML='<div class="alert-empty">Selecione um paciente.</div>';}}
 
 function switchDocumentPanel(name){
   document.querySelectorAll('.doc-main-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.doc-main-panel').forEach(x=>x.classList.remove('active'));

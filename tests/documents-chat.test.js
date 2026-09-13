@@ -24,7 +24,7 @@ function openaiResponsesReply(text) {
 
 test('generate sem historico manda "input" como string simples (comportamento atual preservado)', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'A criança tem dificuldade de concentração em sala.'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
@@ -35,7 +35,7 @@ test('generate sem historico manda "input" como string simples (comportamento at
 
 test('generate com historico manda "input" como array de turnos + o novo pedido', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto ajustado, mais curto.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto ajustado, mais curto.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   const historico = [
     {papel: 'usuario', texto: 'A criança tem dificuldade de concentração em sala.'},
@@ -61,7 +61,7 @@ test('generate valida historico malformado', async () => {
 
 test('generate trunca historico com mais de 20 turnos para os ultimos 20', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   const historico = Array.from({length: 30}, (_, i) => ({
     papel: i % 2 === 0 ? 'usuario' : 'assistente',
@@ -75,7 +75,7 @@ test('generate trunca historico com mais de 20 turnos para os ultimos 20', async
 
 test('generate trunca cada texto de historico em 4000 caracteres', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('OK'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   const textoLongo = 'a'.repeat(5000);
   const historico = [
@@ -89,7 +89,7 @@ test('generate trunca cada texto de historico em 4000 caracteres', async () => {
 });
 
 test('generate aceita descricao curta quando historico não-vazio é enviado (pedido de ajuste do chat)', async () => {
-  global.fetch = async () => openaiResponsesReply('Texto ajustado.');
+  global.fetch = async (url) => (String(url).includes('api.openai.com') ? openaiResponsesReply('Texto ajustado.') : {ok: true, status: 200, json: async () => ([])});
   const res = response();
   const historico = [
     {papel: 'usuario', texto: 'A criança tem dificuldade de concentração em sala.'},
@@ -102,7 +102,7 @@ test('generate aceita descricao curta quando historico não-vazio é enviado (pe
 
 test('generate relatorio_psicologico sem formato (ou "estruturado") usa as instrucoes de 4 secoes (estrutura consolidada -- so a linguagem foi recalibrada)', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
@@ -111,7 +111,7 @@ test('generate relatorio_psicologico sem formato (ou "estruturado") usa as instr
 
 test('generate encaminhamento usa a estrutura fixa propria (Desenvolvimento/Justificativa/Fundamentacao etica/Encaminhamento)', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'encaminhamento', descricao: 'Paciente apresenta dificuldade de manter o enquadre terapeutico.'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
@@ -124,7 +124,7 @@ test('generate encaminhamento usa a estrutura fixa propria (Desenvolvimento/Just
 
 test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto corrido e curto', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.', formato: 'orientacao'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
@@ -134,7 +134,7 @@ test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de 
 
 test('generate reforca tom humanizado e proibe jargao de IA/autoajuda em todos os tipos com texto de IA', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   for (const tipo of ['relatorio_psicologico', 'encaminhamento', 'solicitacao_escolar']) {
     const res = response();
     await handleDocuments({method: 'POST', body: {action: 'generate', tipo, descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
@@ -146,7 +146,7 @@ test('generate reforca tom humanizado e proibe jargao de IA/autoajuda em todos o
 
 test('generate sem historico NAO inclui o reforco de "ajuste dentro de uma conversa"', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
@@ -155,7 +155,7 @@ test('generate sem historico NAO inclui o reforco de "ajuste dentro de uma conve
 
 test('generate com historico inclui o reforco pra priorizar o pedido mais recente da psicologa', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto ajustado.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto ajustado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   const historico = [
     {papel: 'usuario', texto: 'Criança apresenta dificuldade de concentração em sala de aula.'},
@@ -167,9 +167,56 @@ test('generate com historico inclui o reforco pra priorizar o pedido mais recent
   assert.ok(capturedBody.instructions.includes('priorize atender exatamente o que a psicóloga pediu na mensagem mais recente'));
 });
 
+test('generate le a preferencia aprendida do banco e embute nas instructions', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => {
+    if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); }
+    if (String(url).includes('/rest/v1/ia_preferencias_texto') && (!options || options.method === undefined)) return {ok: true, status: 200, json: async () => ([{notas: 'Prefere frases curtas e diretas.'}])};
+    return {ok: true, status: 200, json: async () => ([])};
+  };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.instructions.includes('Prefere frases curtas e diretas.'));
+});
+
+test('generate sem historico NAO dispara aprendizado (nenhuma chamada extra a OpenAI)', async () => {
+  let openaiCalls = 0;
+  global.fetch = async (url) => {
+    if (String(url).includes('api.openai.com')) { openaiCalls++; return openaiResponsesReply('Texto gerado.'); }
+    return {ok: true, status: 200, json: async () => ([])};
+  };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.equal(openaiCalls, 1);
+});
+
+test('generate com historico dispara uma segunda chamada (aprendizado) e grava a preferencia atualizada', async () => {
+  let openaiCalls = 0, savedBody;
+  global.fetch = async (url, options) => {
+    if (String(url).includes('api.openai.com')) {
+      openaiCalls++;
+      return openaiCalls === 1 ? openaiResponsesReply('Texto ajustado.') : openaiResponsesReply('Sempre usar tom mais acolhedor e humano, evitando jargão técnico.');
+    }
+    if (String(url).includes('/rest/v1/ia_preferencias_texto') && options?.method === 'POST') { savedBody = JSON.parse(options.body); return {ok: true, status: 200, json: async () => ([])}; }
+    return {ok: true, status: 200, json: async () => ([])};
+  };
+  const res = response();
+  const historico = [
+    {papel: 'usuario', texto: 'Criança apresenta dificuldade de concentração em sala de aula.'},
+    {papel: 'assistente', texto: 'Texto gerado.'},
+  ];
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Deixa mais acolhedor', historico}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.equal(openaiCalls, 2);
+  assert.equal(savedBody.contexto, 'documentos');
+  assert.ok(savedBody.notas.includes('acolhedor'));
+});
+
 test('generate com anexo .txt embute o conteudo do arquivo na descricao enviada a IA', async () => {
   let capturedBody;
-  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado com base no anexo.'); };
+  global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado com base no anexo.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   const anexo = {nome: 'observacoes.txt', base64: Buffer.from('A criança demonstrou dificuldade de concentração durante a atividade.', 'utf8').toString('base64')};
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Elabore com base no anexo', anexo}}, res, {id: 'admin-1'});

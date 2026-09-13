@@ -2715,7 +2715,7 @@ async function deletarAtividade(id) {
 let _pptData        = null; // { titulo, slides: [{titulo, conteudo}] }
 let _pptMeta         = {};
 let _apresentacoes   = [];
-let _pptChatHistorico=[],_pptChatAnexo=null;
+let _pptChatHistorico=[],_pptChatAnexo=null,_pptEditandoId=null;
 
 function renderPPTPreview(data){
   document.getElementById('ppt-preview-titulo').textContent = '📊 ' + data.titulo;
@@ -2792,54 +2792,53 @@ function descartarPPT() {
 function limparFormPPT() {
   document.getElementById('ppt-publico').value = '';
   document.getElementById('ppt-tema').value    = '';
-  _pptChatHistorico=[];removerAnexoChatPPT();fecharChatPPT();
+  _pptChatHistorico=[];_pptEditandoId=null;removerAnexoChatPPT();fecharChatPPT();
   document.getElementById('ppt-titulo-salvar').value = '';
 }
 
 async function salvarPPTBiblioteca() {
   if (!_pptData) return;
   const titulo = document.getElementById('ppt-titulo-salvar').value.trim() || _pptData.titulo;
-
   const payload = {
     titulo,
-    publico: _pptMeta.publico || '—',
-    tema:    _pptMeta.tema    || '—',
-    slides_json: JSON.stringify(_pptData.slides),
+    tipo: 'Apresentação',
+    faixa: _pptMeta.publico || '—',
+    tema: _pptMeta.tema || '—',
+    prompt: JSON.stringify(_pptData.slides),
+    prompt_historico: _pptChatHistorico.length ? _pptChatHistorico : null,
     criado_em: new Date().toISOString(),
   };
-
   try {
-    const res = await fetch('/api/data?table=prontuarios&sub=apresentacoes', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    // Usa a mesma tabela 'atividades' com um campo tipo='apresentacao' para simplificar schema único
-  } catch(e) {}
-
-  // Salva via endpoint genérico de atividades, usando tipo especial
-  try {
-    const res2 = await fetch('/api/data?table=atividades', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        titulo,
-        tipo: 'Apresentação',
-        faixa: _pptMeta.publico || '—',
-        tema: _pptMeta.tema || '—',
-        prompt: JSON.stringify(_pptData.slides),
-        criado_em: new Date().toISOString(),
-      })
-    });
+    // Editar uma apresentação já salva (via abrirApresentacaoSalva) e salvar
+    // de novo tem que ATUALIZAR o mesmo registro, não duplicar -- por isso
+    // PATCH quando já existe _pptEditandoId.
+    const res2 = _pptEditandoId
+      ? await fetch(`/api/data?table=atividades&id=${encodeURIComponent(_pptEditandoId)}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      : await fetch('/api/data?table=atividades', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if (!res2.ok) throw new Error('Falha ao salvar apresentação');
     const saved = await res2.json();
-    _apresentacoes.unshift(Array.isArray(saved) ? saved[0] : saved);
+    const savedRow = Array.isArray(saved) ? saved[0] : saved;
+    if (_pptEditandoId) _apresentacoes = _apresentacoes.map(a => a.id === _pptEditandoId ? savedRow : a);
+    else _apresentacoes.unshift(savedRow);
     descartarPPT();
     renderPPTBiblioteca();
     toast('✅ Apresentação salva na biblioteca!');
   } catch(e) {
     toast('Erro ao salvar: ' + e.message);
   }
+}
+function abrirApresentacaoSalva(id){
+  const a=_apresentacoes.find(x=>x.id===id);if(!a)return;
+  let slides;try{slides=JSON.parse(a.prompt);}catch{return toast('Não foi possível abrir esta apresentação.');}
+  _pptData={titulo:a.titulo,slides};
+  _pptMeta={publico:a.faixa,tema:a.tema};
+  _pptEditandoId=a.id;
+  _pptChatHistorico=Array.isArray(a.prompt_historico)?a.prompt_historico.map(h=>({...h})):[];
+  removerAnexoChatPPT();fecharChatPPT();
+  document.getElementById('ppt-publico').value=a.faixa||'';
+  document.getElementById('ppt-tema').value=a.tema||'';
+  renderPPTPreview(_pptData);
+  document.getElementById('ppt-preview').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function exportarPPTX() {
@@ -2917,18 +2916,18 @@ async function renderPPTBiblioteca() {
   }
 
   container.innerHTML = `<div class="grid-view">${filtered.map(a => `
-    <div class="ativ-card" style="cursor:default;">
+    <div class="ativ-card" style="cursor:pointer;" role="button" tabindex="0" onclick="abrirApresentacaoSalva('${escHtmlAttr(a.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirApresentacaoSalva('${escHtmlAttr(a.id)}')}">
       <div class="ativ-card-img-placeholder">📊</div>
       <div class="ativ-card-body">
-        <div class="ativ-card-title">${a.titulo}</div>
+        <div class="ativ-card-title">${escHtml(a.titulo)}</div>
         <div class="ativ-card-tags">
-          <span class="tag tipo">${a.faixa}</span>
-          <span class="tag tema">${a.tema}</span>
+          <span class="tag tipo">${escHtml(a.faixa)}</span>
+          <span class="tag tema">${escHtml(a.tema)}</span>
         </div>
       </div>
       <div class="ativ-card-actions">
-        <button class="btn-xs pdf" onclick='baixarPPTSalvo(${JSON.stringify(a.prompt)}, ${JSON.stringify(a.titulo)})'>⬇ .pptx</button>
-        <button class="btn-xs del" onclick="deletarApresentacao('${a.id}')">Excluir</button>
+        <button class="btn-xs pdf" onclick='event.stopPropagation();baixarPPTSalvo(${JSON.stringify(a.prompt)}, ${JSON.stringify(a.titulo)})'>⬇ .pptx</button>
+        <button class="btn-xs del" onclick="event.stopPropagation();deletarApresentacao('${escHtmlAttr(a.id)}')">Excluir</button>
       </div>
     </div>
   `).join('')}</div>`;
@@ -3750,14 +3749,20 @@ async function salvarPost(){
       tema:_postAtual.tema||'',formato:_postAtual.formato||'Post',publico:_postAtual.publico||'Ciclo vital',
       legenda:_postAtual.legenda||'',hashtags:Array.isArray(_postAtual.hashtags)?_postAtual.hashtags.join(' '):(_postAtual.hashtags||''),
       cta:_postAtual.cta||'',img_b64:null,imagens_b64:null,logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
+      prompt_historico:_postChatHistorico.length?_postChatHistorico:null,
       fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+(document.getElementById('post-contexto')?.value||''),
       status:'rascunho',criado_em:new Date().toISOString()
     };
     atualizarStatusSalvarPost('Criando o rascunho e preparando as artes…',5);
-    const r=await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    // Editar um rascunho já salvo (aberto via abrirRascunhoNoEditor) e
+    // salvar de novo tem que ATUALIZAR o mesmo registro, não duplicar --
+    // por isso PATCH quando já existe _postAtual.id.
+    const r=_postAtual.id
+      ?await fetch(`/api/data?table=posts&id=${encodeURIComponent(_postAtual.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      :await fetch('/api/data?table=posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await r.json().catch(()=>null);
     if(!r.ok)throw new Error(data?.error?.message||data?.error||`Falha ao salvar (${r.status})`);
-    const id=Array.isArray(data)?data[0]?.id:data?.id;
+    const id=(Array.isArray(data)?data[0]?.id:data?.id)||_postAtual.id;
     if(!id)throw new Error('O Supabase não retornou o ID do rascunho.');
 
     if(imagens.length){
@@ -3850,7 +3855,7 @@ function abrirRascunhoNoEditor(){
   fecharRascunhoModal();
   const tema=document.getElementById('post-tema'),formato=document.getElementById('post-formato'),publico=document.getElementById('post-publico');
   if(tema)tema.value=p.tema||'';if(formato)formato.value=p.formato||'Post';if(publico)publico.value=p.publico||'Ciclo vital';
-  reiniciarChatPost();fecharChatPost();
+  _postChatHistorico=Array.isArray(p.prompt_historico)?p.prompt_historico.map(h=>({...h})):[];removerAnexoChatPost();removerImagemChatPost();fecharChatPost();
   document.getElementById('post-preview-card').style.display='block';renderPostPreview();renderArtesPost();document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function excluirRascunhoAtual(){
@@ -4389,6 +4394,7 @@ function areaDoc(id,label,placeholder=''){
 function valorBR(value){const n=Number(String(value||'').replace(',','.'));return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';}
 function dataBR(value){return String(value||'').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,'$3/$2/$1');}
 function isoDeBR(value){const m=String(value||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);return m?`${m[3]}-${m[2]}-${m[1]}`:'';}
+function valorDeBR(texto){const m=String(texto||'').match(/([\d.]*\d,\d{2})/);return m?m[1].replace(/\./g,'').replace(',','.'):'';}
 function campo(id){return document.getElementById(id)?.value?.trim()||'';}
 function brandMarkup(){return `<div class="brand-lockup" aria-label="Jaqueline Vieira Psicóloga"><span class="brand-symbol" aria-hidden="true"></span><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>`;}
 function cabecalhoDocumento(){return `<div class="doc-preview-brand">${brandMarkup()}</div>`;}
@@ -4616,8 +4622,28 @@ async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${x.conteudo?.rascunho?'🕓 Rascunho — ':''}${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
+// Clicar num documento salvo (ou rascunho) SÓ mostrava a prévia de leitura à
+// direita -- o formulário editável à esquerda ficava vazio/no estado
+// anterior, então "abrir" um documento não deixava continuar editando nem
+// mostrava de onde ele veio. Pedido explícito do usuário: clicar num
+// documento salvo tem que preencher TUDO (tipo, campos, texto, e o prompt
+// que gerou aquele texto, se houver) -- igual já acontecia só dentro de
+// "Editar prompt". Essa função centraliza esse preenchimento e é usada
+// tanto ao abrir um documento pra visualizar quanto ao clicar em "Editar
+// prompt" (que, além disso, também abre o chat).
+function restaurarEstadoDocumento(x){
+  document.getElementById('doc-tipo').value=x.tipo;
+  document.getElementById('doc-emissao').value=x.emitido_em;
+  document.getElementById('doc-estilo').value=x.conteudo.estilo||'colorido';
+  montarFormularioDocumento();
+  _docEditandoId=x.id;
+  _docChatHistorico=(x.conteudo.promptHistorico||[]).map(h=>({...h}));
+  restaurarCamposDocumento(x);
+}
 function abrirDocumento(id,button){
-  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
+  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');
+  restaurarEstadoDocumento(x);
+  const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
 }
 function restaurarCamposDocumento(x){
@@ -4627,8 +4653,24 @@ function restaurarCamposDocumento(x){
     document.getElementById('doc-cpf-paciente').value=campos['CPF do paciente']||'';
     if(x.tipo==='termo_infantil'){document.getElementById('doc-responsavel').value=campos['Responsável']||'';document.getElementById('doc-cpf-responsavel').value=campos['CPF do responsável']||'';}
     document.getElementById('doc-anamnese-data').value=isoDeBR(campos['Data da entrevista inicial']);
+    document.getElementById('doc-valor').value=valorDeBR(campos['Valor da sessão']);
   } else if(x.tipo==='orcamento'){
     document.getElementById('doc-inicio').value=isoDeBR(campos['Início do atendimento']);
+    document.getElementById('doc-valor-avulso').value=valorDeBR(campos['Sessão individual']);
+    document.getElementById('doc-valor-pacote-sessao').value=valorDeBR(campos['Sessão no pacote mensal']);
+  } else if(x.tipo==='recibo'){
+    document.getElementById('doc-valor-pago').value=valorDeBR(campos['Valor recebido']);
+    document.getElementById('doc-forma-pagamento').value=campos['Forma de pagamento']||'';
+    const n=Math.min(20,Math.max(1,Number(campos['Total de sessões'])||1));
+    document.getElementById('doc-qtd-sessoes').value=n;
+    renderSessoesRecibo();
+    const linhas=((c.secoes||[]).find(s=>s.titulo==='Sessões realizadas')?.texto||'').split('\n');
+    linhas.forEach((linha,i)=>{
+      const [dataParte,valorParte]=linha.split(' - ');
+      const dataEl=document.getElementById(`doc-sessao-${i}-data`),valorEl=document.getElementById(`doc-sessao-${i}-valor`);
+      if(dataEl)dataEl.value=isoDeBR((dataParte||'').trim());
+      if(valorEl)valorEl.value=valorDeBR((valorParte||'').trim());
+    });
   } else if(x.tipo==='relatorio_psicologico'||x.tipo==='encaminhamento'){
     document.getElementById('doc-nascimento').value=isoDeBR(campos['Data de nascimento']);
     document.getElementById('doc-responsavel').value=campos['Responsável']||'';
@@ -4640,6 +4682,19 @@ function restaurarCamposDocumento(x){
   } else if(x.tipo==='declaracao_comparecimento'){
     document.getElementById('doc-sessao-data').value=isoDeBR(campos['Dia da sessão']);
     const [ini,fim]=String(campos['Horário']||'').split(' às ');document.getElementById('doc-hora-inicio').value=(ini||'').trim();document.getElementById('doc-hora-fim').value=(fim||'').trim();
+  } else if(x.tipo==='declaracao_frequencia'){
+    document.getElementById('doc-anamnese-coleta-data').value=isoDeBR(campos['Data de preenchimento da anamnese e coleta de dados']);
+    const n=Math.min(40,Math.max(1,Number(campos['Total de sessões'])||1));
+    document.getElementById('doc-qtd-sessoes-freq').value=n;
+    renderSessoesFrequencia();
+    const linhas=((c.secoes||[]).find(s=>s.titulo==='Sessões realizadas')?.texto||'').split('\n');
+    linhas.forEach((linha,i)=>{
+      const idx=linha.indexOf(' - ');
+      const dataParte=idx>=0?linha.slice(0,idx):linha,realizadoParte=idx>=0?linha.slice(idx+3):'';
+      const dataEl=document.getElementById(`doc-sessao-freq-${i}-data`),realizadoEl=document.getElementById(`doc-sessao-freq-${i}-realizado`);
+      if(dataEl)dataEl.value=isoDeBR(dataParte.trim());
+      if(realizadoEl)realizadoEl.value=realizadoParte.trim();
+    });
   }
   const ultimaIA=[...(c.promptHistorico||[])].reverse().find(h=>h.papel==='assistente');
   const textoFinal=document.getElementById('doc-texto-final');
@@ -4648,13 +4703,7 @@ function restaurarCamposDocumento(x){
 }
 function editarPromptDocumento(id){
   const x=_documentos.find(d=>d.id===id);if(!x||!x.conteudo.promptHistorico?.length)return toast('Este documento não tem prompt salvo para editar.');
-  document.getElementById('doc-tipo').value=x.tipo;
-  document.getElementById('doc-emissao').value=x.emitido_em;
-  document.getElementById('doc-estilo').value=x.conteudo.estilo||'colorido';
-  montarFormularioDocumento();
-  _docEditandoId=x.id;
-  _docChatHistorico=x.conteudo.promptHistorico.map(h=>({...h}));
-  restaurarCamposDocumento(x);
+  restaurarEstadoDocumento(x);
   abrirChatIA();
 }
 async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=documents&action=export&id=${encodeURIComponent(id)}`);if(!r.ok)return toast('Não foi possível exportar.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='documento-'+id.slice(0,8)+'.docx';a.click();URL.revokeObjectURL(url);}

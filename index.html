@@ -4240,11 +4240,25 @@ function verProntuario(id){
     tbody.innerHTML+=`<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
       <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
       <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${escHtml(String(s.relato||'')).replace(/\n/g,'<br>')}</td>
-      <td style="padding:10px 14px;vertical-align:top;text-align:right;"><button onclick="deletarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
+      <td style="padding:10px 14px;vertical-align:top;text-align:right;white-space:nowrap;"><button onclick="editarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Editar este registro" style="font-size:.72rem;color:var(--accent);background:#eef1ea;border:1px solid #d5ddc9;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;margin-right:6px;">✏️ editar</button><button onclick="deletarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
     </tr>`;
   });
   document.getElementById('pront-busca').value=id;
   renderGridPacientes();
+}
+// Antes só existia "✕ excluir" em cada sessão -- editar um relato salvo
+// significava reescrevê-lo do zero (o texto salvo nunca voltava pro
+// textarea). salvarSessao() já detecta e faz PATCH quando a data bate com
+// um registro existente, então só faltava preencher o formulário com o
+// que já foi salvo (15/09/2026, mesmo padrão do "clicar restaura tudo").
+function editarSessao(id,pid){
+  const p=_prontuarios[pid];if(!p)return;
+  const s=p.sessoes.find(x=>x.id===id);if(!s)return;
+  document.getElementById('pront-pac').value=pid;
+  document.getElementById('pront-data').value=s.data;
+  document.getElementById('pront-relato').value=s.relato||'';
+  document.getElementById('pront-relato').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Sessão carregada para edição. Ajuste o relato e clique em Salvar sessão.');
 }
 function selecionarPaciente(){
   const id=document.getElementById('pront-pac').value;
@@ -4850,10 +4864,22 @@ function psmSlides(publico,individual,pacote){
 }
 function atualizarPreviaPSM(){const publico=document.getElementById('psm-publico')?.value||'adulto',individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');const box=document.getElementById('psm-preview');if(box)box.innerHTML=psmSlides(publico,individual,pacote);}
 async function carregarPSMs(){const box=document.getElementById('psm-lista');if(!box)return;const r=await fetch('/api/forms?resource=documents&action=psm-list'),d=await r.json();_psms=r.ok?d:[];box.innerHTML=_psms.length?_psms.map(x=>`<div class="doc-record" role="button" tabindex="0" onclick="abrirPSM('${escHtmlAttr(x.id)}')" onkeydown="if(event.key==='Enter')abrirPSM('${escHtmlAttr(x.id)}')"><strong>${escHtml(x.titulo)}</strong><span>Salva em ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</span><div class="doc-record-actions"><button type="button" onclick="event.stopPropagation();excluirPSM('${escHtmlAttr(x.id)}')">Excluir</button></div></div>`).join(''):'<div class="alert-empty">Nenhuma PSM salva.</div>';}
-function abrirPSM(id){const x=_psms.find(p=>p.id===id);if(!x)return;document.getElementById('psm-publico').value=x.publico;document.getElementById('psm-valor-individual').value=x.valor_individual;document.getElementById('psm-valor-pacote').value=x.valor_pacote;atualizarPreviaPSM();document.getElementById('psm-preview').scrollIntoView({behavior:'smooth',block:'start'});}
-async function salvarPSM(){const publico=document.getElementById('psm-publico').value,valor_individual=Number(campo('psm-valor-individual')),valor_pacote=Number(campo('psm-valor-pacote'));if(!(valor_individual>0)||!(valor_pacote>0))return toast('Informe os dois valores da PSM.');const titulo=`PSM ${publico==='infantil'?'Infantil':'Adulto'} - Pacote ${valorBR(valor_pacote)}`;const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'psm-save',publico,titulo,valor_individual,valor_pacote})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar a PSM.');toast('✅ PSM salva para reutilização.');document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();}
+let _psmEditandoId=null;
+function abrirPSM(id){const x=_psms.find(p=>p.id===id);if(!x)return;_psmEditandoId=x.id;document.getElementById('psm-publico').value=x.publico;document.getElementById('psm-valor-individual').value=x.valor_individual;document.getElementById('psm-valor-pacote').value=x.valor_pacote;atualizarPreviaPSM();document.getElementById('psm-preview').scrollIntoView({behavior:'smooth',block:'start'});}
+async function salvarPSM(){
+  const publico=document.getElementById('psm-publico').value,valor_individual=Number(campo('psm-valor-individual')),valor_pacote=Number(campo('psm-valor-pacote'));if(!(valor_individual>0)||!(valor_pacote>0))return toast('Informe os dois valores da PSM.');
+  const titulo=`PSM ${publico==='infantil'?'Infantil':'Adulto'} - Pacote ${valorBR(valor_pacote)}`;
+  // Editar uma PSM já aberta (abrirPSM) e salvar de novo tem que ATUALIZAR
+  // o mesmo registro, não duplicar -- mesmo bug encontrado em documentos/
+  // posts/apresentações (15/09/2026).
+  const r=_psmEditandoId
+    ?await fetch(`/api/forms?resource=documents&action=psm-update&id=${encodeURIComponent(_psmEditandoId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({publico,titulo,valor_individual,valor_pacote})})
+    :await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'psm-save',publico,titulo,valor_individual,valor_pacote})});
+  const d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar a PSM.');toast('✅ PSM salva para reutilização.');
+  _psmEditandoId=null;document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();
+}
 async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
-async function excluirPSM(id){if(!confirm('Excluir esta PSM da biblioteca?'))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');toast('PSM excluída.');await carregarPSMs();}
+async function excluirPSM(id){if(!confirm('Excluir esta PSM da biblioteca?'))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');if(_psmEditandoId===id)_psmEditandoId=null;toast('PSM excluída.');await carregarPSMs();}
 
 // Ditado por voz em todos os campos de texto
 function habilitarAudioGlobal(root=document){

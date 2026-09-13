@@ -79,6 +79,22 @@ test('PSM válida é salva na biblioteca administrativa', async () => {
   assert.equal(res.code,201);assert.match(request.url,/psm_modelos/);assert.match(request.options.body,/"criado_por":"admin-1"/);
 });
 
+test('PSM ja salva eh atualizada (PATCH) em vez de duplicada ao editar', async () => {
+  let request;
+  const id='55555555-5555-4555-8555-555555555555';
+  global.fetch=async (url,options)=>{request={url,options};return jsonResponse([{id,publico:'adulto',titulo:'PSM Adulto - Pacote R$ 600,00',valor_individual:170,valor_pacote:600}]);};
+  const res=response();await handleDocuments({method:'PATCH',query:{action:'psm-update',id},body:{publico:'adulto',titulo:'PSM Adulto - Pacote R$ 600,00',valor_individual:170,valor_pacote:600}},res,{id:'admin-1'});
+  assert.equal(res.code,200);assert.match(request.url,/psm_modelos\?id=eq\./);assert.equal(request.options.method,'PATCH');
+  assert.deepEqual(res.body,{id,publico:'adulto',titulo:'PSM Adulto - Pacote R$ 600,00',valor_individual:170,valor_pacote:600});
+});
+
+test('PSM ja salva exige publico e valores positivos ao atualizar', async () => {
+  global.fetch=async()=>{throw new Error('não deveria consultar o banco');};
+  const id='55555555-5555-4555-8555-555555555555';
+  const res=response();await handleDocuments({method:'PATCH',query:{action:'psm-update',id},body:{publico:'adulto',titulo:'x',valor_individual:0,valor_pacote:600}},res,{id:'admin-1'});
+  assert.equal(res.code,400);
+});
+
 test('PSM salva pode ser arquivada da biblioteca', async () => {
   let request;
   const id='44444444-4444-4444-8444-444444444444';

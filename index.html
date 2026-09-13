@@ -1354,38 +1354,53 @@ const ICON_STOP_INLINE=iconInline(ICON_STOP);
 const ICON_ATTACH_INLINE=iconInline(ICON_ATTACH,13);
 const ICON_IMAGE_INLINE=iconInline(ICON_IMAGE,13);
 let _authMode='login';
+// 15/09/2026: a psicóloga teve a sessão encerrada por "inatividade" enquanto
+// editava um relatório longo de verdade. Causa raiz: o controle antigo só
+// contava como "atividade" um evento bruto de pointerdown/keydown/scroll/
+// touchstart -- ditado por voz (o próprio recurso de microfone do app) só
+// dispara eventos "input" sintéticos, e longos trechos de leitura/composição
+// entre uma tecla e outra também não geram nenhum desses eventos. Passados
+// 60 minutos sem UM desses eventos específicos, a sessão caía mesmo com a
+// aba aberta e em uso ativo. Pedido explícito do usuário: só encerrar a
+// sessão se o aplicativo estiver de fato fechado ou em segundo plano por
+// muito tempo -- nunca enquanto a aba está aberta e em primeiro plano,
+// não importa o que ela esteja fazendo dentro dela (digitando, ditando,
+// só lendo). Solução: em vez de vigiar eventos de interação específicos,
+// mantém a sessão viva com um ping periódico (bem mais frequente que o
+// timeout de 60min do servidor) sempre que a aba estiver visível; o
+// relógio de inatividade só passa a contar quando a aba fica oculta, e ao
+// voltar (ou reabrir o app) verificamos se esse tempo oculto ultrapassou o
+// limite.
 const IDLE_TIMEOUT_MS=60*60*1000;
-let _idleLastActivity=Date.now(),_idleTimer=null,_idleLastPing=0,_idleStarted=false;
+const IDLE_PING_MS=4*60*1000;
+let _idleHiddenAt=null,_idlePingTimer=null,_idleStarted=false;
 
 async function encerrarPorInatividade(){
   if(document.getElementById('app-shell').style.display==='none')return;
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
-  alert('Sua sessão foi encerrada após 1 hora sem atividade. Faça o login novamente.');
+  alert('Sua sessão foi encerrada porque o aplicativo ficou fechado ou em segundo plano por mais de 1 hora. Faça o login novamente.');
   location.reload();
 }
 
-function programarTimeoutInatividade(){
-  clearTimeout(_idleTimer);
-  const restante=IDLE_TIMEOUT_MS-(Date.now()-_idleLastActivity);
-  if(restante<=0)return encerrarPorInatividade();
-  _idleTimer=setTimeout(encerrarPorInatividade,restante);
+function pingSessao(){
+  fetch('/api/auth/status',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(s=>{if(!s.authenticated)encerrarPorInatividade();}).catch(()=>{});
 }
 
-function registrarAtividade(){
-  const agora=Date.now();
-  if(agora-_idleLastActivity>=IDLE_TIMEOUT_MS)return encerrarPorInatividade();
-  _idleLastActivity=agora;programarTimeoutInatividade();
-  if(agora-_idleLastPing>=60000){
-    _idleLastPing=agora;
-    fetch('/api/auth/status',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(s=>{if(!s.authenticated)encerrarPorInatividade();}).catch(()=>{});
-  }
+function verificarRetornoDeSegundoPlano(){
+  if(_idleHiddenAt&&Date.now()-_idleHiddenAt>=IDLE_TIMEOUT_MS)return encerrarPorInatividade();
+  _idleHiddenAt=null;
+  pingSessao();
 }
 
 function iniciarControleInatividade(){
-  _idleLastActivity=Date.now();programarTimeoutInatividade();
+  pingSessao();
   if(_idleStarted)return;_idleStarted=true;
-  ['pointerdown','keydown','scroll','touchstart'].forEach(evento=>window.addEventListener(evento,registrarAtividade,{passive:true}));
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)registrarAtividade();});
+  _idlePingTimer=setInterval(()=>{if(!document.hidden)pingSessao();},IDLE_PING_MS);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)_idleHiddenAt=Date.now();
+    else verificarRetornoDeSegundoPlano();
+  });
+  window.addEventListener('pageshow',verificarRetornoDeSegundoPlano);
 }
 
 function mostrarFormularioAcesso(configured){
@@ -1454,7 +1469,7 @@ async function enviarAcesso(event){
 }
 
 async function sair(){
-  clearTimeout(_idleTimer);
+  clearInterval(_idlePingTimer);
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
   window.location.reload();
 }

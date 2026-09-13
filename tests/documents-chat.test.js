@@ -122,14 +122,17 @@ test('generate encaminhamento usa a estrutura fixa propria (Desenvolvimento/Just
   assert.ok(capturedBody.instructions.includes('Resolução CFP nº 010/2005'));
 });
 
-test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto corrido e curto', async () => {
+test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de texto curto (ou blocos numerados p/ escola+familia) e proibe exemplos/citacoes dentro dos itens', async () => {
   let capturedBody;
   global.fetch = async (url, options) => { if (String(url).includes('api.openai.com')) { if (capturedBody === undefined) capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); } return {ok: true, status: 200, json: async () => ([])}; };
   const res = response();
   await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'relatorio_psicologico', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.', formato: 'orientacao'}}, res, {id: 'admin-1'});
   assert.equal(res.code, 200);
-  assert.ok(capturedBody.instructions.includes('sem dividir em seções tituladas'));
   assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
+  assert.ok(capturedBody.instructions.includes('Na escola,'));
+  assert.ok(capturedBody.instructions.includes('item numerado'));
+  assert.ok(capturedBody.instructions.includes('nunca inclua exemplos entre parênteses'));
+  assert.ok(capturedBody.instructions.includes('avaliação multiprofissional sem isso ter sido indicado no relato'));
 });
 
 test('generate reforca tom humanizado e proibe jargao de IA/autoajuda em todos os tipos com texto de IA', async () => {

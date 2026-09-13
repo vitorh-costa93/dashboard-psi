@@ -215,6 +215,13 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .doc-chat-modal .doc-chat-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:24px 8px;}
 .doc-chat-modal .doc-chat-row{display:flex;gap:8px;align-items:flex-end;}
 .doc-chat-modal .doc-chat-row textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;resize:vertical;min-height:44px;max-height:140px;}
+.doc-chat-modal .doc-chat-anexo-btn{flex:0 0 40px;width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;}
+.doc-chat-modal .doc-chat-anexo-btn:hover{background:var(--light);}
+.doc-chat-modal .doc-chat-anexo-staged{display:flex;align-items:center;gap:8px;background:var(--light);border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:.8rem;}
+.doc-chat-modal .doc-chat-anexo-staged strong{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-chat-modal .doc-chat-anexo-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px 4px;}
+.doc-chat-modal .doc-chat-msg-anexo{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;opacity:.85;margin-bottom:4px;}
+.doc-chat-modal .chat-msg.usuario .doc-chat-msg-anexo{display:flex;}
 .doc-chat-modal .doc-chat-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px;flex-wrap:wrap;}
 .doc-chat-modal .doc-chat-loading{font-size:.8rem;color:var(--muted);}
 .audio-input-wrap{display:flex;align-items:flex-start;gap:7px;width:100%;}
@@ -1247,7 +1254,10 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <h3>✦ Elaborar texto com IA</h3>
     <p class="doc-chat-hint">Converse até o texto ficar do jeito que você quer. Por privacidade, evite repetir nome, CPF ou contato — o paciente selecionado já é incluído separadamente.</p>
     <div class="doc-chat-msgs" id="doc-chat-modal-msgs"></div>
+    <div class="doc-chat-anexo-staged" id="doc-chat-modal-anexo" style="display:none">📎 <strong id="doc-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatIA()" aria-label="Remover anexo">✕</button></div>
     <div class="doc-chat-row">
+      <input type="file" id="doc-chat-modal-file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="selecionarAnexoChatIA(this)"/>
+      <button type="button" class="doc-chat-anexo-btn" title="Anexar arquivo (PDF, DOCX ou TXT)" onclick="document.getElementById('doc-chat-modal-file').click()">📎</button>
       <textarea id="doc-chat-modal-input" placeholder="Descreva os fatos e o objetivo do texto, ou peça um ajuste..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChatIA();}"></textarea>
       <button class="btn-secondary" id="doc-chat-modal-btn" onclick="enviarChatIA()">Enviar</button>
     </div>
@@ -4234,7 +4244,7 @@ async function initDocumentos(){
 }
 
 function montarFormularioDocumento(){
-  const tipo=document.getElementById('doc-tipo').value,editor=document.getElementById('doc-editor');_docAtual=null;_docChatHistorico=[];_docEditandoId=null;
+  const tipo=document.getElementById('doc-tipo').value,editor=document.getElementById('doc-editor');_docAtual=null;_docChatHistorico=[];_docEditandoId=null;_docChatAnexo=null;
   if(!tipo){editor.innerHTML='<div class="alert-empty">Escolha o tipo de documento.</div>';return atualizarPreviaDocumento();}
   let html=`<h3>${DOC_NAMES[tipo]}</h3><div class="doc-form-grid">${inputDoc('doc-nome-completo','Nome completo no documento')}`;
   if(tipo==='termo_infantil')html+=inputDoc('doc-responsavel','Nome do responsável')+inputDoc('doc-cpf-responsavel','CPF do responsável')+inputDoc('doc-cpf-paciente','CPF da criança')+inputDoc('doc-anamnese-data','Data da anamnese','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
@@ -4333,32 +4343,56 @@ function atualizarPreviaDocumento(){
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(tituloDocumentoAtual(tipo))}</h2>${campos}${secoes}${fechamentoDocumento(emissao)}`;
 }
 
-let _docChatHistorico=[],_docEditandoId=null;
+let _docChatHistorico=[],_docEditandoId=null,_docChatAnexo=null;
 function abrirChatIA(){
   document.getElementById('doc-chat-modal-overlay').classList.add('open');
   renderChatIA();
   setTimeout(()=>document.getElementById('doc-chat-modal-input')?.focus(),50);
 }
-function fecharChatIA(){document.getElementById('doc-chat-modal-overlay').classList.remove('open');}
+function fecharChatIA(){document.getElementById('doc-chat-modal-overlay').classList.remove('open');removerAnexoChatIA();}
 function renderChatIA(){
   const wrap=document.getElementById('doc-chat-modal-msgs');if(!wrap)return;
-  wrap.innerHTML=_docChatHistorico.length?_docChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join(''):'<div class="doc-chat-empty">Descreva os fatos, observações e o objetivo do texto. Você pode continuar a conversa até ficar do jeito que você quer.</div>';
+  wrap.innerHTML=_docChatHistorico.length?_docChatHistorico.map(h=>{
+    const anexo=h.anexoNome?`<div class="doc-chat-msg-anexo">📎 ${escHtml(h.anexoNome)}</div>`:'';
+    const texto=h.textoVisivel!==undefined?h.textoVisivel:h.texto;
+    return `<div class="chat-msg ${h.papel}">${anexo}${texto?escHtml(texto):''}</div>`;
+  }).join(''):'<div class="doc-chat-empty">Descreva os fatos, observações e o objetivo do texto (ou anexe um arquivo). Você pode continuar a conversa até ficar do jeito que você quer.</div>';
   wrap.scrollTop=wrap.scrollHeight;
   const temTextoIA=_docChatHistorico.some(h=>h.papel==='assistente');
   document.getElementById('doc-chat-modal-usar').disabled=!temTextoIA;
 }
+async function selecionarAnexoChatIA(input){
+  const file=input.files?.[0];input.value='';if(!file)return;
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(!['pdf','docx','txt'].includes(ext))return toast('Envie um arquivo PDF, DOCX ou TXT.');
+  if(file.size>4*1024*1024)return toast('Arquivo muito grande. Envie um arquivo de até 4MB.');
+  try{
+    const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=()=>reject(new Error('Falha ao ler o arquivo.'));r.readAsDataURL(file);});
+    _docChatAnexo={nome:file.name,base64};
+    document.getElementById('doc-chat-modal-anexo-nome').textContent=file.name;
+    document.getElementById('doc-chat-modal-anexo').style.display='flex';
+  }catch(e){toast(e.message||'Não foi possível ler o arquivo.');}
+}
+function removerAnexoChatIA(){
+  _docChatAnexo=null;
+  const chip=document.getElementById('doc-chat-modal-anexo');if(chip)chip.style.display='none';
+}
 async function enviarChatIA(){
-  const input=document.getElementById('doc-chat-modal-input'),pedido=input.value.trim();if(!pedido)return;
-  if(!_docChatHistorico.length&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe o conteúdo que deseja elaborar.');
+  const input=document.getElementById('doc-chat-modal-input'),pedido=input.value.trim(),anexo=_docChatAnexo;
+  if(!pedido&&!anexo)return;
+  if(!_docChatHistorico.length&&!anexo&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe o conteúdo que deseja elaborar.');
   const btn=document.getElementById('doc-chat-modal-btn'),loading=document.getElementById('doc-chat-modal-loading');
   const tipo=document.getElementById('doc-tipo').value,formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined;
+  const pedidoEfetivo=pedido||'Considere o conteúdo do arquivo anexado.';
   input.disabled=true;btn.disabled=true;loading.style.display='inline';
-  _docChatHistorico.push({papel:'usuario',texto:pedido});renderChatIA();
+  const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome,textoVisivel:pedidoEfetivo}:{})};
+  _docChatHistorico.push(turnoUsuario);renderChatIA();
   try{
-    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedido,historico:_docChatHistorico.slice(0,-1),formato})}),d=await r.json();
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedidoEfetivo,historico:_docChatHistorico.slice(0,-1),formato,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
+    if(d.descricaoComAnexo)turnoUsuario.texto=d.descricaoComAnexo;
     _docChatHistorico.push({papel:'assistente',texto:d.texto});
-    input.value='';
+    input.value='';removerAnexoChatIA();
     renderChatIA();
   }catch(e){
     _docChatHistorico.pop();renderChatIA();

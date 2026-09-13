@@ -132,6 +132,41 @@ test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de 
   assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
 });
 
+test('generate com anexo .txt embute o conteudo do arquivo na descricao enviada a IA', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado com base no anexo.'); };
+  const res = response();
+  const anexo = {nome: 'observacoes.txt', base64: Buffer.from('A criança demonstrou dificuldade de concentração durante a atividade.', 'utf8').toString('base64')};
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Elabore com base no anexo', anexo}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.input.includes('observacoes.txt'));
+  assert.ok(capturedBody.input.includes('dificuldade de concentração durante a atividade'));
+  assert.ok(res.body.descricaoComAnexo.includes('observacoes.txt'));
+});
+
+test('generate com anexo de formato nao suportado retorna 400 sem chamar a OpenAI', async () => {
+  global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
+  const res = response();
+  const anexo = {nome: 'foto.png', base64: Buffer.from('conteudo qualquer').toString('base64')};
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Elabore com base no anexo', anexo}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 400);
+});
+
+test('generate com anexo maior que 4MB retorna 413 sem chamar a OpenAI', async () => {
+  global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
+  const res = response();
+  const anexo = {nome: 'grande.txt', base64: Buffer.alloc(5 * 1024 * 1024, 'a').toString('base64')};
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Elabore com base no anexo', anexo}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 413);
+});
+
+test('generate com anexo malformado (sem base64) retorna 400', async () => {
+  global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Elabore com base no anexo', anexo: {nome: 'x.txt'}}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 400);
+});
+
 test('generate continua rejeitando descricao curta quando historico está ausente/vazio', async () => {
   global.fetch = async () => { throw new Error('não deveria chamar a OpenAI'); };
   const res1 = response();

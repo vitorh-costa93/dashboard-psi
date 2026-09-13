@@ -132,6 +132,41 @@ test('generate relatorio_psicologico com formato "orientacao" usa instrucoes de 
   assert.ok(!capturedBody.instructions.includes('Descrição, Análise, Conclusão e Orientações'));
 });
 
+test('generate reforca tom humanizado e proibe jargao de IA/autoajuda em todos os tipos com texto de IA', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  for (const tipo of ['relatorio_psicologico', 'encaminhamento', 'solicitacao_escolar']) {
+    const res = response();
+    await handleDocuments({method: 'POST', body: {action: 'generate', tipo, descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
+    assert.equal(res.code, 200, tipo);
+    assert.ok(capturedBody.instructions.includes('acolhimento humano'), tipo);
+    assert.ok(capturedBody.instructions.includes('scripts'), tipo);
+  }
+});
+
+test('generate sem historico NAO inclui o reforco de "ajuste dentro de uma conversa"', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado.'); };
+  const res = response();
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Criança apresenta dificuldade de concentração em sala de aula.'}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(!capturedBody.instructions.includes('ajuste dentro de uma conversa'));
+});
+
+test('generate com historico inclui o reforco pra priorizar o pedido mais recente da psicologa', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto ajustado.'); };
+  const res = response();
+  const historico = [
+    {papel: 'usuario', texto: 'Criança apresenta dificuldade de concentração em sala de aula.'},
+    {papel: 'assistente', texto: 'Texto gerado.'},
+  ];
+  await handleDocuments({method: 'POST', body: {action: 'generate', tipo: 'solicitacao_escolar', descricao: 'Deixa mais acolhedor', historico}}, res, {id: 'admin-1'});
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.instructions.includes('ajuste dentro de uma conversa'));
+  assert.ok(capturedBody.instructions.includes('priorize atender exatamente o que a psicóloga pediu na mensagem mais recente'));
+});
+
 test('generate com anexo .txt embute o conteudo do arquivo na descricao enviada a IA', async () => {
   let capturedBody;
   global.fetch = async (url, options) => { capturedBody = JSON.parse(options.body); return openaiResponsesReply('Texto gerado com base no anexo.'); };

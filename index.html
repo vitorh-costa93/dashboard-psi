@@ -205,6 +205,18 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .chat-refinamento .chat-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font:inherit;}
 .chat-refinamento .chat-row button{white-space:nowrap;}
 .chat-refinamento .chat-reset{margin-top:6px;background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;text-decoration:underline;padding:0;}
+.doc-chat-modal{max-width:640px;width:min(640px,96vw);max-height:88vh;display:flex;flex-direction:column;padding:20px;}
+.doc-chat-modal h3{margin-bottom:4px;}
+.doc-chat-modal .doc-chat-hint{font-size:.78rem;color:var(--muted);line-height:1.4;margin-bottom:12px;}
+.doc-chat-modal .doc-chat-msgs{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;min-height:220px;max-height:48vh;padding:4px 2px;margin-bottom:10px;}
+.doc-chat-modal .chat-msg{padding:9px 13px;border-radius:10px;font-size:.86rem;line-height:1.5;max-width:88%;white-space:pre-wrap;}
+.doc-chat-modal .chat-msg.usuario{align-self:flex-end;background:var(--accent);color:#fff;}
+.doc-chat-modal .chat-msg.assistente{align-self:flex-start;background:var(--light);}
+.doc-chat-modal .doc-chat-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:24px 8px;}
+.doc-chat-modal .doc-chat-row{display:flex;gap:8px;align-items:flex-end;}
+.doc-chat-modal .doc-chat-row textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;resize:vertical;min-height:44px;max-height:140px;}
+.doc-chat-modal .doc-chat-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px;flex-wrap:wrap;}
+.doc-chat-modal .doc-chat-loading{font-size:.8rem;color:var(--muted);}
 .audio-input-wrap{display:flex;align-items:flex-start;gap:7px;width:100%;}
 .audio-input-wrap>input,.audio-input-wrap>textarea{flex:1;min-width:0;}
 .audio-input-btn{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:.92rem;display:inline-flex;align-items:center;justify-content:center;}
@@ -1227,6 +1239,27 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 </div>
 </div><!-- /page-documentos -->
+
+<!-- Modal chat com IA para elaborar/editar documentos -->
+<div class="modal-overlay" id="doc-chat-modal-overlay" onclick="if(event.target===this)fecharChatIA()">
+  <div class="modal doc-chat-modal">
+    <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatIA()">✕</button>
+    <h3>✦ Elaborar texto com IA</h3>
+    <p class="doc-chat-hint">Converse até o texto ficar do jeito que você quer. Por privacidade, evite repetir nome, CPF ou contato — o paciente selecionado já é incluído separadamente.</p>
+    <div class="doc-chat-msgs" id="doc-chat-modal-msgs"></div>
+    <div class="doc-chat-row">
+      <textarea id="doc-chat-modal-input" placeholder="Descreva os fatos e o objetivo do texto, ou peça um ajuste..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChatIA();}"></textarea>
+      <button class="btn-secondary" id="doc-chat-modal-btn" onclick="enviarChatIA()">Enviar</button>
+    </div>
+    <div class="doc-chat-actions">
+      <span class="doc-chat-loading" id="doc-chat-modal-loading" style="display:none">Elaborando...</span>
+      <div class="modal-actions" style="margin-left:auto">
+        <button class="btn-secondary" type="button" onclick="fecharChatIA()">Cancelar</button>
+        <button class="btn-primary" type="button" id="doc-chat-modal-usar" onclick="usarTextoChatIA()" disabled>Usar este texto no documento</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal visualização atividade -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
@@ -4188,6 +4221,7 @@ function areaDoc(id,label,placeholder=''){
 }
 function valorBR(value){const n=Number(String(value||'').replace(',','.'));return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';}
 function dataBR(value){return String(value||'').replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,'$3/$2/$1');}
+function isoDeBR(value){const m=String(value||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);return m?`${m[3]}-${m[2]}-${m[1]}`:'';}
 function campo(id){return document.getElementById(id)?.value?.trim()||'';}
 function brandMarkup(){return `<div class="brand-lockup" aria-label="Jaqueline Vieira Psicóloga"><span class="brand-symbol" aria-hidden="true"></span><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>`;}
 function cabecalhoDocumento(){return `<div class="doc-preview-brand">${brandMarkup()}</div>`;}
@@ -4200,16 +4234,16 @@ async function initDocumentos(){
 }
 
 function montarFormularioDocumento(){
-  const tipo=document.getElementById('doc-tipo').value,editor=document.getElementById('doc-editor');_docAtual=null;
+  const tipo=document.getElementById('doc-tipo').value,editor=document.getElementById('doc-editor');_docAtual=null;_docChatHistorico=[];_docEditandoId=null;
   if(!tipo){editor.innerHTML='<div class="alert-empty">Escolha o tipo de documento.</div>';return atualizarPreviaDocumento();}
   let html=`<h3>${DOC_NAMES[tipo]}</h3><div class="doc-form-grid">${inputDoc('doc-nome-completo','Nome completo no documento')}`;
   if(tipo==='termo_infantil')html+=inputDoc('doc-responsavel','Nome do responsável')+inputDoc('doc-cpf-responsavel','CPF do responsável')+inputDoc('doc-cpf-paciente','CPF da criança')+inputDoc('doc-anamnese-data','Data da anamnese','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
   if(tipo==='termo_adulto')html+=inputDoc('doc-cpf-paciente','CPF do paciente')+inputDoc('doc-anamnese-data','Data da entrevista inicial','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"');
   if(tipo==='orcamento')html+=inputDoc('doc-inicio','Data de início','date')+inputDoc('doc-valor-avulso','Valor da sessão individual','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote-sessao','Valor de cada sessão no pacote','number','min="0" step="0.01"');
   if(tipo==='recibo')html+=inputDoc('doc-valor-pago','Valor total pago','number','min="0" step="0.01"')+inputDoc('doc-qtd-sessoes','Total de sessões','number','min="1" max="20" value="1" onchange="renderSessoesRecibo()"')+inputDoc('doc-forma-pagamento','Forma de pagamento')+'<div class="full" id="doc-sessoes-recibo"></div>';
-  if(tipo==='relatorio_psicologico')html+=`<div class="pront-field full"><label class="pront-label">Formato do relatório</label><select class="pront-input doc-input" id="doc-relatorio-formato" onchange="atualizarPreviaDocumento()"><option value="estruturado">Estruturado (4 seções)</option><option value="orientacao">Orientação (texto curto)</option></select></div>`+inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+areaDoc('doc-descricao-ia','Descreva os fatos, observações e objetivo do relatório','Você pode falar ou escrever. A IA organizará o texto sem inventar informações.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button id="doc-chat-btn" class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
-  if(tipo==='encaminhamento')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade (ex.: Encaminhamento para Psiquiatra Infantil)')+areaDoc('doc-descricao-ia','Descreva o motivo do encaminhamento e o histórico do acompanhamento','Você pode falar ou escrever. A IA organizará o texto sem inventar informações.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do encaminhamento')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais delicado, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button id="doc-chat-btn" class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
-  if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+areaDoc('doc-descricao-ia','O que deseja solicitar à escola','Descreva o contexto e os aspectos que devem ser observados.')+`<p class="full" style="font-size:.72rem;color:var(--muted);line-height:1.45">Por privacidade, não repita nome, CPF ou contato neste relato. O paciente selecionado será incluído separadamente.</p><div class="full"><button class="btn-primary" type="button" onclick="gerarTextoDocumento(this)">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação')+`<div class="chat-refinamento full" id="doc-chat" style="display:none"><div class="chat-msgs" id="doc-chat-msgs"></div><div class="chat-row"><input id="doc-chat-input" placeholder="Ex.: deixa mais formal, resuma em um parágrafo..." onkeydown="if(event.key==='Enter')ajustarTextoDocumento()"/><button id="doc-chat-btn" class="btn-secondary" onclick="ajustarTextoDocumento()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatDocumento()">Nova conversa</button></div>`;
+  if(tipo==='relatorio_psicologico')html+=`<div class="pront-field full"><label class="pront-label">Formato do relatório</label><select class="pront-input doc-input" id="doc-relatorio-formato" onchange="atualizarPreviaDocumento()"><option value="estruturado">Estruturado (4 seções)</option><option value="orientacao">Orientação (texto curto)</option></select></div>`+inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório');
+  if(tipo==='encaminhamento')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade (ex.: Encaminhamento para Psiquiatra Infantil)')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do encaminhamento');
+  if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação');
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
   if(tipo==='declaracao_frequencia')html+=inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
@@ -4299,52 +4333,102 @@ function atualizarPreviaDocumento(){
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(tituloDocumentoAtual(tipo))}</h2>${campos}${secoes}${fechamentoDocumento(emissao)}`;
 }
 
-async function gerarTextoDocumento(btn){
-  const descricao=campo('doc-descricao-ia'),tipo=document.getElementById('doc-tipo').value;if(descricao.length<10)return toast('Descreva o conteúdo que deseja elaborar.');
-  const formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined;
-  if(btn){btn.disabled=true;btn.textContent='Elaborando...';}
-  try{const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao,formato})}),d=await r.json();if(!r.ok)throw new Error(d.error);document.getElementById('doc-texto-final').value=d.texto;atualizarPreviaDocumento();mostrarChatDocumento();reiniciarChatDocumento();toast('Texto elaborado. Revise antes de salvar.');}catch(e){toast(e.message||'Não foi possível elaborar o texto.');}finally{if(btn){btn.disabled=false;btn.textContent='✦ Elaborar texto com IA';}}
+let _docChatHistorico=[],_docEditandoId=null;
+function abrirChatIA(){
+  document.getElementById('doc-chat-modal-overlay').classList.add('open');
+  renderChatIA();
+  setTimeout(()=>document.getElementById('doc-chat-modal-input')?.focus(),50);
 }
-let _docChatHistorico=[];
-function mostrarChatDocumento(){
-  document.getElementById('doc-chat').style.display='block';
-  renderChatDocumento();
-}
-function renderChatDocumento(){
-  const wrap=document.getElementById('doc-chat-msgs');if(!wrap)return;
-  wrap.innerHTML=_docChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join('');
+function fecharChatIA(){document.getElementById('doc-chat-modal-overlay').classList.remove('open');}
+function renderChatIA(){
+  const wrap=document.getElementById('doc-chat-modal-msgs');if(!wrap)return;
+  wrap.innerHTML=_docChatHistorico.length?_docChatHistorico.map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.texto)}</div>`).join(''):'<div class="doc-chat-empty">Descreva os fatos, observações e o objetivo do texto. Você pode continuar a conversa até ficar do jeito que você quer.</div>';
   wrap.scrollTop=wrap.scrollHeight;
+  const temTextoIA=_docChatHistorico.some(h=>h.papel==='assistente');
+  document.getElementById('doc-chat-modal-usar').disabled=!temTextoIA;
 }
-function reiniciarChatDocumento(){_docChatHistorico=[];renderChatDocumento();}
-async function ajustarTextoDocumento(){
-  const input=document.getElementById('doc-chat-input'),pedido=input.value.trim();if(!pedido)return;
-  const btn=document.getElementById('doc-chat-btn');
-  const tipo=document.getElementById('doc-tipo').value,descricaoOriginal=campo('doc-descricao-ia');
-  const formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined;
-  if(!_docChatHistorico.length)_docChatHistorico.push({papel:'usuario',texto:descricaoOriginal},{papel:'assistente',texto:campo('doc-texto-final')});
-  input.disabled=true;if(btn)btn.disabled=true;
+async function enviarChatIA(){
+  const input=document.getElementById('doc-chat-modal-input'),pedido=input.value.trim();if(!pedido)return;
+  if(!_docChatHistorico.length&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe o conteúdo que deseja elaborar.');
+  const btn=document.getElementById('doc-chat-modal-btn'),loading=document.getElementById('doc-chat-modal-loading');
+  const tipo=document.getElementById('doc-tipo').value,formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined;
+  input.disabled=true;btn.disabled=true;loading.style.display='inline';
+  _docChatHistorico.push({papel:'usuario',texto:pedido});renderChatIA();
   try{
-    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedido,historico:_docChatHistorico,formato})}),d=await r.json();
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedido,historico:_docChatHistorico.slice(0,-1),formato})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
-    _docChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:d.texto});
-    document.getElementById('doc-texto-final').value=d.texto;
-    atualizarPreviaDocumento();
+    _docChatHistorico.push({papel:'assistente',texto:d.texto});
     input.value='';
-    renderChatDocumento();
-  }catch(e){toast(e.message||'Não foi possível ajustar o texto.');}
-  finally{input.disabled=false;if(btn)btn.disabled=false;}
+    renderChatIA();
+  }catch(e){
+    _docChatHistorico.pop();renderChatIA();
+    toast(e.message||'Não foi possível elaborar o texto.');
+  }
+  finally{input.disabled=false;btn.disabled=false;loading.style.display='none';document.getElementById('doc-chat-modal-input')?.focus();}
+}
+function usarTextoChatIA(){
+  const ultima=[..._docChatHistorico].reverse().find(h=>h.papel==='assistente');if(!ultima)return;
+  document.getElementById('doc-texto-final').value=ultima.texto;
+  atualizarPreviaDocumento();
+  fecharChatIA();
+  toast('Texto elaborado. Revise antes de salvar.');
 }
 
 async function salvarDocumento(){
   const paciente_id=document.getElementById('doc-paciente').value,tipo=document.getElementById('doc-tipo').value,emitido_em=document.getElementById('doc-emissao').value;if(!paciente_id||!tipo||!emitido_em)return toast('Selecione paciente, tipo e data de emissão.');if(!campo('doc-nome-completo'))return toast('Informe o nome completo que deve aparecer no documento.');
-  const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo:tituloDocumentoAtual(tipo),emitido_em,conteudo:conteudoDocumento()})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar.');toast('✅ Documento salvo.');await resetarDocumentoCompleto(paciente_id);
+  const conteudo=conteudoDocumento();
+  if(_docChatHistorico.length)conteudo.promptHistorico=_docChatHistorico;
+  if(tipo==='relatorio_psicologico')conteudo.metadados={formato:campo('doc-relatorio-formato')||'estruturado'};
+  const titulo=tituloDocumentoAtual(tipo);
+  const r=_docEditandoId
+    ?await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(_docEditandoId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo,emitido_em,conteudo})})
+    :await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',paciente_id,tipo,titulo,emitido_em,conteudo})});
+  const d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar.');toast('✅ Documento salvo.');await resetarDocumentoCompleto(paciente_id);
 }
 async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 function abrirDocumento(id,button){
-  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>`;
+  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
+  preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
+}
+function restaurarCamposDocumento(x){
+  const c=x.conteudo||{},campos=c.campos||{};
+  document.getElementById('doc-nome-completo').value=campos['Paciente']||'';
+  if(x.tipo.startsWith('termo_')){
+    document.getElementById('doc-cpf-paciente').value=campos['CPF do paciente']||'';
+    if(x.tipo==='termo_infantil'){document.getElementById('doc-responsavel').value=campos['Responsável']||'';document.getElementById('doc-cpf-responsavel').value=campos['CPF do responsável']||'';}
+    document.getElementById('doc-anamnese-data').value=isoDeBR(campos['Data da entrevista inicial']);
+  } else if(x.tipo==='orcamento'){
+    document.getElementById('doc-inicio').value=isoDeBR(campos['Início do atendimento']);
+  } else if(x.tipo==='relatorio_psicologico'||x.tipo==='encaminhamento'){
+    document.getElementById('doc-nascimento').value=isoDeBR(campos['Data de nascimento']);
+    document.getElementById('doc-responsavel').value=campos['Responsável']||'';
+    document.getElementById('doc-inicio').value=isoDeBR(campos['Início dos atendimentos']);
+    document.getElementById('doc-finalidade').value=campos['Finalidade']||'';
+    if(x.tipo==='relatorio_psicologico')document.getElementById('doc-relatorio-formato').value=c.metadados?.formato||'estruturado';
+  } else if(x.tipo==='solicitacao_escolar'){
+    document.getElementById('doc-destinatario').value=campos['Destinatário']||'';
+  } else if(x.tipo==='declaracao_comparecimento'){
+    document.getElementById('doc-sessao-data').value=isoDeBR(campos['Dia da sessão']);
+    const [ini,fim]=String(campos['Horário']||'').split(' às ');document.getElementById('doc-hora-inicio').value=(ini||'').trim();document.getElementById('doc-hora-fim').value=(fim||'').trim();
+  }
+  const ultimaIA=[...(c.promptHistorico||[])].reverse().find(h=>h.papel==='assistente');
+  const textoFinal=document.getElementById('doc-texto-final');
+  if(textoFinal)textoFinal.value=ultimaIA?ultimaIA.texto:(c.secoes||[]).map(s=>s.texto).join('\n\n');
+  atualizarPreviaDocumento();
+}
+function editarPromptDocumento(id){
+  const x=_documentos.find(d=>d.id===id);if(!x||!x.conteudo.promptHistorico?.length)return toast('Este documento não tem prompt salvo para editar.');
+  document.getElementById('doc-tipo').value=x.tipo;
+  document.getElementById('doc-emissao').value=x.emitido_em;
+  document.getElementById('doc-estilo').value=x.conteudo.estilo||'colorido';
+  montarFormularioDocumento();
+  _docEditandoId=x.id;
+  _docChatHistorico=x.conteudo.promptHistorico.map(h=>({...h}));
+  restaurarCamposDocumento(x);
+  abrirChatIA();
 }
 async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=documents&action=export&id=${encodeURIComponent(id)}`);if(!r.ok)return toast('Não foi possível exportar.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='documento-'+id.slice(0,8)+'.docx';a.click();URL.revokeObjectURL(url);}
 async function exportarDocumentoPDF(){if(!_docAtual?.id)return toast('Salve o documento antes de exportar o PDF.');const btn=document.querySelector('.doc-preview .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=export-pdf&id=${encodeURIComponent(_docAtual.id)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`documento-${_docAtual.tipo||'documento'}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF para assinatura';}}}

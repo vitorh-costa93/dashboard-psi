@@ -218,6 +218,11 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .doc-chat-modal .chat-msg.usuario .doc-chat-msg-anexo{display:flex;}
 .doc-chat-modal .doc-chat-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px;flex-wrap:wrap;}
 .doc-chat-modal .doc-chat-loading{font-size:.8rem;color:var(--muted);}
+.doc-chat-typing{display:inline-flex;gap:4px;padding:2px 2px;}
+.doc-chat-typing span{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;animation:doc-chat-typing-bounce 1.2s infinite ease-in-out;}
+.doc-chat-typing span:nth-child(2){animation-delay:.15s}
+.doc-chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes doc-chat-typing-bounce{0%,60%,100%{opacity:.4;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 .audio-input-wrap{display:flex;align-items:flex-start;gap:7px;width:100%;}
 .audio-input-wrap>input,.audio-input-wrap>textarea{flex:1;min-width:0;}
 .audio-input-btn{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:.92rem;display:inline-flex;align-items:center;justify-content:center;}
@@ -933,12 +938,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
           </select>
         </div>
       </div>
-      <div class="gen-field" style="margin-bottom:10px;">
-        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o conteúdo da apresentação</label>
-        <textarea class="prompt-area" id="ppt-desc" placeholder="Ex: Apresentação explicando o que é ansiedade para uma criança de 8 anos, com exemplos do dia a dia e técnicas simples de respiração..."></textarea>
-      </div>
       <div class="gen-actions">
-        <button class="btn-primary" id="btn-gen-ppt" onclick="gerarPPT()"><span>✦</span> Gerar conteúdo</button>
+        <button class="btn-primary" id="btn-gen-ppt" onclick="abrirChatPPT()"><span>✦</span> Elaborar com IA</button>
         <span class="gen-status" id="ppt-status"></span>
       </div>
     </div>
@@ -947,6 +948,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div class="ppt-preview" id="ppt-preview" style="display:none;">
       <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:14px;" id="ppt-preview-titulo">—</h3>
       <div id="ppt-slides-list"></div>
+      <div class="preview-actions" style="margin-top:10px;">
+        <button class="btn-primary" onclick="abrirChatPPT()">✦ Ajustar com IA</button>
+      </div>
       <div class="preview-actions" style="margin-top:14px;">
         <input type="text" class="title-field" id="ppt-titulo-salvar" placeholder="Nome para salvar na biblioteca" style="margin-bottom:0;flex:1;min-width:200px;"/>
       </div>
@@ -1102,6 +1106,29 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <span class="doc-chat-loading" id="post-chat-modal-loading" style="display:none">Ajustando...</span>
       <div class="modal-actions" style="margin-left:auto">
         <button class="btn-secondary" type="button" onclick="reiniciarChatPost()">Nova conversa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal chat com IA para elaborar/ajustar apresentações (atividades) -->
+<div class="modal-overlay" id="ppt-chat-modal-overlay" onclick="if(event.target===this)fecharChatPPT()">
+  <div class="modal doc-chat-modal">
+    <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatPPT()">✕</button>
+    <h3>✦ Elaborar com IA</h3>
+    <p class="doc-chat-hint">Converse até o conteúdo da apresentação ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) de referência.</p>
+    <div class="doc-chat-msgs" id="ppt-chat-modal-msgs"></div>
+    <div class="doc-chat-anexo-staged" id="ppt-chat-modal-anexo" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg> <strong id="ppt-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatPPT()" aria-label="Remover anexo">✕</button></div>
+    <div class="doc-chat-row">
+      <input type="file" id="ppt-chat-modal-file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="selecionarAnexoChatPPT(this)"/>
+      <button type="button" class="doc-chat-anexo-btn" title="Anexar arquivo (PDF, DOCX ou TXT)" onclick="document.getElementById('ppt-chat-modal-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg></button>
+      <textarea id="ppt-chat-modal-input" placeholder="Ex.: apresentação sobre ansiedade para uma criança de 8 anos, com técnicas de respiração..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChatPPT();}"></textarea>
+      <button class="btn-secondary" id="ppt-chat-modal-btn" onclick="enviarChatPPT()">Enviar</button>
+    </div>
+    <div class="doc-chat-actions">
+      <span class="doc-chat-loading" id="ppt-chat-modal-loading" style="display:none">Elaborando...</span>
+      <div class="modal-actions" style="margin-left:auto">
+        <button class="btn-secondary" type="button" onclick="_pptChatHistorico=[];renderChatPPT();">Nova conversa</button>
       </div>
     </div>
   </div>
@@ -1353,6 +1380,18 @@ const ICON_MIC_INLINE=iconInline(ICON_MIC);
 const ICON_STOP_INLINE=iconInline(ICON_STOP);
 const ICON_ATTACH_INLINE=iconInline(ICON_ATTACH,13);
 const ICON_IMAGE_INLINE=iconInline(ICON_IMAGE,13);
+// Bolha de "digitando..." dentro da própria conversa (estilo ChatGPT/Claude)
+// em vez de um texto de status separado embaixo do campo -- usada pelos 3
+// chats de IA do app (documentos, posts/artes e apresentações). Some
+// sozinha na próxima renderização (render* sempre substitui o innerHTML
+// inteiro da lista de mensagens a partir do histórico).
+function mostrarDigitando(msgsId){
+  const wrap=document.getElementById(msgsId);if(!wrap)return;
+  const el=document.createElement('div');el.className='chat-msg assistente';el.id=msgsId+'-typing';
+  el.innerHTML='<div class="doc-chat-typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(el);wrap.scrollTop=wrap.scrollHeight;
+}
+function esconderDigitando(msgsId){document.getElementById(msgsId+'-typing')?.remove();}
 let _authMode='login';
 // 15/09/2026: a psicóloga teve a sessão encerrada por "inatividade" enquanto
 // editava um relatório longo de verdade. Causa raiz: o controle antigo só
@@ -2676,51 +2715,72 @@ async function deletarAtividade(id) {
 let _pptData        = null; // { titulo, slides: [{titulo, conteudo}] }
 let _pptMeta         = {};
 let _apresentacoes   = [];
+let _pptChatHistorico=[],_pptChatAnexo=null;
 
-async function gerarPPT() {
-  const publico = document.getElementById('ppt-publico').value;
-  const tema    = document.getElementById('ppt-tema').value;
-  const desc    = document.getElementById('ppt-desc').value.trim();
-
-  if (!desc) { toast('Descreva o conteúdo da apresentação.'); return; }
-
-  const btn = document.getElementById('btn-gen-ppt');
-  btn.disabled = true;
-  document.getElementById('ppt-status').textContent = 'Gerando conteúdo com IA...';
-
-  try {
-    const res = await fetch('/api/ppt-content', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ descricao: desc, publico, tema })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err?.error || 'Erro ao gerar conteúdo');
-    }
-    const data = await res.json();
-    _pptData = data;
-    _pptMeta = { publico, tema };
-
-    document.getElementById('ppt-preview-titulo').textContent = '📊 ' + data.titulo;
-    document.getElementById('ppt-titulo-salvar').value = data.titulo;
-    const list = document.getElementById('ppt-slides-list');
-    list.innerHTML = data.slides.map((s,i) => `
-      <div class="ppt-slide-preview">
-        <h4>Slide ${i+1}: ${escHtml(s.titulo)}</h4>
-        <ul>${s.conteudo.map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul>
-      </div>
-    `).join('');
-
-    document.getElementById('ppt-preview').style.display = 'block';
-    document.getElementById('ppt-preview').scrollIntoView({behavior:'smooth', block:'start'});
-    document.getElementById('ppt-status').textContent = '';
-  } catch(e) {
-    console.error(e);
-    document.getElementById('ppt-status').textContent = '';
-    toast('Erro: ' + e.message);
+function renderPPTPreview(data){
+  document.getElementById('ppt-preview-titulo').textContent = '📊 ' + data.titulo;
+  document.getElementById('ppt-titulo-salvar').value = data.titulo;
+  const list = document.getElementById('ppt-slides-list');
+  list.innerHTML = data.slides.map((s,i) => `
+    <div class="ppt-slide-preview">
+      <h4>Slide ${i+1}: ${escHtml(s.titulo)}</h4>
+      <ul>${s.conteudo.map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+  document.getElementById('ppt-preview').style.display = 'block';
+}
+function abrirChatPPT(){
+  document.getElementById('ppt-chat-modal-overlay').classList.add('open');
+  renderChatPPT();
+  setTimeout(()=>document.getElementById('ppt-chat-modal-input')?.focus(),50);
+}
+function fecharChatPPT(){document.getElementById('ppt-chat-modal-overlay').classList.remove('open');removerAnexoChatPPT();}
+function renderChatPPT(){
+  const wrap=document.getElementById('ppt-chat-modal-msgs');if(!wrap)return;
+  wrap.innerHTML=_pptChatHistorico.length?_pptChatHistorico.map(h=>{
+    const anexo=h.anexoNome?`<div class="doc-chat-msg-anexo">${ICON_ATTACH_INLINE} ${escHtml(h.anexoNome)}</div>`:'';
+    const texto=h.textoVisivel!==undefined?h.textoVisivel:h.texto;
+    return `<div class="chat-msg ${h.papel}">${anexo}${texto?escHtml(texto):''}</div>`;
+  }).join(''):'<div class="doc-chat-empty">Descreva o conteúdo da apresentação (o que deve ser abordado, pra quem). Você pode continuar a conversa até ficar do jeito que você quer.</div>';
+  wrap.scrollTop=wrap.scrollHeight;
+}
+async function selecionarAnexoChatPPT(input){
+  const file=input.files?.[0];input.value='';if(!file)return;
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(!['pdf','docx','txt'].includes(ext))return toast('Envie um arquivo PDF, DOCX ou TXT.');
+  if(file.size>4*1024*1024)return toast('Arquivo muito grande. Envie um arquivo de até 4MB.');
+  try{
+    const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=()=>reject(new Error('Falha ao ler o arquivo.'));r.readAsDataURL(file);});
+    _pptChatAnexo={nome:file.name,base64};
+    document.getElementById('ppt-chat-modal-anexo-nome').textContent=file.name;
+    document.getElementById('ppt-chat-modal-anexo').style.display='flex';
+  }catch(e){toast(e.message||'Não foi possível ler o arquivo.');}
+}
+function removerAnexoChatPPT(){_pptChatAnexo=null;const chip=document.getElementById('ppt-chat-modal-anexo');if(chip)chip.style.display='none';}
+async function enviarChatPPT(){
+  const input=document.getElementById('ppt-chat-modal-input'),pedido=input.value.trim(),anexo=_pptChatAnexo;
+  if(!pedido&&!anexo)return;
+  if(!_pptChatHistorico.length&&!anexo&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe o conteúdo que deseja elaborar.');
+  const btn=document.getElementById('ppt-chat-modal-btn'),loading=document.getElementById('ppt-chat-modal-loading');
+  const publico=document.getElementById('ppt-publico').value,tema=document.getElementById('ppt-tema').value;
+  const pedidoEfetivo=pedido||'Considere o conteúdo do arquivo anexado.';
+  input.disabled=true;btn.disabled=true;loading.style.display='inline';
+  const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome,textoVisivel:pedidoEfetivo}:{})};
+  _pptChatHistorico.push(turnoUsuario);renderChatPPT();mostrarDigitando('ppt-chat-modal-msgs');
+  try{
+    const r=await fetch('/api/ppt-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descricao:pedidoEfetivo,publico,tema,historico:_pptChatHistorico.slice(0,-1),...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{})})}),d=await r.json();
+    if(!r.ok)throw new Error(d.error);
+    _pptChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Veja a prévia atualizada.'});
+    _pptData=d;_pptMeta={publico,tema};
+    renderPPTPreview(d);
+    document.getElementById('ppt-preview').scrollIntoView({behavior:'smooth',block:'start'});
+    input.value='';removerAnexoChatPPT();
+    renderChatPPT();
+  }catch(e){
+    _pptChatHistorico.pop();renderChatPPT();
+    toast(e.message||'Não foi possível elaborar o conteúdo.');
   }
-  btn.disabled = false;
+  finally{input.disabled=false;btn.disabled=false;loading.style.display='none';document.getElementById('ppt-chat-modal-input')?.focus();}
 }
 
 function descartarPPT() {
@@ -2732,7 +2792,7 @@ function descartarPPT() {
 function limparFormPPT() {
   document.getElementById('ppt-publico').value = '';
   document.getElementById('ppt-tema').value    = '';
-  document.getElementById('ppt-desc').value    = '';
+  _pptChatHistorico=[];removerAnexoChatPPT();fecharChatPPT();
   document.getElementById('ppt-titulo-salvar').value = '';
 }
 
@@ -3150,7 +3210,7 @@ async function enviarChatPost(){
   input.disabled=true;btn.disabled=true;loading.style.display='inline';
   const historicoParaEnviar=[..._postChatHistorico];
   const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome}:{}),...(imagem?{imagemNome:imagem.nome}:{})};
-  _postChatHistorico.push(turnoUsuario);renderChatPost();
+  _postChatHistorico.push(turnoUsuario);renderChatPost();mostrarDigitando('post-chat-modal-msgs');
   try{
     const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:historicoParaEnviar,ajuste:pedidoEfetivo,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
@@ -4484,7 +4544,7 @@ async function enviarChatIA(){
   const pedidoEfetivo=pedido||'Considere o conteúdo do arquivo anexado.';
   input.disabled=true;btn.disabled=true;loading.style.display='inline';
   const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome,textoVisivel:pedidoEfetivo}:{})};
-  _docChatHistorico.push(turnoUsuario);renderChatIA();
+  _docChatHistorico.push(turnoUsuario);renderChatIA();mostrarDigitando('doc-chat-modal-msgs');
   try{
     const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedidoEfetivo,historico:_docChatHistorico.slice(0,-1),formato,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);

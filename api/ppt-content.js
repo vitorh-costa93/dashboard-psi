@@ -6,6 +6,7 @@
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
+import { extrairTextoAnexo, AnexoError } from '../lib/anexo.js';
 
 export default async function handler(req, res) {
   if (!await requireAuth(req, res)) return;
@@ -18,9 +19,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'OPENAI_KEY não configurada no Vercel' });
   }
 
-  const { descricao, publico, tema } = req.body;
+  const { descricao, publico, tema, historico: historicoBruto, ajuste, anexo } = req.body;
   if (!descricao) {
     return res.status(400).json({ error: 'Descrição obrigatória' });
+  }
+  if(historicoBruto!==undefined&&!Array.isArray(historicoBruto))return res.status(400).json({error:'Histórico inválido'});
+  const historico=(historicoBruto||[]).map(h=>({papel:h?.papel==='assistente'?'assistente':'usuario',texto:String(h?.texto||'').trim().slice(0,4000)})).filter(h=>h.texto).slice(-20);
+  let anexoTexto=null;
+  if(anexo!=null){
+    try{const extraido=await extrairTextoAnexo(anexo);anexoTexto=`Conteúdo do arquivo enviado (${extraido.nome}):\n"""\n${extraido.texto}\n"""`;}
+    catch(e){if(e instanceof AnexoError)return res.status(e.status).json({error:e.message});throw e;}
   }
 
   const systemPrompt = `Você é especialista em criar apresentações terapêuticas para psicólogos mostrarem a pacientes (incluindo crianças).
@@ -29,11 +37,15 @@ Gere entre 4 e 8 slides. Linguagem simples e acolhedora, adequada ao público in
 Cada slide deve ter no máximo 4 pontos curtos (max 12 palavras cada).
 Entregue sempre uma proposta pronta pra aplicar no consultório, com aplicabilidade real -- nunca só uma ideia abstrata.
 
+Se a mensagem do usuário pedir um AJUSTE sobre uma apresentação já gerada (você verá o conteúdo anterior no histórico da conversa), reescreva o objeto JSON inteiro aplicando o que foi pedido e mantendo tudo o que não foi pedido para mudar.
+
 ${PERFIL_JAQUELINE}`;
 
-  const userPrompt = `Público: ${publico || 'paciente'}
+  const primeiroPedido = `Público: ${publico || 'paciente'}
 Tema: ${tema || 'geral'}
 Descrição do que a psicóloga quer na apresentação: ${descricao}`;
+  const pedidoTextoBase = historico.length ? (String(ajuste || '').trim() || primeiroPedido) : primeiroPedido;
+  const userPrompt = anexoTexto ? `${anexoTexto}\n\n${pedidoTextoBase}` : pedidoTextoBase;
 
   try {
     // gpt-4o-mini não consta mais na lista de modelos disponíveis da OpenAI;
@@ -51,6 +63,7 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
         model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra',
         messages: [
           { role: 'system', content: systemPrompt },
+          ...historico.map(h=>({role:h.papel==='assistente'?'assistant':'user',content:h.texto})),
           { role: 'user', content: userPrompt },
         ],
         response_format: {

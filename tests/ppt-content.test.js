@@ -90,6 +90,60 @@ test('descricao ausente retorna 400 sem chamar a OpenAI', async () => {
   assert.equal(res.code, 400);
 });
 
+test('com historico, messages inclui os turnos anteriores antes do novo pedido', async () => {
+  let capturedBody;
+  global.fetch = authFetchStub(async (url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
+  });
+  const historico = [
+    {papel: 'usuario', texto: 'Público: criança\nTema: emoções'},
+    {papel: 'assistente', texto: JSON.stringify(conteudoValido)},
+  ];
+  const req = baseReq({descricao: 'Uma apresentação sobre emoções', historico, ajuste: 'Deixa o titulo mais curto'});
+  const res = response();
+  await pptContent(req, res);
+  assert.equal(res.code, 200);
+  assert.equal(capturedBody.messages.length, 4);
+  assert.equal(capturedBody.messages[0].role, 'system');
+  assert.equal(capturedBody.messages[1].content, 'Público: criança\nTema: emoções');
+  assert.equal(capturedBody.messages[2].role, 'assistant');
+  assert.equal(capturedBody.messages[3].content, 'Deixa o titulo mais curto');
+});
+
+test('historico malformado retorna 400', async () => {
+  global.fetch = authFetchStub(() => { throw new Error('não deveria chamar OpenAI'); });
+  const req = baseReq({descricao: 'Uma apresentação', historico: 'não é array'});
+  const res = response();
+  await pptContent(req, res);
+  assert.equal(res.code, 400);
+});
+
+test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async () => {
+  let capturedBody;
+  global.fetch = authFetchStub(async (url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
+  });
+  const anexo = {nome: 'plano-de-aula.txt', base64: Buffer.from('Conteudo do plano de aula sobre emocoes.', 'utf8').toString('base64')};
+  const req = baseReq({descricao: 'Uma apresentação sobre emoções', anexo});
+  const res = response();
+  await pptContent(req, res);
+  assert.equal(res.code, 200);
+  const userMsg = capturedBody.messages[capturedBody.messages.length - 1];
+  assert.ok(userMsg.content.includes('plano-de-aula.txt'));
+  assert.ok(userMsg.content.includes('Conteudo do plano de aula sobre emocoes'));
+});
+
+test('anexo de formato nao suportado retorna 400 sem chamar a OpenAI', async () => {
+  global.fetch = authFetchStub(() => { throw new Error('não deveria chamar OpenAI'); });
+  const anexo = {nome: 'foto.png', base64: Buffer.from('conteudo qualquer').toString('base64')};
+  const req = baseReq({descricao: 'Uma apresentação', anexo});
+  const res = response();
+  await pptContent(req, res);
+  assert.equal(res.code, 400);
+});
+
 test('erro da OpenAI eh propagado com a mensagem original', async () => {
   global.fetch = authFetchStub(async () => ({
     ok: false, status: 400, json: async () => ({error: {message: 'Schema inválido'}})

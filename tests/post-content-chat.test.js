@@ -191,6 +191,79 @@ test('system prompt inclui as regras de humanizacao e o limite de 5 hashtags no 
   assert.equal(capturedBody.response_format.json_schema.schema.properties.hashtags.maxItems, 5);
 });
 
+test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => {
+    if (url.includes('api.openai.com')) {
+      capturedBody = JSON.parse(options.body);
+      return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
+    }
+    if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
+    if (url.includes('app_admin')) return supabaseReply([{user_id: 'test-user'}]);
+    if (url.includes('supabase')) return supabaseReply([]);
+    return {ok: false, status: 404};
+  };
+  const anexo = {nome: 'reportagem.txt', base64: Buffer.from('Estudo recente sobre ansiedade em adolescentes.', 'utf8').toString('base64')};
+  const req = {method: 'POST', body: {tema: 'Ansiedade', anexo}, headers: {cookie: createIdleCookie()}};
+  const res = response();
+  await postContent(req, res);
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.messages[1].content.includes('reportagem.txt'));
+  assert.ok(capturedBody.messages[1].content.includes('Estudo recente sobre ansiedade em adolescentes'));
+});
+
+test('anexo de formato nao suportado retorna 400 sem chamar a OpenAI', async () => {
+  global.fetch = async (url) => {
+    if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
+    if (url.includes('app_admin')) return supabaseReply([{user_id: 'test-user'}]);
+    if (url.includes('supabase')) return supabaseReply([]);
+    throw new Error('não deveria chamar a OpenAI');
+  };
+  const anexo = {nome: 'foto.png', base64: Buffer.from('conteudo qualquer').toString('base64')};
+  const req = {method: 'POST', body: {tema: 'Ansiedade', anexo}, headers: {cookie: createIdleCookie()}};
+  const res = response();
+  await postContent(req, res);
+  assert.equal(res.code, 400);
+});
+
+test('imagem de referencia vira conteudo multimodal (texto + image_url) na ultima mensagem', async () => {
+  let capturedBody;
+  global.fetch = async (url, options) => {
+    if (url.includes('api.openai.com')) {
+      capturedBody = JSON.parse(options.body);
+      return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
+    }
+    if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
+    if (url.includes('app_admin')) return supabaseReply([{user_id: 'test-user'}]);
+    if (url.includes('supabase')) return supabaseReply([]);
+    return {ok: false, status: 404};
+  };
+  const imagem = {tipo: 'image/png', base64: Buffer.from('fake-png-bytes').toString('base64')};
+  const req = {method: 'POST', body: {tema: 'Ansiedade', imagem}, headers: {cookie: createIdleCookie()}};
+  const res = response();
+  await postContent(req, res);
+  assert.equal(res.code, 200);
+  const ultima = capturedBody.messages[capturedBody.messages.length - 1];
+  assert.ok(Array.isArray(ultima.content));
+  assert.equal(ultima.content[0].type, 'text');
+  assert.equal(ultima.content[1].type, 'image_url');
+  assert.ok(ultima.content[1].image_url.url.startsWith('data:image/png;base64,'));
+});
+
+test('imagem com tipo mime nao suportado retorna 400', async () => {
+  global.fetch = async (url) => {
+    if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
+    if (url.includes('app_admin')) return supabaseReply([{user_id: 'test-user'}]);
+    if (url.includes('supabase')) return supabaseReply([]);
+    throw new Error('não deveria chamar a OpenAI');
+  };
+  const imagem = {tipo: 'image/svg+xml', base64: Buffer.from('<svg></svg>').toString('base64')};
+  const req = {method: 'POST', body: {tema: 'Ansiedade', imagem}, headers: {cookie: createIdleCookie()}};
+  const res = response();
+  await postContent(req, res);
+  assert.equal(res.code, 400);
+});
+
 test('historico trunca cada texto em 4000 caracteres', async () => {
   let capturedBody;
   global.fetch = async (url, options) => {

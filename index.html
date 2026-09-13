@@ -197,15 +197,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 .prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
 .prompt-area:focus{outline:none;border-color:var(--accent);}
-.chat-refinamento{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff;}
-.chat-refinamento .chat-msgs{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;margin-bottom:8px;}
-.chat-refinamento .chat-msg{padding:6px 10px;border-radius:7px;font-size:.82rem;line-height:1.4;max-width:88%;}
-.chat-refinamento .chat-msg.usuario{align-self:flex-end;background:var(--accent);color:#fff;}
-.chat-refinamento .chat-msg.assistente{align-self:flex-start;background:var(--light);}
-.chat-refinamento .chat-row{display:flex;gap:8px;}
-.chat-refinamento .chat-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font:inherit;}
-.chat-refinamento .chat-row button{white-space:nowrap;}
-.chat-refinamento .chat-reset{margin-top:6px;background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;text-decoration:underline;padding:0;}
 .doc-chat-modal{max-width:640px;width:min(640px,96vw);max-height:88vh;display:flex;flex-direction:column;padding:20px;}
 .doc-chat-modal h3{margin-bottom:4px;}
 .doc-chat-modal .doc-chat-hint{font-size:.78rem;color:var(--muted);line-height:1.4;margin-bottom:12px;}
@@ -214,8 +205,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .doc-chat-modal .chat-msg.usuario{align-self:flex-end;background:var(--accent);color:#fff;}
 .doc-chat-modal .chat-msg.assistente{align-self:flex-start;background:var(--light);}
 .doc-chat-modal .doc-chat-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:24px 8px;}
-.doc-chat-modal .doc-chat-row{display:flex;gap:8px;align-items:flex-end;}
-.doc-chat-modal .doc-chat-row textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;resize:vertical;min-height:44px;max-height:140px;}
+.doc-chat-modal .doc-chat-row{display:flex;gap:8px;align-items:flex-end;min-width:0;}
+.doc-chat-modal .doc-chat-row textarea{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font:inherit;resize:vertical;min-height:44px;max-height:140px;}
+.doc-chat-modal .doc-chat-row .audio-input-wrap{flex:1;min-width:0;width:auto;}
 .doc-chat-modal .doc-chat-anexo-btn{flex:0 0 40px;width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--accent);cursor:pointer;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;}
 .doc-chat-modal .doc-chat-anexo-btn:hover{background:var(--light);}
 .doc-chat-modal .doc-chat-anexo-btn svg{width:18px;height:18px;display:block;}
@@ -1072,8 +1064,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="preview-img-wrap" id="post-img-wrap" style="margin-top:14px;min-height:220px;">
         <div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>
       </div>
-      <div class="chat-refinamento" id="post-chat" style="display:none"><div class="chat-msgs" id="post-chat-msgs"></div><div class="chat-row"><input id="post-chat-input" placeholder="Ex.: deixa o gancho mais curto, troca o CTA..." onkeydown="if(event.key==='Enter')ajustarPost()"/><button id="post-chat-btn" class="btn-secondary" onclick="ajustarPost()">Ajustar</button></div><button class="chat-reset" onclick="reiniciarChatPost()">Nova conversa</button></div>
       <div class="preview-actions">
+        <button class="btn-primary" onclick="abrirChatPost()">✦ Ajustar com IA</button>
         <button class="btn-primary" onclick="gerarArtePost()">🎨 Gerar arte</button>
         <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
         <button class="btn-secondary" onclick="limparPost()">✕ Limpar</button>
@@ -1088,6 +1080,32 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 </div>
 </div><!-- /page-atividades -->
+
+<!-- Modal chat com IA para elaborar/ajustar posts e artes de Instagram -->
+<div class="modal-overlay" id="post-chat-modal-overlay" onclick="if(event.target===this)fecharChatPost()">
+  <div class="modal doc-chat-modal">
+    <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatPost()">✕</button>
+    <h3>✦ Ajustar com IA</h3>
+    <p class="doc-chat-hint">Converse até o conteúdo ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência.</p>
+    <div class="doc-chat-msgs" id="post-chat-modal-msgs"></div>
+    <div class="doc-chat-anexo-staged" id="post-chat-modal-anexo" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg> <strong id="post-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatPost()" aria-label="Remover anexo">✕</button></div>
+    <div class="doc-chat-anexo-staged" id="post-chat-modal-imagem" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4.5 16.5 4.5-4.5 3 3 4-4.5 5 6"/></svg> <strong id="post-chat-modal-imagem-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerImagemChatPost()" aria-label="Remover imagem">✕</button></div>
+    <div class="doc-chat-row">
+      <input type="file" id="post-chat-modal-file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="selecionarAnexoChatPost(this)"/>
+      <input type="file" id="post-chat-modal-image-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="selecionarImagemChatPost(this)"/>
+      <button type="button" class="doc-chat-anexo-btn" title="Anexar arquivo (PDF, DOCX ou TXT)" onclick="document.getElementById('post-chat-modal-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg></button>
+      <button type="button" class="doc-chat-anexo-btn" title="Anexar imagem de referência" onclick="document.getElementById('post-chat-modal-image-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4.5 16.5 4.5-4.5 3 3 4-4.5 5 6"/></svg></button>
+      <textarea id="post-chat-modal-input" placeholder="Ex.: deixa o gancho mais curto, troca o CTA..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChatPost();}"></textarea>
+      <button class="btn-secondary" id="post-chat-modal-btn" onclick="enviarChatPost()">Enviar</button>
+    </div>
+    <div class="doc-chat-actions">
+      <span class="doc-chat-loading" id="post-chat-modal-loading" style="display:none">Ajustando...</span>
+      <div class="modal-actions" style="margin-left:auto">
+        <button class="btn-secondary" type="button" onclick="reiniciarChatPost()">Nova conversa</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── PÁGINA PRONTUÁRIOS ── -->
 <div class="page" id="page-prontuarios">
@@ -3037,7 +3055,7 @@ async function gerarPost(){
       fonte_tendencia:trendSelecionada?.fonte?.link||''};
     renderPostPreview();
     atualizarUploadFundoPost();
-    reiniciarChatPost();mostrarChatPost();
+    reiniciarChatPost();
     status.textContent='Conteúdo gerado — revise antes de salvar.';
   }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
   finally{btn.disabled=false;}
@@ -3053,22 +3071,59 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').style.display='block';
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-let _postChatHistorico=[];
-function mostrarChatPost(){document.getElementById('post-chat').style.display='block';renderChatPost();}
+let _postChatHistorico=[],_postChatAnexo=null,_postChatImagem=null;
+function abrirChatPost(){
+  if(!_postAtual)return toast('Gere o conteúdo do post primeiro.');
+  document.getElementById('post-chat-modal-overlay').classList.add('open');
+  renderChatPost();
+  setTimeout(()=>document.getElementById('post-chat-modal-input')?.focus(),50);
+}
+function fecharChatPost(){document.getElementById('post-chat-modal-overlay').classList.remove('open');removerAnexoChatPost();removerImagemChatPost();}
 function renderChatPost(){
-  const wrap=document.getElementById('post-chat-msgs');if(!wrap)return;
+  const wrap=document.getElementById('post-chat-modal-msgs');if(!wrap)return;
   // "interno" (o snapshot inicial do conteúdo, em JSON) alimenta o histórico
   // que vai pra API, mas nunca aparece pra psicóloga -- ela não deveria ver
   // código nenhum, só uma conversa. Turnos reais mostram "exibicao" (um
   // resumo humano) quando existir, e caem pro texto puro só como fallback.
-  wrap.innerHTML=_postChatHistorico.filter(h=>!h.interno).map(h=>`<div class="chat-msg ${h.papel}">${escHtml(h.exibicao||h.texto)}</div>`).join('');
+  const visiveis=_postChatHistorico.filter(h=>!h.interno);
+  wrap.innerHTML=visiveis.length?visiveis.map(h=>{
+    const anexo=h.anexoNome?`<div class="doc-chat-msg-anexo">${ICON_ATTACH_INLINE} ${escHtml(h.anexoNome)}</div>`:'';
+    const imagem=h.imagemNome?`<div class="doc-chat-msg-anexo">${ICON_IMAGE_INLINE} ${escHtml(h.imagemNome)}</div>`:'';
+    return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}</div>`;
+  }).join(''):'<div class="doc-chat-empty">Peça um ajuste ao conteúdo gerado, ou anexe um arquivo/imagem de referência.</div>';
   wrap.scrollTop=wrap.scrollHeight;
 }
-function reiniciarChatPost(){_postChatHistorico=[];renderChatPost();}
-async function ajustarPost(){
+function reiniciarChatPost(){_postChatHistorico=[];removerAnexoChatPost();removerImagemChatPost();renderChatPost();}
+async function selecionarAnexoChatPost(input){
+  const file=input.files?.[0];input.value='';if(!file)return;
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(!['pdf','docx','txt'].includes(ext))return toast('Envie um arquivo PDF, DOCX ou TXT.');
+  if(file.size>4*1024*1024)return toast('Arquivo muito grande. Envie um arquivo de até 4MB.');
+  try{
+    const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=()=>reject(new Error('Falha ao ler o arquivo.'));r.readAsDataURL(file);});
+    _postChatAnexo={nome:file.name,base64};
+    document.getElementById('post-chat-modal-anexo-nome').textContent=file.name;
+    document.getElementById('post-chat-modal-anexo').style.display='flex';
+  }catch(e){toast(e.message||'Não foi possível ler o arquivo.');}
+}
+function removerAnexoChatPost(){_postChatAnexo=null;const chip=document.getElementById('post-chat-modal-anexo');if(chip)chip.style.display='none';}
+async function selecionarImagemChatPost(input){
+  const file=input.files?.[0];input.value='';if(!file)return;
+  if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type))return toast('Envie uma imagem PNG, JPEG, WEBP ou GIF.');
+  if(file.size>6*1024*1024)return toast('Imagem muito grande. Envie uma imagem de até 6MB.');
+  try{
+    const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=()=>reject(new Error('Falha ao ler a imagem.'));r.readAsDataURL(file);});
+    _postChatImagem={nome:file.name,tipo:file.type,base64};
+    document.getElementById('post-chat-modal-imagem-nome').textContent=file.name;
+    document.getElementById('post-chat-modal-imagem').style.display='flex';
+  }catch(e){toast(e.message||'Não foi possível ler a imagem.');}
+}
+function removerImagemChatPost(){_postChatImagem=null;const chip=document.getElementById('post-chat-modal-imagem');if(chip)chip.style.display='none';}
+async function enviarChatPost(){
   if(!_postAtual)return;
-  const input=document.getElementById('post-chat-input'),pedido=input.value.trim();if(!pedido)return;
-  const btn=document.getElementById('post-chat-btn');
+  const input=document.getElementById('post-chat-modal-input'),pedido=input.value.trim(),anexo=_postChatAnexo,imagem=_postChatImagem;
+  if(!pedido&&!anexo&&!imagem)return;
+  const btn=document.getElementById('post-chat-modal-btn'),loading=document.getElementById('post-chat-modal-loading');
   if(!_postChatHistorico.length){
     const primeiroPedido=`Tema: ${_postAtual.tema}\nFaixa do ciclo vital: ${_postAtual.faixa||'Ciclo vital'}\nFormato: ${_postAtual.formato}\nPúblico: ${_postAtual.publico}\nContexto/tendência: nenhum`;
     _postChatHistorico.push(
@@ -3076,14 +3131,18 @@ async function ajustarPost(){
       {papel:'assistente',texto:JSON.stringify({titulo:_postAtual.titulo,gancho:_postAtual.gancho,slides:_postAtual.slides,legenda:_postAtual.legenda,hashtags:_postAtual.hashtags,cta:_postAtual.cta}),interno:true}
     );
   }
-  input.disabled=true;if(btn)btn.disabled=true;
+  const pedidoEfetivo=pedido||(anexo?'Considere o conteúdo do arquivo anexado.':'Considere a imagem anexada como referência.');
+  input.disabled=true;btn.disabled=true;loading.style.display='inline';
+  const historicoParaEnviar=[..._postChatHistorico];
+  const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome}:{}),...(imagem?{imagemNome:imagem.nome}:{})};
+  _postChatHistorico.push(turnoUsuario);renderChatPost();
   try{
-    const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:_postChatHistorico,ajuste:pedido})}),d=await r.json();
+    const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:historicoParaEnviar,ajuste:pedidoEfetivo,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
     // texto guarda o JSON bruto (histórico real mandado pra API a cada novo
     // pedido); exibicao é só o que a psicóloga vê -- uma confirmação em
     // linguagem natural, não o objeto de dados por trás da geração.
-    _postChatHistorico.push({papel:'usuario',texto:pedido},{papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Ajustei o texto conforme pedido — veja a prévia atualizada acima.'});
+    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Ajustei o texto conforme pedido — veja a prévia atualizada acima.'});
     const tinhaArte=!!_postAtual.imagens_b64?.length;
     _postAtual={..._postAtual,...d};
     if(tinhaArte){
@@ -3093,10 +3152,13 @@ async function ajustarPost(){
       toast('Texto ajustado — gere a arte novamente para refletir a mudança.');
     }
     renderPostPreview();
-    input.value='';
+    input.value='';removerAnexoChatPost();removerImagemChatPost();
     renderChatPost();
-  }catch(e){toast(e.message||'Não foi possível ajustar o post.');}
-  finally{input.disabled=false;if(btn)btn.disabled=false;}
+  }catch(e){
+    _postChatHistorico.pop();renderChatPost();
+    toast(e.message||'Não foi possível ajustar o post.');
+  }
+  finally{input.disabled=false;btn.disabled=false;loading.style.display='none';document.getElementById('post-chat-modal-input')?.focus();}
 }
 
 const POST_BRAND = {
@@ -3713,7 +3775,7 @@ function abrirRascunhoNoEditor(){
   fecharRascunhoModal();
   const tema=document.getElementById('post-tema'),formato=document.getElementById('post-formato'),publico=document.getElementById('post-publico');
   if(tema)tema.value=p.tema||'';if(formato)formato.value=p.formato||'Post';if(publico)publico.value=p.publico||'Ciclo vital';
-  reiniciarChatPost();const chatEl=document.getElementById('post-chat');if(chatEl)chatEl.style.display='none';
+  reiniciarChatPost();fecharChatPost();
   document.getElementById('post-preview-card').style.display='block';renderPostPreview();renderArtesPost();document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function excluirRascunhoAtual(){
@@ -3741,7 +3803,7 @@ function limparPost(){
   ['post-tema','post-contexto'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('post-preview-card').style.display='none';
   document.getElementById('post-img-wrap').innerHTML='<div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>';
-  reiniciarChatPost();const chatEl=document.getElementById('post-chat');if(chatEl)chatEl.style.display='none';
+  reiniciarChatPost();fecharChatPost();
 }
 
 // ══════════════════════════════════════════════════════════

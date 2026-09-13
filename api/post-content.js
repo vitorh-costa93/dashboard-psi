@@ -2,6 +2,7 @@
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
+import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
 
 // Structured Outputs (json_schema + strict:true) em vez do antigo
 // response_format:{type:'json_object'}: json_object só garante "isto é JSON
@@ -33,10 +34,25 @@ export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
   const apiKey=process.env.OPENAI_KEY;
   if(!apiKey) return res.status(500).json({error:'OPENAI_KEY não configurada no Vercel'});
-  const {tema,formato,publico,contexto,faixa,historico:historicoBruto,ajuste}=req.body||{};
+  const {tema,formato,publico,contexto,faixa,historico:historicoBruto,ajuste,anexo,imagem}=req.body||{};
   if(!tema) return res.status(400).json({error:'Tema obrigatório'});
   if(historicoBruto!==undefined&&!Array.isArray(historicoBruto))return res.status(400).json({error:'Histórico inválido'});
   const historico=(historicoBruto||[]).map(h=>({papel:h?.papel==='assistente'?'assistente':'usuario',texto:String(h?.texto||'').trim().slice(0,4000)})).filter(h=>h.texto).slice(-20);
+  // Anexo (PDF/DOCX/TXT) e/ou imagem de referência que ela sobe no chat de
+  // criação -- mesmo padrão do chat de documentos clínicos (ver
+  // lib/anexo.js), com o adicional de aceitar imagem aqui, já que faz
+  // sentido mostrar uma referência visual pra arte/post (o chat de
+  // documentos clínicos não tem essa necessidade).
+  let anexoTexto=null;
+  if(anexo!=null){
+    try{const extraido=await extrairTextoAnexo(anexo);anexoTexto=`Conteúdo do arquivo enviado (${extraido.nome}):\n"""\n${extraido.texto}\n"""`;}
+    catch(e){if(e instanceof AnexoError)return res.status(e.status).json({error:e.message});throw e;}
+  }
+  let imagemValidada=null;
+  if(imagem!=null){
+    try{imagemValidada=validarImagemAnexo(imagem);}
+    catch(e){if(e instanceof AnexoError)return res.status(e.status).json({error:e.message});throw e;}
+  }
   const system=`Você cria conteúdo para o Instagram de uma psicóloga brasileira que atende todo o ciclo vital: crianças, adolescentes, adultos e idosos.
 Regras gerais: informar e gerar identificação sem diagnóstico individual, prescrição, promessa de resultado, alarmismo ou exposição de pacientes. Linguagem profissional, acolhedora e acessível. Não invente estudos, números ou citações. Quando o tema vier de uma notícia, trate-a como contexto, não como prova clínica.
 
@@ -76,13 +92,16 @@ Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto 
 
 ${PERFIL_JAQUELINE}`;
   const primeiroPedido=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato||'Carrossel'}\nPúblico: ${publico||'público geral'}\nContexto/tendência: ${contexto||'nenhum'}`;
+  const pedidoTextoBase=historico.length?(String(ajuste||'').trim()||primeiroPedido):primeiroPedido;
+  const pedidoTexto=anexoTexto?`${anexoTexto}\n\n${pedidoTextoBase}`:pedidoTextoBase;
+  // Com imagem, o conteúdo do último turno vira multimodal (texto + imagem)
+  // no formato que a Chat Completions API espera pra visão.
+  const ultimoConteudo=imagemValidada
+    ?[{type:'text',text:pedidoTexto},{type:'image_url',image_url:{url:`data:${imagemValidada.tipo};base64,${imagemValidada.base64}`}}]
+    :pedidoTexto;
   const messages=[{role:'system',content:system}];
-  if(historico.length){
-    for(const h of historico)messages.push({role:h.papel==='assistente'?'assistant':'user',content:h.texto});
-    messages.push({role:'user',content:String(ajuste||'').trim()||primeiroPedido});
-  }else{
-    messages.push({role:'user',content:primeiroPedido});
-  }
+  for(const h of historico)messages.push({role:h.papel==='assistente'?'assistant':'user',content:h.texto});
+  messages.push({role:'user',content:ultimoConteudo});
   try{
     // gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI
     // (developers.openai.com/api/docs/models/compare). gpt-5.6-terra (não o

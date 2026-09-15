@@ -111,7 +111,7 @@ export default async function handler(req, res) {
     }
     try {
       const form = new FormData();
-      form.append('model', 'gpt-image-2');
+      form.append('model', IMAGE_MODEL);
       // A OpenAI rejeita duas entradas 'image' repetidas ("Duplicate
       // parameter") -- múltiplas imagens precisam usar a sintaxe de array
       // 'image[]', mesmo quando só uma é enviada.

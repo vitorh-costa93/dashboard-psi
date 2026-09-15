@@ -1777,6 +1777,22 @@ function renderSaldoTable(){
   }).join('');
   marcarSetaOrdenacao('saldo');
 }
+// As tabelas operacionais do Dashboard devem refletir o cadastro atual, não
+// o status que uma sessão antiga carregava quando foi registrada. Assim, uma
+// pessoa inativada (ou pausada) desaparece imediatamente de Pacotes e Faltas,
+// mas seu histórico continua preservado nos demais relatórios.
+function nomesPacientesAtivosNoCadastro(){
+  const cadastrados=Object.values(_pacientesById||{});
+  if(cadastrados.length){
+    return new Set(cadastrados
+      .filter(p=>p.ativo===true&&(p.status_operacional||'ativo')==='ativo')
+      .map(p=>String(p.nome||'').trim())
+      .filter(Boolean));
+  }
+  // Compatibilidade para uma instalação antiga que ainda não consiga buscar
+  // o cadastro: mantém o filtro legado até a próxima sincronização válida.
+  return new Set(_rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
+}
 function processAndRender(){
   const rows=_rows;
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
@@ -1855,7 +1871,7 @@ function processAndRender(){
   renderBar('chart-falta',labels,fltArr,'Flt','#4e553e');
 
   // ── Saldo (badge, formato v1) ──
-  const pacAtivos=new Set(rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
+  const pacAtivos=nomesPacientesAtivosNoCadastro();
   const saldoMap={},horarioMap={};
   rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente;
@@ -1958,7 +1974,8 @@ async function calcularAlertas() {
   });
 
   const ativos={};
-  _rows.filter(r=>r._ativo==='Ativo').forEach(r=>{
+  const pacAtivos=nomesPacientesAtivosNoCadastro();
+  _rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente; if(!k)return;
     if(!ativos[k]) ativos[k]={iniciais:r._iniciais||k,horario:r._horario||'',sessoes:0,comp:0,compras:historicoCompras[k]||[]};
     ativos[k].horario=r._horario||ativos[k].horario;
@@ -3468,12 +3485,9 @@ async function aplicarLogoPost(b64, pageInfo=null){
         ctx.save();
         ctx.font=`500 ${fs}px "DM Sans", sans-serif`;
         ctx.textAlign='left';ctx.textBaseline='middle';
-        const boxW=Math.round(canvas.width*.24),boxH=Math.round(canvas.height*.12);
-        const px0=margin,py0=Math.max(16,py-boxH/2);
-        // Apaga qualquer tentativa da IA de desenhar numeração na zona reservada.
-        // A paginação final é sempre adicionada pelo aplicativo com o mesmo estilo.
-        ctx.fillStyle=POST_BRAND.bg;
-        ctx.fillRect(0,0,Math.round(canvas.width*.29),Math.round(canvas.height*.15));
+        const px0=margin;
+        // A paginação é somente uma camada sobre a arte. Não pintamos nem
+        // apagamos o fundo: a foto/ilustração continua visível por trás dela.
         ctx.fillStyle=POST_BRAND.terracotta;
         ctx.fillText(label,px0,py);
         ctx.strokeStyle=POST_BRAND.oliveSoft;ctx.lineWidth=Math.max(1.4,Math.round(canvas.width*.0016));
@@ -3533,7 +3547,7 @@ async function gerarArtePost(){
     // whole slide SET -- not relevant to a standalone Story image, and its
     // "premium magazine" framing actively fights the casual tone Story needs.
     const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
-    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, light cream and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
+    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, low-detail and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. This reserved area is NOT a light-cream panel, card, patch, faded rectangle or separate background: the same full-bleed photo, illustration, color and texture must continue naturally through it. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. TEXT LEGIBILITY IS NON-NEGOTIABLE: place every text block only where it has strong contrast with the real pixels behind it; use a subtle but clearly visible soft shadow or glow behind every text block; never put white/cream text over a light wall, light screen, pale sky or other light area, and never put dark olive text over a dark area. If a calm high-contrast area is unavailable, reposition the block or add one restrained, tightly fitted semi-opaque highlight behind that block only. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
     const [largura,altura]=imgSize.split('x').map(Number);
     let avisoFallbackFotoMostrado=false;
     // Independente de exemplo "viciado" (o bug da xícara de café era um
@@ -3668,7 +3682,7 @@ async function gerarArtePost(){
         // estilo). O resto do acabamento visual fica por conta do próprio
         // modelo, orientado pela imagem de referência de estilo (anexada no
         // backend em api/gemini.js) em vez de uma lista de regras de CSS.
-        const promptFoto=`You are given two images: the FIRST is the user's own real photo -- preserve the real scene, people, pets and objects clearly recognizable, do not invent a different photo or replace the subject. The SECOND (if present) is a style reference showing the exact design quality and craftsmanship to aim for -- use your own creative judgment to match that level of polish; do not copy its actual content, words or exact colors, only its quality bar. Its script-accented word is just one example of a choice that fit that specific message, not a rule to repeat on every image -- use a script accent only on the rare occasion a specific word truly calls for it, otherwise keep the typography in a single clean style with no highlighted word at all. Add this message as elegant overlay text on the photo, following this legibility priority strictly: (1) DEFAULT -- plain text with a soft drop shadow, no box or shape behind it, for most/all of the text -- pick the text color per block by actually looking at what is behind it: warm cream/white with a dark shadow over a darker part of THIS specific photo, dark olive with a subtle light shadow over a lighter part of it. Study the real photo you were given and decide this per block, never assume the whole photo is dark or light. (2) Only where a block sits over a genuinely busy or high-contrast part of the photo, shrink that block's font first. (3) Only as a last resort, if still not legible, give ONLY that one block a soft semi-opaque highlight sized tightly to it -- never box every block by default, most photos are calm enough for plain text alone. For any accent color you add (a highlight box fill, a small decorative touch), prefer the brand palette -- cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8 -- when it actually works with this photo's real colors; if the photo's own dominant colors clash with that palette, pick instead a small complementary palette that harmonizes with the photo itself rather than forcing a mismatched brand color onto it. It has already been split into exactly ${frasesSlide.length} complete sentence${frasesSlide.length===1?'':'s'} for you, listed below in order: ${listaFrases}. This split is final -- do not merge them, do not reorder, add or remove any, and critically: do NOT break any of these sentences further into smaller pieces, and never fragment word-by-word -- that reads as broken and amateurish. Each listed sentence, however long, stays together as ONE single text block (it can wrap onto multiple lines within that one block, that's fine -- it just can never be torn apart into several separate blocks). Spread these ${frasesSlide.length} block${frasesSlide.length===1?'':'s'} across different calm, uncluttered parts of the frame (never one single paragraph block, never covering faces or busy textures). ${coverRule} ${safeZones}${zonaContador} ${antiClicheSaudeMental} Make it a genuine, professional Instagram ${isStory?'Story':isCarousel?'carousel slide':'post'} for a Brazilian psychologist -- warm and human, never a generic AI template. No mockups, no Instagram UI, no device frames, no fabricated logos, handles or watermarks.`;
+        const promptFoto=`You are given two images: the FIRST is the user's own real photo -- preserve the real scene, people, pets and objects clearly recognizable, do not invent a different photo or replace the subject. The SECOND (if present) is a style reference showing the exact design quality and craftsmanship to aim for -- use your own creative judgment to match that level of polish; do not copy its actual content, words or exact colors, only its quality bar. Its script-accented word is just one example of a choice that fit that specific message, not a rule to repeat on every image -- use a script accent only on the rare occasion a specific word truly calls for it, otherwise keep the typography in a single clean style with no highlighted word at all. Add this message as elegant overlay text on the photo. TEXT LEGIBILITY IS THE FIRST PRIORITY AND IS NON-NEGOTIABLE: inspect the actual pixels beneath EACH text block before choosing its color and position. Every block must have strong contrast plus a subtle but clearly visible soft drop shadow/glow. Use warm cream/white text with a dark shadow only over genuinely dark areas; use dark olive text with a light shadow only over genuinely light areas. Never put light text on a light wall, pale screen, pale sky or bright face; never put dark text on a dark screen, hair, shadow or dark object. If no calm high-contrast area exists, move the text first; if that still fails, use one restrained semi-opaque highlight fitted tightly behind only that block. Do not sacrifice readability for visual minimalism. For any accent color you add (a highlight box fill, a small decorative touch), prefer the brand palette -- cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8 -- when it actually works with this photo's real colors; if the photo's own dominant colors clash with that palette, pick instead a small complementary palette that harmonizes with the photo itself rather than forcing a mismatched brand color onto it. It has already been split into exactly ${frasesSlide.length} complete sentence${frasesSlide.length===1?'':'s'} for you, listed below in order: ${listaFrases}. This split is final -- do not merge them, do not reorder, add or remove any, and critically: do NOT break any of these sentences further into smaller pieces, and never fragment word-by-word -- that reads as broken and amateurish. Each listed sentence, however long, stays together as ONE single text block (it can wrap onto multiple lines within that one block, that's fine -- it just can never be torn apart into several separate blocks). Spread these ${frasesSlide.length} block${frasesSlide.length===1?'':'s'} across different calm, uncluttered parts of the frame (never one single paragraph block, never covering faces or busy textures). ${coverRule} ${safeZones}${zonaContador} ${antiClicheSaudeMental} Make it a genuine, professional Instagram ${isStory?'Story':isCarousel?'carousel slide':'post'} for a Brazilian psychologist -- warm and human, never a generic AI template. No mockups, no Instagram UI, no device frames, no fabricated logos, handles or watermarks.`;
         try{
           const editado=await gerarImagemEdicao(fotoDoSlide,promptFoto,imgSize);
           finalB64=await aplicarLogoPost(editado,isCarousel?{current:i+1,total}:null);

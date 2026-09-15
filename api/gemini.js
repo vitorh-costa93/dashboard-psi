@@ -8,6 +8,9 @@ import { fetchComRetentativa } from './_openai-retry.js';
 // Story image still came out perfectly square before because this was
 // hardcoded to 1024x1024 regardless of what the prompt asked for.
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
+// GPT Image 2.5 Flare entrega geração cotidiana rápida e de alta qualidade,
+// apropriada para o fluxo recorrente de posts e stories.
+const IMAGE_MODEL = 'gpt-image-2.5-flare';
 
 // AbortError vira "This operation was aborted" (ou variações) na mensagem
 // crua do Node/undici -- ilegível pra quem está usando o app. Reportado ao
@@ -63,7 +66,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-image-2',
+          model: IMAGE_MODEL,
           prompt,
           n: 1,
           size: finalSize,
@@ -83,7 +86,7 @@ export default async function handler(req, res) {
       }, {tentativas: 0, timeoutMs: 90000});
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2' });
+        return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2.5' });
       }
       const b64 = await extrairB64(await r.json());
       if (!b64) return res.status(500).json({ error: 'Nenhuma imagem retornada' });

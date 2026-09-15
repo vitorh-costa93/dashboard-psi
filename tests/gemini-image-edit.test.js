@@ -74,7 +74,7 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   await gemini(req, res);
   assert.equal(res.code, 200);
   assert.equal(res.body.b64, 'RESULTADO_B64');
-  assert.equal(capturedForm.get('model'), 'gpt-image-2');
+  assert.equal(capturedForm.get('model'), 'gpt-image-2.5-flare');
   assert.equal(capturedForm.get('size'), '1024x1536');
   assert.equal(capturedForm.get('n'), '1');
   assert.equal(capturedForm.get('quality'), 'medium');
@@ -106,7 +106,7 @@ test('type=image (geração normal) continua funcionando', async () => {
   global.fetch = authFetchStub(async (url, options) => {
     assert.equal(url, 'https://api.openai.com/v1/images/generations');
     const body = JSON.parse(options.body);
-    assert.equal(body.model, 'gpt-image-2');
+    assert.equal(body.model, 'gpt-image-2.5-flare');
     assert.equal(body.prompt, 'Um prompt qualquer');
     assert.equal(body.quality, 'medium');
     return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'GERADO_B64'}]})};

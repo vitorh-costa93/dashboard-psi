@@ -100,6 +100,12 @@ Os controles administrativos ficam ao final da página de Prontuários, sem alte
 - Migrações e importadores devem ser repetíveis e não destrutivos.
 - Atualize este documento quando houver mudança arquitetural, nova integração, alteração de schema ou avanço de fase do roadmap.
 
+## Geração de imagens — GPT Image 2.5 (15/09/2026)
+
+- A rota autenticada `/api/gemini` usa a Image API da OpenAI com o modelo `gpt-image-2.5-flare` tanto para geração quanto para edição de fotos próprias. A escolha prioriza velocidade e qualidade para o fluxo recorrente de posts; a qualidade permanece `medium`, preservando a decisão de custo anterior.
+- A paginação do carrossel é uma camada transparente aplicada pelo aplicativo: ela não apaga nem cria um bloco de fundo sobre a arte.
+- Os prompts de geração e edição passaram a tratar legibilidade como requisito não negociável: contraste por bloco, sombra/glow visível e destaque localizado somente quando necessário.
+
 ## Padronização dos documentos clínicos
 
 Na correção visual de 20/08/2026, os documentos passaram a exibir datas no padrão brasileiro, inclusive ao abrir registros antigos que ainda contenham datas ISO. O seletor de paciente define somente a pasta de armazenamento; o nome completo que aparece no documento é informado em campo próprio e obrigatório.

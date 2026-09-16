@@ -121,7 +121,7 @@ export default async function handler(req, res) {
       try {
         const refBuffer = await readFile(REFERENCIA_ESTILO_PATH);
         form.append('image[]', new Blob([refBuffer], { type: 'image/jpeg' }), 'referencia-estilo.jpg');
-        promptFinal = `You are given two images. The FIRST image is the user's own real photo -- this is the actual scene/subject to preserve, edit and add text onto, exactly as instructed below. The SECOND image is ONLY a style and craftsmanship reference showing the target quality bar for how text labels, typography pairing, spacing and small decorative accents should look -- do NOT copy its actual photo, its specific words, its exact colors, or any of its content; take from it only the general design language and level of polish. ${prompt}`;
+        promptFinal = `You are given two images. The FIRST image is the user's own real photo -- this is the actual scene/subject to preserve and edit exactly as instructed below. The SECOND image is ONLY a style and craftsmanship reference showing the target quality bar for composition, spacing and small decorative accents -- do NOT copy its actual photo, its specific words, its exact colors, or any of its content; take from it only the general design language and level of polish. ${prompt}`;
       } catch {
         // Se o arquivo de referência não puder ser lido por algum motivo,
         // segue com a edição de uma imagem só -- não é motivo pra falhar a

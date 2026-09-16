@@ -3587,10 +3587,15 @@ async function gerarArtePost(){
       const fotoDoSlide=fonteFundo==='upload'?(_fotosFundo.porSlide?.[i]||_fotosFundo.unica):null;
       let finalB64;
       if(fotoDoSlide){
-        // Foto fornecida: o modelo de imagem não recebe o texto, portanto
-        // não pode posicioná-lo sobre pessoas nem confundir instruções com a
-        // arte. A composição acontece inteiramente no aplicativo.
-        const composto=await desenharFundoComTexto(fotoDoSlide,slides[i],largura,altura);
+        // A experiência para foto enviada continua criativa: o modelo recebe
+        // a foto e o TEMA para criar uma nova direção visual. A cópia do
+        // post, porém, fica exclusivamente no canvas do app; assim nenhuma
+        // instrução ou texto de trabalho pode vazar para a arte.
+        const promptFoto=`Transform the user's real photo into a refined, original Instagram editorial visual for a Brazilian psychologist. Creative theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Preserve any real person, face, pet and meaningful object clearly recognizable; do not replace the person, fabricate a different person, or turn the photo into a generic stock scene. Use the theme to add subtle, sophisticated visual direction through light, color harmony, restrained botanical or contextual details, and editorial composition that genuinely responds to this photo. Reserve the left-middle column (approximately 5% to 47% width, 27% to 78% height) as a calm, low-detail continuous part of the scene for text the application will add later; it must have no face, hands, important object, dense texture, hard shadow or focal point. Keep the top-center brand zone and top-left counter zone similarly calm. CRITICAL: render absolutely no words, letters, numbers, captions, quotes, logos, watermarks, UI, instructions, placeholder text or typography anywhere in the output. The application adds the exact text, logo and page counter afterwards.`;
+        let fundoCriativo=fotoDoSlide;
+        try{fundoCriativo=await gerarImagemEdicao(fotoDoSlide,promptFoto,imgSize);}
+        catch(e){toast(`Não foi possível criar a variação visual do slide ${i+1} (${e.message}); a foto original será usada.`);}
+        const composto=await desenharFundoComTexto(fundoCriativo,slides[i],largura,altura);
         finalB64=await aplicarLogoPost(composto,isCarousel?{current:i+1,total}:null);
       }else{
         if(fonteFundo==='upload' && !avisoFallbackFotoMostrado){

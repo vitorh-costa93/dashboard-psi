@@ -89,6 +89,7 @@ test('image-edit monta multipart com model/prompt/size/image e retorna b64', asy
   assert.equal(imagens.length, 2);
   assert.equal(imagens[1].name, 'referencia-estilo.jpg');
   assert.ok(capturedForm.get('prompt').includes('SECOND image is ONLY a style'));
+  assert.doesNotMatch(capturedForm.get('prompt'),/add text onto/);
 });
 
 test('image-edit propaga erro da OpenAI com a mensagem original', async () => {

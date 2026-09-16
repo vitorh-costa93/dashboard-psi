@@ -106,6 +106,7 @@ Os controles administrativos ficam ao final da página de Prontuários, sem alte
 - A paginação do carrossel é uma camada transparente aplicada pelo aplicativo: ela não apaga nem cria um bloco de fundo sobre a arte.
 - Os prompts de geração e edição passaram a tratar legibilidade como requisito não negociável: contraste por bloco, sombra/glow visível e destaque localizado somente quando necessário.
 - Carrosséis usam de 4 a 10 páginas conforme a profundidade do assunto; sete não é uma quantidade padrão. A imagem reserva, sem tarja ou painel, uma zona contínua e calma no canto superior esquerdo para o contador aplicado pelo aplicativo. Como salvaguarda, o contador adapta sua cor e recebe contorno tipográfico ao contraste real da arte.
+- Quando o fundo é uma foto enviada, a IA não recebe o texto nem instruções de layout. O aplicativo preserva a foto e desenha a cópia final em uma superfície editorial de leitura, com fonte real, quebra calculada e a área central/direita livre para o sujeito da imagem.
 
 ## Padronização dos documentos clínicos
 

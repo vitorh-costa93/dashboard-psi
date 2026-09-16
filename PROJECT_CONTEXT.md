@@ -190,3 +190,11 @@ Na nova UI, somente a PSM infantil passou a usar a identidade visual lúdica “
 ### Observação sobre retenção de prontuários
 
 A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `anamneses_versoes` do paciente. O Conselho Federal de Psicologia recomenda guarda de prontuários por período mínimo (a psicóloga deve confirmar o prazo aplicável ao seu caso). Esta função existe porque foi pedida explicitamente, mas vale considerar usar a inativação (reversível) como padrão e reservar a exclusão definitiva para casos excepcionais (ex.: cadastro duplicado, pedido do próprio paciente).
+
+## Agenda — saldos, cadastro e Anamnese online (16/09/2026)
+
+- A migration `20260916110000_patient_profile_fields.sql` acrescenta data de nascimento e responsável ao cadastro, sem alterar o identificador permanente nem o histórico clínico.
+- A migration `20260916120000_patient_session_movements.sql` registra ajustes administrativos de saldo de forma auditável. Ao inativar um paciente, uma movimentação compensatória zera tanto crédito quanto débito sem apagar sessões. Transferências entre pacientes geram duas movimentações correlatas e preservam o histórico de ambas as partes.
+- A tela de edição do paciente só oferece “Compartilhar sessão restante” quando o saldo derivado é positivo; o servidor calcula e valida o saldo novamente dentro da função transacional.
+- A Agenda oferece um salvamento único para todas as linhas preenchidas da tabela, preservando a liquidação transacional já existente por atendimento.
+- A sub-aba Anamnese agora pode criar modelo e link externo próprios. O convite continua de uso único, expira em 72 horas e a resposta permanece pendente de revisão antes de gerar uma versão da anamnese.

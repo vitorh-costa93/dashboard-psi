@@ -105,6 +105,7 @@ Os controles administrativos ficam ao final da página de Prontuários, sem alte
 - A rota autenticada `/api/gemini` usa a Image API da OpenAI com o modelo `gpt-image-2.5-flare` tanto para geração quanto para edição de fotos próprias. A escolha prioriza velocidade e qualidade para o fluxo recorrente de posts; a qualidade permanece `medium`, preservando a decisão de custo anterior.
 - A paginação do carrossel é uma camada transparente aplicada pelo aplicativo: ela não apaga nem cria um bloco de fundo sobre a arte.
 - Os prompts de geração e edição passaram a tratar legibilidade como requisito não negociável: contraste por bloco, sombra/glow visível e destaque localizado somente quando necessário.
+- Carrosséis usam de 4 a 10 páginas conforme a profundidade do assunto; sete não é uma quantidade padrão. A imagem reserva, sem tarja ou painel, uma zona contínua e calma no canto superior esquerdo para o contador aplicado pelo aplicativo. Como salvaguarda, o contador adapta sua cor e recebe contorno tipográfico ao contraste real da arte.
 
 ## Padronização dos documentos clínicos
 

@@ -17,7 +17,7 @@ const POST_SCHEMA = {
     properties: {
       titulo: {type: 'string'},
       gancho: {type: 'string'},
-      slides: {type: 'array', items: {type: 'string'}, minItems: 1, maxItems: 8},
+      slides: {type: 'array', items: {type: 'string'}, minItems: 1, maxItems: 10},
       legenda: {type: 'string'},
       // maxItems 5: nunca o "bloco de 20-30 hashtags" -- ver regra de
       // dimensionamento (2-3 nicho + 1-2 médias + 0-1 ampla) no system prompt.
@@ -88,7 +88,7 @@ Retorne APENAS JSON válido:
   "hashtags":["#..."],
   "cta":"..."
 }
-Para CARROSSEL, gere entre 4 e 8 itens em "slides" (um por imagem) — o quanto o tema realmente sustentar de conteúdo com continuidade conceitual; nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.
+Para CARROSSEL, escolha a quantidade exata entre 4 e 10 itens em "slides" (um por imagem) segundo a profundidade real do tema e o arco narrativo. Sete não é um padrão nem uma meta: use menos quando a mensagem se encerra com consistência e use 9 ou 10 quando o assunto precisa de mais desenvolvimento. Nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.
 
 ${PERFIL_JAQUELINE}`;
   const primeiroPedido=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato||'Carrossel'}\nPúblico: ${publico||'público geral'}\nContexto/tendência: ${contexto||'nenhum'}`;

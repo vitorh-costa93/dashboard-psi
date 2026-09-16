@@ -3488,9 +3488,22 @@ async function aplicarLogoPost(b64, pageInfo=null){
         const px0=margin;
         // A paginação é somente uma camada sobre a arte. Não pintamos nem
         // apagamos o fundo: a foto/ilustração continua visível por trás dela.
-        ctx.fillStyle=POST_BRAND.terracotta;
-        ctx.fillText(label,px0,py);
-        ctx.strokeStyle=POST_BRAND.oliveSoft;ctx.lineWidth=Math.max(1.4,Math.round(canvas.width*.0016));
+        // A zona já é reservada no prompt, mas o contraste é calculado de
+        // novo aqui para que uma geração que descumpra a reserva nunca torne
+        // o indicador ilegível. O contorno acompanha a letra, não vira tarja.
+        const counterSample=ctx.getImageData(
+          Math.max(0,Math.round(px0-fs*.3)),Math.max(0,Math.round(py-fs*.85)),
+          Math.min(canvas.width-Math.max(0,Math.round(px0-fs*.3)),Math.round(fs*4.8)),
+          Math.min(canvas.height-Math.max(0,Math.round(py-fs*.85)),Math.round(fs*1.75))
+        ).data;
+        let counterLum=0,counterCount=0;
+        for(let i=0;i<counterSample.length;i+=4*7){counterLum+=(.2126*counterSample[i]+.7152*counterSample[i+1]+.0722*counterSample[i+2])/255;counterCount++;}
+        const counterUseLight=(counterLum/Math.max(counterCount,1))<.55;
+        ctx.lineJoin='round';ctx.lineWidth=Math.max(1.6,Math.round(fs*.09));
+        ctx.strokeStyle=counterUseLight?'rgba(37,42,29,.78)':'rgba(245,241,232,.9)';
+        ctx.fillStyle=counterUseLight?POST_BRAND.logoWhite:POST_BRAND.terracotta;
+        ctx.strokeText(label,px0,py);ctx.fillText(label,px0,py);
+        ctx.strokeStyle=counterUseLight?'rgba(37,42,29,.7)':POST_BRAND.oliveSoft;ctx.lineWidth=Math.max(1.4,Math.round(canvas.width*.0016));
         ctx.beginPath();ctx.moveTo(px0,py+fs*.7);ctx.lineTo(px0+fs*.95,py+fs*.7);ctx.stroke();
         ctx.restore();
       }
@@ -3515,8 +3528,8 @@ async function gerarArtePost(){
   const isCarousel=formato.toLowerCase()==='carrossel';
   const isStory=formato.toLowerCase()==='story';
   const imgSize=isStory?'1024x1536':'1024x1024';
-  const slides=isCarousel?(_postAtual.slides||[]).slice(0,8):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
-  if(isCarousel && (slides.length<4 || slides.length>8)){toast('O carrossel precisa ter entre 4 e 8 slides. Gere o conteúdo novamente.');return;}
+  const slides=isCarousel?(_postAtual.slides||[]).slice(0,10):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
+  if(isCarousel && (slides.length<4 || slides.length>10)){toast('O carrossel precisa ter entre 4 e 10 slides. Gere o conteúdo novamente.');return;}
   const fonteFundo=document.getElementById('post-fundo')?.value||'ia';
   if(fonteFundo==='upload' && !_fotosFundo.unica && !(_fotosFundo.porSlide||[]).some(Boolean)){
     toast('Envie ao menos uma foto ou volte para "Gerado por IA".');
@@ -3547,7 +3560,8 @@ async function gerarArtePost(){
     // whole slide SET -- not relevant to a standalone Story image, and its
     // "premium magazine" framing actively fights the casual tone Story needs.
     const safeZones=`Keep the top-center 12% of the canvas calm, low-detail and completely free of text, numbers, logos or decorative shapes because the application places the brand logo there afterwards (its color adapts to whatever is behind it, so this area does not need to be light or empty of photo content -- just free of competing text/graphics). Do NOT add an artificial blur, vignette, gradient fade or haze there -- keep the photo sharp and continuous through that area, just visually calm/uncluttered. NEVER render any page number, slide number, counter, logo, watermark, Instagram handle or credentials.`;
-    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} Keep the top-left 14% of the canvas calm, low-detail and completely free of numbers, labels, badges, icons and decorative marks because the application places the fixed page counter there. This reserved area is NOT a light-cream panel, card, patch, faded rectangle or separate background: the same full-bleed photo, illustration, color and texture must continue naturally through it. Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. TEXT LEGIBILITY IS NON-NEGOTIABLE: place every text block only where it has strong contrast with the real pixels behind it; use a subtle but clearly visible soft shadow or glow behind every text block; never put white/cream text over a light wall, light screen, pale sky or other light area, and never put dark olive text over a dark area. If a calm high-contrast area is unavailable, reposition the block or add one restrained, tightly fitted semi-opaque highlight behind that block only. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
+    const zonaPaginacao=`For carousel images, reserve one exact quiet counter zone in the upper-left: from 3% to 25% of canvas width and from 3% to 15% of canvas height. This is a hard composition constraint, not a suggestion. Keep it free of all focal content: no leaves, stems, plants, hands, faces, furniture edges, objects, shadows with hard contrast, text, icons, patterns, or decorative marks. The background in that exact area must be a single calm, low-detail, evenly lit continuation of the full-bleed scene, with enough visual breathing room to read a small terracotta page number. Do not create a card, patch, pale rectangle, vignette, fade, blur, or separate background there; the image remains continuous and sharp edge-to-edge.`;
+    const identidade=`Brand system for the ENTIRE set: fixed palette only — cream #F5F1E8, deep olive #4E553E, sage #899776, terracotta #B86A49, sand #D9CDB8. Use the same color language on every image; do not switch the dominant background hue between slides. Prefer cream #F5F1E8 as the dominant background across the whole set, with sage/olive and restrained terracotta accents. ${safeZones} ${zonaPaginacao} Use the same typography family across all slides: Playfair Display for headings and DM Sans for body text. TEXT LEGIBILITY IS NON-NEGOTIABLE: place every text block only where it has strong contrast with the real pixels behind it; use a subtle but clearly visible soft shadow or glow behind every text block; never put white/cream text over a light wall, light screen, pale sky or other light area, and never put dark olive text over a dark area. If a calm high-contrast area is unavailable, reposition the block or add one restrained, tightly fitted semi-opaque highlight behind that block only. Favor a light, delicate overall feel — thin linework, soft watercolor botanical accents (never bold geometric shapes or heavy filled blocks); avoid anything that reads as a generic modern "SaaS/AI-generated" template (no icon badges in colored pill shapes, no rounded-card grids, no bold gradient blobs). The composition must fill the ENTIRE square edge to edge with color, texture or photo — background color/photo touching all four borders with zero margin, NOT a bordered card or panel floating inside a larger empty background (the reserved logo/counter zones stay calm as instructed above, but they are still part of the same full-bleed surface, not a frame around it). All text should use deep olive as the default text color and terracotta only as a restrained accent; never use white text on cream. For internal carousel slides, do not repeat the main post title and do not invent any additional headline; only present the specific message supplied for that slide.`;
     const [largura,altura]=imgSize.split('x').map(Number);
     let avisoFallbackFotoMostrado=false;
     // Independente de exemplo "viciado" (o bug da xícara de café era um
@@ -3668,7 +3682,7 @@ async function gerarArtePost(){
         // equivalente ao que uma geração do zero produziria. Reserva as
         // mesmas zonas de logo/paginação; a marca em si é sempre desenhada
         // depois pelo app, nunca pela IA.
-        const zonaContador=isCarousel?` Keep the top-left 14% of the frame calm, low-detail and completely free of numbers, labels, badges, icons or decorative marks because the application places a fixed page counter there afterwards.`:'';
+        const zonaContador=isCarousel?` ${zonaPaginacao}`:'';
         // frasesSlide/listaFrases já calculadas acima (compartilhadas com o
         // coverRule do caminho 100% IA, que tem o mesmo problema de
         // fragmentação de frase).

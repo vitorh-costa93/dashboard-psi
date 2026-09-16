@@ -158,7 +158,7 @@ test('historico trunca para os ultimos 20 turnos', async () => {
   assert.equal(capturedBody.messages.length, 22); // 1 system + 20 turnos + 1 user (novo pedido)
 });
 
-test('system prompt inclui as regras de humanizacao e o limite de 5 hashtags no schema', async () => {
+test('system prompt inclui as regras de humanizacao, paginação variável e o limite de 5 hashtags no schema', async () => {
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
@@ -188,7 +188,9 @@ test('system prompt inclui as regras de humanizacao e o limite de 5 hashtags no 
   assert.ok(systemMsg.includes('HUMANO'), 'deve trazer a secao de regras anti-tom-de-IA');
   assert.ok(systemMsg.includes('travessão'));
   assert.ok(systemMsg.includes('3 a 5 tags'));
+  assert.ok(systemMsg.includes('Sete não é um padrão nem uma meta'));
   assert.equal(capturedBody.response_format.json_schema.schema.properties.hashtags.maxItems, 5);
+  assert.equal(capturedBody.response_format.json_schema.schema.properties.slides.maxItems, 10);
 });
 
 test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async () => {

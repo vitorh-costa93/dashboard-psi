@@ -23,6 +23,8 @@ test('agenda exposes the requested patient and batch-saving controls', async () 
   assert.match(html, />\+ Novo paciente</);
   assert.match(html, /agenda-section-wrap/);
   assert.match(html, /@media\(max-width:1120px\)/);
+  assert.match(html, /agenda-table th:nth-child\(3\)/);
+  assert.match(html, /overflow-x:hidden/);
   assert.match(html, /id="perfil-transfer-wrap"/);
   assert.match(html, /transferirSessoesPerfil/);
   assert.match(html, /salvarAlteracoesAgenda/);

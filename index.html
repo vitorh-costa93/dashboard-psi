@@ -537,6 +537,14 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
    para deixar a área de atendimentos com largura total. */
 #page-agenda .agenda-layout{grid-template-columns:minmax(210px,240px) minmax(0,1fr)}
 @media(max-width:1120px){#page-agenda .agenda-layout{grid-template-columns:1fr}}
+/* Mantém a coluna de paciente compacta e a lista lateral sem rolagem horizontal. */
+#page-agenda .agenda-table th:nth-child(3),#page-agenda .agenda-table td:nth-child(3){width:112px;max-width:112px;white-space:normal;overflow-wrap:anywhere;}
+#page-agenda .agenda-table td:nth-child(3) strong{display:block;overflow-wrap:anywhere;}
+#page-agenda .agenda-patient-list{overflow-y:auto;overflow-x:hidden;}
+#page-agenda .agenda-patient{width:100%;box-sizing:border-box;min-width:0;overflow:hidden;}
+#page-agenda .agenda-patient>div:first-child{flex:1;min-width:0;}
+#page-agenda .agenda-patient-name,#page-agenda .agenda-patient-meta{overflow-wrap:anywhere;}
+#page-agenda .agenda-patient .btn-xs{flex:0 0 auto;}
 </style>
 </head>
 <body>

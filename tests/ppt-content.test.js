@@ -54,7 +54,7 @@ test('monta a chamada com gpt-5.6-terra, sem temperature, e schema estrito', asy
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
     assert.equal(url, 'https://api.openai.com/v1/chat/completions');
-    capturedBody = JSON.parse(options.body);
+    if (url.includes('/v1/chat/completions')) capturedBody = JSON.parse(options.body);
     return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
   });
   const req = baseReq({descricao: 'Uma apresentação sobre emoções', publico: 'criança', tema: 'emoções'});
@@ -71,7 +71,7 @@ test('monta a chamada com gpt-5.6-terra, sem temperature, e schema estrito', asy
 test('o system prompt inclui o perfil da Jaqueline', async () => {
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
-    capturedBody = JSON.parse(options.body);
+    if (url.includes('/v1/chat/completions')) capturedBody = JSON.parse(options.body);
     return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
   });
   const req = baseReq({descricao: 'Uma apresentação sobre emoções'});
@@ -93,7 +93,7 @@ test('descricao ausente retorna 400 sem chamar a OpenAI', async () => {
 test('com historico, messages inclui os turnos anteriores antes do novo pedido', async () => {
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
-    capturedBody = JSON.parse(options.body);
+    if (url.includes('/v1/chat/completions')) capturedBody = JSON.parse(options.body);
     return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
   });
   const historico = [
@@ -122,7 +122,7 @@ test('historico malformado retorna 400', async () => {
 test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async () => {
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
-    capturedBody = JSON.parse(options.body);
+    if (url.includes('/v1/chat/completions')) capturedBody = JSON.parse(options.body);
     return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify(conteudoValido)}}]})};
   });
   const anexo = {nome: 'plano-de-aula.txt', base64: Buffer.from('Conteudo do plano de aula sobre emocoes.', 'utf8').toString('base64')};

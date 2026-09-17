@@ -3,6 +3,7 @@ import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
+import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
 
 // Structured Outputs (json_schema + strict:true) em vez do antigo
 // response_format:{type:'json_object'}: json_object só garante "isto é JSON
@@ -30,7 +31,7 @@ const POST_SCHEMA = {
 };
 
 export default async function handler(req,res){
-  if (!await requireAuth(req, res)) return;
+  const user=await requireAuth(req, res);if(!user)return;
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
   const apiKey=process.env.OPENAI_KEY;
   if(!apiKey) return res.status(500).json({error:'OPENAI_KEY não configurada no Vercel'});
@@ -91,6 +92,11 @@ Retorne APENAS JSON válido:
 Para CARROSSEL, escolha a quantidade exata entre 4 e 10 itens em "slides" (um por imagem) segundo a profundidade real do tema e o arco narrativo. Sete não é um padrão nem uma meta: use menos quando a mensagem se encerra com consistência e use 9 ou 10 quando o assunto precisa de mais desenvolvimento. Nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.
 
 ${PERFIL_JAQUELINE}`;
+  // Aprendizado contínuo (mesmo mecanismo de lib/documents.js): lê o que já
+  // foi aprendido com pedidos de ajuste anteriores e embute no fim do
+  // system prompt, mais perto da geração em si.
+  const preferenciaAprendida=await buscarPreferenciaTexto('posts');
+  const systemComAprendizado=preferenciaAprendida?`${system}\n\nObservações de estilo já aprendidas com esta psicóloga em conversas anteriores (aplique com prioridade alta, junto com as regras acima):\n${preferenciaAprendida}`:system;
   const primeiroPedido=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato||'Carrossel'}\nPúblico: ${publico||'público geral'}\nContexto/tendência: ${contexto||'nenhum'}`;
   const pedidoTextoBase=historico.length?(String(ajuste||'').trim()||primeiroPedido):primeiroPedido;
   const pedidoTexto=anexoTexto?`${anexoTexto}\n\n${pedidoTextoBase}`:pedidoTextoBase;
@@ -99,7 +105,7 @@ ${PERFIL_JAQUELINE}`;
   const ultimoConteudo=imagemValidada
     ?[{type:'text',text:pedidoTexto},{type:'image_url',image_url:{url:`data:${imagemValidada.tipo};base64,${imagemValidada.base64}`}}]
     :pedidoTexto;
-  const messages=[{role:'system',content:system}];
+  const messages=[{role:'system',content:systemComAprendizado}];
   for(const h of historico)messages.push({role:h.papel==='assistente'?'assistant':'user',content:h.texto});
   messages.push({role:'user',content:ultimoConteudo});
   try{
@@ -120,6 +126,11 @@ ${PERFIL_JAQUELINE}`;
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;
     if(!content) return res.status(500).json({error:'Nenhum conteúdo retornado'});
+    // Só quando é um AJUSTE dentro de uma conversa (não a primeira geração
+    // de um post, que é sempre específica do tema/tendência escolhidos).
+    if(historico.length){
+      await aprenderComAjusteChat({contexto:'posts',pedido:String(ajuste||'').trim(),atual:preferenciaAprendida,key:apiKey,autorId:user?.id});
+    }
     return res.status(200).json(JSON.parse(content));
   }catch(e){return res.status(500).json({error:e.message});}
 }

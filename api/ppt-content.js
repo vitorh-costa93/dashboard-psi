@@ -6,10 +6,11 @@
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
-import { extrairTextoAnexo, AnexoError } from '../lib/anexo.js';
+import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
+import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
 
 export default async function handler(req, res) {
-  if (!await requireAuth(req, res)) return;
+  const user=await requireAuth(req, res);if(!user)return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -19,7 +20,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'OPENAI_KEY não configurada no Vercel' });
   }
 
-  const { descricao, publico, tema, historico: historicoBruto, ajuste, anexo } = req.body;
+  const { descricao, publico, tema, historico: historicoBruto, ajuste, anexo, imagem } = req.body;
   if (!descricao) {
     return res.status(400).json({ error: 'Descrição obrigatória' });
   }
@@ -28,6 +29,11 @@ export default async function handler(req, res) {
   let anexoTexto=null;
   if(anexo!=null){
     try{const extraido=await extrairTextoAnexo(anexo);anexoTexto=`Conteúdo do arquivo enviado (${extraido.nome}):\n"""\n${extraido.texto}\n"""`;}
+    catch(e){if(e instanceof AnexoError)return res.status(e.status).json({error:e.message});throw e;}
+  }
+  let imagemValidada=null;
+  if(imagem!=null){
+    try{imagemValidada=validarImagemAnexo(imagem);}
     catch(e){if(e instanceof AnexoError)return res.status(e.status).json({error:e.message});throw e;}
   }
 
@@ -40,12 +46,19 @@ Entregue sempre uma proposta pronta pra aplicar no consultório, com aplicabilid
 Se a mensagem do usuário pedir um AJUSTE sobre uma apresentação já gerada (você verá o conteúdo anterior no histórico da conversa), reescreva o objeto JSON inteiro aplicando o que foi pedido e mantendo tudo o que não foi pedido para mudar.
 
 ${PERFIL_JAQUELINE}`;
+  const preferenciaAprendida=await buscarPreferenciaTexto('apresentacoes');
+  const systemComAprendizado=preferenciaAprendida?`${systemPrompt}\n\nObservações de estilo já aprendidas com esta psicóloga em conversas anteriores (aplique com prioridade alta, junto com as regras acima):\n${preferenciaAprendida}`:systemPrompt;
 
   const primeiroPedido = `Público: ${publico || 'paciente'}
 Tema: ${tema || 'geral'}
 Descrição do que a psicóloga quer na apresentação: ${descricao}`;
   const pedidoTextoBase = historico.length ? (String(ajuste || '').trim() || primeiroPedido) : primeiroPedido;
-  const userPrompt = anexoTexto ? `${anexoTexto}\n\n${pedidoTextoBase}` : pedidoTextoBase;
+  const pedidoTexto = anexoTexto ? `${anexoTexto}\n\n${pedidoTextoBase}` : pedidoTextoBase;
+  // Com imagem de referência, o conteúdo do último turno vira multimodal
+  // (texto + imagem), mesmo padrão já usado em api/post-content.js.
+  const userPrompt = imagemValidada
+    ? [{type:'text',text:pedidoTexto},{type:'image_url',image_url:{url:`data:${imagemValidada.tipo};base64,${imagemValidada.base64}`}}]
+    : pedidoTexto;
 
   try {
     // gpt-4o-mini não consta mais na lista de modelos disponíveis da OpenAI;
@@ -62,7 +75,7 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
       body: JSON.stringify({
         model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: systemComAprendizado },
           ...historico.map(h=>({role:h.papel==='assistente'?'assistant':'user',content:h.texto})),
           { role: 'user', content: userPrompt },
         ],
@@ -112,6 +125,9 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
     if (!content) return res.status(500).json({ error: 'Nenhum conteúdo retornado' });
 
     const parsed = JSON.parse(content);
+    if(historico.length){
+      await aprenderComAjusteChat({contexto:'apresentacoes',pedido:String(ajuste||'').trim(),atual:preferenciaAprendida,key:apiKey,autorId:user?.id});
+    }
     return res.status(200).json(parsed);
   } catch (e) {
     return res.status(500).json({ error: e.message });

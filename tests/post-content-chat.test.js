@@ -37,7 +37,7 @@ test('sem historico, messages tem só system+user (comportamento atual)', async 
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) {
@@ -68,7 +68,7 @@ test('com historico, messages inclui os turnos anteriores antes do novo pedido',
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) {
@@ -128,7 +128,7 @@ test('historico trunca para os ultimos 20 turnos', async () => {
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) {
@@ -162,7 +162,7 @@ test('system prompt inclui as regras de humanizacao, paginação variável e o l
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) {
@@ -197,7 +197,7 @@ test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async (
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
@@ -232,7 +232,7 @@ test('imagem de referencia vira conteudo multimodal (texto + image_url) na ultim
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) return supabaseReply({id: 'test-user'});
@@ -270,7 +270,7 @@ test('historico trunca cada texto em 4000 caracteres', async () => {
   let capturedBody;
   global.fetch = async (url, options) => {
     if (url.includes('api.openai.com')) {
-      capturedBody = JSON.parse(options.body);
+      if (capturedBody === undefined) capturedBody = JSON.parse(options.body);
       return chatReply({titulo: 'x', gancho: 'x', slides: ['x'], legenda: 'x', hashtags: [], cta: 'x'});
     }
     if (url.includes('/auth/v1/user')) {

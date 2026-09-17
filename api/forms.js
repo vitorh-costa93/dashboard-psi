@@ -8,6 +8,26 @@ const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Pedido do usuário (17/09/2026): a primeira Anamnese concluída de um
+// paciente preenche/sobrescreve UMA VEZ os campos equivalentes do cadastro
+// (função de banco aplicar_cadastro_primeira_anamnese, chamada via
+// salvar_anamnese_com_cadastro/revisar_formulario_com_cadastro -- ela mesma
+// garante o "só uma vez", checando cadastro_sincronizado_anamnese_em).
+// O formulário administrativo fixo de Anamnese (_anamneseSecoes no
+// index.html) usa as chaves nome_crianca/mae_nome/pai_nome/cpf_responsavel;
+// o modelo padrão do formulário online (link por token) usa nome_completo.
+function extrairPerfilDeAnamnese(conteudo){
+  const c=conteudo&&typeof conteudo==='object'?conteudo:{};
+  const texto=v=>String(v??'').trim();
+  return{
+    nome:texto(c.nome_crianca||c.nome_completo),
+    cpf_paciente:texto(c.cpf_paciente||c.cpf),
+    data_nascimento:texto(c.data_nascimento),
+    responsavel_nome:texto(c.responsavel_nome||c.nome_responsavel||c.mae_nome||c.pai_nome),
+    cpf_responsavel:texto(c.cpf_responsavel),
+  };
+}
+
 export default async function handler(req,res){
   const user=await requireAuth(req,res);if(!user)return;
   if(req.query?.resource==='documents'||req.body?.resource==='documents')return handleDocuments(req,res,user);
@@ -40,7 +60,7 @@ export default async function handler(req,res){
       if(!conteudo||typeof conteudo!=='object'||Array.isArray(conteudo))return res.status(400).json({error:'Conteúdo inválido'});
       const serialized=JSON.stringify(conteudo);if(serialized.length>131072)return res.status(413).json({error:'Anamnese muito extensa'});
       if(!Object.values(conteudo).some(value=>String(value||'').trim()))return res.status(400).json({error:'Preencha ao menos um campo'});
-      const response=await supabase('/rest/v1/rpc/salvar_anamnese',{method:'POST',body:JSON.stringify({p_paciente_id:pacienteId,p_conteudo:encryptClinicalData(conteudo),p_autor:user.id})});
+      const response=await supabase('/rest/v1/rpc/salvar_anamnese_com_cadastro',{method:'POST',body:JSON.stringify({p_paciente_id:pacienteId,p_conteudo:encryptClinicalData(conteudo),p_autor:user.id,p_perfil:extrairPerfilDeAnamnese(conteudo)})});
       const result=await safeJson(response);return res.status(response.ok?201:409).json(response.ok?{id:result}:{error:'Não foi possível salvar a anamnese'});
     }
     if(req.method==='POST'&&req.body?.action==='export_anamnesis'){
@@ -96,7 +116,18 @@ export default async function handler(req,res){
     }
     if(req.method==='PATCH'){
       const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject'].includes(action))return res.status(400).json({error:'Revisão inválida'});
-      const response=await supabase('/rest/v1/rpc/revisar_formulario',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_acao:action,p_revisor:user.id})});
+      // Ao aprovar, o conteúdo precisa ser lido e decifrado aqui (a função no
+      // banco só copia o envelope cifrado, sem a chave pra abri-lo) pra poder
+      // extrair os campos que sincronizam o cadastro na primeira Anamnese.
+      let perfil={};
+      if(action==='approve'){
+        const respostaResp=await supabase(`/rest/v1/formularios_respostas?select=conteudo&id=eq.${encodeURIComponent(resposta_id)}&limit=1`);
+        const respostaRows=await safeJson(respostaResp);
+        if(respostaResp.ok&&respostaRows?.[0]){
+          try{perfil=extrairPerfilDeAnamnese(decryptClinicalData(respostaRows[0].conteudo));}catch{}
+        }
+      }
+      const response=await supabase('/rest/v1/rpc/revisar_formulario_com_cadastro',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_acao:action,p_revisor:user.id,p_perfil:perfil})});
       return res.status(response.ok?200:409).json(response.ok?{ok:true,anamnese_versao_id:await safeJson(response)}:{error:'Resposta não está pendente'});
     }
     if(req.method==='DELETE'&&req.query?.resource==='anamnesis'){

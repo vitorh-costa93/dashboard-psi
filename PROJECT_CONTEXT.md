@@ -198,3 +198,11 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - A tela de edição do paciente só oferece “Compartilhar sessão restante” quando o saldo derivado é positivo; o servidor calcula e valida o saldo novamente dentro da função transacional.
 - A Agenda oferece um salvamento único para todas as linhas preenchidas da tabela, preservando a liquidação transacional já existente por atendimento.
 - A sub-aba Anamnese agora pode criar modelo e link externo próprios. O convite continua de uso único, expira em 72 horas e a resposta permanece pendente de revisão antes de gerar uma versão da anamnese.
+
+## Cadastro clínico único e Anamnese (17/09/2026)
+
+- A migration aditiva `20260917090000_patient_single_profile_from_anamnesis.sql` torna o cadastro administrativo de `pacientes` a fonte única de nome completo, CPFs opcionais, nascimento, responsável, início dos atendimentos e data da Anamnese. A complementar `20260917100000_patient_profile_sync_safety.sql` foi aplicada no Supabase para tolerar datas livres vindas de formulários e uniformizar rótulos já existentes.
+- A primeira Anamnese concluída — interna ou recebida pelo link seguro e aprovada — pode completar esses campos apenas uma vez, registrada por `cadastro_sincronizado_anamnese_em`. Revisões posteriores nunca sobrescrevem alterações manuais feitas na Agenda.
+- O perfil da Agenda divide os dados em paciente, responsável e vínculo clínico. Adultos podem permanecer sem responsável. CPF é normalizado para 11 dígitos quando informado; a chave permanente do paciente continua sendo o UUID, não o nome.
+- Documentos preenchem, de forma segura e somente nos campos existentes em cada modelo, os dados já presentes no cadastro. A data da Anamnese é somente leitura na Agenda e alimenta termos e declaração de frequência.
+- Rótulos de interface usam primeiro e último nome; quando existe recorrência, incluem dia e horário. O texto é derivado e não participa de relações ou filtros de dados.

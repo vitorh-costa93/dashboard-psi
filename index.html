@@ -725,13 +725,33 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 <div class="modal-overlay" id="perfil-paciente-overlay" onclick="if(event.target===this)fecharPerfilPaciente()">
   <div class="modal" style="max-width:640px;max-height:88vh;overflow:auto">
-    <h3 id="perfil-paciente-nome">—</h3>
+    <h3>Editar cadastro</h3>
     <input type="hidden" id="perfil-paciente-id">
+
+    <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">Dados do paciente</h4>
+    <div class="agenda-form-grid">
+      <div class="gen-field full"><label>Nome completo</label><input id="perfil-nome" maxlength="120"></div>
+      <div class="gen-field"><label>CPF do paciente</label><input id="perfil-cpf-paciente" maxlength="14" placeholder="Opcional" inputmode="numeric"></div>
+      <div class="gen-field"><label>Data de nascimento</label><input type="date" id="perfil-nascimento"></div>
+    </div>
+
+    <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 10px">Responsável <span style="font:400 .7rem 'DM Sans',sans-serif;color:var(--muted)">(quando houver)</span></h4>
+    <div class="agenda-form-grid">
+      <div class="gen-field"><label>Nome do responsável</label><input id="perfil-responsavel" maxlength="160" placeholder="Deixe em branco se paciente adulto sem responsável"></div>
+      <div class="gen-field"><label>CPF do responsável</label><input id="perfil-cpf-responsavel" maxlength="14" placeholder="Opcional" inputmode="numeric"></div>
+    </div>
+
+    <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 10px">Vínculo clínico</h4>
+    <div class="agenda-form-grid">
+      <div class="gen-field"><label>Início dos atendimentos</label><input type="date" id="perfil-inicio-atendimentos"></div>
+      <div class="gen-field"><label>Data da Anamnese</label><input type="text" id="perfil-data-anamnese" readonly title="Preenchida automaticamente quando a primeira Anamnese do paciente é concluída"></div>
+    </div>
+
+    <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 10px">Status e agenda</h4>
     <div class="agenda-form-grid">
       <div class="gen-field"><label>Status</label><select id="perfil-status" onchange="perfilStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div>
       <div class="gen-field" id="perfil-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="perfil-pausado-ate"></div>
       <div class="gen-field"><label>Contabiliza para o CNPJ?</label><select id="perfil-cnpj"><option value="false">Não</option><option value="true">Sim</option></select></div>
-      <div class="gen-field"><label>Data de nascimento</label><input type="date" id="perfil-nascimento"></div><div class="gen-field"><label>Responsável (se aplicável)</label><input id="perfil-responsavel" maxlength="160"></div>
       <div class="gen-field"><label>Frequência</label><select id="perfil-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div>
       <div class="gen-field"><label>Dia</label><select id="perfil-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
       <div class="gen-field"><label>Horário</label><input type="time" id="perfil-horario"></div>
@@ -768,7 +788,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 </div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-secondary" onclick="inferirRecorrencias()">Sugerir padrões</button><button class="btn-secondary" onclick="importarHistoricoAgenda()">Importar histórico</button><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button></div>
 <div class="agenda-layout"><div><div class="generator-card"><h3 id="agenda-form-title">Novo paciente</h3><input type="hidden" id="agenda-paciente-id"><div class="agenda-form-grid">
-<div class="gen-field full"><label>Nome</label><input id="agenda-nome" maxlength="120"></div><div class="gen-field"><label>Data de nascimento</label><input type="date" id="agenda-nascimento"></div><div class="gen-field"><label>Responsável (se aplicável)</label><input id="agenda-responsavel" maxlength="160"></div><div class="gen-field"><label>Status</label><select id="agenda-paciente-status" onchange="agendaStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div><div class="gen-field" id="agenda-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="agenda-pausado-ate"></div>
+<div class="gen-field full"><label>Nome</label><input id="agenda-nome" maxlength="120"></div><div class="gen-field"><label>CPF do paciente</label><input id="agenda-cpf-paciente" inputmode="numeric" maxlength="14"></div><div class="gen-field"><label>Data de nascimento</label><input type="date" id="agenda-nascimento"></div><div class="gen-field"><label>Responsável (se aplicável)</label><input id="agenda-responsavel" maxlength="160"></div><div class="gen-field"><label>CPF do responsável</label><input id="agenda-cpf-responsavel" inputmode="numeric" maxlength="14"></div><div class="gen-field"><label>Início dos atendimentos</label><input type="date" id="agenda-inicio-atendimentos"></div><div class="gen-field"><label>Status</label><select id="agenda-paciente-status" onchange="agendaStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div><div class="gen-field" id="agenda-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="agenda-pausado-ate"></div>
 <div class="gen-field"><label>Frequência</label><select id="agenda-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div><div class="gen-field"><label>Dia</label><select id="agenda-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div><div class="gen-field"><label>Horário</label><input type="time" id="agenda-horario"></div><div class="gen-field"><label>Vigência (início)</label><input type="date" id="agenda-vigencia"></div>
 <div class="gen-field"><label>Modalidade</label><select id="agenda-modalidade"><option value="">Não informada</option><option>Online</option><option>Presencial</option></select></div><div class="gen-field"><label>Valor da sessão acordada</label><input type="number" min="0" step=".01" id="agenda-valor"></div><label class="full" style="font-size:.72rem;color:var(--muted)"><input type="checkbox" id="agenda-cancelar-futuros" checked> Cancelar agendamentos futuros ao pausar/inativar</label></div><div id="agenda-plano-info" style="font-size:.72rem;color:var(--muted);margin-top:6px"></div><div class="pront-form-actions"><button class="btn-primary" onclick="salvarPacienteAgenda()">Salvar</button><button class="btn-secondary" onclick="limparPacienteAgenda()">Limpar</button></div></div>
 <div class="generator-card"><h3>Pacientes</h3><div class="agenda-patient-list" id="agenda-pacientes"></div></div></div>
@@ -1562,7 +1582,15 @@ function pVal(v){if(typeof v==='number')return v;if(!v)return 0;return parseFloa
 function pData(v){if(!v)return null;const p=String(v).split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);return null;}
 function anoMes(d){if(!d||isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return n[+m-1]+'.';}
-function iniciais(nome){return String(nome).trim().split(/\s+/).filter(Boolean)[0]||'';}
+// Pedido do usuário (17/09/2026): trocar globalmente o nome exibido resumido
+// de "só o primeiro nome" para "primeiro + último nome" (ex.: "Vitor Costa",
+// não "Vitor"). O nome da função ficou "iniciais" por compatibilidade -- é o
+// nome usado em dezenas de lugares (_iniciais, p.iniciais etc.) e renomear
+// tudo seria uma mudança bem maior que o necessário; só a lógica interna
+// mudou. Mesmo critério da função SQL nome_exibicao_paciente(): nome de uma
+// palavra só volta como está, senão primeira + última palavra.
+function iniciais(nome){const partes=String(nome||'').trim().split(/\s+/).filter(Boolean);if(partes.length<=1)return partes[0]||'';return partes[0]+' '+partes[partes.length-1];}
+function rotuloPaciente(p){return p?.ultimo_label||iniciais(p?.nome);}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
 // ── Ordenação por clique no cabeçalho, reutilizável em qualquer tabela ──
@@ -3848,9 +3876,9 @@ async function initProntuarios() {
 
 const _anamneseSecoes=[
   ['Identificação',[
-    ['data_entrevista','Data da entrevista','date'],['respondente','Respondente'],['nome_crianca','Nome da criança'],['data_nascimento','Data de nascimento','date'],['idade_atual','Idade atual'],['diagnostico','Diagnóstico clínico / hipótese diagnóstica e comorbidades','textarea'],['naturalidade','Naturalidade']]],
+    ['data_entrevista','Data da entrevista','date'],['respondente','Respondente'],['nome_crianca','Nome da criança'],['cpf_paciente','CPF do paciente'],['data_nascimento','Data de nascimento','date'],['idade_atual','Idade atual'],['diagnostico','Diagnóstico clínico / hipótese diagnóstica e comorbidades','textarea'],['naturalidade','Naturalidade']]],
   ['Identificação dos cuidadores',[
-    ['mae_nome','Nome da mãe'],['mae_idade','Idade da mãe'],['mae_telefone','Telefone da mãe','tel'],['mae_profissao','Profissão da mãe'],['mae_escolaridade','Escolaridade da mãe'],['pai_nome','Nome do pai'],['pai_idade','Idade do pai'],['pai_telefone','Telefone do pai','tel'],['pai_profissao','Profissão do pai'],['pai_escolaridade','Escolaridade do pai'],['endereco','Endereço completo','textarea'],['cpf_responsavel','CPF do responsável'],['email_responsavel','E-mail do responsável','email'],['cuidadores_atuais','Atualmente, quem convive ou cuida da criança?','textarea']]],
+    ['responsavel_nome','Nome do responsável'],['mae_nome','Nome da mãe'],['mae_idade','Idade da mãe'],['mae_telefone','Telefone da mãe','tel'],['mae_profissao','Profissão da mãe'],['mae_escolaridade','Escolaridade da mãe'],['pai_nome','Nome do pai'],['pai_idade','Idade do pai'],['pai_telefone','Telefone do pai','tel'],['pai_profissao','Profissão do pai'],['pai_escolaridade','Escolaridade do pai'],['endereco','Endereço completo','textarea'],['cpf_responsavel','CPF do responsável'],['email_responsavel','E-mail do responsável','email'],['cuidadores_atuais','Atualmente, quem convive ou cuida da criança?','textarea']]],
   ['Queixa e tratamentos',[
     ['queixa_principal','Queixa principal','textarea'],['realiza_tratamentos','Realizou ou realiza outros tratamentos?','yesno'],['tratamentos_detalhes','Quais tratamentos, tipos e frequências?','textarea']]],
   ['Concepção, gestação e parto',[
@@ -3886,7 +3914,7 @@ function initAnamnese(){
   const select=document.getElementById('anamnese-paciente');if(!select)return;
   renderCamposAnamnese();
   const pacientes=Object.values(_pacientesById).filter(p=>p.ativo&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome));
-  select.innerHTML='<option value="">Selecione...</option>'+pacientes.map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  select.innerHTML='<option value="">Selecione...</option>'+pacientes.map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   document.getElementById('anamnese-pac-grid').innerHTML=pacientes.map(p=>`<button class="pront-lib-card" type="button" onclick="selecionarPacienteAnamnese('${escHtmlAttr(p.id)}')" style="text-align:left"><div style="font-weight:500;font-size:.85rem;margin-bottom:4px">${escHtml(p.nome)}</div><div style="font-size:.72rem;color:var(--muted)">Abrir anamnese</div></button>`).join('');
 }
 
@@ -3948,14 +3976,14 @@ async function salvarAnamnese(){
   try{
     const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'anamnesis',paciente_id,conteudo})}),d=await r.json();
     if(!r.ok)throw new Error(d.error||'Não foi possível salvar');
-    toast('✅ Nova versão da anamnese salva e criptografada.');await carregarAnamnese();
+    toast('✅ Nova versão da anamnese salva e criptografada.');await carregarPacientes();await carregarAnamnese();
   }catch(e){toast(e.message);}finally{button.disabled=false;}
 }
 
 let _formTemplates=[];
 async function initFormularios(){
   const paciente=document.getElementById('form-paciente');if(!paciente)return;
-  paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   try{
     const [tm,rs]=await Promise.all([fetch('/api/forms?resource=templates'),fetch('/api/forms')]);
     _formTemplates=tm.ok?await tm.json():[];const respostas=rs.ok?await rs.json():[];
@@ -3974,7 +4002,7 @@ async function gerarLinkFormulario(){
   const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
 async function criarModeloAnamneseOnline(){
-  const payload={action:'template',destino:'anamnese',nome:'Anamnese inicial',finalidade:'Informações iniciais para avaliação psicológica; a resposta requer revisão profissional antes de ser incorporada.',campos:[{key:'nome_completo',label:'Nome completo',type:'text',required:true},{key:'data_nascimento',label:'Data de nascimento',type:'date',required:true},{key:'motivo_atendimento',label:'Motivo da procura',type:'textarea',required:true},{key:'historico_queixa',label:'Histórico da queixa',type:'textarea',required:true},{key:'tratamentos_anteriores',label:'Tratamentos psicológicos ou psiquiátricos anteriores',type:'textarea',required:false},{key:'medicacoes',label:'Medicamentos em uso',type:'textarea',required:false},{key:'contato_emergencia',label:'Contato de emergência',type:'text',required:true}]};
+  const payload={action:'template',destino:'anamnese',nome:'Anamnese inicial completa',finalidade:'Informações iniciais para avaliação psicológica; a resposta requer revisão profissional antes de ser incorporada.',campos:[{key:'nome_completo',label:'Nome completo',type:'text',required:true},{key:'cpf_paciente',label:'CPF do paciente',type:'text',required:false},{key:'data_nascimento',label:'Data de nascimento',type:'date',required:true},{key:'responsavel_nome',label:'Nome do responsável (se aplicável)',type:'text',required:false},{key:'cpf_responsavel',label:'CPF do responsável (se aplicável)',type:'text',required:false},{key:'motivo_atendimento',label:'Motivo da procura',type:'textarea',required:true},{key:'historico_queixa',label:'Histórico da queixa',type:'textarea',required:true},{key:'tratamentos_anteriores',label:'Tratamentos psicológicos ou psiquiátricos anteriores',type:'textarea',required:false},{key:'medicacoes',label:'Medicamentos em uso',type:'textarea',required:false},{key:'contato_emergencia',label:'Contato de emergência',type:'text',required:true}]};
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível criar o modelo');toast('✅ Modelo de Anamnese criado');await initFormularios();
 }
 async function gerarLinkAnamnese(){
@@ -3994,7 +4022,7 @@ function renderRespostasFormularios(rows){
 }
 function toggleResposta(id){const detail=document.getElementById('response-detail-'+id),arrow=document.getElementById('response-arrow-'+id);if(!detail)return;const abrir=detail.style.display==='none';detail.style.display=abrir?'block':'none';if(arrow)arrow.textContent=abrir?'⌃':'⌄';}
 async function excluirRespostaAprovada(id){if(!confirm('Excluir este registro aprovado da visualização?'))return;const r=await fetch(`/api/forms?resource=response&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Registro excluído.');await initFormularios();}
-async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='approve'?(cadastro?'Aprovar e arquivar este cadastro?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?(cadastro?'✅ Cadastro aprovado e arquivado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
+async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='approve'?(cadastro?'Aprovar e arquivar este cadastro?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?(cadastro?'✅ Cadastro aprovado e arquivado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');if(action==='approve'&&!cadastro)await carregarPacientes();await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
 
 async function carregarPacientes() {
   try {
@@ -4358,7 +4386,7 @@ function fechamentoDocumento(emissao,disponivel=true){const data=emissao?new Dat
 
 async function initDocumentos(){
   if(!_pacientesById||!Object.keys(_pacientesById).length)await carregarPacientes();
-  const sel=document.getElementById('doc-paciente');sel.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(p.nome)}</option>`).join('');
+  const sel=document.getElementById('doc-paciente');sel.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);habilitarAudioGlobal();atualizarPreviaPSM();carregarPSMs();
 }
 
@@ -4376,7 +4404,29 @@ function montarFormularioDocumento(){
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
   if(tipo==='declaracao_frequencia')html+=inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
-  editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();if(tipo==='declaracao_frequencia')renderSessoesFrequencia();habilitarAudioGlobal();atualizarPreviaDocumento();
+  editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();if(tipo==='declaracao_frequencia')renderSessoesFrequencia();habilitarAudioGlobal();preencherDocumentoDoCadastro();atualizarPreviaDocumento();
+}
+
+// Pedido do usuário (17/09/2026): o cadastro do paciente (Agenda > Editar
+// cadastro) passa a ser a fonte única dos dados pessoais -- ao escolher um
+// paciente para criar um documento, os campos iniciais já vêm preenchidos
+// de lá, sem precisar redigitar em cada documento. Roda tanto ao trocar o
+// tipo de documento (formulário reconstruído do zero) quanto ao trocar o
+// paciente com um tipo já selecionado -- por isso sempre sobrescreve
+// (nunca preserva o que já estava digitado): trocar de paciente ou de tipo
+// é sempre um recomeço para estes campos específicos.
+function preencherDocumentoDoCadastro(){
+  const pid=document.getElementById('doc-paciente')?.value;
+  const p=pid&&_pacientesById[pid];if(!p)return;
+  const setar=(id,valor)=>{const el=document.getElementById(id);if(el)el.value=valor||'';};
+  setar('doc-nome-completo',p.nome);
+  setar('doc-responsavel',p.responsavel_nome);
+  setar('doc-cpf-responsavel',p.cpf_responsavel);
+  setar('doc-cpf-paciente',p.cpf_paciente);
+  setar('doc-nascimento',p.data_nascimento);
+  setar('doc-inicio',p.inicio_atendimentos);
+  setar('doc-anamnese-data',p.data_anamnese);
+  setar('doc-anamnese-coleta-data',p.data_anamnese);
 }
 
 function renderSessoesRecibo(){
@@ -4576,6 +4626,7 @@ async function salvarDocumento(){
 }
 async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
+  if(document.getElementById('doc-tipo').value){preencherDocumentoDoCadastro();atualizarPreviaDocumento();}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${x.conteudo?.rascunho?'🕓 Rascunho — ':''}${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 // Clicar num documento salvo (ou rascunho) SÓ mostrava a prévia de leitura à
@@ -4843,7 +4894,7 @@ function agendaEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;
 function agendaHoje(){return new Date().toISOString().slice(0,10)}function agendaMesAtual(){return agendaHoje().slice(0,7)}function agendaStatusFields(){document.getElementById('agenda-pausa-wrap').style.display=document.getElementById('agenda-paciente-status').value==='pausado'?'block':'none'}function agendaRule(id){return _agendaState?.rules?.find(r=>r.paciente_id===id&&r.ativo)||null}
 async function agendaApi(body){const month=document.getElementById('agenda-mes').value||agendaMesAtual(),r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(month),body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),d=await r.json().catch(()=>({}));if(r.status===401){window.location.reload();throw Error('Sessão expirada')}if(!r.ok)throw Error(d.error||'Não foi possível concluir');return d}
 async function initAgenda(){if(!_agendaInit){_agendaInit=true;document.getElementById('agenda-mes').value=agendaMesAtual();document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-novo-data').value=agendaHoje()}await carregarAgenda()}
-async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))!=='inativo').map(p=>`<option value="${p.id}">${agendaEscape(p.nome)}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
+async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))!=='inativo').map(p=>`<option value="${p.id}">${agendaEscape(p.ultimo_label||iniciais(p.nome))}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
 function agendaLimitesSemana(){const hoje=new Date();hoje.setHours(0,0,0,0);const diaSemana=hoje.getDay(),desloc=diaSemana===0?-6:1-diaSemana,inicioSemana=new Date(hoje);inicioSemana.setDate(hoje.getDate()+desloc);const fimSemana=new Date(inicioSemana);fimSemana.setDate(inicioSemana.getDate()+6);const inicioSemanaPassada=new Date(inicioSemana);inicioSemanaPassada.setDate(inicioSemana.getDate()-7);const fimSemanaPassada=new Date(inicioSemana);fimSemanaPassada.setDate(inicioSemana.getDate()-1);const iso=d=>d.toISOString().slice(0,10);return{inicioSemana:iso(inicioSemana),fimSemana:iso(fimSemana),inicioSemanaPassada:iso(inicioSemanaPassada),fimSemanaPassada:iso(fimSemanaPassada)};}
 function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+(locked?'—':'Pendente')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const itensBusca=_agendaState.patients.map(p=>({value:p.id,label:p.nome+' ('+(p.status_operacional||(p.ativo?'ativo':'inativo'))+')'}));if(!_combos['agenda-busca-combo'])comboCriar('agenda-busca-combo',{items:itensBusca,placeholder:'Digite o nome…',allowAll:false,onSelect:id=>{if(id){abrirPerfilPaciente(id);comboSelecionar('agenda-busca-combo','',{silent:true});}}});else comboAtualizarItens('agenda-busca-combo',itensBusca);marcarSetaOrdenacao('agenda');}
 // Perfil do paciente: popup com cadastro, historico de valores (cada mudanca de
@@ -4854,13 +4905,17 @@ async function abrirPerfilPaciente(id){
   const p=_agendaState.patients.find(x=>x.id===id);if(!p)return;
   const r=agendaRule(id);
   document.getElementById('perfil-paciente-id').value=id;
-  document.getElementById('perfil-paciente-nome').textContent=p.nome;
+  document.getElementById('perfil-nome').value=p.nome||'';
   document.getElementById('perfil-status').value=p.status_operacional||(p.ativo?'ativo':'inativo');
   document.getElementById('perfil-pausado-ate').value=p.pausado_ate||'';
   document.getElementById('perfil-cnpj').value=p.contabiliza_cnpj?'true':'false';document.getElementById('perfil-nascimento').value=p.data_nascimento||'';document.getElementById('perfil-responsavel').value=p.responsavel_nome||'';
+  document.getElementById('perfil-cpf-paciente').value=p.cpf_paciente||'';
+  document.getElementById('perfil-cpf-responsavel').value=p.cpf_responsavel||'';
+  document.getElementById('perfil-inicio-atendimentos').value=p.inicio_atendimentos||'';
+  document.getElementById('perfil-data-anamnese').value=p.data_anamnese?String(p.data_anamnese).split('-').reverse().join('/'):'Ainda não registrada';
   const saldo=Number(_agendaState.balances?.[id]||0),transferWrap=document.getElementById('perfil-transfer-wrap');
   transferWrap.style.display=saldo>0?'block':'none';
-  if(saldo>0){document.getElementById('perfil-transfer-saldo').textContent=`Saldo disponível: ${saldo} sessão(ões).`;const destino=document.getElementById('perfil-transfer-destino');destino.innerHTML='<option value="">Selecione...</option>'+_agendaState.patients.filter(x=>x.id!==id).map(x=>`<option value="${agendaEscape(x.id)}">${agendaEscape(x.nome)}</option>`).join('');const quantidade=document.getElementById('perfil-transfer-quantidade');quantidade.max=String(saldo);quantidade.value='1';}
+  if(saldo>0){document.getElementById('perfil-transfer-saldo').textContent=`Saldo disponível: ${saldo} sessão(ões).`;const destino=document.getElementById('perfil-transfer-destino');destino.innerHTML='<option value="">Selecione...</option>'+_agendaState.patients.filter(x=>x.id!==id).map(x=>`<option value="${agendaEscape(x.id)}">${agendaEscape(x.ultimo_label||iniciais(x.nome))}</option>`).join('');const quantidade=document.getElementById('perfil-transfer-quantidade');quantidade.max=String(saldo);quantidade.value='1';}
   document.getElementById('perfil-frequencia').value=r?.frequencia||'';
   document.getElementById('perfil-dia').value=r?.dia_semana||1;
   document.getElementById('perfil-horario').value=String(r?.horario||'').slice(0,5);
@@ -4888,9 +4943,10 @@ function renderHistoricoPaciente(rows){
     }).join('')+'</tbody></table>';
 }
 async function salvarPerfilPaciente(){
-  const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-paciente-nome').textContent;
+  const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-nome').value.trim();
+  if(!nome)return toast('Informe o nome completo do paciente.');
   try{
-    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cancel_future:true});
+    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cpf_paciente:document.getElementById('perfil-cpf-paciente').value||null,cpf_responsavel:document.getElementById('perfil-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('perfil-inicio-atendimentos').value||null,cancel_future:true});
     const freq=document.getElementById('perfil-frequencia').value;
     if(freq){
       await agendaApi({action:'save_recurrence',paciente_id:id,frequencia:freq,dia_semana:+document.getElementById('perfil-dia').value,horario:document.getElementById('perfil-horario').value,vigencia_inicio:document.getElementById('perfil-vigencia').value||agendaHoje(),modalidade:document.getElementById('perfil-modalidade').value,valor_sessao:+document.getElementById('perfil-valor').value||0});
@@ -4903,7 +4959,7 @@ async function salvarPerfilPaciente(){
   }catch(e){toast(e.message,5000)}
 }
 async function excluirPerfilPaciente(){
-  const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-paciente-nome').textContent;
+  const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-nome').value.trim();
   const digitado=prompt('Isso apaga o paciente e TODO o histórico (sessões, pacotes, prontuários, documentos) para sempre. Não tem como desfazer.\n\nPara confirmar, digite o nome exato do paciente:\n'+nome);
   if(digitado===null)return;
   try{
@@ -4930,8 +4986,8 @@ async function abrirDocumentosDoPaciente(){
   const sel=document.getElementById('doc-paciente');
   if(sel){sel.value=id;carregarDocumentos();}
 }
-function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-nascimento','agenda-responsavel','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
-async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
+function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-cpf-paciente','agenda-nascimento','agenda-responsavel','agenda-cpf-responsavel','agenda-inicio-atendimentos','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
+async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cpf_paciente:document.getElementById('agenda-cpf-paciente').value||null,cpf_responsavel:document.getElementById('agenda-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('agenda-inicio-atendimentos').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
   // Gera as ocorrencias do mes exibido na hora -- sem isso, a recorrencia ficava
   // salva mas nao aparecia em "Atendimentos" ate clicar manualmente em "Gerar mes".
   await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value||agendaMesAtual()});}toast(planoNome?`Paciente salvo. ${planoNome} associado.`:'Paciente salvo.');limparPacienteAgenda();await carregarAgenda()}catch(e){toast(e.message,5000)}}

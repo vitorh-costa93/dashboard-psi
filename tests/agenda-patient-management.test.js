@@ -47,5 +47,6 @@ test('salvamento em lote da Agenda é atômico e informa a linha inválida', asy
   assert.match(api, /b\.action==='settle_appointments_batch'/);
   assert.match(api, /rpc\/finalizar_agenda_em_lote/);
   assert.match(html, /action:'settle_appointments_batch'/);
+  assert.match(html, /statusEl&&statusEl\.value!=='agendado'/);
   assert.doesNotMatch(html.match(/async function salvarAlteracoesAgenda\(\)\{[\s\S]*?\n/)[0], /action:'settle_appointment',/);
 });

@@ -18,6 +18,9 @@ test('agenda exposes the requested patient and batch-saving controls', async () 
   const html = await read('index.html');
   assert.match(html, /id="agenda-nascimento"/);
   assert.match(html, /id="agenda-responsavel"/);
+  assert.match(html, /id="agenda-paciente-overlay"/);
+  assert.match(html, /abrirCadastroPaciente\(\)/);
+  assert.match(html, />\+ Novo paciente</);
   assert.match(html, /id="perfil-transfer-wrap"/);
   assert.match(html, /transferirSessoesPerfil/);
   assert.match(html, /salvarAlteracoesAgenda/);

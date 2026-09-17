@@ -139,3 +139,62 @@ test('tipo invalido retorna 400', async () => {
   await gemini(req, res);
   assert.equal(res.code, 400);
 });
+
+test('type=image com incluirLogo usa images/edits com a logo como imagem de entrada', async () => {
+  global.fetch = authFetchStub(async (url, options) => {
+    assert.equal(url, 'https://api.openai.com/v1/images/edits');
+    assert.ok(options.body instanceof FormData);
+    const imagens = options.body.getAll('image[]');
+    assert.equal(imagens.length, 1);
+    assert.equal(imagens[0].name, 'logo.png');
+    assert.ok(options.body.get('prompt').includes('clinic\'s logo'));
+    assert.ok(options.body.get('prompt').includes('Um prompt qualquer'));
+    return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'COM_LOGO_B64'}]})};
+  });
+  const req = baseReq({type: 'image', prompt: 'Um prompt qualquer', size: '1024x1024', incluirLogo: true});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.body.b64, 'COM_LOGO_B64');
+});
+
+test('image-edit com incluirLogo anexa a logo como terceira imagem', async () => {
+  global.fetch = authFetchStub(async (url, options) => {
+    const imagens = options.body.getAll('image[]');
+    assert.equal(imagens.length, 3);
+    assert.equal(imagens[2].name, 'logo.png');
+    assert.ok(options.body.get('prompt').includes('additional image: the clinic\'s logo'));
+    return {ok: true, status: 200, json: async () => ({data: [{b64_json: 'RESULTADO_B64'}]})};
+  });
+  const req = baseReq({type: 'image-edit', prompt: 'Edite esta foto', size: '1024x1024', imageB64: smallImageB64, incluirLogo: true});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 200);
+});
+
+test('refine-image-prompt sem descricao retorna 400 sem chamar a OpenAI', async () => {
+  global.fetch = authFetchStub(() => { throw new Error('não deveria chamar OpenAI'); });
+  const req = baseReq({type: 'refine-image-prompt'});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 400);
+});
+
+test('refine-image-prompt monta a chamada com schema estrito e devolve descricao/incluirLogo', async () => {
+  let capturedBody;
+  global.fetch = authFetchStub(async (url, options) => {
+    if (url.includes('/v1/chat/completions')) {
+      capturedBody = JSON.parse(options.body);
+      return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify({descricao: 'Uma rotina ilustrada', incluirLogo: false})}}]})};
+    }
+    throw new Error('endpoint inesperado: ' + url);
+  });
+  const req = baseReq({type: 'refine-image-prompt', tipo: 'Rotina', faixa: '4–6 anos', tema: 'TDAH', descricao: 'rotina matinal'});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.body.descricao, 'Uma rotina ilustrada');
+  assert.equal(res.body.incluirLogo, false);
+  assert.equal(capturedBody.response_format.json_schema.name, 'descricao_imagem');
+  assert.ok(capturedBody.messages[0].content.includes('incluirLogo=true SOMENTE'));
+});

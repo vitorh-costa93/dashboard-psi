@@ -45,6 +45,8 @@ Entregue sempre uma proposta pronta pra aplicar no consultório, com aplicabilid
 
 Se a mensagem do usuário pedir um AJUSTE sobre uma apresentação já gerada (você verá o conteúdo anterior no histórico da conversa), reescreva o objeto JSON inteiro aplicando o que foi pedido e mantendo tudo o que não foi pedido para mudar.
 
+Defina incluirLogo=true SOMENTE se a psicóloga pedir explicitamente para incluir a logo/marca/logotipo do consultório na capa da apresentação; caso contrário incluirLogo=false.
+
 ${PERFIL_JAQUELINE}`;
   const preferenciaAprendida=await buscarPreferenciaTexto('apresentacoes');
   const systemComAprendizado=preferenciaAprendida?`${systemPrompt}\n\nObservações de estilo já aprendidas com esta psicóloga em conversas anteriores (aplique com prioridade alta, junto com as regras acima):\n${preferenciaAprendida}`:systemPrompt;
@@ -101,9 +103,10 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
                     required: ['titulo', 'conteudo'],
                     additionalProperties: false
                   }
-                }
+                },
+                incluirLogo: { type: 'boolean' }
               },
-              required: ['titulo', 'slides'],
+              required: ['titulo', 'slides', 'incluirLogo'],
               additionalProperties: false
             }
           }

@@ -206,3 +206,9 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - O perfil da Agenda divide os dados em paciente, responsável e vínculo clínico. Adultos podem permanecer sem responsável. CPF é normalizado para 11 dígitos quando informado; a chave permanente do paciente continua sendo o UUID, não o nome.
 - Documentos preenchem, de forma segura e somente nos campos existentes em cada modelo, os dados já presentes no cadastro. A data da Anamnese é somente leitura na Agenda e alimenta termos e declaração de frequência.
 - Rótulos de interface usam primeiro e último nome; quando existe recorrência, incluem dia e horário. O texto é derivado e não participa de relações ou filtros de dados.
+
+## Agenda — salvamento em lote atômico (17/09/2026)
+
+- A migration `20260917110000_agenda_batch_settlement.sql` substitui o salvamento sequencial do botão “Salvar alterações da tabela” por uma única função transacional no banco.
+- O lote valida cada linha antes de gravar. Se qualquer atendimento tiver status, cobrança, valor ou comentário inválido — ou se a liquidação de uma linha falhar — nenhuma linha do lote é persistida.
+- A mensagem devolvida identifica a posição da linha com problema, sem expor dados clínicos. O salvamento individual existente permanece inalterado.

@@ -2269,7 +2269,7 @@ async function carregarSessoesDetalhado(){
     if(!r.ok)throw new Error(rows.error||'Falha ao carregar');
     // Só sessões com registro de comparecimento feito -- as ainda "agendadas"
     // (sem comparecimento preenchido) pertencem à Agenda, não a este histórico.
-    const registradas=rows.filter(x=>String(x.comparecimento||'').trim());
+    const registradas=rows.filter(x=>String(x.comparecimento||'').trim()&&!String(x.source_key||'').startsWith('movimento-saldo:'));
     _dsessRows=registradas;
     dsessAtualizarListaPacientes(registradas);
     renderSessoesDetalhado();

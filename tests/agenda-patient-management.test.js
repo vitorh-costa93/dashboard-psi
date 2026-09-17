@@ -57,3 +57,8 @@ test('salvamento em lote da Agenda é atômico e informa a linha inválida', asy
   assert.match(html, /statusEl&&statusEl\.value!=='agendado'/);
   assert.doesNotMatch(html.match(/async function salvarAlteracoesAgenda\(\)\{[\s\S]*?\n/)[0], /action:'settle_appointment',/);
 });
+
+test('lançamentos administrativos de saldo não entram na tabela consolidada de atendimentos', async () => {
+  const html = await read('index.html');
+  assert.match(html, /!String\(x\.source_key\|\|''\)\.startsWith\('movimento-saldo:'\)/);
+});

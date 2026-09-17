@@ -212,3 +212,8 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - A migration `20260917110000_agenda_batch_settlement.sql` substitui o salvamento sequencial do botão “Salvar alterações da tabela” por uma única função transacional no banco.
 - O lote valida cada linha antes de gravar. Se qualquer atendimento tiver status, cobrança, valor ou comentário inválido — ou se a liquidação de uma linha falhar — nenhuma linha do lote é persistida.
 - A mensagem devolvida identifica a posição da linha com problema, sem expor dados clínicos. O salvamento individual existente permanece inalterado.
+
+## Dashboard — tabela consolidada de atendimentos (17/09/2026)
+
+- Lançamentos técnicos de saldo criados com `source_key` iniciada por `movimento-saldo:` (inativação e transferência de sessões) permanecem preservados para auditoria e cálculo de saldo, mas não são atendimentos clínicos.
+- A tabela consolidada “Atendimentos — detalhado” e seu filtro de pacientes os excluem no frontend; sessões clínicas com comparecimento continuam aparecendo normalmente.

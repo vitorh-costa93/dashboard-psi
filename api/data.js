@@ -111,7 +111,13 @@ export default async function handler(req, res) {
         const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});
         return res.status(200).json({id,ordem});
       }
-      if (table === 'pacientes' || action === 'upsert') {
+      // O cadastro é gravado exclusivamente por /api/operational (resource=agenda).
+      // A antiga importação do Dashboard fazia upsert por nome e podia recriar
+      // cadastros abreviados a partir de linhas históricas de atendimento.
+      if (table === 'pacientes' && action === 'upsert') {
+        return res.status(410).json({ error: 'A sincronização legada de pacientes foi desativada. Use a API de agenda.' });
+      }
+      if (action === 'upsert') {
         const r=await supaFetch(`${table}?on_conflict=nome`,{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(req.body)});
         const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data});return res.status(200).json(data);
       }

@@ -94,7 +94,7 @@ async function sessions(req,res){
   // tudo o que foi acertado"). Sem filtro de data, a tabela sessoes já
   // passa de 1000 linhas -- pagina em blocos de 1000 igual allSessions(),
   // senão o PostgREST corta silenciosamente no limite padrão.
-  let path=`sessoes?select=id,paciente_id,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome),convenios(nome)&order=data_sessao.asc,horario.asc`;
+  let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome),convenios(nome)&order=data_sessao.asc,horario.asc`;
   if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
   if(req.query.month)return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));

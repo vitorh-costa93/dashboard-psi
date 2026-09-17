@@ -60,5 +60,14 @@ test('salvamento em lote da Agenda é atômico e informa a linha inválida', asy
 
 test('lançamentos administrativos de saldo não entram na tabela consolidada de atendimentos', async () => {
   const html = await read('index.html');
+  const api = await read('api/operational.js');
   assert.match(html, /!String\(x\.source_key\|\|''\)\.startsWith\('movimento-saldo:'\)/);
+  assert.match(api, /select=id,paciente_id,source_key,data_sessao/);
+  assert.doesNotMatch(html.match(/async function loadData\(\)\{[\s\S]*?\n\}/)[0], /sincronizarPacientesPlanilha/);
+});
+
+test('API bloqueia o antigo upsert de pacientes por nome', async () => {
+  const api = await read('api/data.js');
+  assert.match(api, /table === 'pacientes' && action === 'upsert'/);
+  assert.match(api, /sincronização legada de pacientes foi desativada/);
 });

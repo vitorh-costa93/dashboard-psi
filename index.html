@@ -1779,7 +1779,6 @@ async function loadData(){
     const ativosMap={};
     raw.filter(r=>r._ativo==='Ativo').forEach(r=>{ativosMap[r._paciente]=r;});
     _ativosArr=Object.values(ativosMap);
-    await sincronizarPacientesPlanilha(raw);
     // carregarPacientes() precisa rodar sempre (não só quando a aba Prontuários
     // já foi aberta) -- a sub-aba de CNPJ do Dashboard depende do
     // contabiliza_cnpj de cada paciente.

@@ -217,3 +217,8 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 
 - Lançamentos técnicos de saldo criados com `source_key` iniciada por `movimento-saldo:` (inativação e transferência de sessões) permanecem preservados para auditoria e cálculo de saldo, mas não são atendimentos clínicos.
 - A tabela consolidada “Atendimentos — detalhado” e seu filtro de pacientes os excluem no frontend; sessões clínicas com comparecimento continuam aparecendo normalmente.
+
+## Cadastro de pacientes — proteção contra sincronização legada (17/09/2026)
+
+- O carregamento do Dashboard não pode escrever em `pacientes`: os dados de sessões históricas servem somente para relatórios e podem conter rótulos abreviados ou antigos.
+- O cadastro administrativo em `pacientes` é a fonte de verdade para nome completo e demais dados do perfil. Qualquer importação legada precisa ser uma ação explícita, revisável e idempotente — nunca uma consequência de abrir ou atualizar o Dashboard.

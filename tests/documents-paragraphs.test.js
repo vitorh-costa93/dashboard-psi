@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
-const {blocosDeTexto, paragrafosHtml, segmentosNegrito} = await import('../lib/doc-texto.js');
+const {blocosDeTexto, paragrafosHtml, segmentosNegrito, prepararDeclaracao} = await import('../lib/doc-texto.js');
 const {documentPdfHtml, documentChildren} = await import('../lib/documents.js');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -32,8 +32,8 @@ test('**negrito** vira <strong> e o resto é escapado', () => {
 
 const item = {
   tipo: 'declaracao', titulo: 'Declaração', emitido_em: '2026-08-06',
-  conteudo: {estilo: 'colorido', campos: {Paciente: 'Otávio Baptista', 'Início dos atendimentos': '2024-12-06'}, secoes: [
-    {titulo: '', texto: 'Eu, Jaqueline, declaro que:\n\n**Otávio Baptista** encontra-se em acompanhamento desde **06/12/2024**.'},
+  conteudo: {estilo: 'colorido', campos: {Paciente: 'Otávio Baptista', 'Início dos atendimentos': '06/12/2024', 'Frequência do acompanhamento': '01 sessão semanal'}, secoes: [
+    {titulo: '', texto: 'Eu, Jaqueline, declaro para os devidos fins que:\n\nOtávio Baptista encontra-se em acompanhamento desde 06/12/2024, com frequência de 01 sessão semanal.'},
     {titulo: '', texto: 'Segundo bloco.\n\n- objetivo um\n- objetivo dois'},
   ]},
 };
@@ -42,8 +42,8 @@ test('PDF: parágrafos com recuo, negrito nas informações iniciais e sem pre-w
   const html = documentPdfHtml(item);
   assert.match(html, /p\.par\{text-indent:1\.25cm\}/);
   assert.match(html, /p\.par,p\.lista\{white-space:normal\}/);
-  assert.match(html, /<p class="par">Eu, Jaqueline, declaro que:<\/p><p class="par"><strong>Otávio Baptista<\/strong>/);
-  assert.match(html, /<strong>06\/12\/2024<\/strong>/);
+  // abertura e frase do paciente num parágrafo só, com as informações em negrito
+  assert.match(html, /<p class="par">Eu, Jaqueline, declaro para os devidos fins que <strong>Otávio Baptista<\/strong> encontra-se em acompanhamento desde <strong>06\/12\/2024<\/strong>, com frequência de <strong>01 sessão semanal<\/strong>\.<\/p>/);
   assert.match(html, /<p class="lista">- objetivo um<br>- objetivo dois<\/p>/);
 });
 
@@ -69,4 +69,19 @@ test('cópia do cliente (index.html) gera o mesmo HTML que o servidor', async ()
   for (const t of ['a\n\nb', 'x **y** z\n\n- l1\n- l2\n\n\n1) k', '', 'só um', 'linha1\nlinha2\n\nfim  ']) {
     assert.equal(client(t), paragrafosHtml(t, esc), JSON.stringify(t));
   }
+});
+
+test('prepararDeclaracao junta a abertura, destaca as informações e é idempotente', () => {
+  const campos = item.conteudo.campos;
+  const um = prepararDeclaracao(item.conteudo.secoes, campos);
+  assert.equal(um[0].texto, 'Eu, Jaqueline, declaro para os devidos fins que Otávio Baptista encontra-se em acompanhamento desde 06/12/2024, com frequência de 01 sessão semanal.'.replace('Otávio Baptista', '**Otávio Baptista**').replace('06/12/2024', '**06/12/2024**').replace('01 sessão semanal', '**01 sessão semanal**'));
+  assert.deepEqual(prepararDeclaracao(um, campos), um);
+  assert.equal(um[1], item.conteudo.secoes[1]);
+});
+
+test('cliente: prepararDeclaracao igual ao servidor', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const i = html.indexOf('function prepararDeclaracao(');
+  const client = new Function(`${html.slice(i, html.indexOf(String.fromCharCode(10), i))};return prepararDeclaracao;`)();
+  assert.deepEqual(client(item.conteudo.secoes, item.conteudo.campos), prepararDeclaracao(item.conteudo.secoes, item.conteudo.campos));
 });

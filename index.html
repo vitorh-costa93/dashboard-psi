@@ -4643,7 +4643,7 @@ function conteudoDocumento(){
   } else if(tipo==='declaracao'){
     const frequencia=campo('doc-frequencia'),inicio=dataBR(campo('doc-inicio'));
     campos['Frequência do acompanhamento']=frequencia;campos['Início dos atendimentos']=inicio;
-    const abertura=`Eu, Jaqueline Cristina Vieira, psicóloga, inscrita no CRP nº 06/191478, declaro para os devidos fins que:\n\n**${nome||'O(a) paciente'}** encontra-se em acompanhamento psicológico sob minha responsabilidade${inicio?` desde **${inicio}**`:''}${frequencia?`, com frequência de **${frequencia}**`:''}.`;
+    const abertura=`Eu, Jaqueline Cristina Vieira, psicóloga, inscrita no CRP nº 06/191478, declaro para os devidos fins que ${nome||'o(a) paciente'} encontra-se em acompanhamento psicológico sob minha responsabilidade${inicio?` desde ${inicio}`:''}${frequencia?`, com frequência de ${frequencia}`:''}.`;
     secoes.push({titulo:'',texto:abertura},{titulo:'',texto:campo('doc-texto-final')});
   } else if(tipo==='declaracao_comparecimento'){
     campos['Dia da sessão']=dataBR(campo('doc-sessao-data'));campos['Horário']=`${campo('doc-hora-inicio')} às ${campo('doc-hora-fim')}`;secoes.push({titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} compareceu ao consultório para atendimento psicológico na data e horário informados.`});
@@ -4696,9 +4696,10 @@ function tituloDocumentoAtual(tipo){
 function blocosDeTexto(texto){return String(texto==null?'':texto).replace(/\r\n?/g,'\n').split(/\n[ \t]*\n+/).map(b=>b.replace(/^\n+|\n+$/g,'')).filter(b=>b.trim()).map(b=>{const linhas=b.split('\n').map(l=>l.replace(/\s+$/,''));return{linhas,lista:/^\s*([-•*]|\d+[.)])\s/.test(linhas[0])};});}
 function paragrafosDocHtml(texto){return blocosDeTexto(texto).map(b=>`<p class="${b.lista?'lista':'par'}">${b.linhas.map(l=>escHtml(l).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')).join('<br>')}</p>`).join('');}
 function camposDocHtml(campos,formatar=v=>v){return Object.entries(campos||{}).filter(([,v])=>v).map(([k,v])=>`<p class="campo"><strong>${escHtml(k)}: ${escHtml(formatar(v))}</strong></p>`).join('');}
+function prepararDeclaracao(secoes,campos){const c=campos||{},valores=[c['Paciente'],c['Início dos atendimentos'],c['Frequência do acompanhamento']].map(v=>String(v==null?'':v).trim()).filter(Boolean).sort((a,b)=>b.length-a.length);return (secoes||[]).map((s,i)=>{if(i!==0||!s||!s.texto)return s;let t=String(s.texto).replace(/:\s*\n\s*\n/,' ');for(const v of valores){if(!t.includes(v))continue;t=t.split('**'+v+'**').join(v).split(v).join('**'+v+'**');}return {...s,texto:t};});}
 function atualizarPreviaDocumento(){
   const tipo=document.getElementById('doc-tipo').value,preview=document.getElementById('doc-preview');if(!tipo){preview.className='doc-preview';return preview.innerHTML='<div class="alert-empty">A prévia aparecerá aqui enquanto você preenche.</div>';}
-  const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=tipo==='declaracao'?'':camposDocHtml(data.campos),secoes=data.secoes.filter(x=>x.texto).map(x=>`${x.titulo?`<h3>${escHtml(x.titulo)}</h3>`:''}${paragrafosDocHtml(x.texto)}`).join('');
+  const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=tipo==='declaracao'?'':camposDocHtml(data.campos),secoes=(tipo==='declaracao'?prepararDeclaracao(data.secoes,data.campos):data.secoes).filter(x=>x.texto).map(x=>`${x.titulo?`<h3>${escHtml(x.titulo)}</h3>`:''}${paragrafosDocHtml(x.texto)}`).join('');
   preview.className=`doc-preview ${data.estilo}`;
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(tituloDocumentoAtual(tipo))}</h2>${campos}${secoes}${fechamentoDocumento(emissao)}`;
 }
@@ -4848,7 +4849,7 @@ function abrirDocumento(id,button){
   // montarFormularioDocumento(), que zera _docAtual -- antes, "Exportar PDF"
   // sempre respondia "Salve o documento antes" mesmo com o documento salvo.
   _docAtual=x;
-  const campos=x.tipo==='declaracao'?'':camposDocHtml(x.conteudo.campos,dataBR),secoes=(x.conteudo.secoes||[]).map(s=>`${s.titulo?`<h3>${escHtml(s.titulo)}</h3>`:''}${paragrafosDocHtml(dataBR(s.texto))}`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
+  const campos=x.tipo==='declaracao'?'':camposDocHtml(x.conteudo.campos,dataBR),secoes=(x.tipo==='declaracao'?prepararDeclaracao(x.conteudo.secoes,x.conteudo.campos):(x.conteudo.secoes||[])).map(s=>`${s.titulo?`<h3>${escHtml(s.titulo)}</h3>`:''}${paragrafosDocHtml(dataBR(s.texto))}`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
 }
 function restaurarCamposDocumento(x){

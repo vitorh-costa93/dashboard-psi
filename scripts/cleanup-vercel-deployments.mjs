@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Apaga deploys antigos retidos na Vercel, mantendo so o de producao atual
-// + as ultimas N-1 entregas mais recentes (margem de seguranca pra rollback
-// rapido). O plano Hobby nao tem nenhum controle nativo de retencao de
+// Apaga deploys antigos retidos na Vercel, de TODOS os projetos do time,
+// mantendo os N mais recentes (padrao 4) + o de producao + qualquer deploy
+// servindo um dominio real (alias .vercel.app publico ou git-main). O plano Hobby nao tem nenhum controle nativo de retencao de
 // deploy -- sem isso, cada deploy fica guardado pra sempre e vai empurrando
 // o uso de "Deployment Storage" pro limite gratuito de 10GB (foi o que
 // gerou o alerta que motivou este script: 216 deploys acumulados em ~26
@@ -14,8 +14,7 @@
 const TOKEN = process.env.VERCEL_TOKEN;
 const PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_Eztc3pNA9P7KYhTEJIhnymVIpeOa';
 const TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_5TOFRVNzimmU6aZE8ZvDyNwV';
-const PRODUCTION_DOMAIN = process.env.VERCEL_PRODUCTION_DOMAIN || 'dashboard-psi-tau.vercel.app';
-const MANTER = Number(process.env.DEPLOYMENTS_TO_KEEP || 5);
+const MANTER = Number(process.env.DEPLOYMENTS_TO_KEEP || 4);
 
 if (!TOKEN) {
   console.error('VERCEL_TOKEN não configurado.');
@@ -36,11 +35,16 @@ async function vercelFetch(path, options = {}) {
   return r.status === 204 ? null : r.json();
 }
 
-async function listarTodosDeployments() {
+async function listarProjetos() {
+  const data = await vercelFetch('/v9/projects?limit=100');
+  return data.projects.map((p) => ({ id: p.id, name: p.name, producaoId: p.targets?.production?.id }));
+}
+
+async function listarDeployments(projectId) {
   const deployments = [];
   let until;
   for (;;) {
-    const params = new URLSearchParams({ projectId: PROJECT_ID, limit: '100' });
+    const params = new URLSearchParams({ projectId, limit: '100' });
     if (until) params.set('until', String(until));
     const data = await vercelFetch(`/v6/deployments?${params}`);
     deployments.push(...data.deployments);
@@ -50,37 +54,42 @@ async function listarTodosDeployments() {
   return deployments;
 }
 
-async function idDeploymentAtualDeProducao() {
-  // Deployments lookup by any assigned domain -- retorna o deploy que esta
-  // de fato servindo o dominio de producao agora, independente de qual
-  // "target" ele carrega.
-  const data = await vercelFetch(`/v13/deployments/${PRODUCTION_DOMAIN}`);
-  return data.id || data.uid;
+// Alias de branch de preview (-git-codex-..., -git-feat-...) NÃO protege nada;
+// domínios reais (.vercel.app públicos, ex.: consultorio-jaqueline.vercel.app,
+// que é o endereço dos links de formulário enviados a pacientes) e git-main sim.
+// Esse alias específico é manual e pode apontar para um deploy que não é o
+// mais recente -- apagá-lo derrubaria os links (DEPLOYMENT_NOT_FOUND).
+async function deploymentsComDominioReal() {
+  const data = await vercelFetch('/v4/aliases?limit=100');
+  const protegido = (a) => !/-git-/.test(a.alias) || /-git-main-/.test(a.alias);
+  return new Set(data.aliases.filter((a) => a.deployment?.id && protegido(a)).map((a) => a.deployment.id));
 }
 
 async function main() {
-  const [todos, producaoId] = await Promise.all([listarTodosDeployments(), idDeploymentAtualDeProducao()]);
-  todos.sort((a, b) => b.createdAt - a.createdAt);
-
-  const manter = new Set([producaoId]);
-  for (const d of todos) {
-    if (manter.size >= MANTER) break;
-    manter.add(d.uid);
-  }
-
-  const apagar = todos.filter((d) => !manter.has(d.uid));
-  console.log(`Total: ${todos.length} | Mantendo: ${manter.size} | Apagando: ${apagar.length}`);
-
+  const [projetos, comDominio] = await Promise.all([listarProjetos(), deploymentsComDominioReal()]);
   let falhas = 0;
-  for (const d of apagar) {
-    try {
-      await vercelFetch(`/v13/deployments/${d.uid}`, { method: 'DELETE' });
-    } catch (e) {
-      falhas++;
-      console.error(`Falha ao apagar ${d.uid} (${d.url}): ${e.message}`);
+  for (const projeto of projetos) {
+    const todos = await listarDeployments(projeto.id);
+    todos.sort((a, b) => b.created - a.created);
+    const manter = new Set();
+    if (projeto.producaoId) manter.add(projeto.producaoId);
+    for (const d of todos) if (comDominio.has(d.uid)) manter.add(d.uid);
+    for (const d of todos) {
+      if (manter.size >= MANTER) break;
+      manter.add(d.uid);
+    }
+    const apagar = todos.filter((d) => !manter.has(d.uid));
+    console.log(`${projeto.name}: total ${todos.length} | mantendo ${manter.size} | apagando ${apagar.length}`);
+    for (const d of apagar) {
+      try {
+        await vercelFetch(`/v13/deployments/${d.uid}`, { method: 'DELETE' });
+      } catch (e) {
+        falhas++;
+        console.error(`Falha ao apagar ${d.uid} (${d.url}): ${e.message}`);
+      }
     }
   }
-  console.log(`Concluído. ${apagar.length - falhas} apagados, ${falhas} falhas.`);
+  console.log(`Concluído. ${falhas} falhas.`);
   if (falhas > 0) process.exitCode = 1;
 }
 

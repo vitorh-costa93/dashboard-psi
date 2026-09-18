@@ -7,7 +7,7 @@ name: Limpar deploys antigos da Vercel
 # ultimas entregas mais recentes (ver DEPLOYMENTS_TO_KEEP abaixo).
 on:
   schedule:
-    - cron: '0 6 * * 0' # todo domingo as 06:00 UTC (03:00 em Brasilia)
+    - cron: '0 6 * * *' # todo dia as 06:00 UTC (03:00 em Brasilia)
   workflow_dispatch: {} # permite rodar manualmente pela aba Actions no GitHub
 
 jobs:
@@ -21,4 +21,4 @@ jobs:
       - run: node scripts/cleanup-vercel-deployments.mjs
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          DEPLOYMENTS_TO_KEEP: '5'
+          DEPLOYMENTS_TO_KEEP: '4'

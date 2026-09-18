@@ -1232,7 +1232,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
   <div class="pront-sub-tabs">
     <button class="pront-sub-tab active" id="pront-sub-btn-prontuario" onclick="switchProntSubTab('prontuario')">📋 Prontuário</button>
-    <button class="pront-sub-tab" id="pront-sub-btn-anamnese" onclick="switchProntSubTab('anamnese')">🧾 Anamnese</button>
+    <button class="pront-sub-tab" id="pront-sub-btn-anamnese" onclick="switchProntSubTab('anamnese')">🧾 Anamnese <span class="notification-badge" id="anamnese-pending-badge"></span></button>
     <button class="pront-sub-tab" id="pront-sub-btn-online" onclick="switchProntSubTab('online')">🔗 Informações iniciais - online <span class="notification-badge" id="online-pending-badge"></span></button>
   </div>
 
@@ -1327,6 +1327,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="pront-form-actions"><button class="btn-primary" onclick="gerarLinkAnamnese()">Gerar link seguro</button><button class="btn-secondary" onclick="criarModeloAnamneseOnline()">Criar modelo de Anamnese online</button></div>
       <div id="anamnese-link-box" style="display:none;margin-top:10px;word-break:break-all"></div>
     </div>
+    <div style="margin:14px 0"><strong style="font-size:.84rem">Respostas online recebidas</strong><div id="anamnese-respostas" style="margin-top:8px"><div class="alert-empty">Nenhuma resposta recebida.</div></div></div>
     <div id="anamnese-editor" style="display:none;margin-top:14px;">
       <div id="anamnese-campos"></div>
       <div id="anamnese-meta" style="font-size:.72rem;color:var(--muted);margin-top:10px;"></div>
@@ -1362,7 +1363,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <h3>📄 Novo documento</h3>
     <div class="doc-form-grid">
       <div class="pront-field"><label class="pront-label">Paciente</label><select class="pront-input" id="doc-paciente" onchange="carregarDocumentos()"><option value="">Selecione...</option></select></div>
-      <div class="pront-field"><label class="pront-label">Tipo de documento</label><select class="pront-input" id="doc-tipo" onchange="montarFormularioDocumento()"><option value="">Selecione...</option><option value="termo_infantil">Termo de Compromisso - Infantil</option><option value="termo_adulto">Termo de Compromisso - Adulto</option><option value="orcamento">Orçamento de atendimento</option><option value="recibo">Comprovante de pagamento</option><option value="relatorio_psicologico">Relatório psicológico</option><option value="encaminhamento">Encaminhamento</option><option value="solicitacao_escolar">Solicitação de relatório escolar</option><option value="declaracao_comparecimento">Declaração de comparecimento</option><option value="declaracao_frequencia">Declaração de frequência (múltiplas sessões)</option></select></div>
+      <div class="pront-field"><label class="pront-label">Tipo de documento</label><select class="pront-input" id="doc-tipo" onchange="montarFormularioDocumento()"><option value="">Selecione...</option><option value="termo_infantil">Termo de Compromisso - Infantil</option><option value="termo_adulto">Termo de Compromisso - Adulto</option><option value="orcamento">Orçamento de atendimento</option><option value="recibo">Comprovante de pagamento</option><option value="relatorio_psicologico">Relatório psicológico</option><option value="encaminhamento">Encaminhamento</option><option value="solicitacao_escolar">Solicitação de relatório escolar</option><option value="declaracao">Declaração</option><option value="declaracao_comparecimento">Declaração de comparecimento</option><option value="declaracao_frequencia">Declaração de frequência (múltiplas sessões)</option></select></div>
       <div class="pront-field"><label class="pront-label">Data de emissão</label><input class="pront-input" type="date" id="doc-emissao" oninput="atualizarPreviaDocumento()"/></div>
       <div class="pront-field"><label class="pront-label">Estilo do documento</label><select class="pront-input" id="doc-estilo" onchange="atualizarPreviaDocumento()"><option value="colorido">Colorido</option><option value="preto-branco">Preto e branco</option></select></div>
     </div>
@@ -4142,7 +4143,7 @@ async function initFormularios(){
     document.getElementById('form-modelo').innerHTML='<option value="">Selecione...</option>'+_formTemplates.filter(t=>t.destino==='cadastro').map(t=>`<option value="${escHtmlAttr(t.id)}">${escHtml(t.nome)}</option>`).join('');
     const anamneseModelo=document.getElementById('anamnese-modelo-link');if(anamneseModelo)anamneseModelo.innerHTML='<option value="">Selecione...</option>'+_formTemplates.filter(t=>t.destino==='anamnese').map(t=>`<option value="${escHtmlAttr(t.id)}">${escHtml(t.nome)}</option>`).join('');
     renderRespostasFormularios(respostas);
-  }catch(e){document.getElementById('form-respostas').innerHTML='<div class="alert-empty">Não foi possível carregar os formulários.</div>';}
+  }catch(e){document.getElementById('form-respostas').innerHTML='<div class="alert-empty">Não foi possível carregar os formulários.</div>';const ar=document.getElementById('anamnese-respostas');if(ar)ar.innerHTML='<div class="alert-empty">Não foi possível carregar as respostas.</div>';}
 }
 async function criarModeloAnamnese(){
   const payload={action:'template',destino:'cadastro',nome:'Cadastro do paciente',finalidade:'Dados cadastrais e informações essenciais para o atendimento online.',campos:[{key:'nome_completo',label:'Nome completo',type:'text',required:true},{key:'data_nascimento',label:'Data de nascimento',type:'date',required:true},{key:'endereco_completo',label:'Endereço completo',type:'textarea',required:true},{key:'cpf',label:'CPF',type:'text',required:true},{key:'email',label:'E-mail',type:'email',required:true},{key:'contato_emergencia',label:'Contato de emergência',type:'text',required:true},{key:'toma_medicacao',label:'Toma alguma medicação?',type:'select',options:['','Sim','Não'],required:true},{key:'qual_medicacao',label:'Se sim, qual?',type:'textarea',required:false}]};
@@ -4177,10 +4178,19 @@ async function gerarLinkAnamnese(){
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
   const box=document.getElementById('anamnese-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
+// São dois formulários distintos: o de Cadastro ("Informações iniciais -
+// online") e o de Anamnese (sub-aba Anamnese). Cada resposta aparece só na
+// sub-aba do seu próprio modelo (destino), com o próprio contador.
 function renderRespostasFormularios(rows){
-  const el=document.getElementById('form-respostas'),visiveis=rows.filter(x=>x.status!=='rejected'),pending=visiveis.filter(x=>x.status==='pending_review');
-  const badge=document.getElementById('online-pending-badge');badge.textContent=pending.length;badge.style.display=pending.length?'inline-block':'none';
-  if(!visiveis.length){el.innerHTML='<div class="alert-empty">Nenhuma informação recebida.</div>';return;}
+  const destinoDe=x=>x.formularios_convites?.formularios_modelos?.destino==='anamnese'?'anamnese':'cadastro';
+  renderListaRespostas(rows.filter(x=>destinoDe(x)==='cadastro'),'form-respostas','online-pending-badge','Nenhuma informação recebida.');
+  renderListaRespostas(rows.filter(x=>destinoDe(x)==='anamnese'),'anamnese-respostas','anamnese-pending-badge','Nenhuma resposta recebida.');
+}
+function renderListaRespostas(rows,elId,badgeId,vazio){
+  const el=document.getElementById(elId),visiveis=rows.filter(x=>x.status!=='rejected'),pending=visiveis.filter(x=>x.status==='pending_review');
+  const badge=document.getElementById(badgeId);if(badge){badge.textContent=pending.length;badge.style.display=pending.length?'inline-block':'none';}
+  if(!el)return;
+  if(!visiveis.length){el.innerHTML='<div class="alert-empty">'+vazio+'</div>';return;}
   el.innerHTML=visiveis.slice(0,30).map(x=>{
     const convite=x.formularios_convites||{},modelo=convite.formularios_modelos||{},aguardando=x.status==='pending_review',cadastro=modelo.destino==='cadastro',paciente=_pacientesById[convite.paciente_id],labels=Object.fromEntries((modelo.campos||[]).map(c=>[c.key,c.label]));
     const campos=Object.entries(x.conteudo||{}).map(([key,value])=>`<div class="response-field"><span class="response-label">${escHtml(labels[key]||key.replace(/_/g,' '))}</span><div class="response-value">${escHtml(value||'Não informado')}</div></div>`).join('');
@@ -4525,7 +4535,7 @@ function exportarProntDOCX() {
 // Documentos por paciente
 // ══════════════════════════════════════════════════════════
 let _documentos=[],_docAtual=null,_docInit=false,_audioTarget=null,_audioButton=null,_psms=[];
-const DOC_NAMES={termo_infantil:'Termo de Compromisso - Infantil',termo_adulto:'Termo de Compromisso - Adulto',orcamento:'Orçamento de atendimento',recibo:'Comprovante de pagamento',relatorio_psicologico:'Relatório psicológico',encaminhamento:'Encaminhamento',solicitacao_escolar:'Solicitação de relatório escolar',declaracao_comparecimento:'Declaração de comparecimento',declaracao_frequencia:'Declaração de frequência'};
+const DOC_NAMES={termo_infantil:'Termo de Compromisso - Infantil',termo_adulto:'Termo de Compromisso - Adulto',orcamento:'Orçamento de atendimento',recibo:'Comprovante de pagamento',relatorio_psicologico:'Relatório psicológico',encaminhamento:'Encaminhamento',solicitacao_escolar:'Solicitação de relatório escolar',declaracao:'Declaração',declaracao_comparecimento:'Declaração de comparecimento',declaracao_frequencia:'Declaração de frequência'};
 const TERM_COMMON=[
   {titulo:'I. Sessões de psicoterapia',texto:'O tratamento será realizado em sessões de aproximadamente 50 minutos, com atividades e técnicas cientificamente reconhecidas na psicologia. A duração do processo depende das necessidades apresentadas, não sendo possível definir previamente um número exato de sessões.'},
   {titulo:'I.I Sigilo',texto:'A psicóloga mantém sigilo profissional para proteger a intimidade das pessoas às quais tenha acesso no exercício profissional, observadas as disposições do Código de Ética Profissional.'},
@@ -4568,6 +4578,7 @@ function montarFormularioDocumento(){
   if(tipo==='relatorio_psicologico')html+=`<div class="pront-field full"><label class="pront-label">Formato do relatório</label><select class="pront-input doc-input" id="doc-relatorio-formato" onchange="atualizarPreviaDocumento()"><option value="estruturado">Estruturado (4 seções)</option><option value="orientacao">Orientação (texto curto)</option></select></div>`+inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório');
   if(tipo==='encaminhamento')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade (ex.: Encaminhamento para Psiquiatra Infantil)')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do encaminhamento');
   if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação');
+  if(tipo==='declaracao')html+=inputDoc('doc-frequencia','Frequência do acompanhamento','text','maxlength="80" placeholder="Ex.: 01 sessão semanal"')+inputDoc('doc-inicio','Início dos atendimentos','date')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da declaração','Descreva os fatos, a finalidade e o que precisa constar na declaração.');
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
   if(tipo==='declaracao_frequencia')html+=inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
@@ -4594,6 +4605,8 @@ function preencherDocumentoDoCadastro(){
   setar('doc-inicio',p.inicio_atendimentos);
   setar('doc-anamnese-data',p.data_anamnese);
   setar('doc-anamnese-coleta-data',p.data_anamnese);
+  const regra=agendaRule(pid);
+  setar('doc-frequencia',regra?(regra.frequencia==='quinzenal'?'01 sessão quinzenal':'01 sessão semanal'):null);
 }
 
 function renderSessoesRecibo(){
@@ -4627,6 +4640,11 @@ function conteudoDocumento(){
     secoes.push(...separarTextoIA(campo('doc-texto-final')));
   } else if(tipo==='solicitacao_escolar'){
     campos['Destinatário']=campo('doc-destinatario');secoes.push({titulo:'Solicitação',texto:campo('doc-texto-final')});
+  } else if(tipo==='declaracao'){
+    const frequencia=campo('doc-frequencia'),inicio=dataBR(campo('doc-inicio'));
+    campos['Frequência do acompanhamento']=frequencia;campos['Início dos atendimentos']=inicio;
+    const abertura=`Eu, Jaqueline Cristina Vieira, psicóloga, inscrita no CRP nº 06/191478, declaro para os devidos fins que:\n\n${nome||'O(a) paciente'} encontra-se em acompanhamento psicológico sob minha responsabilidade${inicio?` desde ${inicio}`:''}${frequencia?`, com frequência de ${frequencia}`:''}.`;
+    secoes.push({titulo:'',texto:abertura},{titulo:'',texto:campo('doc-texto-final')});
   } else if(tipo==='declaracao_comparecimento'){
     campos['Dia da sessão']=dataBR(campo('doc-sessao-data'));campos['Horário']=`${campo('doc-hora-inicio')} às ${campo('doc-hora-fim')}`;secoes.push({titulo:'Declaração',texto:`Declaro, para os devidos fins, que ${nome||'o(a) paciente'} compareceu ao consultório para atendimento psicológico na data e horário informados.`});
   } else if(tipo==='declaracao_frequencia'){
@@ -4674,7 +4692,7 @@ function tituloDocumentoAtual(tipo){
 }
 function atualizarPreviaDocumento(){
   const tipo=document.getElementById('doc-tipo').value,preview=document.getElementById('doc-preview');if(!tipo){preview.className='doc-preview';return preview.innerHTML='<div class="alert-empty">A prévia aparecerá aqui enquanto você preenche.</div>';}
-  const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=Object.entries(data.campos).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(v)}</p>`).join(''),secoes=data.secoes.filter(x=>x.texto).map(x=>`<h3>${escHtml(x.titulo)}</h3><p>${escHtml(x.texto)}</p>`).join('');
+  const data=conteudoDocumento(),emissao=document.getElementById('doc-emissao').value,campos=tipo==='declaracao'?'':Object.entries(data.campos).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(v)}</p>`).join(''),secoes=data.secoes.filter(x=>x.texto).map(x=>`${x.titulo?`<h3>${escHtml(x.titulo)}</h3>`:''}<p>${escHtml(x.texto)}</p>`).join('');
   preview.className=`doc-preview ${data.estilo}`;
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(tituloDocumentoAtual(tipo))}</h2>${campos}${secoes}${fechamentoDocumento(emissao)}`;
 }
@@ -4719,13 +4737,13 @@ async function enviarChatIA(){
   if(!pedido&&!anexo)return;
   if(!_docChatHistorico.length&&!anexo&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe o conteúdo que deseja elaborar.');
   const btn=document.getElementById('doc-chat-modal-btn'),loading=document.getElementById('doc-chat-modal-loading');
-  const tipo=document.getElementById('doc-tipo').value,formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined;
+  const tipo=document.getElementById('doc-tipo').value,formato=tipo==='relatorio_psicologico'?(campo('doc-relatorio-formato')||'estruturado'):undefined,contextoDeclaracao=tipo==='declaracao'?{paciente:campo('doc-nome-completo'),frequencia:campo('doc-frequencia'),inicio_atendimentos:campo('doc-inicio')}:undefined;
   const pedidoEfetivo=pedido||'Considere o conteúdo do arquivo anexado.';
   input.disabled=true;btn.disabled=true;loading.style.display='inline';
   const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome,textoVisivel:pedidoEfetivo}:{})};
   _docChatHistorico.push(turnoUsuario);renderChatIA();mostrarDigitando('doc-chat-modal-msgs');
   try{
-    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedidoEfetivo,historico:_docChatHistorico.slice(0,-1),formato,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{})})}),d=await r.json();
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'documents',action:'generate',tipo,descricao:pedidoEfetivo,historico:_docChatHistorico.slice(0,-1),formato,...(contextoDeclaracao?{contextoDeclaracao}:{}),...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
     if(d.descricaoComAnexo)turnoUsuario.texto=d.descricaoComAnexo;
     _docChatHistorico.push({papel:'assistente',texto:d.texto});
@@ -4793,6 +4811,9 @@ async function salvarDocumento(){
 }
 async function carregarDocumentos(){
   const id=document.getElementById('doc-paciente').value,box=document.getElementById('doc-lista');if(!id){box.innerHTML='<div class="alert-empty">Selecione um paciente.</div>';return;}
+  // A frequência do acompanhamento (Declaração) vem da recorrência da Agenda;
+  // carrega o estado dela uma vez, mesmo que a aba Agenda nunca tenha sido aberta.
+  if(!_agendaState){try{_agendaState=await agendaApi();}catch{}}
   if(document.getElementById('doc-tipo').value){preencherDocumentoDoCadastro();atualizarPreviaDocumento();}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${x.conteudo?.rascunho?'🕓 Rascunho — ':''}${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
@@ -4815,9 +4836,13 @@ function restaurarEstadoDocumento(x){
   restaurarCamposDocumento(x);
 }
 function abrirDocumento(id,button){
-  const x=_documentos.find(d=>d.id===id);if(!x)return;_docAtual=x;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');
+  const x=_documentos.find(d=>d.id===id);if(!x)return;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');
   restaurarEstadoDocumento(x);
-  const campos=Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`<h3>${escHtml(s.titulo)}</h3><p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
+  // Precisa vir DEPOIS de restaurarEstadoDocumento: ela chama
+  // montarFormularioDocumento(), que zera _docAtual -- antes, "Exportar PDF"
+  // sempre respondia "Salve o documento antes" mesmo com o documento salvo.
+  _docAtual=x;
+  const campos=x.tipo==='declaracao'?'':Object.entries(x.conteudo.campos||{}).filter(([,v])=>v).map(([k,v])=>`<p><strong>${escHtml(k)}:</strong> ${escHtml(dataBR(v))}</p>`).join(''),secoes=(x.conteudo.secoes||[]).map(s=>`${s.titulo?`<h3>${escHtml(s.titulo)}</h3>`:''}<p>${escHtml(dataBR(s.texto))}</p>`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
   preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
 }
 function restaurarCamposDocumento(x){
@@ -4853,6 +4878,9 @@ function restaurarCamposDocumento(x){
     if(x.tipo==='relatorio_psicologico')document.getElementById('doc-relatorio-formato').value=c.metadados?.formato||'estruturado';
   } else if(x.tipo==='solicitacao_escolar'){
     document.getElementById('doc-destinatario').value=campos['Destinatário']||'';
+  } else if(x.tipo==='declaracao'){
+    document.getElementById('doc-frequencia').value=campos['Frequência do acompanhamento']||'';
+    document.getElementById('doc-inicio').value=isoDeBR(campos['Início dos atendimentos']);
   } else if(x.tipo==='declaracao_comparecimento'){
     document.getElementById('doc-sessao-data').value=isoDeBR(campos['Dia da sessão']);
     const [ini,fim]=String(campos['Horário']||'').split(' às ');document.getElementById('doc-hora-inicio').value=(ini||'').trim();document.getElementById('doc-hora-fim').value=(fim||'').trim();

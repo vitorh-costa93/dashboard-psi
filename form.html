@@ -28,7 +28,16 @@ async function init(){
     const r=await fetch('/api/form?token='+encodeURIComponent(token),{cache:'no-store'}),d=await r.json();if(!r.ok)throw new Error(d.error);
     document.getElementById('loading').hidden=true;form.hidden=false;document.getElementById('title').textContent=d.nome;document.getElementById('purpose').textContent=d.finalidade;
     const fields=document.getElementById('fields');
-    (d.campos||[]).forEach((f,i)=>{const label=document.createElement('label');label.textContent=f.label||`Pergunta ${i+1}`;const input=document.createElement(f.type==='textarea'?'textarea':f.type==='select'?'select':'input');input.name=f.key||`campo_${i+1}`;input.required=!!f.required;if(input.tagName==='INPUT')input.type=f.type||'text';if(input.tagName==='SELECT')(f.options||[]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o)});fields.append(label,input)});
+    let secaoAtual=null;
+    (d.campos||[]).forEach((f,i)=>{
+      if(f.secao&&f.secao!==secaoAtual){secaoAtual=f.secao;const h=document.createElement('h2');h.textContent=secaoAtual;h.style.cssText='font:600 1.02rem Georgia,serif;margin:26px 0 4px;padding-top:16px;border-top:1px solid var(--border)';fields.append(h);}
+      const label=document.createElement('label');label.textContent=f.label||`Pergunta ${i+1}`;
+      const input=document.createElement(f.type==='textarea'?'textarea':f.type==='select'?'select':'input');
+      input.name=f.key||`campo_${i+1}`;input.required=!!f.required;
+      if(input.tagName==='INPUT')input.type=f.type||'text';
+      if(input.tagName==='SELECT')(f.options||[]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o)});
+      fields.append(label,input);
+    });
   }catch(e){done('Este link é inválido, expirou ou já foi utilizado.');}
 }
 form.addEventListener('submit',async e=>{

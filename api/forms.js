@@ -102,7 +102,16 @@ export default async function handler(req,res){
     if(req.method==='POST'&&req.body?.action==='template'){
       const {nome,finalidade,campos}=req.body,destino=req.body.destino==='cadastro'?'cadastro':'anamnese';if(!nome||!finalidade||!Array.isArray(campos))return res.status(400).json({error:'Modelo inválido'});
       const existingResponse=await supabase(`/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&nome=eq.${encodeURIComponent(nome)}&destino=eq.${destino}&ativo=eq.true&limit=1`);
-      const existing=await safeJson(existingResponse);if(existingResponse.ok&&existing?.length)return res.status(200).json(existing[0]);
+      const existing=await safeJson(existingResponse);
+      // Reaproveita o modelo já existente (mesmo nome+destino), mas atualiza
+      // finalidade/campos em vez de devolvê-lo intocado -- sem isso, uma
+      // mudança na Anamnese administrativa (_anamneseSecoes) nunca chegava ao
+      // formulário online já criado, porque clicar em "Criar modelo" de novo
+      // não fazia nada.
+      if(existingResponse.ok&&existing?.length){
+        const updateResponse=await supabase(`/rest/v1/formularios_modelos?id=eq.${encodeURIComponent(existing[0].id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({finalidade,campos})});
+        const updated=await safeJson(updateResponse);return res.status(updateResponse.ok?200:updateResponse.status).json(updateResponse.ok?updated[0]:{error:'Falha ao atualizar modelo'});
+      }
       const response=await supabase('/rest/v1/formularios_modelos',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({nome,finalidade,campos,destino})});
       const data=await safeJson(response);return res.status(response.ok?201:response.status).json(response.ok?data[0]:{error:'Falha ao criar modelo'});
     }

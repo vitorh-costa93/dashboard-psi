@@ -4153,8 +4153,23 @@ async function gerarLinkFormulario(){
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
   const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
+// Gera o modelo online a partir de _anamneseSecoes (a mesma fonte da Anamnese
+// preenchida internamente) -- pedido do usuário: o formulário online precisa
+// trazer TODAS as perguntas da sub-aba Anamnese, não um subconjunto à parte
+// que ia divergindo com o tempo. "yesno" e "select" viram <select> no
+// formulário público (form.html não tem um input nativo pra pergunta
+// sim/não); os demais tipos (date/tel/email/textarea/texto simples) passam
+// direto. Só nome da criança e data de nascimento são obrigatórios -- o
+// restante segue opcional, igual ao formulário preenchido pela psicóloga.
+function camposAnamneseOnline(){
+  return _anamneseSecoes.flatMap(([secao,itens])=>itens.map(([key,label,tipo,opcoes])=>{
+    if(tipo==='yesno')return{key,label,type:'select',options:['','Sim','Não'],required:false,secao};
+    if(tipo==='select')return{key,label,type:'select',options:['',...(opcoes||[])],required:false,secao};
+    return{key,label,type:tipo||'text',required:key==='nome_crianca'||key==='data_nascimento',secao};
+  }));
+}
 async function criarModeloAnamneseOnline(){
-  const payload={action:'template',destino:'anamnese',nome:'Anamnese inicial completa',finalidade:'Informações iniciais para avaliação psicológica; a resposta requer revisão profissional antes de ser incorporada.',campos:[{key:'nome_completo',label:'Nome completo',type:'text',required:true},{key:'cpf_paciente',label:'CPF do paciente',type:'text',required:false},{key:'data_nascimento',label:'Data de nascimento',type:'date',required:true},{key:'responsavel_nome',label:'Nome do responsável (se aplicável)',type:'text',required:false},{key:'cpf_responsavel',label:'CPF do responsável (se aplicável)',type:'text',required:false},{key:'motivo_atendimento',label:'Motivo da procura',type:'textarea',required:true},{key:'historico_queixa',label:'Histórico da queixa',type:'textarea',required:true},{key:'tratamentos_anteriores',label:'Tratamentos psicológicos ou psiquiátricos anteriores',type:'textarea',required:false},{key:'medicacoes',label:'Medicamentos em uso',type:'textarea',required:false},{key:'contato_emergencia',label:'Contato de emergência',type:'text',required:true}]};
+  const payload={action:'template',destino:'anamnese',nome:'Anamnese inicial completa',finalidade:'Todas as perguntas da Anamnese, para o responsável preencher remotamente antes da consulta; a resposta requer revisão profissional antes de ser incorporada.',campos:camposAnamneseOnline()};
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível criar o modelo');toast('✅ Modelo de Anamnese criado');await initFormularios();
 }
 async function gerarLinkAnamnese(){

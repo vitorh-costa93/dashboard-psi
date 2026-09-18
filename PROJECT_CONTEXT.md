@@ -222,3 +222,9 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 
 - O carregamento do Dashboard não pode escrever em `pacientes`: os dados de sessões históricas servem somente para relatórios e podem conter rótulos abreviados ou antigos.
 - O cadastro administrativo em `pacientes` é a fonte de verdade para nome completo e demais dados do perfil. Qualquer importação legada precisa ser uma ação explícita, revisável e idempotente — nunca uma consequência de abrir ou atualizar o Dashboard.
+
+## Cadastro é a única verdade — importação da planilha (18/09/2026)
+
+- `lib/sheet-import.js` (job horário, `api/trends.js?job=import-sheet`, disparado por gatilho externo às :07) **não escreve em pacientes existentes**: nem nome/rótulos, nem `ativo`/status. Só cria pacientes realmente novos (inativos) e vincula linhas por `pacientes_origem`. Sobrescrever nome completo com o nome abreviado da planilha causou perda de edições do cadastro.
+- `pacientes.nome` é NOT NULL: um upsert parcial (só `id`/`ativo`) falha inteiro e derruba a importação (aconteceu: 9 execuções falhas em 18/09). Se precisar atualizar um paciente, use PATCH por id, nunca upsert parcial.
+- Para conferir a saúde: `select status,count(*) from importacoes where iniciado_em>now()-interval '3 hours' group by 1` (esperado: `completed`).

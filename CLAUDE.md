@@ -123,3 +123,13 @@ parte da solução de artefatos locais como `tmp/`, `output/`, `.devserver.log`,
 Os commits mais recentes do histórico Git tratam documentos e geração de
 conteúdo; consulte `git log --oneline -12` para a sequência atual antes de
 criar novo commit.
+
+## Domínio dos links enviados a pacientes (18/09/2026)
+
+- `PUBLIC_FORM_ORIGIN` (Vercel, produção) = `https://consultorio-jaqueline.vercel.app`,
+  escolhido para não expor "dashboard-psi" nos links de formulário.
+- Esse domínio é um alias MANUAL (`vercel alias set`), não um domínio do
+  projeto: NÃO acompanha novos deploys sozinho. Depois de cada deploy de
+  produção, rode:
+  `npm run vercel -- alias set dashboard-psi-tau.vercel.app consultorio-jaqueline.vercel.app`
+  Solução definitiva: comprar um domínio próprio e adicioná-lo ao projeto.

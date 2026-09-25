@@ -1687,6 +1687,8 @@ function mesLabel(ym){if(!ym)return'';const[y,m]=ym.split('-');const n=['jan','f
 // mudou. Mesmo critério da função SQL nome_exibicao_paciente(): nome de uma
 // palavra só volta como está, senão primeira + última palavra.
 function iniciais(nome){const partes=String(nome||'').trim().split(/\s+/).filter(Boolean);if(partes.length<=1)return partes[0]||'';let fim=2;if(/^(d[aeo]s?|e)$/i.test(partes[1])&&partes.length>2)fim=3;return partes.slice(0,fim).join(' ');}
+// Ativo de verdade = flag ativo E status operacional "ativo" (pausado/inativo ficam de fora de todo dropdown).
+function pacienteAtivo(p){return !!p&&p.ativo===true&&(p.status_operacional||'ativo')==='ativo';}
 function rotuloPaciente(p){return p?.ultimo_label||iniciais(p?.nome);}
 function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
@@ -2303,7 +2305,7 @@ function renderCnpjResumo(){
 let _dsessPacienteNomeParaId={};
 function dsessAtualizarListaPacientes(rows){
   const mapa={};
-  rows.forEach(x=>{const nome=x.pacientes?.nome,cad=_pacientesById?.[x.paciente_id];if(nome&&x.paciente_id&&(!cad||cad.ativo===true))mapa[nome]=x.paciente_id;});
+  rows.forEach(x=>{const nome=x.pacientes?.nome,cad=_pacientesById?.[x.paciente_id];if(nome&&x.paciente_id&&(!cad||pacienteAtivo(cad)))mapa[nome]=x.paciente_id;});
   _dsessPacienteNomeParaId=mapa;
   const itens=Object.keys(mapa).sort((a,b)=>a.localeCompare(b)).map(n=>({value:n,label:n}));
   if(!_combos['dsess-paciente-combo']){
@@ -4122,7 +4124,7 @@ function renderCamposAnamnese(){
 function initAnamnese(){
   const select=document.getElementById('anamnese-paciente');if(!select)return;
   renderCamposAnamnese();
-  const pacientes=Object.values(_pacientesById).filter(p=>p.ativo&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const pacientes=Object.values(_pacientesById).filter(p=>pacienteAtivo(p)&&!String(p.id).startsWith('legacy:')).sort((a,b)=>a.nome.localeCompare(b.nome));
   select.innerHTML='<option value="">Selecione...</option>'+pacientes.map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   document.getElementById('anamnese-pac-grid').innerHTML=pacientes.map(p=>`<button class="pront-lib-card" type="button" onclick="selecionarPacienteAnamnese('${escHtmlAttr(p.id)}')" style="text-align:left"><div style="font-weight:500;font-size:.85rem;margin-bottom:4px">${escHtml(p.nome)}</div><div style="font-size:.72rem;color:var(--muted)">Abrir anamnese</div></button>`).join('');
 }
@@ -4192,7 +4194,7 @@ async function salvarAnamnese(){
 let _formTemplates=[];
 async function initFormularios(){
   const paciente=document.getElementById('form-paciente');if(!paciente)return;
-  paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
+  paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(pacienteAtivo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   try{
     const [tm,rs]=await Promise.all([fetch('/api/forms?resource=templates'),fetch('/api/forms')]);
     _formTemplates=tm.ok?await tm.json():[];const respostas=rs.ok?await rs.json():[];
@@ -4281,7 +4283,7 @@ async function carregarPacientes() {
 function preencherDropdownProntuarios() {
   const sel = document.getElementById('pront-pac');
   sel.innerHTML = '<option value="">Selecione...</option>';
-  const ativos = Object.values(_pacientesById).filter(p => p.ativo);
+  const ativos = Object.values(_pacientesById).filter(pacienteAtivo);
   const ordem = {'seg':0,'ter':1,'qua':2,'qui':3,'sex':4,'sab':5,'dom':6};
   function dia(h){h=(h||'').toLowerCase();for(const[d,o] of Object.entries(ordem))if(h.startsWith(d))return o;return 99;}
   function hora(h){const m=(h||'').match(/(\d{1,2})h(\d{0,2})/);return m?+m[1]*60+(+m[2]||0):9999;}
@@ -4314,7 +4316,8 @@ async function carregarProntuarios() {
       if (!_prontuarios[pid]) {
         const p = _pacientesById[pid];
         _prontuarios[pid] = {
-          label: r.paciente_label,
+          // Rótulo atual do cadastro; paciente_label gravado na sessão é uma chave antiga.
+          label: p ? rotuloPaciente(p) : r.paciente_label,
           nome: p?.nome || r.paciente_key,
           ativo: p ? !!p.ativo : false,
           // Aba "Inativos": só quem foi inativado (ou não tem cadastro). Pausado segue em "Ativos".
@@ -4518,7 +4521,7 @@ function verProntuario(id){
   if(_prontFiltroStatus!==grupo){_prontFiltroStatus=grupo;renderBuscaProntuario();}
   document.getElementById('pront-view').style.display='block';
   document.getElementById('pront-empty').style.display='none';
-  document.getElementById('pront-view-titulo').textContent='📋 '+(p.label||p.nome||'Prontuário')+(p.ativo===false?' · inativo':'');
+  document.getElementById('pront-view-titulo').textContent='📋 '+(p.label||p.nome||'Prontuário')+(p.arquivado?' · inativo':'');
   const tbody=document.getElementById('pront-tabela'); tbody.innerHTML='';
   [...p.sessoes].sort((a,b)=>b.data.localeCompare(a.data)).forEach((s,i)=>{
     const [y,m,d]=s.data.split('-');
@@ -4711,7 +4714,7 @@ function fechamentoDocumento(emissao,disponivel=true,tipo=null,campos=null){
 
 async function initDocumentos(){
   if(!_pacientesById||!Object.keys(_pacientesById).length)await carregarPacientes();
-  const sel=document.getElementById('doc-paciente');sel.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(p=>p.ativo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
+  const sel=document.getElementById('doc-paciente');sel.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(pacienteAtivo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);habilitarAudioGlobal();atualizarPreviaPSM();carregarPSMs();
 }
 

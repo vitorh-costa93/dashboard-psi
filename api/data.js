@@ -7,7 +7,12 @@ import { encryptClinicalData, decryptClinicalData } from './_clinical-crypto.js'
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
-const TABLES = ['atividades', 'prontuarios', 'pacientes', 'posts', 'trend_radar', 'post_artes'];
+const TABLES = ['atividades', 'prontuarios', 'pacientes', 'posts', 'trend_radar', 'post_artes', 'prontuario_anexos'];
+// Anexos de sessão (atividade utilizada): conteúdo em base64 cifrado com a mesma
+// chave dos demais dados clínicos. Limite de ~3 MB por arquivo (o corpo da
+// requisição na Vercel é limitado a 4,5 MB).
+const ANEXO_MAX_BASE64 = 4_200_000;
+const ANEXO_MIME = /^(image\/(jpeg|png|webp|gif|heic)|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/;
 
 // "relato" é o registro da sessão em si -- o dado mais sensível deste app --
 // e por uma inconsistência foi deixado de fora da criptografia que
@@ -52,7 +57,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET' && action === 'export-tudo') {
     try {
       const dados = {};
-      for (const t of TABLES) {
+      for (const t of TABLES.filter(x => x !== 'prontuario_anexos')) {
         const order = t === 'pacientes' ? 'nome.asc' : 'criado_em.desc';
         const r = await supaFetch(`${t}?select=*&order=${order}`);
         const rows = await r.json();
@@ -67,6 +72,31 @@ export default async function handler(req, res) {
   if (!TABLES.includes(table)) return res.status(400).json({ error: 'Tabela inválida' });
 
   try {
+    if (table === 'prontuario_anexos') {
+      if (req.method === 'GET' && action === 'file') {
+        const { id } = req.query; if (!id) return res.status(400).json({ error: 'id obrigatório' });
+        const r = await supaFetch(`prontuario_anexos?select=nome_arquivo,tipo_mime,conteudo&id=eq.${encodeURIComponent(id)}`);
+        const data = await r.json(); if (!r.ok) return res.status(r.status).json({ error: data });
+        if (!data?.[0]) return res.status(404).json({ error: 'Anexo não encontrado' });
+        return res.status(200).json({ nome_arquivo: data[0].nome_arquivo, tipo_mime: data[0].tipo_mime, base64: decryptClinicalData(data[0].conteudo) });
+      }
+      if (req.method === 'GET') {
+        const r = await supaFetch('prontuario_anexos?select=id,prontuario_id,nome_arquivo,tipo_mime,tamanho,criado_em&order=criado_em.asc');
+        const data = await r.json(); if (!r.ok) return res.status(r.status).json({ error: data });
+        return res.status(200).json(data);
+      }
+      if (req.method === 'POST') {
+        const { prontuario_id, nome_arquivo, tipo_mime, base64 } = req.body || {};
+        if (!prontuario_id || !nome_arquivo || !base64) return res.status(400).json({ error: 'Anexo inválido' });
+        if (!ANEXO_MIME.test(String(tipo_mime))) return res.status(415).json({ error: 'Tipo de arquivo não permitido' });
+        if (String(base64).length > ANEXO_MAX_BASE64) return res.status(413).json({ error: 'Arquivo maior que 3 MB' });
+        const row = { prontuario_id, nome_arquivo: String(nome_arquivo).slice(0, 200), tipo_mime, tamanho: Math.floor(String(base64).length * 3 / 4), conteudo: encryptClinicalData(base64) };
+        const r = await supaFetch('prontuario_anexos?select=id,prontuario_id,nome_arquivo,tipo_mime,tamanho,criado_em', { method: 'POST', body: JSON.stringify(row) });
+        const data = await r.json(); if (!r.ok) return res.status(r.status).json({ error: data });
+        return res.status(200).json(data);
+      }
+      if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
+    }
     if (req.method === 'GET') {
       if (table === 'posts' && action === 'detail') {
         const { id } = req.query;

@@ -8,13 +8,15 @@ const DIA_ABREV=['','Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 // (ex: "Leonice | Ter 09h", vindo da planilha) -- sem isso o paciente cadastrado
 // pela Agenda aparecia so com o nome cru nos dropdowns de Prontuarios/Documentos.
 // 17/09/2026: nome exibido resumido trocou de "só o primeiro nome" para
-// "primeiro + último nome" (mesmo critério da função SQL
+// "primeiro + último nome"; em 25/09/2026 passou a "dois primeiros nomes" (Vitor Hugo da Costa → Vitor Hugo; partículas da/de/do/dos/e entram junto com o nome seguinte). Mesmo critério da função SQL
 // nome_exibicao_paciente()) -- ex.: "Vitor Costa | Sex 15h", não "Vitor |
 // Sex 15h".
 function nomeExibicao(nome){
   const partes=String(nome||'').trim().split(/\s+/).filter(Boolean);
   if(partes.length<=1)return partes[0]||'';
-  return partes[0]+' '+partes[partes.length-1];
+  let fim=2;
+  if(/^(d[aeo]s?|e)$/i.test(partes[1])&&partes.length>2)fim=3;
+  return partes.slice(0,fim).join(' ');
 }
 function rotuloAgenda(nome,diaSemana,horario){
   const nomeCurto=nomeExibicao(nome);
@@ -94,7 +96,7 @@ async function sessions(req,res){
   // tudo o que foi acertado"). Sem filtro de data, a tabela sessoes já
   // passa de 1000 linhas -- pagina em blocos de 1000 igual allSessions(),
   // senão o PostgREST corta silenciosamente no limite padrão.
-  let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome),convenios(nome)&order=data_sessao.asc,horario.asc`;
+  let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome,ativo),convenios(nome)&order=data_sessao.asc,horario.asc`;
   if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
   if(req.query.month)return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));

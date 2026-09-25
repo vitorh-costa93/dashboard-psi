@@ -818,6 +818,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 </div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-secondary" onclick="inferirRecorrencias()">Sugerir padrões</button><button class="btn-secondary" onclick="importarHistoricoAgenda()">Importar histórico</button><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button></div>
 <div class="agenda-layout"><div><button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="abrirCadastroPaciente()">+ Novo paciente</button><div class="generator-card"><h3>Pacientes</h3><div class="agenda-patient-list" id="agenda-pacientes"></div></div></div>
+<div class="generator-card" id="wellz-card"><h3>Wellz — lançamento semanal</h3><p style="font-size:.74rem;color:var(--muted);margin:-6px 0 10px">Um único "paciente" para todos os atendimentos da plataforma. Informe as quantidades da semana (referência: sexta-feira); o valor é calculado sozinho e entra em Valor Recebido, Faltas, Atendimentos e CNPJ.</p><div class="agenda-table-wrap"><table class="agenda-table"><thead id="wellz-thead"></thead><tbody id="wellz-tbody"><tr><td class="agenda-empty">Carregando...</td></tr></tbody></table></div><div class="agenda-summary" id="wellz-summary"></div></div>
 <div class="generator-card"><h3>Atendimentos</h3><p style="font-size:.74rem;color:var(--muted);margin:-6px 0 10px">Mostrando a semana atual e pendências da semana passada sem registro. <label style="font-weight:600;cursor:pointer"><input type="checkbox" id="agenda-semana-toggle" checked onchange="renderAgenda()"> Só semana atual + pendências</label></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px"><div class="gen-field" style="flex:1;min-width:160px"><label>Novo atendimento — Paciente</label><select id="agenda-novo-paciente"></select></div><div class="gen-field" style="width:150px"><label>Data</label><input type="date" id="agenda-novo-data"></div><div class="gen-field" style="width:110px"><label>Horário</label><input type="time" id="agenda-novo-horario"></div><button class="btn-secondary" onclick="adicionarAtendimentoAvulso()">+ Adicionar</button></div><div class="agenda-summary" id="agenda-summary">—</div><div class="agenda-table-wrap"><table class="agenda-table"><thead><tr>
   <th data-tabela="agenda" data-col="data" onclick="ordenarTabela('agenda','data');renderAgenda()">Data</th>
   <th data-tabela="agenda" data-col="horario" onclick="ordenarTabela('agenda','horario');renderAgenda()">Horário</th>
@@ -1830,7 +1831,9 @@ async function loadData(){
       r._valorSessao    =pVal(r['Valor da sessão']);
       r._sessoesCob     =parseFloat(r['Sessões cobradas'])||0;
       r._compSim        =(r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado')?1:0;
-      r._valorTotal     =r._sessoesCob*r._valorSessao;
+      r._wellz          =!!r['Wellz'];
+      r._soValor        =!!r['Só valor'];   // histórico mensal: soma valor, não conta sessão nem falta
+      r._valorTotal     =r['Valor histórico']!=null?Number(r['Valor histórico'])||0:r._sessoesCob*r._valorSessao;
       // Cancelamento feito pela PSICÓLOGA (não pelo paciente) não é sinal de
       // risco de abandono do paciente -- fica de fora do cálculo de faltas
       // (numerador e denominador), mostrado à parte no painel "Faltas por
@@ -1923,7 +1926,7 @@ function nomesPacientesAtivosNoCadastro(){
   const cadastrados=Object.values(_pacientesById||{});
   if(cadastrados.length){
     return new Set(cadastrados
-      .filter(p=>p.ativo===true&&(p.status_operacional||'ativo')==='ativo')
+      .filter(p=>p.ativo===true&&(p.status_operacional||'ativo')==='ativo'&&p.nome!=='Wellz')
       .map(p=>String(p.nome||'').trim())
       .filter(Boolean));
   }
@@ -1953,8 +1956,8 @@ function processAndRender(){
     // total exclui sessões canceladas pela psicóloga -- não é uma
     // oportunidade real de comparecimento do paciente, não deveria contar
     // nem a favor nem contra a taxa de faltas.
-    const base=r.filter(x=>!x._canceladaPsicologa);
-    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length};
+    const base=r.filter(x=>!x._canceladaPsicologa&&!x._soValor);
+    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length};
   }
 
   // Mês atual: todos os dados (mês em curso)
@@ -2002,7 +2005,7 @@ function processAndRender(){
   // ── Gráficos histórico ──
   const labels=meses.map(mesLabel);
   const fatArr=meses.map(m=>rows.filter(r=>r._anoMes===m).reduce((s,r)=>s+r._valorTotal,0));
-  const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m).map(r=>r._paciente)).size);
+  const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m&&!r._wellz).map(r=>r._paciente)).size);
   const fltArr=meses.map(m=>rows.filter(r=>r._anoMes===m&&r._falta).length);
   renderBar('chart-fat',labels,fatArr,'R$','#4e553e');
   renderBar('chart-pac',labels,pacArr,'Pac','#4e553e');
@@ -2355,7 +2358,7 @@ function renderSessoesDetalhado(){
   });
   tbody.innerHTML=rows.length?rows.map(x=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td><button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button></td></tr>`;
+    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
   // Totais só fazem sentido com um paciente escolhido (senão seria a soma
@@ -5254,7 +5257,30 @@ function agendaEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;
 function agendaHoje(){return new Date().toISOString().slice(0,10)}function agendaMesAtual(){return agendaHoje().slice(0,7)}function agendaStatusFields(){document.getElementById('agenda-pausa-wrap').style.display=document.getElementById('agenda-paciente-status').value==='pausado'?'block':'none'}function agendaRule(id){return _agendaState?.rules?.find(r=>r.paciente_id===id&&r.ativo)||null}
 async function agendaApi(body){const month=document.getElementById('agenda-mes').value||agendaMesAtual(),r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(month),body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),d=await r.json().catch(()=>({}));if(r.status===401){window.location.reload();throw Error('Sessão expirada')}if(!r.ok)throw Error(d.error||'Não foi possível concluir');return d}
 async function initAgenda(){if(!_agendaInit){_agendaInit=true;document.getElementById('agenda-mes').value=agendaMesAtual();document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-novo-data').value=agendaHoje()}await carregarAgenda()}
-async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').map(p=>`<option value="${p.id}">${agendaEscape(p.ultimo_label||iniciais(p.nome))}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
+async function carregarAgenda(){document.getElementById('agenda-tbody').innerHTML='<tr><td colspan="6" class="agenda-empty">Carregando...</td></tr>';try{_agendaState=await agendaApi();const np=document.getElementById('agenda-novo-paciente'),oldNp=np.value;np.innerHTML=_agendaState.patients.filter(p=>p.nome!=='Wellz'&&(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').map(p=>`<option value="${p.id}">${agendaEscape(p.ultimo_label||iniciais(p.nome))}</option>`).join('');if([...np.options].some(o=>o.value===oldNp))np.value=oldNp;renderWellz();renderAgenda()}catch(e){document.getElementById('agenda-tbody').innerHTML=`<tr><td colspan="6" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`}}
+// ── Wellz ──────────────────────────────────────────────────────────────────
+function wellzValor(c){const t=_agendaState?.wellz?.tarifas||{};return (_agendaState?.wellz?.tipos||[]).reduce((s,x)=>s+(Number(c[x.key])||0)*(t[x.key]||0),0);}
+function renderWellz(){
+  const w=_agendaState?.wellz,head=document.getElementById('wellz-thead'),body=document.getElementById('wellz-tbody');if(!w||!head||!body)return;
+  const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  head.innerHTML='<tr><th>Semana (sexta)</th>'+w.tipos.map(t=>`<th>${agendaEscape(t.label)}<br><small style="font-weight:400">${brl(w.tarifas[t.key])} cada</small></th>`).join('')+'<th>Valor</th><th></th></tr>';
+  if(!w.sextas.length){body.innerHTML='<tr><td colspan="8" class="agenda-empty">Nenhuma sexta-feira neste mês a partir de '+w.inicio.split('-').reverse().join('/')+' (antes disso vale o histórico mensal).</td></tr>';document.getElementById('wellz-summary').textContent='';return;}
+  const porSemana=Object.fromEntries(w.semanas.map(x=>[x.semana_ref,x]));
+  body.innerHTML=w.sextas.map(iso=>{const r=porSemana[iso]||{};return `<tr data-semana="${iso}"><td data-label="Semana">${iso.split('-').reverse().join('/')}</td>`+w.tipos.map(t=>`<td data-label="${agendaEscape(t.label)}"><input type="number" min="0" max="999" step="1" data-tipo="${t.key}" value="${Number(r[t.key])||0}" oninput="wellzAtualizarLinha('${iso}')" style="width:80px"></td>`).join('')+`<td data-label="Valor"><strong id="wellz-valor-${iso}">${brl(Number(r.valor_total)||0)}</strong></td><td><button class="btn-xs" onclick="wellzSalvar('${iso}')">Salvar</button></td></tr>`;}).join('');
+  wellzResumo();
+}
+function wellzContagens(iso){const c={};document.querySelectorAll(`#wellz-tbody tr[data-semana="${iso}"] input[data-tipo]`).forEach(i=>{c[i.dataset.tipo]=Math.max(0,Math.floor(Number(i.value)||0));});return c;}
+function wellzAtualizarLinha(iso){const el=document.getElementById('wellz-valor-'+iso);if(el)el.textContent=wellzValor(wellzContagens(iso)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});wellzResumo();}
+function wellzResumo(){const el=document.getElementById('wellz-summary');if(!el)return;const t=[...document.querySelectorAll('#wellz-tbody tr[data-semana]')].reduce((s,tr)=>s+wellzValor(wellzContagens(tr.dataset.semana)),0);el.textContent='Total do mês (Wellz): '+t.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+async function wellzSalvar(iso){
+  try{
+    const c=wellzContagens(iso);
+    const saved=await agendaApi({action:'wellz_save',semana_ref:iso,...c});
+    const w=_agendaState.wellz;w.semanas=[...w.semanas.filter(x=>x.semana_ref!==iso),saved];
+    toast('Semana de '+iso.split('-').reverse().join('/')+' salva.');
+    await atualizarDashboardAposAgenda();
+  }catch(e){toast(e.message,5000)}
+}
 function agendaLimitesSemana(){const hoje=new Date();hoje.setHours(0,0,0,0);const diaSemana=hoje.getDay(),desloc=diaSemana===0?-6:1-diaSemana,inicioSemana=new Date(hoje);inicioSemana.setDate(hoje.getDate()+desloc);const fimSemana=new Date(inicioSemana);fimSemana.setDate(inicioSemana.getDate()+6);const inicioSemanaPassada=new Date(inicioSemana);inicioSemanaPassada.setDate(inicioSemana.getDate()-7);const fimSemanaPassada=new Date(inicioSemana);fimSemanaPassada.setDate(inicioSemana.getDate()-1);const iso=d=>d.toISOString().slice(0,10);return{inicioSemana:iso(inicioSemana),fimSemana:iso(fimSemana),inicioSemanaPassada:iso(inicioSemanaPassada),fimSemanaPassada:iso(fimSemanaPassada)};}
 function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+(locked?'—':'Pendente')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const itensBusca=_agendaState.patients.filter(p=>!pf||(p.status_operacional||(p.ativo?'ativo':'inativo'))===pf).map(p=>({value:p.id,label:p.nome+' ('+(p.status_operacional||(p.ativo?'ativo':'inativo'))+')'}));if(!_combos['agenda-busca-combo'])comboCriar('agenda-busca-combo',{items:itensBusca,placeholder:'Digite o nome…',allowAll:false,onSelect:id=>{if(id){abrirPerfilPaciente(id);comboSelecionar('agenda-busca-combo','',{silent:true});}}});else comboAtualizarItens('agenda-busca-combo',itensBusca);marcarSetaOrdenacao('agenda');}
 // Perfil do paciente: popup com cadastro, historico de valores (cada mudanca de

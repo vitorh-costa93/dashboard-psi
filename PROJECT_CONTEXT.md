@@ -238,3 +238,11 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - **Máscaras:** CPF e telefone são formatados ao digitar e ao preencher por código (script no `<head>` de index.html e form.html).
 - **Posts do feed em 3:4 (1080×1440):** a grade do perfil do Instagram corta artes quadradas. A arte é gerada em 1024×1536 e `recortar34()` apara a base (o topo, com logo/paginação, fica intacto); miniaturas no app usam `object-fit:contain`. Story continua 9:16.
 - **`ativo` segue `status_operacional` (25/09/2026):** a migration `20260925160000` corrigiu cadastros com `ativo=true` e status inativo (Laura J, Lavínia) e criou o trigger `trg_pacientes_ativo_status`. No frontend, `pacienteAtivo(p)` (flag + status "ativo") filtra todos os dropdowns; rótulos da biblioteca de prontuários vêm do cadastro atual, não do `paciente_label` gravado na sessão.
+
+## Wellz — plataforma online como "paciente" único (26/09/2026)
+
+- Paciente `Wellz` (criado pela migration `20260926090000`, contabiliza CNPJ) representa todos os atendimentos da plataforma. Tabelas `wellz_semanas` (uma linha por sexta-feira, com 5 quantidades e `valor_total`) e `wellz_historico` (valor mensal fixo nov/2025–ago/2026, total R$ 16.050,00). Nenhuma das duas mexe em `sessoes`.
+- Tarifas em `lib/wellz.js` (`TARIFAS`): falta R$ 10, acolhimento antes/após 17h R$ 25/35, realizado antes/após 17h R$ 50/60. O lançamento semanal só vale a partir de 01/09/2026 (`INICIO_SEMANAL`); antes disso vale o histórico, para não contar duas vezes.
+- `/api/operational` acrescenta linhas Wellz ao contrato do dashboard (uma por atendimento: falta = Comparecimento "Não"; realizado = "Sim") e à tabela "Atendimentos — detalhado" (linhas resumidas, somente leitura). O histórico mensal vira linhas só de valor divididas entre as sextas do mês (`Só valor`): entram em Valor Recebido/CNPJ, não contam como sessão nem falta. Ação `wellz_save` em `resource=agenda` grava a semana e calcula o valor no servidor.
+- No frontend, Wellz fica fora das contagens de pacientes, saldo, pacotes e % de faltas por paciente (`nomesPacientesAtivosNoCadastro` exclui). Painel "Wellz — lançamento semanal" na aba Agenda.
+- Se as tarifas mudarem, alterar `TARIFAS`: as linhas do dashboard usam a tarifa vigente; `valor_total` gravado de semanas antigas não é recalculado.

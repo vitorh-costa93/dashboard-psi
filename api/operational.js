@@ -1,8 +1,15 @@
 import {requireAuth,supabase} from './_auth.js';
 import {buildOccurrences,inferRule,isoAddDays,monthBounds,normalizeMonth,normalizeTime} from '../lib/agenda.js';
+import {INICIO_SEMANAL,TARIFAS,TIPOS,WELLZ_NOME,ehSexta,linhasDashboard,linhasDetalhadas,quantidade,sextasDoMes,valorSemana} from '../lib/wellz.js';
 async function rest(path,options={},label='Falha no banco'){const r=await supabase('/rest/v1/'+path,options),data=await r.json().catch(()=>null);if(!r.ok){if(data?.code==='23505'&&/pacientes_nome_key/.test(data.message||''))throw new Error('Já existe um paciente cadastrado com esse nome.');if(label==='Não foi possível salvar o lote'&&data?.message)throw new Error(`${label}: ${String(data.message).slice(0,300)}`);throw new Error(`${label}: ${r.status}`);}return data;}
 async function allSessions(){const rows=[];for(let from=0;;from+=1000){const page=await rest('sessoes?select=data_sessao,genero,faixa_etaria,modalidade,horario,comparecimento,motivo,valor_sessao,sessoes_cobradas,valor_total,valor_final,cnpj,comentario,pacientes!inner(nome,ativo),convenios(nome)&order=data_sessao.asc',{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar sessões');rows.push(...page);if(page.length<1000)break;}return rows;}
 async function allAgendaSessions(){const rows=[];for(let from=0;;from+=500){const page=await rest('sessoes?select=id,paciente_id,data_sessao,horario,comparecimento,convenio_id,modalidade,valor_sessao&order=data_sessao.asc',{headers:{Range:`${from}-${from+499}`}},'Falha ao carregar histórico');rows.push(...page);if(page.length<500)break;}return rows;}
+// Wellz: lançamento semanal (5 quantidades) + histórico mensal fixo. Vira linhas
+// extras no dashboard e na tabela detalhada; ver lib/wellz.js.
+async function wellzDados(){
+  const[semanas,historico,pac]=await Promise.all([rest('wellz_semanas?select=*&order=semana_ref.asc',{},'Falha ao carregar Wellz'),rest('wellz_historico?select=*&order=mes.asc',{},'Falha ao carregar Wellz'),rest(`pacientes?select=id&nome=eq.${WELLZ_NOME}&limit=1`,{},'Falha ao carregar Wellz')]);
+  return{semanas,historico,pacienteId:pac[0]?.id||null};
+}
 const DIA_ABREV=['','Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 // Mesmo formato da "chave concatenada" que os pacientes legados ja tinham
 // (ex: "Leonice | Ter 09h", vindo da planilha) -- sem isso o paciente cadastrado
@@ -31,10 +38,19 @@ function mesesSeguintes(mesInicial,n){const out=[];let[y,m]=mesInicial.split('-'
 function historicalStatus(value,date){if(String(date)>=agendaToday())return'agendado';const v=String(value||'').toLowerCase();if(/cancel/.test(v))return'cancelado';if(/falta|faltou|ausente|não compareceu|nao compareceu/.test(v))return'falta';return'realizado';}
 function brDate(v){const[y,m,d]=String(v).split('-');return`${d}/${m}/${y}`;}function agendaToday(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),get=t=>parts.find(x=>x.type===t)?.value;return`${get('year')}-${get('month')}-${get('day')}`;}function text(v,max=160){const s=String(v||'').trim();if(!s||s.length>max)throw new Error('Campo obrigatório inválido');return s;}function status(v){return['ativo','pausado','inativo'].includes(v)?v:'ativo';}
 async function allSessionBalances(){const rows=[];for(let from=0;;from+=1000){const page=await rest('sessoes?select=paciente_id,sessoes_cobradas,sessao_consumida',{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar saldos');rows.push(...page);if(page.length<1000)break;}return rows.reduce((out,row)=>{out[row.paciente_id]=(out[row.paciente_id]||0)+Number(row.sessoes_cobradas||0)-Number(row.sessao_consumida||0);return out;},{});}
-async function state(month){const{first,last}=monthBounds(month);const[patients,rules,appointments,insurances,balances]=await Promise.all([rest('pacientes?select=id,nome,ultimo_label,ativo,status_operacional,pausado_ate,inativo_em,contabiliza_cnpj,data_nascimento,responsavel_nome,cpf_paciente,cpf_responsavel,inicio_atendimentos,data_anamnese,atualizado_em&order=nome.asc'),rest('recorrencias_atendimento?select=*&ativo=eq.true&order=vigencia_inicio.desc'),rest(`agenda_atendimentos?select=*,pacientes(nome,status_operacional),convenios(nome),sessoes(sessoes_cobradas,sessao_consumida,valor_final,comentario)&data_atendimento=gte.${first}&data_atendimento=lte.${last}&order=data_atendimento.asc,horario.asc`),rest('convenios?select=id,nome&ativo=eq.true&order=nome.asc'),allSessionBalances()]);return{month,patients,rules,appointments,insurances,balances};}
+async function state(month){const{first,last}=monthBounds(month);const[patients,rules,appointments,insurances,balances]=await Promise.all([rest('pacientes?select=id,nome,ultimo_label,ativo,status_operacional,pausado_ate,inativo_em,contabiliza_cnpj,data_nascimento,responsavel_nome,cpf_paciente,cpf_responsavel,inicio_atendimentos,data_anamnese,atualizado_em&order=nome.asc'),rest('recorrencias_atendimento?select=*&ativo=eq.true&order=vigencia_inicio.desc'),rest(`agenda_atendimentos?select=*,pacientes(nome,status_operacional),convenios(nome),sessoes(sessoes_cobradas,sessao_consumida,valor_final,comentario)&data_atendimento=gte.${first}&data_atendimento=lte.${last}&order=data_atendimento.asc,horario.asc`),rest('convenios?select=id,nome&ativo=eq.true&order=nome.asc'),allSessionBalances()]);const wellz=await rest(`wellz_semanas?select=*&semana_ref=gte.${first}&semana_ref=lte.${last}&order=semana_ref.asc`,{},'Falha ao carregar Wellz');return{month,patients,rules,appointments,insurances,balances,wellz:{tarifas:TARIFAS,tipos:TIPOS,inicio:INICIO_SEMANAL,sextas:sextasDoMes(month,INICIO_SEMANAL),semanas:wellz}};}
 async function agenda(req,res){
  if(req.method==='GET')return res.status(200).json(await state(normalizeMonth(req.query.month||new Date().toISOString().slice(0,7))));
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
+ if(b.action==='wellz_save'){
+  const semana=text(b.semana_ref,10);
+  if(!ehSexta(semana))throw new Error('A semana precisa ser referenciada por uma sexta-feira válida');
+  if(semana<INICIO_SEMANAL)throw new Error('O lançamento semanal vale a partir de '+brDate(INICIO_SEMANAL)+'; antes disso vale o histórico mensal');
+  const c=Object.fromEntries(TIPOS.map(t=>[t.key,quantidade(b[t.key]??0)]));
+  const row={semana_ref:semana,...c,valor_total:valorSemana(c),atualizado_em:new Date().toISOString()};
+  const saved=await rest('wellz_semanas?on_conflict=semana_ref',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify(row)},'Não foi possível salvar a semana da Wellz');
+  return res.status(200).json(saved[0]||row);
+ }
  if(b.action==='save_patient'){const st=status(b.status),birth=b.data_nascimento?String(b.data_nascimento):null,responsavel=String(b.responsavel_nome||'').trim()||null,inicioAtendimentos=b.inicio_atendimentos?String(b.inicio_atendimentos):null;if(birth&&!/^\d{4}-\d{2}-\d{2}$/.test(birth))throw new Error('Data de nascimento inválida');if(inicioAtendimentos&&!/^\d{4}-\d{2}-\d{2}$/.test(inicioAtendimentos))throw new Error('Início dos atendimentos inválido');if(responsavel&&responsavel.length>160)throw new Error('Responsável inválido');
   // CPF é opcional (paciente adulto sem responsável não precisa preencher o
   // bloco "Responsável", por exemplo) -- só valida formato quando algo foi
@@ -99,14 +115,15 @@ async function sessions(req,res){
   let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome,ativo),convenios(nome)&order=data_sessao.asc,horario.asc`;
   if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
-  if(req.query.month)return res.status(200).json(await rest(path,{},'Falha ao carregar atendimentos'));
+  const extrasWellz=async()=>{const w=await wellzDados();if(!w.pacienteId||(req.query.paciente_id&&req.query.paciente_id!==w.pacienteId))return[];return linhasDetalhadas(w.semanas,w.historico,w.pacienteId,{month:req.query.month?normalizeMonth(req.query.month):''});};
+  if(req.query.month)return res.status(200).json([...await rest(path,{},'Falha ao carregar atendimentos'),...await extrasWellz()]);
   const rows=[];
   for(let from=0;;from+=1000){
     const page=await rest(path,{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar atendimentos');
     rows.push(...page);
     if(page.length<1000)break;
   }
-  return res.status(200).json(rows);
+  return res.status(200).json([...rows,...await extrasWellz()]);
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='update_session'){
@@ -127,4 +144,4 @@ async function sessions(req,res){
  }
  throw new Error('Ação inválida');
 }
-export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions();return res.status(200).json(rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':r.valor_sessao,'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})));}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}
+export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions(),wellz=await wellzDados();return res.status(200).json([...rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':r.valor_sessao,'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})),...linhasDashboard(wellz.semanas,wellz.historico)]);}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}

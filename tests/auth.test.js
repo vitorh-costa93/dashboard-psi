@@ -137,6 +137,9 @@ test('API operacional entrega contrato legado somente ao administrador', async (
     if(url.includes('/auth/v1/user'))return jsonResponse({id:'admin-1',email:'admin@example.com'});
     if(url.includes('app_admin'))return jsonResponse([{user_id:'admin-1'}]);
     if(url.includes('/sessoes?'))return jsonResponse([{data_sessao:'2026-08-19',genero:'F',faixa_etaria:'Adulto',modalidade:'Online',horario:'Quarta 10h',comparecimento:'Sim',motivo:null,valor_sessao:150,sessoes_cobradas:1,valor_total:150,valor_final:150,cnpj:false,pacientes:{nome:'Paciente Teste',ativo:true},convenios:{nome:'Particular'}}]);
+    if(url.includes('wellz_semanas'))return jsonResponse([{semana_ref:'2026-09-25',faltas:1,acolh_antes:0,acolh_apos:0,real_antes:0,real_apos:1}]);
+    if(url.includes('wellz_historico'))return jsonResponse([]);
+    if(url.includes('nome=eq.Wellz'))return jsonResponse([{id:'wellz-1'}]);
     throw new Error(`URL inesperada: ${url}`);
   };
   const res=response();
@@ -145,6 +148,10 @@ test('API operacional entrega contrato legado somente ao administrador', async (
   assert.equal(res.body[0].Data,'19/08/2026');
   assert.equal(res.body[0].Paciente,'Paciente Teste');
   assert.equal(res.body[0].Ativo,'Ativo');
+  // Wellz entra como linhas extras (1 falta + 1 realizado após 17h).
+  const wellz=res.body.filter(r=>r.Wellz);
+  assert.equal(wellz.length,2);
+  assert.equal(wellz.filter(r=>r.Comparecimento==='Não').length,1);
 });
 
 test('sessão expira após uma hora sem atividade', async () => {

@@ -241,7 +241,7 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 
 ## Wellz — plataforma online como "paciente" único (26/09/2026)
 
-- Paciente `Wellz` (criado pela migration `20260926090000`, contabiliza CNPJ) representa todos os atendimentos da plataforma. Tabelas `wellz_semanas` (uma linha por sexta-feira, com 5 quantidades e `valor_total`) e `wellz_historico` (valor mensal fixo nov/2025–ago/2026, total R$ 16.050,00). Nenhuma das duas mexe em `sessoes`.
+- Paciente `Wellz` (criado pela migration `20260926090000`, contabiliza CNPJ) representa todos os atendimentos da plataforma. Tabelas `wellz_semanas` (uma linha por sexta-feira, com 5 quantidades e `valor_total`) e `wellz_historico` (valor mensal fixo jan/2025–ago/2026, total R$ 28.350,00; migrations `20260926090000` e `20260926110000`). Nenhuma das duas mexe em `sessoes`.
 - Tarifas em `lib/wellz.js` (`TARIFAS`): falta R$ 10, acolhimento antes/após 17h R$ 25/35, realizado antes/após 17h R$ 50/60. O lançamento semanal só vale a partir de 01/09/2026 (`INICIO_SEMANAL`); antes disso vale o histórico, para não contar duas vezes.
 - `/api/operational` acrescenta linhas Wellz ao contrato do dashboard (uma por atendimento: falta = Comparecimento "Não"; realizado = "Sim") e à tabela "Atendimentos — detalhado" (linhas resumidas, somente leitura). O histórico mensal vira linhas só de valor divididas entre as sextas do mês (`Só valor`): entram em Valor Recebido/CNPJ, não contam como sessão nem falta. Ação `wellz_save` em `resource=agenda` grava a semana e calcula o valor no servidor.
 - No frontend, Wellz fica fora das contagens de pacientes, saldo, pacotes e % de faltas por paciente (`nomesPacientesAtivosNoCadastro` exclui). Painel "Wellz — lançamento semanal" na aba Agenda.

@@ -3542,8 +3542,9 @@ function recortar34(b64){
     img.onload=()=>{
       const w=img.naturalWidth,h=img.naturalHeight,alvoH=Math.round(w*4/3);
       if(h<=alvoH+2)return resolve(b64);
-      const c=document.createElement('canvas');c.width=w;c.height=alvoH;
-      c.getContext('2d').drawImage(img,0,0,w,alvoH,0,0,w,alvoH);
+      // Sai exatamente em 1080x1440 (3:4).
+      const c=document.createElement('canvas');c.width=1080;c.height=1440;
+      c.getContext('2d').drawImage(img,0,0,w,alvoH,0,0,1080,1440);
       resolve(c.toDataURL('image/png').split(',')[1]);
     };
     img.onerror=()=>reject(new Error('Não foi possível ajustar a proporção da arte'));

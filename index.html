@@ -4331,6 +4331,12 @@ async function carregarProntuarios() {
       });
     });
     Object.values(_prontuarios).forEach(p=>p.sessoes.sort((a,b)=>a.data.localeCompare(b.data)));
+    // Aba "Inativos": lista TODO paciente com status Inativo na Agenda, mesmo
+    // sem sessão registrada (o prontuário deve ficar acessível por 5 anos).
+    Object.values(_pacientesById).forEach(p=>{
+      if(String(p.id).startsWith('legacy:')||p.status_operacional!=='inativo'||_prontuarios[p.id])return;
+      _prontuarios[p.id]={label:rotuloPaciente(p),nome:p.nome,ativo:false,arquivado:true,sessoes:[]};
+    });
     await carregarAnexosProntuario();
 
     // Migra registros antigos silenciosamente para o ID permanente.
@@ -4388,7 +4394,7 @@ function renderGridPacientes() {
       const inativo=!!p.arquivado;
       return `<div class="pront-lib-card ${ativo?'ativo':''}" role="button" tabindex="0" onclick="verProntuario('${escHtmlAttr(id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();verProntuario('${escHtmlAttr(id)}')}">
         <div style="font-weight:500;font-size:.85rem;margin-bottom:4px;">${escHtml(p.label||p.nome)}</div>
-        <div style="font-size:.72rem;color:var(--muted);">${n!==1?n+' sessões':n+' sessão'} registrada${n!==1?'s':''}${inativo?' · inativo':''}</div>
+        <div style="font-size:.72rem;color:var(--muted);">${n===0?'Nenhuma sessão registrada':n!==1?n+' sessões registradas':'1 sessão registrada'}${inativo?' · inativo':''}</div>
       </div>`;
     }).join('');
 }

@@ -129,7 +129,10 @@ criar novo commit.
 - `PUBLIC_FORM_ORIGIN` (Vercel, produção) = `https://consultorio-jaqueline.vercel.app`,
   escolhido para não expor "dashboard-psi" nos links de formulário.
 - Esse domínio é um alias MANUAL (`vercel alias set`), não um domínio do
-  projeto: NÃO acompanha novos deploys sozinho. Depois de cada deploy de
-  produção, rode:
+  projeto: não acompanha novos deploys sozinho. Desde 25/09/2026 o workflow
+  `.github/workflows/cleanup-vercel-deployments.yml` reaponta automaticamente
+  (logo após cada deploy de produção via GitHub e, como garantia, todo dia às
+  06:00 UTC). Deploy feito pelo CLI só é coberto na rodada diária; para
+  reapontar na hora:
   `npm run vercel -- alias set dashboard-psi-tau.vercel.app consultorio-jaqueline.vercel.app`
   Solução definitiva: comprar um domínio próprio e adicioná-lo ao projeto.

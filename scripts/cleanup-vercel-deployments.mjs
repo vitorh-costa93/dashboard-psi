@@ -7,7 +7,11 @@
 // gerou o alerta que motivou este script: 216 deploys acumulados em ~26
 // dias de trabalho ativo).
 //
-// Rodado semanalmente via .github/workflows/cleanup-vercel-deployments.yml.
+// Antes da limpeza, também reaponta os aliases manuais (ver ALIASES_MANUAIS)
+// para o deploy de produção atual.
+//
+// Rodado todo dia e depois de cada deploy de produção, via
+// .github/workflows/cleanup-vercel-deployments.yml.
 // Precisa de VERCEL_TOKEN com permissao sobre o projeto (guardado como
 // secret do GitHub, nunca no repo).
 
@@ -15,6 +19,12 @@ const TOKEN = process.env.VERCEL_TOKEN;
 const PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_Eztc3pNA9P7KYhTEJIhnymVIpeOa';
 const TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_5TOFRVNzimmU6aZE8ZvDyNwV';
 const MANTER = Number(process.env.DEPLOYMENTS_TO_KEEP || 4);
+// Aliases .vercel.app criados à mão (`vercel alias set`): a Vercel não deixa
+// cadastrá-los como domínio do projeto, então eles ficam presos no deploy em
+// que foram criados e não acompanham publicações novas. consultorio-jaqueline
+// é o endereço dos links de formulário enviados aos pacientes (escolhido para
+// não expor "dashboard-psi" -- ver PUBLIC_FORM_ORIGIN no CLAUDE.md).
+const ALIASES_MANUAIS = [{ projeto: 'consultorio-jaqueline', alias: 'consultorio-jaqueline.vercel.app' }];
 
 if (!TOKEN) {
   console.error('VERCEL_TOKEN não configurado.');
@@ -65,8 +75,23 @@ async function deploymentsComDominioReal() {
   return new Set(data.aliases.filter((a) => a.deployment?.id && protegido(a)).map((a) => a.deployment.id));
 }
 
+async function reapontarAliasesManuais(projetos) {
+  for (const { projeto, alias } of ALIASES_MANUAIS) {
+    const producaoId = projetos.find((p) => p.name === projeto)?.producaoId;
+    if (!producaoId) { console.error(`Alias ${alias}: projeto ${projeto} sem deploy de produção.`); process.exitCode = 1; continue; }
+    const atual = await vercelFetch(`/v4/aliases/${alias}`).catch(() => null);
+    if ((atual?.deploymentId || atual?.deployment?.id) === producaoId) { console.log(`Alias ${alias} já aponta para a produção (${producaoId}).`); continue; }
+    await vercelFetch(`/v2/deployments/${producaoId}/aliases`, { method: 'POST', body: JSON.stringify({ alias }) });
+    console.log(`Alias ${alias} reapontado para a produção (${producaoId}).`);
+  }
+}
+
 async function main() {
-  const [projetos, comDominio] = await Promise.all([listarProjetos(), deploymentsComDominioReal()]);
+  const projetos = await listarProjetos();
+  // Reaponta antes de calcular o que proteger, para a proteção valer para o
+  // deploy novo e o antigo poder ser limpo normalmente.
+  await reapontarAliasesManuais(projetos);
+  const comDominio = await deploymentsComDominioReal();
   let falhas = 0;
   for (const projeto of projetos) {
     const todos = await listarDeployments(projeto.id);

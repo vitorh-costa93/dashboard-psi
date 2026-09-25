@@ -9,9 +9,18 @@ on:
   schedule:
     - cron: '0 6 * * *' # todo dia as 06:00 UTC (03:00 em Brasilia)
   workflow_dispatch: {} # permite rodar manualmente pela aba Actions no GitHub
+  # Logo depois de cada deploy de producao feito pela integracao GitHub da
+  # Vercel: reaponta o alias manual dos formularios em minutos, sem esperar a
+  # rodada diaria (que continua cobrindo deploys feitos pelo CLI).
+  deployment_status:
+
+concurrency:
+  group: cleanup-vercel
+  cancel-in-progress: false
 
 jobs:
   cleanup:
+    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.environment, 'Production'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

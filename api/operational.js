@@ -115,15 +115,23 @@ async function sessions(req,res){
   let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome,ativo),convenios(nome)&order=data_sessao.asc,horario.asc`;
   if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
+  // Valor combinado atual de cada paciente (recorrência ativa): sugestão para
+  // sessões antigas que ficaram sem valor unitário.
+  const comSugestao=async list=>{
+    if(!list.some(x=>!(Number(x.valor_sessao)>0)))return list;
+    const regras=await rest('recorrencias_atendimento?select=paciente_id,valor_sessao&ativo=eq.true&order=vigencia_inicio.desc',{},'Falha ao carregar valores');
+    const porPaciente={};regras.forEach(r=>{if(!(r.paciente_id in porPaciente)&&Number(r.valor_sessao)>0)porPaciente[r.paciente_id]=Number(r.valor_sessao);});
+    return list.map(x=>Number(x.valor_sessao)>0?x:{...x,valor_sugerido:porPaciente[x.paciente_id]||0});
+  };
   const extrasWellz=async()=>{const w=await wellzDados();if(!w.pacienteId||(req.query.paciente_id&&req.query.paciente_id!==w.pacienteId))return[];return linhasDetalhadas(w.semanas,w.historico,w.pacienteId,{month:req.query.month?normalizeMonth(req.query.month):''});};
-  if(req.query.month)return res.status(200).json([...await rest(path,{},'Falha ao carregar atendimentos'),...await extrasWellz()]);
+  if(req.query.month)return res.status(200).json([...await comSugestao(await rest(path,{},'Falha ao carregar atendimentos')),...await extrasWellz()]);
   const rows=[];
   for(let from=0;;from+=1000){
     const page=await rest(path,{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar atendimentos');
     rows.push(...page);
     if(page.length<1000)break;
   }
-  return res.status(200).json([...rows,...await extrasWellz()]);
+  return res.status(200).json([...await comSugestao(rows),...await extrasWellz()]);
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='update_session'){
@@ -133,7 +141,16 @@ async function sessions(req,res){
   if(![cobradas,final].every(Number.isFinite)||cobradas<0||final<0)throw new Error('Valores inválidos');
   const comentario=String(b.comentario||'').trim().slice(0,500)||null;
   const consumida=comparecimento==='Sim'?1:0;
-  const rows=await rest(`sessoes?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({comparecimento,sessoes_cobradas:cobradas,sessao_consumida:consumida,valor_final:final,comentario,atualizado_em:new Date().toISOString()})},'Falha ao atualizar atendimento');
+  // Sessão sem valor unitário (valor_sessao 0) fazia o dashboard ignorar o valor
+  // recebido (ele soma cobradas × valor_sessao). Completa o valor unitário a
+  // partir do informado na tela ou do valor recebido ÷ sessões pagas.
+  const atual=(await rest(`sessoes?id=eq.${encodeURIComponent(id)}&select=valor_sessao&limit=1`,{},'Falha ao carregar atendimento'))[0]||{};
+  const patch={comparecimento,sessoes_cobradas:cobradas,sessao_consumida:consumida,valor_final:final,comentario,atualizado_em:new Date().toISOString()};
+  if(!(Number(atual.valor_sessao)>0)){
+    const unit=Number(b.valor_sessao)>0?Number(b.valor_sessao):(cobradas>0&&final>0?Math.round(final/cobradas*100)/100:0);
+    if(unit>0){patch.valor_sessao=unit;patch.valor_total=Math.round(cobradas*unit*100)/100;}
+  }
+  const rows=await rest(`sessoes?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(patch)},'Falha ao atualizar atendimento');
   // Se essa sessão estiver vinculada a um atendimento da Agenda, sincroniza o
   // status/valores de volta -- sem isso, editar por aqui deixava a Agenda
   // (e o status "Cancelado"/"Não"/"Sim" mostrado lá) permanentemente
@@ -144,4 +161,4 @@ async function sessions(req,res){
  }
  throw new Error('Ação inválida');
 }
-export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions(),wellz=await wellzDados();return res.status(200).json([...rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':r.valor_sessao,'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})),...linhasDashboard(wellz.semanas,wellz.historico)]);}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}
+export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions(),wellz=await wellzDados();return res.status(200).json([...rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':Number(r.valor_sessao)>0?r.valor_sessao:(Number(r.sessoes_cobradas)>0&&Number(r.valor_final)>0?Math.round(r.valor_final/r.sessoes_cobradas*100)/100:r.valor_sessao),'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})),...linhasDashboard(wellz.semanas,wellz.historico)]);}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}

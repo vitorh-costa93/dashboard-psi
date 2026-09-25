@@ -2398,12 +2398,13 @@ function recalcularValorRecebido(){
   const id=document.getElementById('dsess-edit-id').value,row=_dsessRows.find(x=>x.id===id);
   if(!row)return;
   const cobradas=Number(document.getElementById('dsess-edit-cobradas').value||0);
-  document.getElementById('dsess-edit-valor').value=(Number(row.valor_sessao||0)*cobradas).toFixed(2);
+  const unit=Number(row.valor_sessao)>0?Number(row.valor_sessao):Number(row.valor_sugerido||0);
+  document.getElementById('dsess-edit-valor').value=(unit*cobradas).toFixed(2);
 }
 async function salvarEdicaoSessao(){
   const id=document.getElementById('dsess-edit-id').value,comparecimento=document.getElementById('dsess-edit-comp').value,sessoes_cobradas=Number(document.getElementById('dsess-edit-cobradas').value||0),valor_final=Number(document.getElementById('dsess-edit-valor').value||0),comentario=document.getElementById('dsess-edit-comentario').value;
   try{
-    const r=await fetch('/api/operational?resource=sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update_session',id,comparecimento,sessoes_cobradas,valor_final,comentario})}),d=await r.json().catch(()=>({}));
+    const r=await fetch('/api/operational?resource=sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update_session',id,comparecimento,sessoes_cobradas,valor_final,comentario,valor_sessao:(_dsessRows.find(x=>x.id===id)?.valor_sugerido)||undefined})}),d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.error||'Não foi possível salvar');
     const row=_dsessRows.find(x=>x.id===id);
     if(row)Object.assign(row,d);

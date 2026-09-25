@@ -36,14 +36,15 @@ test('historico mensal soma exatamente o valor e nao conta sessao nem falta', ()
   assert.ok(rows.every(r => r['Só valor'] && r['Sessões cobradas'] === 0 && r['Comparecimento'] === ''));
 });
 
-test('detalhado: uma linha por tipo com quantidade, filtro por mes e historico', () => {
-  const semanas = [{semana_ref: '2026-09-25', faltas: 1, acolh_antes: 0, acolh_apos: 0, real_antes: 2, real_apos: 0}];
+test('detalhado: uma linha por semana (sessoes sem faltas), filtro por mes e historico', () => {
+  const semanas = [{semana_ref: '2026-09-25', faltas: 1, acolh_antes: 1, acolh_apos: 0, real_antes: 2, real_apos: 3}];
   const hist = [{mes: '2026-08-01', valor: 1335}];
   const set = linhasDetalhadas(semanas, hist, 'id-wellz', {month: '2026-09'});
-  assert.equal(set.length, 2);
-  assert.deepEqual(set.map(r => r.valor_final), [10, 100]);
+  assert.equal(set.length, 1);
+  assert.equal(set[0].sessoes_cobradas, 6);
+  assert.equal(set[0].valor_final, 10 + 25 + 2 * 50 + 3 * 60);
+  assert.ok(set[0].wellz && set[0].pacientes.nome === 'Wellz');
   const ago = linhasDetalhadas(semanas, hist, 'id-wellz', {month: '2026-08'});
   assert.equal(ago.length, 1);
   assert.equal(ago[0].valor_final, 1335);
-  assert.ok(set.every(r => r.wellz && r.pacientes.nome === 'Wellz'));
 });

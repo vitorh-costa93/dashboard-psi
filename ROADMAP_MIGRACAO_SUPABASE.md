@@ -1,4 +1,5 @@
 # Handoff e roadmap — migração do dashboard-psi para Supabase
+> **Status (01/10/2026):** Fases 0 a 7 concluídas e em produção (ver `PROJECT_CONTEXT.md` para o estado atual). Este documento é histórico; o roadmap ativo é o backlog do `PROJECT_CONTEXT.md`.
 
 ## 1. Objetivo deste documento
 

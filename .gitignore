@@ -6,3 +6,6 @@ node_modules
 supabase/.temp
 
 .env*
+
+.impeccable/
+output/

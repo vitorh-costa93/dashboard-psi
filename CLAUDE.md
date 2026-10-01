@@ -11,18 +11,13 @@ prontuários ou quaisquer dados pessoais nele.
 - Remoto: `origin` → `https://github.com/vitorh-costa93/dashboard-psi.git`
 - A integração operacional deve usar as CLIs oficiais: `gh`, `npm run vercel -- …`
   e `npm run supabase -- …`.
-- Verificação feita em 03/09/2026: GitHub CLI autenticado como
-  `vitorh-costa93`, protocolo HTTPS e escopos `gist`, `read:org` e `repo`.
-  `git ls-remote --heads origin` confirmou o acesso à branch remota `main`.
+- GitHub CLI autenticado como `vitorh-costa93` (HTTPS, escopos `gist`, `read:org`, `repo`); confirme com `gh auth status`.
 - Push, deploy e alterações no Supabase (migrations/schema) estão
   pré-autorizados pelo usuário (vitorh-costa93, 09/09/2026) — não é preciso
   pedir confirmação antes de subir. Ainda assim, rode os testes (`npm test`)
   e revise o diff/migration antes de subir, e nunca pule essa checagem só
   porque a autorização já existe.
-- Verificação de 10/09/2026: `HEAD` e `origin/main` apontam para o mesmo
-  commit (`9ef8ad4`); não há atualização remota pendente. Arquivos PSM não
-  rastreados e a alteração local de `assets/logo-jaqueline-dark.png` foram
-  preservados, sem sobrescrita.
+- Antes de mexer, confira `git status -sb` e `git log origin/main..` para ver o estado de sincronia; não confie em hashes registrados aqui. Arquivos PSM não rastreados e alterações locais em `assets/` devem ser preservados, sem sobrescrita.
 - Supabase CLI: `npm run supabase -- projects list` confirma o projeto ativo
   `dashboard-psi` (`tanluftwqzckzqiwqkhw`) e o checkout permanece vinculado.
 - Vercel CLI: instalada localmente como `vercel@59.5.0`, exposta por

@@ -19,3 +19,8 @@ test('quinzenal a partir de 17/09 pula a semana de folga',()=>{
   assert.deepEqual(buildOccurrences(rule,'2026-09'),['2026-09-17']);
   assert.deepEqual(buildOccurrences(rule,'2026-10'),['2026-10-01','2026-10-15','2026-10-29']);
 });
+test('vigência em dia diferente do dia da regra mantém o dia da semana (Aline)',()=>{
+  const rule={frequencia:'quinzenal',dia_semana:2,vigencia_inicio:'2026-09-17'};
+  const dias=buildOccurrences(rule,'2026-10').map(d=>new Date(d+'T12:00:00Z').getUTCDay());
+  assert.ok(dias.length&&dias.every(d=>d===2));
+});

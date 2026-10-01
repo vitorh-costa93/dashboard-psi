@@ -5,6 +5,8 @@
 
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
+import { modelFor } from '../lib/ai-models.js';
+import { logAiUsage } from '../lib/ai-usage.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
 import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
@@ -63,19 +65,21 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
     : pedidoTexto;
 
   try {
-    // gpt-4o-mini não consta mais na lista de modelos disponíveis da OpenAI;
-    // gpt-5.6-terra (mesmo modelo já usado em post-content.js) rejeita
-    // temperature customizado, por isso o parâmetro foi removido daqui.
+    // Modelo escolhido em lib/ai-models.js (tarefa 'ppt'). Os modelos atuais
+    // rejeitam temperature customizado, por isso o parâmetro não é enviado.
     // Structured Outputs (json_schema+strict) no lugar do antigo json_object,
     // mesma melhoria já aplicada em post-content.js.
-    const r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
+    const model = modelFor('ppt'), t0 = Date.now();
+    let r;
+    try {
+    r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra',
+        model,
         messages: [
           { role: 'system', content: systemComAprendizado },
           ...historico.map(h=>({role:h.papel==='assistente'?'assistant':'user',content:h.texto})),
@@ -117,13 +121,19 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
     // vercel.json e o retry interno podia chegar a ~91s (achado numa
     // varredura depois que a geração de imagem estourou o limite dela).
     }, {tentativas: 1, timeoutMs: 20000});
+    } catch (e) {
+      await logAiUsage({task: 'ppt', model, ok: false, durationMs: Date.now() - t0, error: e.message});
+      throw e;
+    }
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
+      await logAiUsage({task: 'ppt', model, ok: false, durationMs: Date.now() - t0, error: err?.error?.message || `HTTP ${r.status}`});
       return res.status(r.status).json({ error: err?.error?.message || 'Erro ao gerar conteúdo' });
     }
 
     const data = await r.json();
+    await logAiUsage({task: 'ppt', model, ok: true, usage: data?.usage, durationMs: Date.now() - t0});
     const content = data.choices?.[0]?.message?.content;
     if (!content) return res.status(500).json({ error: 'Nenhum conteúdo retornado' });
 

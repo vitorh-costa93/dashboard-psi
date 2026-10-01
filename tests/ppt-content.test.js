@@ -7,6 +7,7 @@ process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
 
 const {default: pptContent} = await import('../api/ppt-content.js');
+const {modelFor} = await import('../lib/ai-models.js');
 const {PERFIL_JAQUELINE} = await import('../lib/perfil-jaqueline.js');
 
 function createIdleCookie() {
@@ -50,7 +51,7 @@ const conteudoValido = {titulo: 'Apresentação', slides: [
   {titulo: 'Slide 4', conteudo: ['ponto 1']},
 ]};
 
-test('monta a chamada com gpt-5.6-terra, sem temperature, e schema estrito', async () => {
+test('monta a chamada com o modelo central, sem temperature, e schema estrito', async () => {
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
     assert.equal(url, 'https://api.openai.com/v1/chat/completions');
@@ -61,7 +62,7 @@ test('monta a chamada com gpt-5.6-terra, sem temperature, e schema estrito', asy
   const res = response();
   await pptContent(req, res);
   assert.equal(res.code, 200);
-  assert.equal(capturedBody.model, 'gpt-5.6-terra');
+  assert.equal(capturedBody.model, modelFor('ppt'));
   assert.equal('temperature' in capturedBody, false);
   assert.equal(capturedBody.response_format.type, 'json_schema');
   assert.equal(capturedBody.response_format.json_schema.strict, true);

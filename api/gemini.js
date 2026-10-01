@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
+import { modelFor, imageQuality } from '../lib/ai-models.js';
+import { logAiUsage } from '../lib/ai-usage.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
 import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
@@ -11,9 +13,20 @@ import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 // Story image still came out perfectly square before because this was
 // hardcoded to 1024x1024 regardless of what the prompt asked for.
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
-// GPT Image 2.5 Flare entrega geração cotidiana rápida e de alta qualidade,
-// apropriada para o fluxo recorrente de posts e stories.
-const IMAGE_MODEL = 'gpt-image-2.5-flare';
+// Modelo e qualidade de imagem vêm de lib/ai-models.js (tarefa 'image').
+const IMAGE_MODEL = modelFor('image');
+
+// Chama a API de imagens e registra uso/custo (sem usage na resposta, usa custo fixo por imagem).
+async function chamarImagem(url, options, timing) {
+  const t0 = Date.now();
+  let r;
+  try { r = await fetchComRetentativa(url, options, timing); }
+  catch (e) { await logAiUsage({task: 'image', model: IMAGE_MODEL, ok: false, durationMs: Date.now() - t0, error: e.message}); throw e; }
+  let corpo = null;
+  try { corpo = await (typeof r.clone === 'function' ? r.clone() : r).json(); } catch { /* corpo não-JSON: segue sem usage */ }
+  await logAiUsage({task: 'image', model: IMAGE_MODEL, ok: r.ok, usage: corpo?.usage, imageFallback: true, durationMs: Date.now() - t0, error: r.ok ? undefined : corpo?.error?.message || `HTTP ${r.status}`});
+  return r;
+}
 
 // AbortError vira "This operation was aborted" (ou variações) na mensagem
 // crua do Node/undici -- ilegível pra quem está usando o app. Reportado ao
@@ -103,11 +116,14 @@ ${PERFIL_JAQUELINE}`;
       : pedidoTexto;
 
     try {
-      const r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
+      const textModel = modelFor('text'), t0 = Date.now();
+      let r;
+      try {
+      r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra',
+          model: textModel,
           messages: [
             { role: 'system', content: systemComAprendizado },
             ...historico.map(h => ({ role: h.papel === 'assistente' ? 'assistant' : 'user', content: h.texto })),
@@ -131,12 +147,18 @@ ${PERFIL_JAQUELINE}`;
           },
         }),
       }, { tentativas: 1, timeoutMs: 20000 });
+      } catch (e) {
+        await logAiUsage({ task: 'text', model: textModel, ok: false, durationMs: Date.now() - t0, error: e.message });
+        throw e;
+      }
 
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
+        await logAiUsage({ task: 'text', model: textModel, ok: false, durationMs: Date.now() - t0, error: err?.error?.message || `HTTP ${r.status}` });
         return res.status(r.status).json({ error: err?.error?.message || 'Erro ao elaborar descrição' });
       }
       const data = await r.json();
+      await logAiUsage({ task: 'text', model: textModel, ok: true, usage: data?.usage, durationMs: Date.now() - t0 });
       const content = data.choices?.[0]?.message?.content;
       if (!content) return res.status(500).json({ error: 'Nenhuma resposta retornada' });
       const parsed = JSON.parse(content);
@@ -157,7 +179,7 @@ ${PERFIL_JAQUELINE}`;
     // image-edit, mas aqui a logo é o único insumo visual.
     if (!incluirLogo) {
       try {
-        const r = await fetchComRetentativa('https://api.openai.com/v1/images/generations', {
+        const r = await chamarImagem('https://api.openai.com/v1/images/generations', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -168,12 +190,11 @@ ${PERFIL_JAQUELINE}`;
             prompt,
             n: 1,
             size: finalSize,
-            // 'high' custa ~4x mais que 'medium' por imagem -- 'medium' foi o
-            // equilíbrio escolhido explicitamente pelo usuário depois de ver
-            // o custo estimado de cada nível.
-            quality: 'medium',
+            // 'high' custa ~4x mais que 'medium' por imagem -- 'medium' é o padrão
+            // (decisão do usuário, fixo em lib/ai-models.js).
+            quality: imageQuality(),
           }),
-        // gpt-image-2 as vezes passa de 45s pra gerar (relatado ao vivo: um
+        // A geração de imagem às vezes passa de 45s pra gerar (relatado ao vivo: um
         // prompt de atividade infantil mais elaborado estourou esse limite e
         // devolveu "This operation was aborted" direto pra tela). A funcao
         // serverless (vercel.json) tem orcamento de 100s -- uma tentativa so,
@@ -202,8 +223,8 @@ ${PERFIL_JAQUELINE}`;
       form.append('prompt', promptComLogo);
       form.append('size', finalSize);
       form.append('n', '1');
-      form.append('quality', 'medium');
-      const r = await fetchComRetentativa('https://api.openai.com/v1/images/edits', {
+      form.append('quality', imageQuality());
+      const r = await chamarImagem('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },
         body: form,
@@ -265,12 +286,12 @@ ${PERFIL_JAQUELINE}`;
       form.append('prompt', promptFinal);
       form.append('size', finalSize);
       form.append('n', '1');
-      form.append('quality', 'medium');
-      const r = await fetchComRetentativa('https://api.openai.com/v1/images/edits', {
+      form.append('quality', imageQuality());
+      const r = await chamarImagem('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },
         body: form,
-      // gpt-image-2 as vezes passa de 45s pra gerar (relatado ao vivo: um
+      // A geração de imagem às vezes passa de 45s pra gerar (relatado ao vivo: um
       // prompt de atividade infantil mais elaborado estourou esse limite e
       // devolveu "This operation was aborted" direto pra tela). A funcao
       // serverless (vercel.json) tem orcamento de 100s -- uma tentativa so,

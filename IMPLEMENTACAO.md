@@ -71,7 +71,7 @@ Mantenha:
 - `CRON_SECRET` — segredo aleatório compartilhado com o cron da Vercel.
 
 Opcional:
-- `OPENAI_TEXT_MODEL` — padrão `gpt-4.1-mini`.
+- Modelos de IA ficam em `lib/ai-models.js` (texto `gpt-6-luna`; imagem `gpt-image-2.5-flare`, qualidade medium); override opcional `AI_MODEL_<TAREFA>`. Uso/custo em `ai_usage`; teto `AI_MONTHLY_CAP_USD` (só avisa).
 
 Não é necessário configurar Instagram nem Meta API.
 

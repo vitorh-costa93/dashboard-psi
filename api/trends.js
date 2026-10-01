@@ -6,13 +6,12 @@
 import { requireAuthOrCron } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { applySheetImport } from '../lib/sheet-import.js';
+import { modelFor } from '../lib/ai-models.js';
+import { logAiUsage } from '../lib/ai-usage.js';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
 const OPENAI_KEY = process.env.OPENAI_KEY;
-// gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI.
-// gpt-5.6-terra (não o gpt-5.6-sol, o flagship mais caro) é o meio-termo
-// atual: $2/$12 por milhão de tokens entrada/saída contra $4/$20 do Sol.
-const MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5.6-terra';
+// Modelo escolhido em lib/ai-models.js (tarefa 'trends').
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
@@ -82,7 +81,11 @@ Selecione no máximo 8 oportunidades de conteúdo reais, cada uma com a fonte re
   // arriscaria estourar o maxDuration da função (120s, ver vercel.json).
   // Uma falha isolada só significa que o radar não atualiza nesta rodada
   // (roda de novo amanhã sozinho, ou a psicóloga clica em "Atualizar").
-  const r = await fetchComRetentativa('https://api.openai.com/v1/responses', {
+  const MODEL = modelFor('trends');
+  const t0 = Date.now();
+  let r;
+  try {
+  r = await fetchComRetentativa('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json'},
     body: JSON.stringify({
@@ -94,7 +97,12 @@ Selecione no máximo 8 oportunidades de conteúdo reais, cada uma com a fonte re
       max_output_tokens: 6000
     })
   }, {tentativas: 0, timeoutMs: 100000});
+  } catch (e) {
+    await logAiUsage({task: 'trends', model: MODEL, ok: false, durationMs: Date.now() - t0, error: e.message});
+    throw e;
+  }
   const d = await r.json();
+  await logAiUsage({task: 'trends', model: MODEL, ok: r.ok, usage: d?.usage, durationMs: Date.now() - t0, error: r.ok ? undefined : d?.error?.message});
   if(!r.ok) throw new Error(d?.error?.message || 'Erro ao analisar tendências');
   const text = (d.output || []).flatMap(x => x.content || []).find(x => x.type === 'output_text')?.text;
   if(!text) throw new Error('A IA não retornou sugestões. Tente novamente.');

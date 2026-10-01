@@ -1,6 +1,8 @@
 // Gera conteúdo educativo para posts. A publicação no Instagram não é feita.
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
+import { modelFor } from '../lib/ai-models.js';
+import { logAiUsage } from '../lib/ai-usage.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
 import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
@@ -109,20 +111,19 @@ ${PERFIL_JAQUELINE}`;
   for(const h of historico)messages.push({role:h.papel==='assistente'?'assistant':'user',content:h.texto});
   messages.push({role:'user',content:ultimoConteudo});
   try{
-    // gpt-4.1-mini não consta mais na lista de modelos disponíveis da OpenAI
-    // (developers.openai.com/api/docs/models/compare). gpt-5.6-terra (não o
-    // gpt-5.6-sol, o flagship mais caro) é o meio-termo atual: $2/$12 por
-    // milhão de tokens entrada/saída contra $4/$20 do Sol, mantendo boa
-    // qualidade sem o custo do topo de linha. Diferente do gpt-4.1-mini, ele
-    // rejeita temperature customizado ("Only the default (1) value is
-    // supported") -- por isso o parâmetro foi removido daqui.
+    // Modelo escolhido em lib/ai-models.js (tarefa 'post'). Os modelos atuais
+    // rejeitam temperature customizado -- por isso o parâmetro não é enviado.
     // vercel.json define maxDuration:45 pra esta função -- 2 tentativas de
     // 20s (+ backoff) cabem em ~40.5s, com folga. O antigo {tentativas:2,
     // timeoutMs:30000} podia chegar a ~91s de retentativa interna sem
     // nenhum limite explícito no vercel.json (achado numa varredura depois
     // que a geração de imagem estourou o próprio limite dela em produção).
-    const r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_TEXT_MODEL||'gpt-5.6-terra',messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:1,timeoutMs:20000});
+    const model=modelFor('post'),t0=Date.now();
+    let r;
+    try{r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model,messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:1,timeoutMs:20000});}
+    catch(e){await logAiUsage({task:'post',model,ok:false,durationMs:Date.now()-t0,error:e.message});throw e;}
     const data=await r.json();
+    await logAiUsage({task:'post',model,ok:r.ok,usage:data?.usage,durationMs:Date.now()-t0,error:r.ok?undefined:data?.error?.message});
     if(!r.ok) return res.status(r.status).json({error:data?.error?.message||'Erro ao gerar post'});
     const content=data.choices?.[0]?.message?.content;
     if(!content) return res.status(500).json({error:'Nenhum conteúdo retornado'});

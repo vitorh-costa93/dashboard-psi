@@ -7,6 +7,7 @@ process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
 
 const {default: trends} = await import('../api/trends.js');
+const {modelFor} = await import('../lib/ai-models.js');
 
 function createIdleCookie() {
   const timestamp = Date.now();
@@ -75,7 +76,7 @@ test('monta a chamada da Responses API com tool web_search e schema estrito', as
   await trends(req, res);
   assert.equal(res.code, 200);
   assert.equal(capturedUrl, 'https://api.openai.com/v1/responses');
-  assert.equal(capturedBody.model, 'gpt-5.6-terra');
+  assert.equal(capturedBody.model, modelFor('trends'));
   assert.deepEqual(capturedBody.tools, [{type: 'web_search'}]);
   assert.equal(capturedBody.text.format.type, 'json_schema');
   assert.equal(capturedBody.text.format.strict, true);

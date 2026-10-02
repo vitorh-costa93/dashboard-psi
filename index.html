@@ -2177,7 +2177,8 @@ async function calcularAlertas() {
   function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
   const chaveDia=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const registradas=new Set(_rows.filter(r=>r._data&&!r._soValor).map(r=>r._paciente+'|'+chaveDia(r._data)));
+  // só conta como registrada a sessão com comparecimento preenchido (linha pendente/em branco não consome o pacote)
+  const registradas=new Set(_rows.filter(r=>r._data&&!r._soValor&&r._comparecimento).map(r=>r._paciente+'|'+chaveDia(r._data)));
   const sessaoRegistrada=(nome,d)=>registradas.has(nome+'|'+chaveDia(d));
   const renovacoes=[],dividas=[];
   Object.entries(ativos).forEach(([nome,p])=>{

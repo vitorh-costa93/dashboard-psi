@@ -1936,6 +1936,19 @@ function nomesPacientesAtivosNoCadastro(){
   // o cadastro: mantém o filtro legado até a próxima sincronização válida.
   return new Set(_rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
 }
+let _horariosAtivosRegras=null,_horariosAtivosCarregando=false;
+async function carregarHorariosAtivos(){
+  if(_horariosAtivosCarregando)return;_horariosAtivosCarregando=true;
+  try{
+    const r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(anoMes(new Date())));
+    if(!r.ok)return;const d=await r.json();
+    const ativos=new Set((d.patients||[]).filter(p=>p.nome!=='Wellz'&&(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').map(p=>p.id));
+    const slots=new Set((d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>x.dia_semana+'|'+String(x.horario).slice(0,5)));
+    _horariosAtivosRegras=slots.size;
+    const el=document.getElementById('kpi-pac'),m=el&&el.textContent.match(/^(\d+) \(/);
+    if(m)el.textContent=m[1]+' ('+slots.size+' horas)';
+  }catch(e){console.warn('Horários ativos:',e);}finally{_horariosAtivosCarregando=false;}
+}
 function processAndRender(){
   const rows=_rows;
   const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
@@ -1979,8 +1992,14 @@ function processAndRender(){
   document.getElementById('kpi-fat').textContent='R$ '+cur.fat.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
 
   // ── KPI: Pacientes — qtd distinta de horários dos ativos ──
-  const horariosDistintos=new Set(_ativosArr.map(r=>r._horario).filter(Boolean)).size;
-  document.getElementById('kpi-pac').textContent=cur.pac+' ('+horariosDistintos+' horas)';
+  // Pacientes = ativos do cadastro (não só quem já teve sessão no mês);
+  // horários = combinações dia+hora distintas das regras dos ativos.
+  const nomesAtivos=nomesPacientesAtivosNoCadastro();
+  const pacAtivosQtd=nomesAtivos.size;
+  const horariosFallback=new Set(_ativosArr.filter(r=>nomesAtivos.has(r._paciente)).map(r=>r._horario).filter(Boolean)).size;
+  const elKpiPac=document.getElementById('kpi-pac');
+  elKpiPac.textContent=pacAtivosQtd+' ('+(_horariosAtivosRegras??horariosFallback)+' horas)';
+  if(_horariosAtivosRegras==null)carregarHorariosAtivos();
 
   // ── KPI: Faltas — até o dia de hoje ──
   const pctFalta=curAteDia.total?(curAteDia.faltas/curAteDia.total*100).toFixed(0)+'%':'0%';

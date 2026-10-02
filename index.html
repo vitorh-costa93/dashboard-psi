@@ -2176,6 +2176,9 @@ async function calcularAlertas() {
   }
   function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
+  const chaveDia=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const registradas=new Set(_rows.filter(r=>r._data&&!r._soValor).map(r=>r._paciente+'|'+chaveDia(r._data)));
+  const sessaoRegistrada=(nome,d)=>registradas.has(nome+'|'+chaveDia(d));
   const renovacoes=[],dividas=[];
   Object.entries(ativos).forEach(([nome,p])=>{
     const pacote=pacoteHabitual(p.compras);
@@ -2190,7 +2193,13 @@ async function calcularAlertas() {
     // Quem normalmente compra uma única sessão não entra no alerta de renovação,
     // mas ainda deve aparecer em pendências caso esteja devendo.
     if(pacote>1 && temEstaSemana && dataOcorrencia && saldo>=0){
-      const renovacao=new Date(dataOcorrencia); renovacao.setDate(renovacao.getDate()+saldo*7);
+      // Se a sessão desta semana já foi registrada, o saldo atual já a
+      // consumiu: a próxima sessão que precisa de crédito é a da semana
+      // seguinte (ex.: pacote zerado na sessão de segunda -> renova na
+      // semana que vem, não agora).
+      const base=new Date(dataOcorrencia);
+      if(sessaoRegistrada(nome,base))base.setDate(base.getDate()+7);
+      const renovacao=new Date(base); renovacao.setDate(renovacao.getDate()+saldo*7);
       if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
     }
     // Devedores com atendimento nesta semana aparecem toda semana (aviso

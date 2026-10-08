@@ -45,9 +45,7 @@ meio de `CHROME_PATH` e `lib/pdf.js`. A exportação precisa continuar no format
   `lib/`.
 - Os dados clínicos são protegidos no servidor. `SUPABASE_SERVICE_KEY` nunca
   pode ir para cliente, logs, artefatos ou commits.
-- Migrações são aditivas e ficam em `supabase/migrations/`. Leia
-  `ROADMAP_MIGRACAO_SUPABASE.md` e `PROJECT_CONTEXT.md` antes de alterar
-  autenticação, SQL, APIs, migrações ou regras de negócio.
+- Migrações são aditivas e ficam em `supabase/migrations/`. Consulte as seções pertinentes de `PROJECT_CONTEXT.md` e as regras de `AGENTS.md` antes de alterar autenticação, SQL, APIs, migrações ou regras de negócio; o roadmap é histórico e será lido integralmente apenas quando a mudança exigir abrangência.
 - `PROJECT_CONTEXT.md` é o registro arquitetural de longo prazo. Este arquivo
   complementa-o com o estado operacional e de implementação corrente.
 

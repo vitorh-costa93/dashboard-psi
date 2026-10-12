@@ -1185,7 +1185,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   <div class="modal doc-chat-modal">
     <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatPost()">✕</button>
     <h3>✦ Elaborar com IA</h3>
-    <p class="doc-chat-hint">O conteúdo e a arte do post aparecem aqui. Peça ajustes na conversa até ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência.</p>
+    <p class="doc-chat-hint">Aqui aparecem o conteúdo e a primeira arte (a capa) do post. Dê feedback de texto ou de visual na conversa; quando a capa estiver boa, aprove para gerar as outras. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência.</p>
     <div class="doc-chat-msgs" id="post-chat-modal-msgs"></div>
     <div class="doc-chat-anexo-staged" id="post-chat-modal-anexo" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg> <strong id="post-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatPost()" aria-label="Remover anexo">✕</button></div>
     <div class="doc-chat-anexo-staged" id="post-chat-modal-imagem" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4.5 16.5 4.5-4.5 3 3 4-4.5 5 6"/></svg> <strong id="post-chat-modal-imagem-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerImagemChatPost()" aria-label="Remover imagem">✕</button></div>
@@ -3315,7 +3315,7 @@ function restaurarGeracaoInterrompida(){
     atualizarUploadFundoPost();
     const isCarousel=(postAtual.formato||'').toLowerCase()==='carrossel';
     const total=isCarousel?(postAtual.slides||[]).length:1;
-    toast(`Uma geração de arte foi interrompida (o app foi pra segundo plano) -- ${postAtual.imagens_b64.length} de ${total} artes já prontas. Clique em "Gerar arte" pra concluir as que faltam.`,8000);
+    toast(`Uma geração de arte foi interrompida (o app foi pra segundo plano) -- ${postAtual.imagens_b64.length} de ${total} artes já prontas. Abra "Elaborar com IA" pra continuar de onde parou.`,8000);
   }catch{}
 }
 
@@ -3447,8 +3447,13 @@ async function elaborarPostComIA(){
   if(!tema){toast('Informe um tema.');document.getElementById('post-tema')?.focus();return;}
   const formato=document.getElementById('post-formato').value,publico=document.getElementById('post-publico').value;
   if(_postChatOcupado)return abrirChatPost();
-  const mesmoPost=_postAtual&&_postAtual.tema===tema&&_postAtual.formato===formato&&_postAtual.publico===publico&&_postChatHistorico.length;
-  if(mesmoPost)return abrirChatPost();
+  const mesmoPost=_postAtual&&_postAtual.tema===tema&&_postAtual.formato===formato&&_postAtual.publico===publico;
+  if(mesmoPost){
+    // Post já em mãos (rascunho aberto ou geração retomada) sem turno visível
+    // no chat: mostra o estado atual pra psicóloga continuar dali.
+    if(!_postChatHistorico.some(h=>h.conteudo||h.artes))_postChatHistorico.push({papel:'assistente',texto:'',exibicao:'Este é o post atual. Peça ajustes de texto ou de visual, ou continue a arte pelos botões abaixo.',conteudo:snapshotConteudoPost(_postAtual),...(_postAtual.imagens_b64?.length?{artes:[..._postAtual.imagens_b64]}:{semArte:true})});
+    return abrirChatPost();
+  }
   await gerarPostNoChat(tema,formato,publico);
 }
 
@@ -3481,11 +3486,11 @@ async function gerarPostNoChat(tema,formato,publico){
     toast('Erro ao gerar post: '+e.message);
     return;
   }
-  await gerarArteNoChat();
+  await gerarArteNoChat('capa');
 }
 
 function snapshotConteudoPost(p){
-  return {titulo:p.titulo,gancho:p.gancho,slides:p.slides,legenda:p.legenda,hashtags:p.hashtags,cta:p.cta};
+  return {titulo:p.titulo,gancho:p.gancho,slides:p.slides,legenda:p.legenda,hashtags:p.hashtags,cta:p.cta,direcao_visual:p.direcao_visual||''};
 }
 
 function renderPostPreview(){
@@ -3498,7 +3503,7 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').style.display='block';
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-let _postChatHistorico=[],_postChatAnexo=null,_postChatImagem=null,_postChatOcupado=false,_postChatGerandoArte=false;
+let _postChatHistorico=[],_postChatAnexo=null,_postChatImagem=null,_postChatOcupado=false,_postChatGerandoArte=false,_postChatAlvoArte=null;
 function abrirChatPost(){
   if(!_postAtual)return elaborarPostComIA();
   document.getElementById('post-chat-modal-overlay').classList.add('open');
@@ -3518,7 +3523,7 @@ function definirOcupadoChatPost(on,msg){
 }
 function blocoConteudoChatPost(c){
   const slides=(c.slides||[]).map(x=>`<li>${escHtml(x)}</li>`).join('');
-  return `<div class="chat-post"><strong>${escHtml(c.titulo||'')}</strong>${slides?`<ol>${slides}</ol>`:''}${c.legenda?`<div><em>Legenda:</em> ${escHtml(c.legenda)}</div>`:''}${(c.hashtags||[]).length?`<div>${escHtml((c.hashtags||[]).join(' '))}</div>`:''}${c.cta?`<div><em>CTA:</em> ${escHtml(c.cta)}</div>`:''}</div>`;
+  return `<div class="chat-post"><strong>${escHtml(c.titulo||'')}</strong>${slides?`<ol>${slides}</ol>`:''}${c.legenda?`<div><em>Legenda:</em> ${escHtml(c.legenda)}</div>`:''}${(c.hashtags||[]).length?`<div>${escHtml((c.hashtags||[]).join(' '))}</div>`:''}${c.cta?`<div><em>CTA:</em> ${escHtml(c.cta)}</div>`:''}${c.direcao_visual?`<div><em>Visual:</em> ${escHtml(c.direcao_visual)}</div>`:''}</div>`;
 }
 function renderChatPost(){
   const wrap=document.getElementById('post-chat-modal-msgs');if(!wrap)return;
@@ -3535,14 +3540,17 @@ function renderChatPost(){
     const imagem=h.imagemNome?`<div class="doc-chat-msg-anexo">${ICON_IMAGE_INLINE} ${escHtml(h.imagemNome)}</div>`:'';
     const conteudo=h.conteudo?blocoConteudoChatPost(h.conteudo):'';
     const artes=h.artes?.length?`<div class="chat-img-grid">${h.artes.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}"/>`).join('')}</div>`:'';
-    const temArte=!!_postAtual?.imagens_b64?.length;
-    const acoes=idx===ultimo&&!_postChatOcupado&&_postAtual?`<div class="chat-acoes"><button class="btn-primary" type="button" onclick="gerarArteNoChat()">${temArte?'↻ Nova versão da arte':'🎨 Gerar arte'}</button><button class="btn-secondary" type="button" onclick="concluirChatPost()">✓ Concluir</button></div>`:'';
+    const feitas=_postAtual?.imagens_b64?.length||0,totalArtes=(_postAtual?.formato||'').toLowerCase()==='carrossel'?(_postAtual?.slides||[]).length:1;
+    const botoesArte=feitas>=totalArtes?`<button class="btn-primary" type="button" onclick="gerarArteNoChat('capa')">${totalArtes>1?'↻ Refazer a partir da capa':'↻ Nova versão da arte'}</button>`
+      :feitas>0?`<button class="btn-primary" type="button" onclick="gerarArteNoChat('resto')">✓ Gostei, gerar as outras ${totalArtes-feitas}</button><button class="btn-secondary" type="button" onclick="gerarArteNoChat('capa')">↻ Nova versão da capa</button>`
+      :`<button class="btn-primary" type="button" onclick="gerarArteNoChat('capa')">🎨 Gerar arte</button>`;
+    const acoes=idx===ultimo&&!_postChatOcupado&&_postAtual?`<div class="chat-acoes">${botoesArte}<button class="btn-secondary" type="button" onclick="concluirChatPost()">✓ Concluir</button></div>`:'';
     return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}${conteudo}${artes}${acoes}</div>`;
   }).join('');
   let ao_vivo='';
   if(_postChatGerandoArte&&_postAtual){
     const feitas=_postAtual.imagens_b64||[],total=(_postAtual.formato||'').toLowerCase()==='carrossel'?(_postAtual.slides||[]).length:1;
-    ao_vivo=`<div class="chat-msg assistente">🎨 Gerando a arte — ${feitas.length} de ${total} pronta${feitas.length===1?'':'s'}...${feitas.length?`<div class="chat-img-grid">${feitas.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}"/>`).join('')}</div>`:''}</div>`;
+    ao_vivo=`<div class="chat-msg assistente">🎨 ${_postChatAlvoArte===1?'Gerando a primeira arte (a capa)...':`Gerando as artes — ${feitas.length} de ${total} pronta${feitas.length===1?'':'s'}...`}${feitas.length?`<div class="chat-img-grid">${feitas.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}"/>`).join('')}</div>`:''}</div>`;
   }
   wrap.innerHTML=(html||ao_vivo)?html+ao_vivo:'<div class="doc-chat-empty">Preencha o tema e clique em "Elaborar com IA" para gerar o conteúdo e a arte do post.</div>';
   wrap.scrollTop=wrap.scrollHeight;
@@ -3573,7 +3581,9 @@ async function selecionarImagemChatPost(input){
   }catch(e){toast(e.message||'Não foi possível ler a imagem.');}
 }
 function removerImagemChatPost(){_postChatImagem=null;const chip=document.getElementById('post-chat-modal-imagem');if(chip)chip.style.display='none';}
-async function gerarArteNoChat(){
+// modo 'capa': gera só a primeira arte, do zero, pra psicóloga validar e dar
+// feedback; modo 'resto': aprovada a capa, gera as demais do carrossel.
+async function gerarArteNoChat(modo='capa'){
   if(!_postAtual||_postChatOcupado)return;
   const usaFotos=document.getElementById('post-fundo').value==='upload';
   if(usaFotos&&!_fotosFundo.unica&&!(_fotosFundo.porSlide||[]).some(Boolean)){
@@ -3581,13 +3591,18 @@ async function gerarArteNoChat(){
     renderChatPost();
     return;
   }
-  _postChatGerandoArte=true;
-  definirOcupadoChatPost(true,'Gerando a arte... pode levar alguns minutos.');
+  const resto=modo==='resto';
+  _postChatGerandoArte=true;_postChatAlvoArte=resto?null:1;
+  definirOcupadoChatPost(true,resto?'Gerando as outras artes... pode levar alguns minutos.':'Gerando a primeira arte...');
   renderChatPost();
   let ok=false;
-  try{ok=await gerarArtePost();}finally{_postChatGerandoArte=false;definirOcupadoChatPost(false);}
-  if(ok&&_postAtual.imagens_b64?.length){
-    _postChatHistorico.push({papel:'assistente',texto:'',exibicao:'🎨 Arte pronta — veja abaixo. Se estiver boa, conclua e salve; se não, peça ajuste no texto ou gere uma nova versão.',artes:[..._postAtual.imagens_b64]});
+  try{ok=await gerarArtePost(resto?{}:{limite:1,recomecar:true});}finally{_postChatGerandoArte=false;_postChatAlvoArte=null;definirOcupadoChatPost(false);}
+  const feitas=_postAtual.imagens_b64?.length||0,total=(_postAtual.formato||'').toLowerCase()==='carrossel'?(_postAtual.slides||[]).length:1;
+  if(ok&&feitas){
+    const exibicao=feitas>=total
+      ?(total>1?'🎨 Carrossel completo — veja abaixo. Se estiver bom, conclua e salve; se não, peça ajustes.':'🎨 Arte pronta — veja abaixo. Se estiver boa, conclua e salve; se não, me diga o que ajustar.')
+      :`🎨 Esta é a primeira arte (a capa). O que achou? Me diga o que ajustar (cores, clima, cena, texto...) ou aprove para eu gerar as outras ${total-feitas}.`;
+    _postChatHistorico.push({papel:'assistente',texto:'',exibicao,artes:[..._postAtual.imagens_b64]});
   }else{
     _postChatHistorico.push({papel:'assistente',texto:'',exibicao:'Não consegui concluir a arte agora. Você pode tentar de novo.',semArte:true});
   }
@@ -3615,9 +3630,10 @@ async function enviarChatPost(){
     const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:historicoParaEnviar,ajuste:pedidoEfetivo,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
     // A arte só precisa ser refeita quando o que aparece nela (título/slides)
-    // mudou; ajuste só de legenda/hashtags/CTA mantém a arte já aprovada.
+    // ou a direção visual mudou; ajuste só de legenda/hashtags/CTA mantém a
+    // arte já aprovada.
     const chaveArte=p=>JSON.stringify([p.titulo,p.slides]);
-    refazerArte=chaveArte(_postAtual)!==chaveArte({..._postAtual,...d});
+    refazerArte=chaveArte(_postAtual)!==chaveArte({..._postAtual,...d})||(d.direcao_visual||'')!==(_postAtual.direcao_visual||'');
     _postAtual={..._postAtual,...d};
     if(refazerArte&&_postAtual.imagens_b64?.length){
       _postAtual.imagens_b64=[];
@@ -3628,7 +3644,7 @@ async function enviarChatPost(){
     const snap=snapshotConteudoPost(_postAtual);
     // texto guarda o JSON bruto (histórico real mandado pra API a cada novo
     // pedido); exibicao é só o que a psicóloga vê.
-    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:refazerArte?'✓ Prontinho! Ajustei o texto — vou refazer a arte para refletir a mudança.':'✓ Prontinho! Ajustei o texto — a arte continua a mesma.',conteudo:snap});
+    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:refazerArte?'✓ Prontinho! Anotei o ajuste — vou gerar uma nova capa para você avaliar.':'✓ Prontinho! Ajustei o texto — a arte continua a mesma.',conteudo:snap});
     input.value='';removerAnexoChatPost();removerImagemChatPost();
   }catch(e){
     _postChatHistorico.pop();
@@ -3636,7 +3652,7 @@ async function enviarChatPost(){
   }
   definirOcupadoChatPost(false);
   renderChatPost();
-  if(refazerArte)await gerarArteNoChat();
+  if(refazerArte)await gerarArteNoChat('capa');
   document.getElementById('post-chat-modal-input')?.focus();
 }
 
@@ -3839,7 +3855,10 @@ function renderArtesPost(){
     `<div class="post-art-card${storyClass}"><img src="data:image/png;base64,${b}" alt="Slide ${i+1} do carrossel"/><div class="post-art-caption"><span>Slide ${i+1} de ${imgs.length}</span><a class="post-art-download" download="jaqueline-post-slide-${i+1}.png" href="data:image/png;base64,${b}">Baixar</a></div></div>`
   ).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
-async function gerarArtePost(){
+// opts.limite: gera só as N primeiras artes desta chamada (a capa vem primeiro
+// no chat, pra psicóloga dar feedback antes de gastar as demais). opts.recomecar:
+// descarta o que já existe e começa da capa; sem ele, continua de onde parou.
+async function gerarArtePost(opts={}){
   if(!_postAtual){toast('Gere o conteúdo primeiro.');return false;}
   const formato=_postAtual.formato||'Carrossel';
   const isCarousel=formato.toLowerCase()==='carrossel';
@@ -3865,16 +3884,20 @@ async function gerarArtePost(){
     // (comum no iOS ao trocar de app) e a psicóloga clicar em "Gerar arte"
     // de novo.
     const assinatura=assinaturaGeracao(slides,formato,fonteFundo);
-    const retomando=_postAtual._assinaturaGeracao===assinatura && Array.isArray(_postAtual.imagens_b64) && _postAtual.imagens_b64.length>0 && _postAtual.imagens_b64.length<slides.length;
+    const retomando=!opts.recomecar && _postAtual._assinaturaGeracao===assinatura && Array.isArray(_postAtual.imagens_b64) && _postAtual.imagens_b64.length>0 && _postAtual.imagens_b64.length<slides.length;
     if(!retomando){
       _postAtual.imagens_b64=[];
-      toast('A geração pode levar alguns minutos -- evite trocar de app ou bloquear a tela até terminar, senão o progresso pode ficar incompleto.',6000);
+      if(!opts.limite)toast('A geração pode levar alguns minutos -- evite trocar de app ou bloquear a tela até terminar, senão o progresso pode ficar incompleto.',6000);
     }else{
       toast(`Retomando: ${_postAtual.imagens_b64.length} de ${slides.length} artes já prontas.`);
     }
     _postAtual._assinaturaGeracao=assinatura;
 
     const total=slides.length;
+    const alvo=opts.limite?Math.min(opts.limite,total):total;
+    // Feedback visual da psicóloga no chat (cores, clima, cena...), acumulado
+    // pela IA em direcao_visual; entra com prioridade alta em toda arte.
+    const direcaoExtra=_postAtual.direcao_visual?` Visual feedback from the psychologist, apply with high priority (it overrides the default visual direction, but never the brand palette legibility rules or reserved zones): ${_postAtual.direcao_visual}.`:'';
     // safeZones is non-negotiable regardless of format: aplicarLogoPost()
     // always draws the brand logo over the top-center zone afterwards (and,
     // for carousel slides only, a page counter over the top-left zone too).
@@ -3964,7 +3987,7 @@ async function gerarArtePost(){
       return opcoes[Math.floor(Math.random()*opcoes.length)];
     }
 
-    for(let i=retomando?_postAtual.imagens_b64.length:0;i<slides.length;i++){
+    for(let i=retomando?_postAtual.imagens_b64.length:0;i<alvo;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
       if(_postChatGerandoArte){const l=document.getElementById('post-chat-modal-loading');if(l)l.textContent=`Gerando arte ${i+1} de ${total}...`;}
       // A IA repetidamente interpretava "quebre em frases curtas" com
@@ -3995,7 +4018,7 @@ async function gerarArtePost(){
       // casual, candid feel a Story needs. A Story isn't part of a slide
       // set, so it doesn't need that consistency contract; skip it there.
       const brandBlock=isStory?safeZones:identidade;
-      const prompt=`Create ${formatDesc} for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${brandBlock} ${visualDirection} ${antiClicheSaudeMental} Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
+      const prompt=`Create ${formatDesc} for a Brazilian psychologist who works across the life cycle. Theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Specific content for this image: ${slides[i]}. ${coverRule} ${brandBlock} ${visualDirection} ${antiClicheSaudeMental}${direcaoExtra} Make the composition attractive and intentional. No mockups, no Instagram UI, no device frames.`;
       const fotoDoSlide=fonteFundo==='upload'?(_fotosFundo.porSlide?.[i]||_fotosFundo.unica):null;
       let finalB64;
       if(fotoDoSlide){
@@ -4003,7 +4026,7 @@ async function gerarArtePost(){
         // a foto e o TEMA para criar uma nova direção visual. A cópia do
         // post, porém, fica exclusivamente no canvas do app; assim nenhuma
         // instrução ou texto de trabalho pode vazar para a arte.
-        const promptFoto=`Transform the user's real photo into a refined, original Instagram editorial visual for a Brazilian psychologist. Creative theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Preserve any real person, face, pet and meaningful object clearly recognizable; do not replace the person, fabricate a different person, or turn the photo into a generic stock scene. Use the theme to add subtle, sophisticated visual direction through light, color harmony, restrained botanical or contextual details, and editorial composition that genuinely responds to this photo. Reserve the left-middle column (approximately 5% to 47% width, 27% to 78% height) as a calm, low-detail continuous part of the scene for text the application will add later; it must have no face, hands, important object, dense texture, hard shadow or focal point. Keep the top-center brand zone and top-left counter zone similarly calm. CRITICAL: render absolutely no words, letters, numbers, captions, quotes, logos, watermarks, UI, instructions, placeholder text or typography anywhere in the output. The application adds the exact text, logo and page counter afterwards.`;
+        const promptFoto=`Transform the user's real photo into a refined, original Instagram editorial visual for a Brazilian psychologist. Creative theme: ${_postAtual.tema}. Audience: ${_postAtual.publico||'público geral'}. Preserve any real person, face, pet and meaningful object clearly recognizable; do not replace the person, fabricate a different person, or turn the photo into a generic stock scene. Use the theme to add subtle, sophisticated visual direction through light, color harmony, restrained botanical or contextual details, and editorial composition that genuinely responds to this photo. Reserve the left-middle column (approximately 5% to 47% width, 27% to 78% height) as a calm, low-detail continuous part of the scene for text the application will add later; it must have no face, hands, important object, dense texture, hard shadow or focal point. Keep the top-center brand zone and top-left counter zone similarly calm. CRITICAL: render absolutely no words, letters, numbers, captions, quotes, logos, watermarks, UI, instructions, placeholder text or typography anywhere in the output. The application adds the exact text, logo and page counter afterwards.${direcaoExtra}`;
         let fundoCriativo=fotoDoSlide;
         try{fundoCriativo=await gerarImagemEdicao(fotoDoSlide,promptFoto,imgSize);}
         catch(e){toast(`Não foi possível criar a variação visual do slide ${i+1} (${e.message}); a foto original será usada.`);}
@@ -4028,7 +4051,7 @@ async function gerarArtePost(){
     }
     _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
     _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?`Carrossel de ${slides.length} slides;`:'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
-    limparProgressoGeracao();
+    if(_postAtual.imagens_b64.length>=total)limparProgressoGeracao();
     return true;
   }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();return false;}
 }

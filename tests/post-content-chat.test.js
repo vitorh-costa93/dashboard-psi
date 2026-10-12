@@ -191,6 +191,8 @@ test('system prompt inclui as regras de humanizacao, paginação variável e o l
   assert.ok(systemMsg.includes('Sete não é um padrão nem uma meta'));
   assert.equal(capturedBody.response_format.json_schema.schema.properties.hashtags.maxItems, 5);
   assert.equal(capturedBody.response_format.json_schema.schema.properties.slides.maxItems, 10);
+  assert.ok(capturedBody.response_format.json_schema.schema.required.includes('direcao_visual'));
+  assert.match(capturedBody.messages[0].content, /direcao_visual/);
 });
 
 test('anexo .txt embute o conteudo do arquivo na mensagem enviada a IA', async () => {

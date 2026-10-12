@@ -25,9 +25,12 @@ const POST_SCHEMA = {
       // maxItems 5: nunca o "bloco de 20-30 hashtags" -- ver regra de
       // dimensionamento (2-3 nicho + 1-2 médias + 0-1 ampla) no system prompt.
       hashtags: {type: 'array', items: {type: 'string'}, maxItems: 5},
-      cta: {type: 'string'}
+      cta: {type: 'string'},
+      // Feedback visual acumulado (cores, clima, cena, composição) que o app
+      // aplica na geração das artes; '' quando nunca houve pedido visual.
+      direcao_visual: {type: 'string'}
     },
-    required: ['titulo', 'gancho', 'slides', 'legenda', 'hashtags', 'cta'],
+    required: ['titulo', 'gancho', 'slides', 'legenda', 'hashtags', 'cta', 'direcao_visual'],
     additionalProperties: false
   }
 };
@@ -82,6 +85,8 @@ Para CARROSSEL e POST, "hashtags" segue o modelo de dimensionamento por tamanho,
 
 Se a mensagem do usuário pedir um AJUSTE sobre um conteúdo já gerado (você verá o conteúdo anterior no histórico da conversa), reescreva o objeto JSON inteiro aplicando o que foi pedido e mantendo tudo o que não foi pedido para mudar.
 
+Em "direcao_visual" registre, em inglês e de forma objetiva, as instruções VISUAIS para a arte que a psicóloga pedir (cores, clima, cena, estilo, claro/escuro, composição). É cumulativo: em ajustes, mantenha as instruções anteriores e acrescente/corrija conforme o novo pedido. Use "" se ela nunca pediu nada visual. Um pedido apenas visual NÃO deve alterar titulo, gancho, slides, legenda, hashtags nem cta.
+
 Retorne APENAS JSON válido:
 {
   "titulo":"...",
@@ -89,7 +94,8 @@ Retorne APENAS JSON válido:
   "slides":["..."],
   "legenda":"...",
   "hashtags":["#..."],
-  "cta":"..."
+  "cta":"...",
+  "direcao_visual":"..."
 }
 Para CARROSSEL, escolha a quantidade exata entre 4 e 10 itens em "slides" (um por imagem) segundo a profundidade real do tema e o arco narrativo. Sete não é um padrão nem uma meta: use menos quando a mensagem se encerra com consistência e use 9 ou 10 quando o assunto precisa de mais desenvolvimento. Nunca complete até um número maior só para preencher, e nunca corte um arco pela metade. Para POST, "slides" tem exatamente 1 item: a mensagem central da imagem. Para STORY, "slides" tem exatamente 1 item: a frase principal da tela, completa e com profundidade (aproximadamente 15 a 25 palavras, nunca um fragmento genérico); "legenda" traz um complemento curto de apoio (1 a 2 frases); "hashtags" deve ser uma lista vazia.
 

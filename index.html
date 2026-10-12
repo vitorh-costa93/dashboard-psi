@@ -944,6 +944,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="preview-actions">
         <button class="btn-primary" onclick="abrirChatImg()">✦ Ajustar com IA</button>
         <button class="btn-save" onclick="salvarAtividade()">💾 Salvar na biblioteca</button>
+        <button class="btn-pdf" onclick="exportarImagem()">🖼 Exportar imagem</button>
         <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
         <button class="btn-danger" onclick="descartarPreview()">Descartar</button>
       </div>
@@ -1470,6 +1471,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <img id="modal-img" src="" alt=""/>
     <div class="modal-tags" id="modal-tags"></div>
     <div class="modal-actions">
+      <button class="btn-pdf" onclick="exportarImagemModal()">🖼 Exportar imagem</button>
       <button class="btn-pdf" onclick="exportarPDFModal()">⬇ Exportar PDF</button>
       <button class="btn-danger" onclick="deletarModal()">Excluir</button>
     </div>
@@ -2859,6 +2861,40 @@ async function exportarPDF(b64, titulo) {
   } catch(e) { toast('Não foi possível gerar o PDF.'); }
 }
 
+// Exporta a atividade como PNG (resolução original). No celular abre o
+// compartilhamento (WhatsApp etc.); sem suporte, baixa o arquivo.
+async function exportarImagem(b64, titulo) {
+  const imgB64 = b64 || document.querySelector('#preview-wrap img')?.src?.split(',')[1];
+  if (!imgB64) { toast('Nenhuma imagem para exportar.'); return; }
+  if (!titulo) titulo = document.getElementById('g-titulo')?.value.trim();
+  const nome = `${(titulo||'atividade').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'') || 'atividade'}.png`;
+  try {
+    const bytes = atob(imgB64), arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const file = new File([arr], nome, { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: titulo || 'Atividade', files: [file] });
+      return;
+    }
+    const url = URL.createObjectURL(file), a = document.createElement('a');
+    a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
+  } catch(e) {
+    if (e?.name === 'AbortError') return;
+    toast('Não foi possível exportar a imagem.');
+  }
+}
+
+function exportarImagemModal() {
+  const ativ = _atividades.find(a => a.id === _modalId);
+  if (ativ) exportarImagem(ativ.img_b64, ativ.titulo);
+}
+
+function exportarImagemCard(id){
+  const ativ = _atividades.find(a => a.id === id);
+  if (ativ) exportarImagem(ativ.img_b64, ativ.titulo);
+}
+
 function exportarPDFModal() {
   const ativ = _atividades.find(a => a.id === _modalId);
   if (ativ) exportarPDF(ativ.img_b64, ativ.titulo);
@@ -2925,6 +2961,7 @@ function cardGrid(a) {
       </div>
     </div>
     <div class="ativ-card-actions" onclick="event.stopPropagation()">
+      <button class="btn-xs pdf" type="button" onclick="exportarImagemCard('${escHtmlAttr(a.id)}')">🖼 Imagem</button>
       <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
       <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>
@@ -2946,6 +2983,7 @@ function cardList(a) {
       </div>
     </div>
     <div class="ativ-row-actions">
+      <button class="btn-xs pdf" type="button" onclick="exportarImagemCard('${escHtmlAttr(a.id)}')">🖼 Imagem</button>
       <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
       <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>

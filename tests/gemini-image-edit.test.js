@@ -181,12 +181,12 @@ test('refine-image-prompt sem descricao retorna 400 sem chamar a OpenAI', async 
   assert.equal(res.code, 400);
 });
 
-test('refine-image-prompt monta a chamada com schema estrito e devolve descricao/incluirLogo', async () => {
+test('refine-image-prompt monta a chamada com schema estrito e devolve a descricao', async () => {
   let capturedBody;
   global.fetch = authFetchStub(async (url, options) => {
     if (url.includes('/v1/chat/completions')) {
       capturedBody = JSON.parse(options.body);
-      return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify({descricao: 'Uma rotina ilustrada', incluirLogo: false})}}]})};
+      return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify({descricao: 'Uma rotina ilustrada'})}}]})};
     }
     throw new Error('endpoint inesperado: ' + url);
   });
@@ -195,7 +195,24 @@ test('refine-image-prompt monta a chamada com schema estrito e devolve descricao
   await gemini(req, res);
   assert.equal(res.code, 200);
   assert.equal(res.body.descricao, 'Uma rotina ilustrada');
-  assert.equal(res.body.incluirLogo, false);
   assert.equal(capturedBody.response_format.json_schema.name, 'descricao_imagem');
-  assert.ok(capturedBody.messages[0].content.includes('incluirLogo=true SOMENTE'));
+  assert.ok(capturedBody.messages[0].content.includes('Nenhuma logo será aplicada'));
+  assert.deepEqual(capturedBody.response_format.json_schema.schema.required, ['descricao']);
+});
+
+test('refine-image-prompt com incluirLogo reserva o canto da logo e nunca pede a logo na descrição', async () => {
+  let capturedBody;
+  global.fetch = authFetchStub(async (url, options) => {
+    if (url.includes('/v1/chat/completions')) {
+      capturedBody = JSON.parse(options.body);
+      return {ok: true, status: 200, json: async () => ({choices: [{message: {content: JSON.stringify({descricao: 'Uma rotina ilustrada'})}}]})};
+    }
+    throw new Error('endpoint inesperado: ' + url);
+  });
+  const req = baseReq({type: 'refine-image-prompt', descricao: 'rotina matinal', incluirLogo: true});
+  const res = response();
+  await gemini(req, res);
+  assert.equal(res.code, 200);
+  assert.ok(capturedBody.messages[0].content.includes('canto inferior direito'));
+  assert.ok(capturedBody.messages[0].content.includes('NUNCA desenhe, descreva ou mencione logo'));
 });

@@ -197,6 +197,16 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 .prompt-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);background:var(--light);resize:vertical;min-height:72px;line-height:1.5;}
 .prompt-area:focus{outline:none;border-color:var(--accent);}
+.img-logo-opt{margin:4px 0 14px;}
+.img-logo-toggle{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;margin-bottom:8px;}
+.img-logo-toggle input{width:18px;height:18px;accent-color:var(--accent);flex:0 0 auto;}
+.img-logo-opt .post-logo-preview{margin-top:0;}
+.doc-chat-modal .chat-msg .chat-img{display:block;max-width:100%;border-radius:8px;margin-top:8px;border:1px solid var(--border);background:#fff;}
+.doc-chat-modal .chat-msg .chat-img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px;}
+.doc-chat-modal .chat-msg .chat-img-grid img{width:100%;border-radius:6px;border:1px solid var(--border);background:#fff;display:block;}
+.doc-chat-modal .chat-msg .chat-post{margin-top:8px;font-size:.8rem;line-height:1.45;border-top:1px solid var(--border);padding-top:8px;}
+.doc-chat-modal .chat-msg .chat-post ol{margin:4px 0 6px 18px;padding:0;}
+.doc-chat-modal .chat-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .doc-chat-modal{max-width:640px;width:min(640px,96vw);max-height:88vh;display:flex;flex-direction:column;padding:20px;}
 .doc-chat-modal h3{margin-bottom:4px;}
 .doc-chat-modal .doc-chat-hint{font-size:.78rem;color:var(--muted);line-height:1.4;margin-bottom:12px;}
@@ -913,15 +923,16 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
           </select>
         </div>
       </div>
-      <div class="gen-field" style="margin-bottom:10px;">
-        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px;">Descreva o que você quer</label>
-        <textarea class="prompt-area" id="g-desc" placeholder="Ex: Rotina matinal para menino de 7 anos com TDAH, com 6 etapas ilustradas em estilo de livro infantil com cores vibrantes..."></textarea>
-        <button class="btn-secondary" type="button" style="margin-top:6px" onclick="abrirChatImg()">✦ Elaborar com IA</button>
+      <div class="img-logo-opt">
+        <label class="img-logo-toggle">
+          <input type="checkbox" id="g-logo" onchange="_imgIncluirLogo=this.checked;atualizarAvisoLogoImg()"/>
+          <span>Incluir a logo do consultório na imagem</span>
+        </label>
+        <div class="post-logo-preview" id="g-logo-preview"></div>
+        <div class="post-brand-note" id="g-logo-note">Sem logo: a imagem é gerada limpa, pronta para imprimir e usar com o paciente.</div>
       </div>
       <div class="gen-actions">
-        <button class="btn-primary" id="btn-gen" onclick="gerarAtividade()"><span>✦</span> Gerar imagem</button>
-        <button class="btn-secondary" id="btn-regen" onclick="regenerar()" disabled>↻ Regenerar</button>
-        <button class="btn-secondary" id="btn-edit-prompt" onclick="editarPrompt()" disabled>✎ Editar prompt</button>
+        <button class="btn-primary" id="btn-elaborar-img" onclick="abrirChatImg()"><span>✦</span> Elaborar com IA</button>
         <span class="gen-status" id="gen-status"></span>
       </div>
     </div>
@@ -931,7 +942,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <input type="text" class="title-field" id="g-titulo" placeholder="Título da atividade (ex: Rotina Matinal — Lucas, 7 anos)"/>
       <div class="preview-img-wrap" id="preview-wrap"><div class="preview-placeholder">A imagem gerada aparecerá aqui</div></div>
       <div class="preview-actions">
+        <button class="btn-primary" onclick="abrirChatImg()">✦ Ajustar com IA</button>
         <button class="btn-save" onclick="salvarAtividade()">💾 Salvar na biblioteca</button>
+        <button class="btn-pdf" onclick="exportarImagem()">🖼 Exportar imagem</button>
         <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
         <button class="btn-danger" onclick="descartarPreview()">Descartar</button>
       </div>
@@ -1129,7 +1142,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="post-brand-note">A identidade visual do carrossel é fixa: paleta, logo, paginação e composição seguem o mesmo padrão em todas as artes.</div>
       <div id="post-upload-fundo" style="display:none;margin-top:10px;"></div>
       <div class="gen-actions">
-        <button class="btn-primary" id="btn-post-generate" onclick="gerarPost()">✦ Gerar conteúdo</button>
+        <button class="btn-primary" id="btn-post-generate" onclick="elaborarPostComIA()">✦ Elaborar com IA</button>
         <span class="gen-status" id="post-status"></span>
       </div>
     </div>
@@ -1152,8 +1165,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
         <div class="preview-placeholder">A arte será gerada depois que o conteúdo for aprovado.</div>
       </div>
       <div class="preview-actions">
-        <button class="btn-primary" onclick="abrirChatPost()">✦ Ajustar com IA</button>
-        <button class="btn-primary" onclick="gerarArtePost()">🎨 Gerar arte</button>
+        <button class="btn-primary" onclick="abrirChatPost()">✦ Elaborar com IA</button>
         <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
         <button class="btn-secondary" onclick="limparPost()">✕ Limpar</button>
       </div>
@@ -1172,8 +1184,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 <div class="modal-overlay" id="post-chat-modal-overlay" onclick="if(event.target===this)fecharChatPost()">
   <div class="modal doc-chat-modal">
     <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatPost()">✕</button>
-    <h3>✦ Ajustar com IA</h3>
-    <p class="doc-chat-hint">Converse até o conteúdo ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência.</p>
+    <h3>✦ Elaborar com IA</h3>
+    <p class="doc-chat-hint">O conteúdo e a arte do post aparecem aqui. Peça ajustes na conversa até ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência.</p>
     <div class="doc-chat-msgs" id="post-chat-modal-msgs"></div>
     <div class="doc-chat-anexo-staged" id="post-chat-modal-anexo" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg> <strong id="post-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatPost()" aria-label="Remover anexo">✕</button></div>
     <div class="doc-chat-anexo-staged" id="post-chat-modal-imagem" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4.5 16.5 4.5-4.5 3 3 4-4.5 5 6"/></svg> <strong id="post-chat-modal-imagem-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerImagemChatPost()" aria-label="Remover imagem">✕</button></div>
@@ -1186,7 +1198,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <button class="btn-secondary" id="post-chat-modal-btn" onclick="enviarChatPost()">Enviar</button>
     </div>
     <div class="doc-chat-actions">
-      <span class="doc-chat-loading" id="post-chat-modal-loading" style="display:none">Ajustando...</span>
+      <span class="doc-chat-loading" id="post-chat-modal-loading" style="display:none">Elaborando...</span>
       <div class="modal-actions" style="margin-left:auto">
         <button class="btn-secondary" type="button" onclick="reiniciarChatPost()">Nova conversa</button>
       </div>
@@ -1225,7 +1237,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   <div class="modal doc-chat-modal">
     <button class="btn-modal-close" type="button" aria-label="Fechar" onclick="fecharChatImg()">✕</button>
     <h3>✦ Elaborar com IA</h3>
-    <p class="doc-chat-hint">Converse até a descrição da imagem ficar do jeito que você quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência. Se quiser, peça para incluir a logo do consultório.</p>
+    <p class="doc-chat-hint">Descreva a imagem: ela é gerada aqui mesmo e você pede ajustes até ficar do jeito que quer. Você pode anexar um arquivo (PDF, DOCX ou TXT) ou uma imagem de referência. A logo é controlada pela opção "Incluir a logo" na tela.</p>
     <div class="doc-chat-msgs" id="img-chat-modal-msgs"></div>
     <div class="doc-chat-anexo-staged" id="img-chat-modal-anexo" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M17.5 8.5 9.9 16.1a3 3 0 1 1-4.24-4.24l8.49-8.49a4.5 4.5 0 1 1 6.36 6.36l-8.13 8.13a1.5 1.5 0 1 1-2.12-2.12L16.5 9.5"/></svg> <strong id="img-chat-modal-anexo-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerAnexoChatImg()" aria-label="Remover anexo">✕</button></div>
     <div class="doc-chat-anexo-staged" id="img-chat-modal-imagem" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4.5 16.5 4.5-4.5 3 3 4-4.5 5 6"/></svg> <strong id="img-chat-modal-imagem-nome"></strong><button type="button" class="doc-chat-anexo-remove" onclick="removerImagemChatImg()" aria-label="Remover imagem">✕</button></div>
@@ -1459,6 +1471,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <img id="modal-img" src="" alt=""/>
     <div class="modal-tags" id="modal-tags"></div>
     <div class="modal-actions">
+      <button class="btn-pdf" onclick="exportarImagemModal()">🖼 Exportar imagem</button>
       <button class="btn-pdf" onclick="exportarPDFModal()">⬇ Exportar PDF</button>
       <button class="btn-danger" onclick="deletarModal()">Excluir</button>
     </div>
@@ -2565,9 +2578,11 @@ let _currentImg  = null;
 let _currentView = 'grid';
 let _modalId     = null;
 let _lastPrompt  = '';
-let _imgChatHistorico=[],_imgChatAnexo=null,_imgChatImagem=null,_imgIncluirLogo=false;
+let _imgChatHistorico=[],_imgChatAnexo=null,_imgChatImagem=null,_imgIncluirLogo=false,_imgChatOcupado=false;
 
 async function initAtividades() {
+  const logoPrev = document.getElementById('g-logo-preview');
+  if (logoPrev) logoPrev.innerHTML = `${brandMarkup()}<span style="font-size:.72rem;color:var(--muted)">Logo do consultório</span>`;
   document.getElementById('biblioteca-container').innerHTML =
     '<div class="inline-loading"><div class="inline-spinner"></div> Carregando biblioteca...</div>';
   try {
@@ -2580,41 +2595,27 @@ async function initAtividades() {
   renderBiblioteca();
 }
 
-async function gerarAtividade() {
+// A logo é decidida pelo interruptor "Incluir a logo" da aba (não mais
+// inferida da conversa): era a causa da confusão de a IA perguntar/ignorar a
+// logo. O prompt final só junta o tipo/faixa/tema do formulário com a
+// descrição que o chat elaborou.
+function montarPromptImagem(desc) {
   const tipo  = document.getElementById('g-tipo').value;
   const faixa = document.getElementById('g-faixa').value;
   const tema  = document.getElementById('g-tema').value;
-  const desc  = document.getElementById('g-desc').value.trim();
-
-  if (!desc) { toast('Descreva o que você quer criar.'); return; }
-
   const tipoPrompt = tipo === 'Colorir'
     ? 'coloring page, black and white line art, thick clean outlines, no shading, white background, printable'
     : tipo === 'Rotina'
     ? 'visual routine chart with numbered steps, clear icons, children illustration style, colorful'
     : 'therapeutic children illustration, warm colors, friendly characters';
+  return `${tipoPrompt}, ${desc}, for ${faixa||'children'} age group, theme: ${tema||'therapy'}, child-friendly, professional therapeutic material, high quality`;
+}
 
-  const prompt = `${tipoPrompt}, ${desc}, for ${faixa||'children'} age group, theme: ${tema||'therapy'}, child-friendly, professional therapeutic material, high quality`;
-  _lastPrompt = prompt;
-
-  setGenerating(true, 'Gerando imagem...');
-  try {
-    // Sem logo aqui: o prompt de Atividade não reserva nenhuma zona calma
-    // pra IA (diferente do fluxo de Posts), então a marca acabava caindo
-    // em cima do título da atividade. Também rouba espaço numa folha que
-    // já é pra imprimir e usar com a criança -- "regenerar" já não
-    // aplicava a logo (inconsistência corrigida aqui de quebra).
-    const imgB64 = await gerarImagem(prompt, undefined, _imgIncluirLogo);
-    _currentImg = { b64: imgB64, prompt };
-    mostrarPreview(imgB64);
-    setGenerating(false, '');
-    document.getElementById('btn-regen').disabled       = false;
-    document.getElementById('btn-edit-prompt').disabled = false;
-  } catch(e) {
-    console.error(e);
-    setGenerating(false, '');
-    toast('Erro ao gerar: ' + (e.message || 'tente novamente'));
-  }
+function atualizarAvisoLogoImg() {
+  const note = document.getElementById('g-logo-note');
+  if (note) note.textContent = _imgIncluirLogo
+    ? 'Com logo: a logo do consultório será aplicada pequena, em um canto da imagem.'
+    : 'Sem logo: a imagem é gerada limpa, pronta para imprimir e usar com o paciente.';
 }
 
 async function gerarImagem(prompt, size, incluirLogo) {
@@ -2675,11 +2676,16 @@ function fecharChatImg(){document.getElementById('img-chat-modal-overlay').class
 function renderChatImg(){
   const wrap=document.getElementById('img-chat-modal-msgs');if(!wrap)return;
   const visiveis=_imgChatHistorico.filter(h=>!h.interno);
+  // Os botões de ação só aparecem na última imagem (a que está em validação).
+  const ultimoComImagem=_imgChatHistorico.reduce((u,h,i)=>h.b64||h.falhou?i:u,-1);
   wrap.innerHTML=visiveis.length?visiveis.map(h=>{
+    const idx=_imgChatHistorico.indexOf(h);
     const anexo=h.anexoNome?`<div class="doc-chat-msg-anexo">${ICON_ATTACH_INLINE} ${escHtml(h.anexoNome)}</div>`:'';
     const imagem=h.imagemNome?`<div class="doc-chat-msg-anexo">${ICON_IMAGE_INLINE} ${escHtml(h.imagemNome)}</div>`:'';
-    return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}</div>`;
-  }).join(''):'<div class="doc-chat-empty">Descreva a imagem que você quer, ou anexe um arquivo/imagem de referência. Peça a inclusão da logo do consultório se quiser.</div>';
+    const img=h.b64?`<img class="chat-img" src="data:image/png;base64,${h.b64}" alt="Imagem gerada"/>`:'';
+    const acoes=idx===ultimoComImagem&&!_imgChatOcupado?`<div class="chat-acoes">${h.b64?`<button class="btn-primary" type="button" onclick="usarImagemChat(${idx})">✓ Usar esta imagem</button><button class="btn-secondary" type="button" onclick="outraVersaoChatImg(${idx})">↻ Outra versão</button>`:`<button class="btn-secondary" type="button" onclick="outraVersaoChatImg(${idx})">↻ Tentar gerar de novo</button>`}</div>`:'';
+    return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}${img}${acoes}</div>`;
+  }).join(''):'<div class="doc-chat-empty">Descreva a imagem que você quer, ou anexe um arquivo/imagem de referência. A imagem aparece aqui e você pede os ajustes até ficar boa.</div>';
   wrap.scrollTop=wrap.scrollHeight;
 }
 async function selecionarAnexoChatImg(input){
@@ -2707,51 +2713,78 @@ async function selecionarImagemChatImg(input){
   }catch(e){toast(e.message||'Não foi possível ler a imagem.');}
 }
 function removerImagemChatImg(){_imgChatImagem=null;const chip=document.getElementById('img-chat-modal-imagem');if(chip)chip.style.display='none';}
+function definirOcupadoChatImg(on,msg){
+  _imgChatOcupado=on;
+  const input=document.getElementById('img-chat-modal-input'),btn=document.getElementById('img-chat-modal-btn'),loading=document.getElementById('img-chat-modal-loading');
+  if(input)input.disabled=on;if(btn)btn.disabled=on;
+  if(loading){loading.textContent=msg||'';loading.style.display=on?'inline':'none';}
+}
+// Gera a imagem a partir da descrição já elaborada e a coloca no chat, onde a
+// psicóloga valida ou pede ajuste -- substitui os antigos botões "Gerar
+// imagem", "Regenerar" e "Editar prompt" da aba.
+async function gerarImagemNoChat(desc,{texto='',exibicao}={}){
+  const prompt=montarPromptImagem(desc);
+  _lastPrompt=prompt;
+  definirOcupadoChatImg(true,'Gerando a imagem... pode levar até 1 minuto.');
+  mostrarDigitando('img-chat-modal-msgs');
+  try{
+    const b64=await gerarImagem(prompt,undefined,_imgIncluirLogo);
+    _imgChatHistorico.push({papel:'assistente',texto,exibicao:exibicao||'✓ Aqui está a imagem. Se estiver boa, use-a; se não, me diga o que ajustar.',b64,prompt});
+  }catch(e){
+    _imgChatHistorico.push({papel:'assistente',texto,exibicao:'A descrição está pronta, mas não consegui gerar a imagem agora ('+(e.message||'tente novamente')+').',falhou:true,prompt});
+  }
+  definirOcupadoChatImg(false);
+  renderChatImg();
+}
 async function enviarChatImg(){
+  if(_imgChatOcupado)return;
   const input=document.getElementById('img-chat-modal-input'),pedido=input.value.trim(),anexo=_imgChatAnexo,imagem=_imgChatImagem;
   if(!pedido&&!anexo&&!imagem)return;
   if(!_imgChatHistorico.length&&!anexo&&!imagem&&pedido.length<10)return toast('Descreva com um pouco mais de detalhe a imagem que deseja elaborar.');
-  const btn=document.getElementById('img-chat-modal-btn'),loading=document.getElementById('img-chat-modal-loading');
   const tipo=document.getElementById('g-tipo').value,faixa=document.getElementById('g-faixa').value,tema=document.getElementById('g-tema').value;
   const pedidoEfetivo=pedido||(anexo?'Considere o conteúdo do arquivo anexado.':'Considere a imagem anexada como referência.');
-  input.disabled=true;btn.disabled=true;loading.style.display='inline';
   const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome}:{}),...(imagem?{imagemNome:imagem.nome}:{})};
+  // A imagem gerada nunca vai pra API: só papel/texto de cada turno.
+  const historicoParaEnviar=_imgChatHistorico.map(h=>({papel:h.papel,texto:h.texto}));
   _imgChatHistorico.push(turnoUsuario);renderChatImg();mostrarDigitando('img-chat-modal-msgs');
+  definirOcupadoChatImg(true,'Elaborando a descrição...');
+  let d;
   try{
-    const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'refine-image-prompt',tipo,faixa,tema,descricao:pedidoEfetivo,historico:_imgChatHistorico.slice(0,-1),...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})}),d=await r.json();
+    const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'refine-image-prompt',tipo,faixa,tema,incluirLogo:_imgIncluirLogo,descricao:pedidoEfetivo,historico:historicoParaEnviar,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})});
+    d=await r.json();
     if(!r.ok)throw new Error(d.error);
-    _imgChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Atualizei a descrição — veja o campo acima.'});
-    document.getElementById('g-desc').value=d.descricao||'';
-    _imgIncluirLogo=!!d.incluirLogo;
-    input.value='';removerAnexoChatImg();removerImagemChatImg();
-    renderChatImg();
   }catch(e){
-    _imgChatHistorico.pop();renderChatImg();
+    _imgChatHistorico.pop();definirOcupadoChatImg(false);renderChatImg();
     toast(e.message||'Não foi possível elaborar a descrição.');
+    document.getElementById('img-chat-modal-input')?.focus();
+    return;
   }
-  finally{input.disabled=false;btn.disabled=false;loading.style.display='none';document.getElementById('img-chat-modal-input')?.focus();}
+  input.value='';removerAnexoChatImg();removerImagemChatImg();
+  await gerarImagemNoChat(d.descricao||'',{texto:JSON.stringify(d)});
+  document.getElementById('img-chat-modal-input')?.focus();
 }
-
-async function regenerar() {
-  if (!_lastPrompt) return;
-  setGenerating(true, 'Regenerando...');
-  try {
-    const b64 = await gerarImagem(_lastPrompt, undefined, _imgIncluirLogo);
-    _currentImg = { b64, prompt: _lastPrompt };
-    mostrarPreview(b64);
-    setGenerating(false, '');
-  } catch(e) {
-    setGenerating(false, '');
-    toast('Erro: ' + (e.message || 'tente novamente'));
+// Nova imagem a partir da MESMA descrição (era o botão "Regenerar").
+async function outraVersaoChatImg(idx){
+  if(_imgChatOcupado)return;
+  const turno=_imgChatHistorico[idx];if(!turno?.prompt)return;
+  _lastPrompt=turno.prompt;
+  definirOcupadoChatImg(true,'Gerando outra versão...');
+  mostrarDigitando('img-chat-modal-msgs');
+  try{
+    const b64=await gerarImagem(turno.prompt,undefined,_imgIncluirLogo);
+    _imgChatHistorico.push({papel:'assistente',texto:'',exibicao:'↻ Outra versão da mesma descrição:',b64,prompt:turno.prompt});
+  }catch(e){
+    toast('Erro: '+(e.message||'tente novamente'));
   }
+  definirOcupadoChatImg(false);
+  renderChatImg();
 }
-
-function editarPrompt() {
-  const novo = prompt('Edite o prompt antes de regenerar:', _lastPrompt);
-  if (novo !== null && novo.trim()) {
-    _lastPrompt = novo.trim();
-    regenerar();
-  }
+function usarImagemChat(idx){
+  const turno=_imgChatHistorico[idx];if(!turno?.b64)return;
+  _lastPrompt=turno.prompt;
+  _currentImg={b64:turno.b64,prompt:turno.prompt};
+  fecharChatImg();
+  mostrarPreview(turno.b64);
 }
 
 function mostrarPreview(b64) {
@@ -2764,18 +2797,7 @@ function mostrarPreview(b64) {
 function descartarPreview() {
   document.getElementById('preview-card').style.display = 'none';
   _currentImg = null;
-  document.getElementById('btn-regen').disabled       = true;
-  document.getElementById('btn-edit-prompt').disabled = true;
   document.getElementById('g-titulo').value = '';
-}
-
-function setGenerating(on, msg) {
-  const btn = document.getElementById('btn-gen');
-  btn.disabled = on;
-  btn.innerHTML = on
-    ? `<span class="inline-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Gerando...`
-    : '<span>✦</span> Gerar imagem';
-  document.getElementById('gen-status').textContent = msg;
 }
 
 async function salvarAtividade() {
@@ -2815,15 +2837,12 @@ function limparFormAtividade() {
   document.getElementById('g-tipo').value  = '';
   document.getElementById('g-faixa').value = '';
   document.getElementById('g-tema').value  = '';
-  document.getElementById('g-desc').value  = '';
   document.getElementById('g-titulo').value = '';
   document.getElementById('preview-card').style.display = 'none';
   _currentImg  = null;
   _lastPrompt  = '';
   _imgIncluirLogo = false;
   _imgChatHistorico=[];removerAnexoChatImg();removerImagemChatImg();
-  document.getElementById('btn-regen').disabled       = true;
-  document.getElementById('btn-edit-prompt').disabled = true;
 }
 
 async function exportarPDF(b64, titulo) {
@@ -2840,6 +2859,40 @@ async function exportarPDF(b64, titulo) {
     a.href = url; a.download = `${(titulo||'atividade').replace(/[^a-zA-Z0-9]+/g,'-')}.pdf`; a.click();
     URL.revokeObjectURL(url);
   } catch(e) { toast('Não foi possível gerar o PDF.'); }
+}
+
+// Exporta a atividade como PNG (resolução original). No celular abre o
+// compartilhamento (WhatsApp etc.); sem suporte, baixa o arquivo.
+async function exportarImagem(b64, titulo) {
+  const imgB64 = b64 || document.querySelector('#preview-wrap img')?.src?.split(',')[1];
+  if (!imgB64) { toast('Nenhuma imagem para exportar.'); return; }
+  if (!titulo) titulo = document.getElementById('g-titulo')?.value.trim();
+  const nome = `${(titulo||'atividade').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'') || 'atividade'}.png`;
+  try {
+    const bytes = atob(imgB64), arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const file = new File([arr], nome, { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: titulo || 'Atividade', files: [file] });
+      return;
+    }
+    const url = URL.createObjectURL(file), a = document.createElement('a');
+    a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
+  } catch(e) {
+    if (e?.name === 'AbortError') return;
+    toast('Não foi possível exportar a imagem.');
+  }
+}
+
+function exportarImagemModal() {
+  const ativ = _atividades.find(a => a.id === _modalId);
+  if (ativ) exportarImagem(ativ.img_b64, ativ.titulo);
+}
+
+function exportarImagemCard(id){
+  const ativ = _atividades.find(a => a.id === id);
+  if (ativ) exportarImagem(ativ.img_b64, ativ.titulo);
 }
 
 function exportarPDFModal() {
@@ -2908,6 +2961,7 @@ function cardGrid(a) {
       </div>
     </div>
     <div class="ativ-card-actions" onclick="event.stopPropagation()">
+      <button class="btn-xs pdf" type="button" onclick="exportarImagemCard('${escHtmlAttr(a.id)}')">🖼 Imagem</button>
       <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
       <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>
@@ -2929,6 +2983,7 @@ function cardList(a) {
       </div>
     </div>
     <div class="ativ-row-actions">
+      <button class="btn-xs pdf" type="button" onclick="exportarImagemCard('${escHtmlAttr(a.id)}')">🖼 Imagem</button>
       <button class="btn-xs pdf" type="button" onclick="exportarPDFCard('${escHtmlAttr(a.id)}')">⬇ PDF</button>
       <button class="btn-xs del" type="button" onclick="deletarAtividade('${escHtmlAttr(a.id)}')">Excluir</button>
     </div>
@@ -3381,35 +3436,56 @@ function usarSugestaoPost(i){
   document.getElementById('post-contexto').value=x.resumo||x.por_que||'';
   document.getElementById('post-publico').value = x.faixa==='Infância' ? 'Crianças' : x.faixa==='Adolescência' ? 'Adolescentes' : x.faixa==='Adultos' ? 'Adultos' : x.faixa==='Idosos' ? 'Idosos' : x.faixa==='Família' ? 'Famílias' : 'Ciclo vital';
   document.getElementById('post-preview-card').style.display='none';
-  gerarPost();
+  elaborarPostComIA();
 }
 
-async function gerarPost(){
+// Ponto único de entrada de Posts: abre o chat, gera o conteúdo e a arte lá
+// dentro e deixa a psicóloga validar/ajustar na própria conversa (substitui os
+// botões "Gerar conteúdo", "Ajustar com IA" e "Gerar arte").
+async function elaborarPostComIA(){
   const tema=document.getElementById('post-tema').value.trim();
-  if(!tema){toast('Informe um tema.');return;}
-  const status=document.getElementById('post-status'),btn=document.getElementById('btn-post-generate');
-  btn.disabled=true;status.textContent='Gerando conteúdo...';
+  if(!tema){toast('Informe um tema.');document.getElementById('post-tema')?.focus();return;}
+  const formato=document.getElementById('post-formato').value,publico=document.getElementById('post-publico').value;
+  if(_postChatOcupado)return abrirChatPost();
+  const mesmoPost=_postAtual&&_postAtual.tema===tema&&_postAtual.formato===formato&&_postAtual.publico===publico&&_postChatHistorico.length;
+  if(mesmoPost)return abrirChatPost();
+  await gerarPostNoChat(tema,formato,publico);
+}
+
+async function gerarPostNoChat(tema,formato,publico){
+  const contexto=document.getElementById('post-contexto').value.trim();
+  const trendSelecionada=_postTrends.find(x=>x.titulo===tema);
+  const faixa=trendSelecionada?.faixa||publico;
+  document.getElementById('post-chat-modal-overlay').classList.add('open');
+  reiniciarChatPost();
+  const primeiroPedido=`Tema: ${tema}\nFaixa do ciclo vital: ${faixa||'Ciclo vital'}\nFormato: ${formato}\nPúblico: ${publico}\nContexto/tendência: ${contexto||'nenhum'}`;
+  _postChatHistorico.push({papel:'usuario',texto:primeiroPedido,exibicao:`${tema} · ${formato} · ${publico}${contexto?`\nContexto: ${contexto}`:''}`});
+  renderChatPost();mostrarDigitando('post-chat-modal-msgs');
+  definirOcupadoChatPost(true,'Elaborando o conteúdo...');
   try{
     const r=await fetch('/api/post-content',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        tema,formato:document.getElementById('post-formato').value,
-        publico:document.getElementById('post-publico').value,
-        contexto:document.getElementById('post-contexto').value.trim(),
-        faixa:(_postTrends.find(x=>x.titulo===tema)?.faixa)||document.getElementById('post-publico').value
-      })
+      body:JSON.stringify({tema,formato,publico,contexto,faixa})
     });
     const data=await r.json();if(!r.ok)throw new Error(data.error||'Erro');
-    const trendSelecionada=_postTrends.find(x=>x.titulo===tema);
-    _postAtual={...data,tema,formato:document.getElementById('post-formato').value,
-      publico:document.getElementById('post-publico').value,faixa:trendSelecionada?.faixa||document.getElementById('post-publico').value,img_b64:null,
-      fonte_tendencia:trendSelecionada?.fonte?.link||''};
+    _postAtual={...data,tema,formato,publico,faixa,img_b64:null,fonte_tendencia:trendSelecionada?.fonte?.link||''};
     renderPostPreview();
     atualizarUploadFundoPost();
-    reiniciarChatPost();
-    status.textContent='Conteúdo gerado — revise antes de salvar.';
-  }catch(e){status.textContent='';toast('Erro ao gerar post: '+e.message);}
-  finally{btn.disabled=false;}
+    renderArtesPost();
+    const snap=snapshotConteudoPost(_postAtual);
+    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(snap),exibicao:'✓ Conteúdo elaborado — confira abaixo.',conteudo:snap});
+    definirOcupadoChatPost(false);
+    renderChatPost();
+  }catch(e){
+    _postChatHistorico=[];definirOcupadoChatPost(false);renderChatPost();
+    toast('Erro ao gerar post: '+e.message);
+    return;
+  }
+  await gerarArteNoChat();
+}
+
+function snapshotConteudoPost(p){
+  return {titulo:p.titulo,gancho:p.gancho,slides:p.slides,legenda:p.legenda,hashtags:p.hashtags,cta:p.cta};
 }
 
 function renderPostPreview(){
@@ -3422,14 +3498,28 @@ function renderPostPreview(){
   document.getElementById('post-preview-card').style.display='block';
   document.getElementById('post-preview-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-let _postChatHistorico=[],_postChatAnexo=null,_postChatImagem=null;
+let _postChatHistorico=[],_postChatAnexo=null,_postChatImagem=null,_postChatOcupado=false,_postChatGerandoArte=false;
 function abrirChatPost(){
-  if(!_postAtual)return toast('Gere o conteúdo do post primeiro.');
+  if(!_postAtual)return elaborarPostComIA();
   document.getElementById('post-chat-modal-overlay').classList.add('open');
   renderChatPost();
   setTimeout(()=>document.getElementById('post-chat-modal-input')?.focus(),50);
 }
 function fecharChatPost(){document.getElementById('post-chat-modal-overlay').classList.remove('open');removerAnexoChatPost();removerImagemChatPost();}
+function concluirChatPost(){
+  fecharChatPost();
+  document.getElementById('post-preview-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function definirOcupadoChatPost(on,msg){
+  _postChatOcupado=on;
+  const input=document.getElementById('post-chat-modal-input'),btn=document.getElementById('post-chat-modal-btn'),loading=document.getElementById('post-chat-modal-loading');
+  if(input)input.disabled=on;if(btn)btn.disabled=on;
+  if(loading){loading.textContent=msg||'';loading.style.display=on?'inline':'none';}
+}
+function blocoConteudoChatPost(c){
+  const slides=(c.slides||[]).map(x=>`<li>${escHtml(x)}</li>`).join('');
+  return `<div class="chat-post"><strong>${escHtml(c.titulo||'')}</strong>${slides?`<ol>${slides}</ol>`:''}${c.legenda?`<div><em>Legenda:</em> ${escHtml(c.legenda)}</div>`:''}${(c.hashtags||[]).length?`<div>${escHtml((c.hashtags||[]).join(' '))}</div>`:''}${c.cta?`<div><em>CTA:</em> ${escHtml(c.cta)}</div>`:''}</div>`;
+}
 function renderChatPost(){
   const wrap=document.getElementById('post-chat-modal-msgs');if(!wrap)return;
   // "interno" (o snapshot inicial do conteúdo, em JSON) alimenta o histórico
@@ -3437,11 +3527,24 @@ function renderChatPost(){
   // código nenhum, só uma conversa. Turnos reais mostram "exibicao" (um
   // resumo humano) quando existir, e caem pro texto puro só como fallback.
   const visiveis=_postChatHistorico.filter(h=>!h.interno);
-  wrap.innerHTML=visiveis.length?visiveis.map(h=>{
+  // Botões de ação só na última resposta com conteúdo/arte (a que está em validação).
+  const ultimo=_postChatHistorico.reduce((u,h,i)=>(h.conteudo||h.artes||h.semArte)?i:u,-1);
+  const html=visiveis.map(h=>{
+    const idx=_postChatHistorico.indexOf(h);
     const anexo=h.anexoNome?`<div class="doc-chat-msg-anexo">${ICON_ATTACH_INLINE} ${escHtml(h.anexoNome)}</div>`:'';
     const imagem=h.imagemNome?`<div class="doc-chat-msg-anexo">${ICON_IMAGE_INLINE} ${escHtml(h.imagemNome)}</div>`:'';
-    return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}</div>`;
-  }).join(''):'<div class="doc-chat-empty">Peça um ajuste ao conteúdo gerado, ou anexe um arquivo/imagem de referência.</div>';
+    const conteudo=h.conteudo?blocoConteudoChatPost(h.conteudo):'';
+    const artes=h.artes?.length?`<div class="chat-img-grid">${h.artes.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}"/>`).join('')}</div>`:'';
+    const temArte=!!_postAtual?.imagens_b64?.length;
+    const acoes=idx===ultimo&&!_postChatOcupado&&_postAtual?`<div class="chat-acoes"><button class="btn-primary" type="button" onclick="gerarArteNoChat()">${temArte?'↻ Nova versão da arte':'🎨 Gerar arte'}</button><button class="btn-secondary" type="button" onclick="concluirChatPost()">✓ Concluir</button></div>`:'';
+    return `<div class="chat-msg ${h.papel}">${anexo}${imagem}${escHtml(h.exibicao||h.texto)}${conteudo}${artes}${acoes}</div>`;
+  }).join('');
+  let ao_vivo='';
+  if(_postChatGerandoArte&&_postAtual){
+    const feitas=_postAtual.imagens_b64||[],total=(_postAtual.formato||'').toLowerCase()==='carrossel'?(_postAtual.slides||[]).length:1;
+    ao_vivo=`<div class="chat-msg assistente">🎨 Gerando a arte — ${feitas.length} de ${total} pronta${feitas.length===1?'':'s'}...${feitas.length?`<div class="chat-img-grid">${feitas.map((b,i)=>`<img src="data:image/png;base64,${b}" alt="Arte ${i+1}"/>`).join('')}</div>`:''}</div>`;
+  }
+  wrap.innerHTML=(html||ao_vivo)?html+ao_vivo:'<div class="doc-chat-empty">Preencha o tema e clique em "Elaborar com IA" para gerar o conteúdo e a arte do post.</div>';
   wrap.scrollTop=wrap.scrollHeight;
 }
 function reiniciarChatPost(){_postChatHistorico=[];removerAnexoChatPost();removerImagemChatPost();renderChatPost();}
@@ -3470,46 +3573,71 @@ async function selecionarImagemChatPost(input){
   }catch(e){toast(e.message||'Não foi possível ler a imagem.');}
 }
 function removerImagemChatPost(){_postChatImagem=null;const chip=document.getElementById('post-chat-modal-imagem');if(chip)chip.style.display='none';}
+async function gerarArteNoChat(){
+  if(!_postAtual||_postChatOcupado)return;
+  const usaFotos=document.getElementById('post-fundo').value==='upload';
+  if(usaFotos&&!_fotosFundo.unica&&!(_fotosFundo.porSlide||[]).some(Boolean)){
+    _postChatHistorico.push({papel:'assistente',texto:'',exibicao:'Você escolheu "Minhas fotos" como fundo: feche o chat, envie as fotos em "Fundo das artes" e volte aqui para gerar a arte — ou troque para "Gerado por IA".',semArte:true});
+    renderChatPost();
+    return;
+  }
+  _postChatGerandoArte=true;
+  definirOcupadoChatPost(true,'Gerando a arte... pode levar alguns minutos.');
+  renderChatPost();
+  let ok=false;
+  try{ok=await gerarArtePost();}finally{_postChatGerandoArte=false;definirOcupadoChatPost(false);}
+  if(ok&&_postAtual.imagens_b64?.length){
+    _postChatHistorico.push({papel:'assistente',texto:'',exibicao:'🎨 Arte pronta — veja abaixo. Se estiver boa, conclua e salve; se não, peça ajuste no texto ou gere uma nova versão.',artes:[..._postAtual.imagens_b64]});
+  }else{
+    _postChatHistorico.push({papel:'assistente',texto:'',exibicao:'Não consegui concluir a arte agora. Você pode tentar de novo.',semArte:true});
+  }
+  renderChatPost();
+}
 async function enviarChatPost(){
-  if(!_postAtual)return;
+  if(!_postAtual||_postChatOcupado)return;
   const input=document.getElementById('post-chat-modal-input'),pedido=input.value.trim(),anexo=_postChatAnexo,imagem=_postChatImagem;
   if(!pedido&&!anexo&&!imagem)return;
-  const btn=document.getElementById('post-chat-modal-btn'),loading=document.getElementById('post-chat-modal-loading');
   if(!_postChatHistorico.length){
     const primeiroPedido=`Tema: ${_postAtual.tema}\nFaixa do ciclo vital: ${_postAtual.faixa||'Ciclo vital'}\nFormato: ${_postAtual.formato}\nPúblico: ${_postAtual.publico}\nContexto/tendência: nenhum`;
     _postChatHistorico.push(
       {papel:'usuario',texto:primeiroPedido,interno:true},
-      {papel:'assistente',texto:JSON.stringify({titulo:_postAtual.titulo,gancho:_postAtual.gancho,slides:_postAtual.slides,legenda:_postAtual.legenda,hashtags:_postAtual.hashtags,cta:_postAtual.cta}),interno:true}
+      {papel:'assistente',texto:JSON.stringify(snapshotConteudoPost(_postAtual)),interno:true}
     );
   }
   const pedidoEfetivo=pedido||(anexo?'Considere o conteúdo do arquivo anexado.':'Considere a imagem anexada como referência.');
-  input.disabled=true;btn.disabled=true;loading.style.display='inline';
-  const historicoParaEnviar=[..._postChatHistorico];
+  // As artes (base64) ficam só no chat local: a API recebe papel/texto.
+  const historicoParaEnviar=_postChatHistorico.map(h=>({papel:h.papel,texto:h.texto}));
   const turnoUsuario={papel:'usuario',texto:pedidoEfetivo,...(anexo?{anexoNome:anexo.nome}:{}),...(imagem?{imagemNome:imagem.nome}:{})};
   _postChatHistorico.push(turnoUsuario);renderChatPost();mostrarDigitando('post-chat-modal-msgs');
+  definirOcupadoChatPost(true,'Ajustando o conteúdo...');
+  let refazerArte=false;
   try{
     const r=await fetch('/api/post-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:_postAtual.tema,formato:_postAtual.formato,publico:_postAtual.publico,faixa:_postAtual.faixa,historico:historicoParaEnviar,ajuste:pedidoEfetivo,...(anexo?{anexo:{nome:anexo.nome,base64:anexo.base64}}:{}),...(imagem?{imagem:{tipo:imagem.tipo,base64:imagem.base64}}:{})})}),d=await r.json();
     if(!r.ok)throw new Error(d.error);
-    // texto guarda o JSON bruto (histórico real mandado pra API a cada novo
-    // pedido); exibicao é só o que a psicóloga vê -- uma confirmação em
-    // linguagem natural, não o objeto de dados por trás da geração.
-    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:'✓ Prontinho! Ajustei o texto conforme pedido — veja a prévia atualizada acima.'});
-    const tinhaArte=!!_postAtual.imagens_b64?.length;
+    // A arte só precisa ser refeita quando o que aparece nela (título/slides)
+    // mudou; ajuste só de legenda/hashtags/CTA mantém a arte já aprovada.
+    const chaveArte=p=>JSON.stringify([p.titulo,p.slides]);
+    refazerArte=chaveArte(_postAtual)!==chaveArte({..._postAtual,...d});
     _postAtual={..._postAtual,...d};
-    if(tinhaArte){
+    if(refazerArte&&_postAtual.imagens_b64?.length){
       _postAtual.imagens_b64=[];
       _postAtual.img_b64=null;
       renderArtesPost();
-      toast('Texto ajustado — gere a arte novamente para refletir a mudança.');
     }
     renderPostPreview();
+    const snap=snapshotConteudoPost(_postAtual);
+    // texto guarda o JSON bruto (histórico real mandado pra API a cada novo
+    // pedido); exibicao é só o que a psicóloga vê.
+    _postChatHistorico.push({papel:'assistente',texto:JSON.stringify(d),exibicao:refazerArte?'✓ Prontinho! Ajustei o texto — vou refazer a arte para refletir a mudança.':'✓ Prontinho! Ajustei o texto — a arte continua a mesma.',conteudo:snap});
     input.value='';removerAnexoChatPost();removerImagemChatPost();
-    renderChatPost();
   }catch(e){
-    _postChatHistorico.pop();renderChatPost();
+    _postChatHistorico.pop();
     toast(e.message||'Não foi possível ajustar o post.');
   }
-  finally{input.disabled=false;btn.disabled=false;loading.style.display='none';document.getElementById('post-chat-modal-input')?.focus();}
+  definirOcupadoChatPost(false);
+  renderChatPost();
+  if(refazerArte)await gerarArteNoChat();
+  document.getElementById('post-chat-modal-input')?.focus();
 }
 
 const POST_BRAND = {
@@ -3704,6 +3832,7 @@ async function aplicarLogoPost(b64, pageInfo=null){
   });
 }
 function renderArtesPost(){
+  if(_postChatGerandoArte)renderChatPost();
   const wrap=document.getElementById('post-img-wrap');if(!_postAtual?.imagens_b64?.length){wrap.innerHTML='<div class="preview-placeholder">As artes serão geradas depois que o conteúdo for aprovado.</div>';return;}
   const imgs=_postAtual.imagens_b64,storyClass=(_postAtual.formato||'').toLowerCase()==='story'?' story':'';
   wrap.innerHTML=`<div class="post-art-grid">${imgs.map((b,i)=>
@@ -3711,7 +3840,7 @@ function renderArtesPost(){
   ).join('')}</div><div class="post-art-progress">${_postAtual.formato==='Carrossel'&&imgs.length===(_postAtual.slides||[]).length?`Carrossel completo: ${imgs.length} artes geradas.`:'Arte gerada: '+imgs.length}</div><div class="post-export-bar"><button class="btn-primary" onclick="exportarArtesPost()">📤 Exportar arte</button><span>Abre o compartilhamento do celular para escolher WhatsApp ou outro aplicativo.</span></div>`;
 }
 async function gerarArtePost(){
-  if(!_postAtual){toast('Gere o conteúdo primeiro.');return;}
+  if(!_postAtual){toast('Gere o conteúdo primeiro.');return false;}
   const formato=_postAtual.formato||'Carrossel';
   const isCarousel=formato.toLowerCase()==='carrossel';
   const isStory=formato.toLowerCase()==='story';
@@ -3722,11 +3851,11 @@ async function gerarArtePost(){
   // paginação, permanece intacto.
   const imgSize='1024x1536';
   const slides=isCarousel?(_postAtual.slides||[]).slice(0,10):[(_postAtual.slides?.[0]||_postAtual.gancho||_postAtual.titulo||'')];
-  if(isCarousel && (slides.length<4 || slides.length>10)){toast('O carrossel precisa ter entre 4 e 10 slides. Gere o conteúdo novamente.');return;}
+  if(isCarousel && (slides.length<4 || slides.length>10)){toast('O carrossel precisa ter entre 4 e 10 slides. Gere o conteúdo novamente.');return false;}
   const fonteFundo=document.getElementById('post-fundo')?.value||'ia';
   if(fonteFundo==='upload' && !_fotosFundo.unica && !(_fotosFundo.porSlide||[]).some(Boolean)){
     toast('Envie ao menos uma foto ou volte para "Gerado por IA".');
-    return;
+    return false;
   }
   try{
     document.getElementById('post-img-wrap').innerHTML='<div class="inline-loading"><div class="inline-spinner"></div> Preparando artes...</div>';
@@ -3837,6 +3966,7 @@ async function gerarArtePost(){
 
     for(let i=retomando?_postAtual.imagens_b64.length:0;i<slides.length;i++){
       document.getElementById('post-img-wrap').innerHTML=`<div class="inline-loading"><div class="inline-spinner"></div> Gerando arte ${i+1} de ${total}...</div>`;
+      if(_postChatGerandoArte){const l=document.getElementById('post-chat-modal-loading');if(l)l.textContent=`Gerando arte ${i+1} de ${total}...`;}
       // A IA repetidamente interpretava "quebre em frases curtas" com
       // liberdade demais, fatiando UMA frase em varias caixas nos pontos de
       // vírgula/pausa -- mesmo quando o fundo também é gerado por IA, não só
@@ -3899,7 +4029,8 @@ async function gerarArtePost(){
     _postAtual.img_b64=_postAtual.imagens_b64[0]||null;
     _postAtual.prompt=`Gerado com identidade visual fixa. ${isCarousel?`Carrossel de ${slides.length} slides;`:'Post único;'} logo central superior, paginação fixa e paleta de marca congelada.`;
     limparProgressoGeracao();
-  }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();}
+    return true;
+  }catch(e){toast('Erro ao gerar arte: '+e.message);if(_postAtual.imagens_b64?.length)renderArtesPost();return false;}
 }
 
 async function exportarArtesPost(){
@@ -3951,7 +4082,7 @@ async function salvarPost(){
       tema:_postAtual.tema||'',formato:_postAtual.formato||'Post',publico:_postAtual.publico||'Ciclo vital',
       legenda:_postAtual.legenda||'',hashtags:Array.isArray(_postAtual.hashtags)?_postAtual.hashtags.join(' '):(_postAtual.hashtags||''),
       cta:_postAtual.cta||'',img_b64:null,imagens_b64:null,logo_cor:_postAtual.logo_cor||'',prompt:_postAtual.prompt||'',
-      prompt_historico:_postChatHistorico.length?_postChatHistorico:null,
+      prompt_historico:_postChatHistorico.length?_postChatHistorico.map(({artes,...h})=>h):null,
       fonte_tendencia:_postAtual.fonte_tendencia||'',tendencia:(_postAtual.faixa?`[${_postAtual.faixa}] `:'')+(document.getElementById('post-contexto')?.value||''),
       status:'rascunho',criado_em:new Date().toISOString()
     };

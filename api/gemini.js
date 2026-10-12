@@ -49,9 +49,9 @@ function mensagemErro(e) {
 // uma referência visual, nunca para copiar seu conteúdo real.
 const REFERENCIA_ESTILO_PATH = path.join(process.cwd(), 'assets/reference-quality/story-referencia-estilo.jpg');
 
-// Logo da psicóloga -- só entra na imagem gerada quando ela pede
-// explicitamente no chat (ver lib/aprendizado.js/api ppt-content e o chat de
-// Gerar Imagens em index.html). Nunca é aplicado por padrão.
+// Logo da psicóloga -- só entra na imagem gerada quando ela marca "Incluir a
+// logo" na aba Gerar Imagens (ou pede no chat de apresentações). Nunca é
+// aplicado por padrão.
 const LOGO_PATH = path.join(process.cwd(), 'assets/logo-symbol-hires.png');
 
 async function extrairB64(data) {
@@ -85,6 +85,7 @@ export default async function handler(req, res) {
     // chat de posts/apresentações) antes de mandar pro fluxo normal de
     // geração de imagem já existente (gerarAtividade/regenerar).
     const { tipo, faixa, tema, descricao, historico: historicoBruto, ajuste, anexo, imagem } = req.body;
+    const logoNoApp = req.body.incluirLogo === true;
     if (!descricao) return res.status(400).json({ error: 'Descrição obrigatória' });
     if (historicoBruto !== undefined && !Array.isArray(historicoBruto)) return res.status(400).json({ error: 'Histórico inválido' });
     const historico = (historicoBruto || []).map(h => ({ papel: h?.papel === 'assistente' ? 'assistente' : 'usuario', texto: String(h?.texto || '').trim().slice(0, 4000) })).filter(h => h.texto).slice(-20);
@@ -102,7 +103,8 @@ export default async function handler(req, res) {
     const systemPrompt = `Você ajuda uma psicóloga a lapidar, em texto, a descrição de uma imagem/atividade terapêutica ilustrada que será gerada por IA (para pacientes, incluindo crianças).
 Sua saída é APENAS a descrição final em português, pronta para virar prompt de geração de imagem: objetiva, visual, com estilo/cores/composição quando relevante, sem markdown, sem explicações.
 Se a mensagem pedir um AJUSTE sobre uma descrição já elaborada (você verá o histórico da conversa), reescreva a descrição inteira aplicando o pedido e mantendo o que não foi pedido para mudar.
-Defina incluirLogo=true SOMENTE se a psicóloga pedir explicitamente para incluir a logo/marca/logotipo do consultório na imagem; caso contrário incluirLogo=false.
+A logo do consultório é controlada por uma opção do app, nunca pela conversa: NUNCA desenhe, descreva ou mencione logo, marca, logotipo, assinatura ou dados do consultório na descrição.
+${logoNoApp ? 'O app aplicará a logo depois, pequena, no canto inferior direito: deixe esse canto calmo e livre de elementos importantes.' : 'Nenhuma logo será aplicada nesta imagem.'}
 
 ${PERFIL_JAQUELINE}`;
     const preferenciaAprendida = await buscarPreferenciaTexto('imagens');
@@ -138,9 +140,8 @@ ${PERFIL_JAQUELINE}`;
                 type: 'object',
                 properties: {
                   descricao: { type: 'string' },
-                  incluirLogo: { type: 'boolean' },
                 },
-                required: ['descricao', 'incluirLogo'],
+                required: ['descricao'],
                 additionalProperties: false,
               },
             },

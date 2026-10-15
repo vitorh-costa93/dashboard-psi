@@ -36,7 +36,7 @@ button,.btn-primary,.btn-secondary,.btn-save,.btn-pdf,.btn-danger,.auth-submit,#
 button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.btn-save:focus-visible,.btn-pdf:focus-visible,.btn-danger:focus-visible,.auth-submit:focus-visible,#btn-reload:focus-visible,.nav-tab:focus-visible,.sub-tab:focus-visible,.pront-sub-tab:focus-visible,.doc-main-tab:focus-visible,.view-tab:focus-visible,.btn-xs:focus-visible,.logout-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .btn-primary:active,.btn-secondary:active,.btn-save:active,.btn-pdf:active,.btn-danger:active,.auth-submit:active,#btn-reload:active{transform:scale(.96);}
 .kpi-main,.psm-price-num,.psm-price-num-lg{font-variant-numeric:tabular-nums;}
-.view-bar h2,.panel h3,.chart-card h3,.generator-card h3,.pront-section-title,.alerts-title,.psm-content-head h2{text-wrap:balance;}
+.view-bar h2,.panel h3,.generator-card h3,.pront-section-title,.alerts-title,.psm-content-head h2{text-wrap:balance;}
 
 /* ── Header ── */
 .app-header{background:var(--header-bg);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #74845f;position:sticky;top:0;z-index:200;}
@@ -75,7 +75,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition-property:color,border-color;transition-duration:.2s;white-space:nowrap;}
 .nav-tab.active{color:var(--accent);border-bottom-color:var(--terracotta);}
 .nav-tab:hover:not(.active){color:var(--text);}
-@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row,.charts-row{grid-template-columns:1fr}}
+@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row{grid-template-columns:1fr}}
 
 /* ── Sub-tabs (dentro de Atividades) ── */
 .sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
@@ -112,25 +112,67 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 #btn-reload:hover{opacity:.85;}
 
 /* ── KPIs ── */
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
-.kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}
+.kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:12px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
+.kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}.kpi-card:nth-child(4){animation-delay:.2s}.kpi-card:nth-child(5){animation-delay:.25s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.kpi-main{font-family:'Fraunces',serif;font-weight:300;font-size:2.3rem;line-height:1;margin-bottom:8px;color:var(--olive);}
+.kpi-main{font-family:'Fraunces',serif;font-weight:300;font-size:2rem;line-height:1;margin-bottom:8px;color:var(--olive);font-variant-numeric:tabular-nums;}
 .kpi-comp{font-size:.72rem;margin:2px 0;}
 .kpi-comp.up{color:#27ae60;}.kpi-comp.dn{color:var(--danger);}.kpi-comp.neu{color:var(--muted);}
 .kpi-label{font-size:.68rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
 
-/* ── Gráficos — 3 colunas iguais ── */
-.charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px 12px;box-shadow:var(--shadow);animation:fadeUp .5s ease both;min-width:0;}
-.chart-card h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:10px;}
-.chart-card canvas{width:100%!important;height:180px!important;}
-
-/* ── Bottom row — 3 colunas iguais ── */
-.bottom-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
-.panel h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+/* ── Painéis do Dashboard (grade compacta) ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
+.panel h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.panel h3 small{font-family:'DM Sans',sans-serif;font-style:normal;font-size:.7rem;color:var(--muted);}
+.dsh-g{display:grid;gap:12px;min-width:0;margin-bottom:12px;}
+.dsh-g75{grid-template-columns:minmax(0,7.3fr) minmax(0,4.7fr);}
+.dsh-g332{grid-template-columns:minmax(0,5.2fr) minmax(0,3.6fr) minmax(0,3.2fr);}
+.dsh-g4{grid-template-columns:repeat(4,minmax(0,1fr));}
+.dsh-sub{font-size:.72rem;color:var(--muted);margin:-3px 0 8px;line-height:1.4;}
+.dsh-leg{display:flex;gap:12px;font-size:.7rem;color:var(--muted);flex-wrap:wrap;margin-bottom:6px;}
+.dsh-sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+.dsh-chart{position:relative;height:190px;}
+.dsh-empty{font-size:.76rem;color:var(--muted);padding:8px 0;}
+.dsh-seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-family:'DM Sans',sans-serif;font-style:normal;}
+.dsh-seg button{padding:3px 10px;font:inherit;font-size:.7rem;color:var(--muted);background:#fff;border:0;cursor:pointer;}
+.dsh-seg button.on{background:var(--olive);color:#fff;}
+.dsh-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.dsh-chip{font-size:.72rem;border:1px solid var(--border);background:var(--light);border-radius:8px;padding:5px 9px;color:var(--muted);}
+.dsh-chip b{color:var(--text);font-weight:700;}
+.dsh-chip .up{color:#27ae60;}.dsh-chip .dn{color:var(--danger);}
+/* Mapa da agenda */
+.dsh-hm{display:grid;grid-template-columns:32px repeat(5,minmax(0,1fr));gap:2px;font-size:.64rem;color:var(--muted);}
+.dsh-hm .lb{display:flex;align-items:center;justify-content:flex-end;padding-right:5px;}
+.dsh-hm .dh{text-align:center;padding-bottom:1px;}
+.hc{height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;}
+.hn{background:#f6f2e8;}.h0{background:#e3ead8;}.h1{background:#efe0b8;}.h2{background:#e8b48f;}.h3{background:#c0392b;}
+.hw{background:repeating-linear-gradient(135deg,#b86a49 0 3px,#f3dccf 3px 6px);color:#fff;}
+.ht{height:18px;color:var(--text);font-size:.7rem;border-top:1px solid var(--border);border-radius:0;margin-top:3px;}
+.ht.full{color:var(--terracotta);}
+/* Barras horizontais (pacientes por perfil, origem, concentração, permanência) */
+.dsh-row{display:grid;grid-template-columns:70px minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:.76rem;padding:4px 0;}
+.dsh-trk{height:9px;background:#f1ece0;border-radius:5px;overflow:hidden;}.dsh-fil{height:100%;border-radius:5px;}
+.dsh-num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);}
+.dsh-fx{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:5px 0;border-top:1px solid var(--border);align-items:start;}
+.dsh-fx:first-of-type{border-top:0;}
+.dsh-fx .nm{font-size:.74rem;font-weight:500;overflow-wrap:anywhere;}
+.dsh-fx .bar{display:flex;align-items:center;gap:6px;}.dsh-fx .bar .dsh-trk{flex:1;}
+.dsh-fx .names{font-size:.64rem;color:var(--muted);margin-top:2px;line-height:1.35;}
+/* Pacientes em atenção */
+.dsh-al{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--border);}
+.dsh-al:first-of-type{border-top:0;}
+.dsh-av{width:28px;height:28px;border-radius:50%;background:var(--light);border:1px solid var(--border);color:var(--olive);font-size:.64rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.dsh-atl{font-size:.74rem;font-weight:500;}.dsh-ad{font-size:.64rem;color:var(--muted);line-height:1.35;}
+.dsh-tag{font-size:.62rem;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap;background:#fdecea;color:var(--danger);}
+.dsh-tag.y{background:#fef9ec;color:#8a6a1a;}
+.dsh-callout{margin-top:6px;font-size:.7rem;background:#fbf3ee;border:1px solid #ecd5c6;color:#6d4630;border-radius:8px;padding:6px 9px;line-height:1.4;}
+.dsh-callout.neutral{background:var(--light);border-color:var(--border);color:var(--muted);}
+.dsh-callout.neutral b{color:var(--text);}
+/* Origem da receita */
+.dsh-origem{display:flex;gap:10px;align-items:center;}
+.dsh-origem .dsh-donut{position:relative;width:108px;height:108px;flex:none;}
+.dsh-origem .dsh-donut canvas{width:100%!important;height:100%!important;}
 
 /* ── Saldo — formato badge ── */
 .saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
@@ -148,23 +190,11 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .badge-yellow{background:#fef9ec;color:#b38a2a;}
 .badge-green{background:#eef4eb;color:#5a7a46;}
 
-/* ── Donut ── */
-.donut-wrap{position:relative;max-width:280px;margin:0 auto;}
-.donut-wrap canvas{width:100%!important;}
-.donut-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
-.donut-col>.panel{flex:1;display:flex;flex-direction:column;}
-.donut-col>.panel .donut-wrap{flex:1;display:flex;align-items:center;width:100%;}
+/* ── Seletor de perfil ── */
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
-/* ── Motivos ── */
-.motivos-wrap{display:flex;flex-direction:column;gap:4px;}
-.motivo-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f0e8;font-size:.78rem;}
-.motivo-row:last-child{border:none;}
-.motivo-nome{color:var(--text);flex:1;margin-right:8px;}
-.motivo-qty{font-weight:600;color:var(--text);min-width:24px;text-align:right;}
-
 @media(max-width:900px){
-  .kpi-row,.charts-row,.bottom-row{grid-template-columns:1fr;}
+  .kpi-row,.dsh-g75,.dsh-g332,.dsh-g4{grid-template-columns:minmax(0,1fr);}
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -650,6 +680,18 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="kpi-comp" id="kpi-falta-yoy">—</div>
       <div class="kpi-label">Faltas</div>
     </div>
+    <div class="kpi-card">
+      <div class="kpi-main" id="kpi-tkt">—</div>
+      <div class="kpi-comp" id="kpi-tkt-mom">—</div>
+      <div class="kpi-comp" id="kpi-tkt-yoy">—</div>
+      <div class="kpi-label">Ticket médio</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-main" id="kpi-ret">—</div>
+      <div class="kpi-comp" id="kpi-ret-mom">—</div>
+      <div class="kpi-comp" id="kpi-ret-yoy">—</div>
+      <div class="kpi-label">Retenção 90 dias</div>
+    </div>
   </div>
 
   <div class="alerts-panel" id="dashboard-alerts">
@@ -657,15 +699,63 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
   </div>
 
-  <div class="charts-row">
-    <div class="chart-card"><h3>Valor Recebido</h3><canvas id="chart-fat"></canvas></div>
-    <div class="chart-card"><h3>Quantidade de Pacientes</h3><canvas id="chart-pac"></canvas></div>
-    <div class="chart-card"><h3>Quantidade de Faltas</h3><canvas id="chart-falta"></canvas></div>
+  <div class="dsh-g dsh-g75">
+    <section class="panel">
+      <h3>Histórico | ano atual × ano anterior
+        <span class="dsh-seg" id="hist-seg">
+          <button type="button" class="on" data-metrica="valor" onclick="setHistMetrica('valor')">Valor recebido</button>
+          <button type="button" data-metrica="pac" onclick="setHistMetrica('pac')">Pacientes</button>
+          <button type="button" data-metrica="falta" onclick="setHistMetrica('falta')">Faltas</button>
+        </span>
+      </h3>
+      <div class="dsh-leg"><span><i class="dsh-sw" style="background:var(--sand)"></i><span id="hist-ano-ant">—</span></span><span><i class="dsh-sw" style="background:var(--olive)"></i><span id="hist-ano-atual">—</span></span><span style="margin-left:auto" id="hist-parcial"></span></div>
+      <div class="dsh-chart"><canvas id="chart-hist"></canvas></div>
+      <div class="dsh-chips" id="hist-chips"></div>
+    </section>
+
+    <section class="panel">
+      <h3><span id="acum-titulo">Receita acumulada no mês</span><small>R$</small></h3>
+      <p class="dsh-sub" id="acum-sub">—</p>
+      <div class="dsh-leg"><span><i class="dsh-sw" style="background:var(--olive)"></i>Realizado</span><span><i class="dsh-sw" style="background:var(--sand)"></i>Média 3 meses anteriores</span></div>
+      <div class="dsh-chart"><canvas id="chart-acum"></canvas></div>
+    </section>
   </div>
 
-  <div class="bottom-row">
-    <div class="panel">
+  <div class="dsh-g dsh-g332">
+    <section class="panel">
+      <h3>Mapa da agenda <small>faltas · 3 meses · atendimentos por dia</small></h3>
+      <div class="dsh-leg"><span><i class="dsh-sw" style="background:#e3ead8"></i>Sem faltas</span><span><i class="dsh-sw" style="background:#efe0b8"></i>Poucas</span><span><i class="dsh-sw" style="background:#e8b48f"></i>Média</span><span><i class="dsh-sw" style="background:#c0392b"></i>Alta</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
+      <div class="dsh-hm" id="agenda-map"></div>
+      <p class="dsh-sub" style="margin:6px 0 0" id="agenda-map-nota">Última linha: atendimentos no dia (app + Wellz) sobre o limite de 7.</p>
+    </section>
+
+    <section class="panel">
+      <h3>
+        Pacientes por
+        <select class="profile-select" id="profile-select" onchange="updateProfileBars()">
+          <option value="genero">Gênero</option>
+          <option value="faixa">Faixa Etária</option>
+          <option value="modal">Modalidade</option>
+        </select>
+      </h3>
+      <div id="perfil-bars"></div>
+    </section>
+
+    <section class="panel">
+      <h3>Origem da receita <small id="donut-fat-mes"></small></h3>
+      <div class="dsh-origem">
+        <div class="dsh-donut"><canvas id="chart-donut-fat"></canvas></div>
+        <div id="origem-legenda" style="font-size:.74rem;line-height:1.9"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.7rem;color:var(--muted)">Ticket médio por sessão</div>
+      <div id="origem-ticket"></div>
+    </section>
+  </div>
+
+  <div class="dsh-g dsh-g4">
+    <section class="panel">
       <h3>Sessões Restantes | Pacote</h3>
+      <div style="max-height:340px;overflow:auto">
       <table class="saldo-table">
         <thead><tr>
           <td data-tabela="saldo" data-col="paciente" onclick="ordenarTabela('saldo','paciente');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
@@ -674,30 +764,20 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
         </tr></thead>
         <tbody id="tabela-saldo"></tbody>
       </table>
-    </div>
-
-    <div class="donut-col">
-      <div class="panel">
-        <h3>
-          Quantidade de Pacientes
-          <select class="profile-select" id="profile-select" onchange="updateDonut()">
-            <option value="genero">Gênero</option>
-            <option value="faixa">Faixa Etária</option>
-            <option value="modal">Modalidade</option>
-          </select>
-        </h3>
-        <div class="donut-wrap"><canvas id="chart-donut"></canvas></div>
       </div>
-      <div class="panel">
-        <h3>Faturamento | Wellz × Particular <span id="donut-fat-mes" style="font-family:'DM Sans',sans-serif;font-style:normal;font-size:.7rem;color:var(--muted)"></span></h3>
-        <div class="donut-wrap"><canvas id="chart-donut-fat"></canvas></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Faltas | % por Paciente (ativos)</h3>
-      <div class="motivos-wrap" id="motivos-list"></div>
-    </div>
+    </section>
+    <section class="panel">
+      <h3>Pacientes em atenção <small>faltas · por risco</small></h3>
+      <div id="atencao-lista"></div>
+    </section>
+    <section class="panel">
+      <h3>Concentração <small>% do Particular · 12 meses</small></h3>
+      <div id="concentracao-lista"></div>
+    </section>
+    <section class="panel">
+      <h3>Tempo de acompanhamento <small id="perm-ret"></small></h3>
+      <div id="perm-lista"></div>
+    </section>
   </div>
 
   <div class="generator-card" style="margin-top:20px">
@@ -1691,7 +1771,6 @@ async function exportarBackupCompleto(btn){
   finally{if(btn){btn.disabled=false;btn.textContent='💾 Backup';}}
 }
 
-const COLORS=['#8b9e6e','#7a9fb5','#c4a882','#c97b6e','#a89bbf','#7fb3a8','#d4a5a5','#b5c9a1'];
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color='#888';
 let charts={},_rows=[],_ativosArr=[],_dsessRows=[],_dsessInit=false,_saldoArrRaw=[];
@@ -1715,7 +1794,6 @@ function iniciais(nome){const partes=String(nome||'').trim().split(/\s+/).filter
 // Ativo de verdade = flag ativo E status operacional "ativo" (pausado/inativo ficam de fora de todo dropdown).
 function pacienteAtivo(p){return !!p&&p.ativo===true&&(p.status_operacional||'ativo')==='ativo';}
 function rotuloPaciente(p){return p?.ultimo_label||iniciais(p?.nome);}
-function countBy(arr,fn){const m={};arr.forEach(r=>{const v=fn(r);if(v)m[v]=(m[v]||0)+1;});return m;}
 
 // ── Ordenação por clique no cabeçalho, reutilizável em qualquer tabela ──
 // Uso: <th data-tabela="X" data-col="nome" onclick="ordenarTabela('X','nome');renderX()">
@@ -1828,6 +1906,21 @@ function setCompPP(id,atual,ant,suffix){
   const subiu=atual>ant;
   el.textContent=(subiu?'▲ +':'▼ ')+diff+'% '+suffix;
   el.className='kpi-comp '+(subiu?'dn':'up');
+}
+
+// Variação % que aceita valor ausente (ex.: ticket médio de um mês sem sessões pagas).
+function setCompOpc(id,atual,ant,suffix){
+  if(atual==null||ant==null){const el=document.getElementById(id);el.textContent='—';el.className='kpi-comp neu';return;}
+  setComp(id,atual,ant,suffix);
+}
+// Diferença em pontos percentuais para KPIs que já são % onde subir é bom (retenção).
+function setCompPts(id,atual,ant,suffix){
+  const el=document.getElementById(id);
+  if(atual==null||ant==null){el.textContent='—';el.className='kpi-comp neu';return;}
+  const d=atual-ant;
+  if(Math.abs(d)<0.05){el.textContent='= igual '+suffix;el.className='kpi-comp neu';return;}
+  el.textContent=(d>0?'▲ +':'▼ ')+d.toFixed(1)+' p.p. '+suffix;
+  el.className='kpi-comp '+(d>0?'up':'dn');
 }
 
 async function loadData(){
@@ -1958,7 +2051,7 @@ function nomesPacientesAtivosNoCadastro(){
   // o cadastro: mantém o filtro legado até a próxima sincronização válida.
   return new Set(_rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
 }
-let _horariosAtivosRegras=null,_horariosAtivosCarregando=false;
+let _horariosAtivosRegras=null,_horariosAtivosCarregando=false,_regrasAgendaSlots=null;
 async function carregarHorariosAtivos(){
   if(_horariosAtivosCarregando)return;_horariosAtivosCarregando=true;
   try{
@@ -1967,14 +2060,15 @@ async function carregarHorariosAtivos(){
     const ativos=new Set((d.patients||[]).filter(p=>p.nome!=='Wellz'&&(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').map(p=>p.id));
     const slots=new Set((d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>x.dia_semana+'|'+String(x.horario).slice(0,5)));
     _horariosAtivosRegras=slots.size;
+    // Grade semanal vigente (dia 1=seg..7=dom, hora cheia) usada no total/dia do Mapa da agenda.
+    _regrasAgendaSlots=(d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>({dia:Number(x.dia_semana),hora:Number(String(x.horario).slice(0,2))}));
+    renderMapaAgenda();
     const el=document.getElementById('kpi-pac'),m=el&&el.textContent.match(/^(\d+) \(/);
     if(m)el.textContent=m[1]+' ('+slots.size+' horas)';
   }catch(e){console.warn('Horários ativos:',e);}finally{_horariosAtivosCarregando=false;}
 }
 function processAndRender(){
   const rows=_rows;
-  const meses=[...new Set(rows.map(r=>r._anoMes).filter(Boolean))].sort();
-
   // Mês atual determinado pelo relógio do navegador, não pelos dados
   const hoje=new Date();
   const diaHoje=hoje.getDate();
@@ -1994,7 +2088,11 @@ function processAndRender(){
     // oportunidade real de comparecimento do paciente, não deveria contar
     // nem a favor nem contra a taxa de faltas.
     const base=r.filter(x=>!x._canceladaPsicologa&&!x._soValor);
-    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length};
+    // Ticket médio = valor recebido nas linhas com sessão paga ÷ sessões pagas
+    // (linhas "só valor" do histórico mensal não têm sessões, ficam de fora).
+    const comCob=r.filter(x=>!x._soValor&&x._sessoesCob>0);
+    const cob=comCob.reduce((s,x)=>s+x._sessoesCob,0);
+    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length,ticket:cob>0?comCob.reduce((s,x)=>s+x._valorTotal,0)/cob:null};
   }
 
   // Mês atual: todos os dados (mês em curso)
@@ -2027,6 +2125,14 @@ function processAndRender(){
   const pctFalta=curAteDia.total?(curAteDia.faltas/curAteDia.total*100).toFixed(0)+'%':'0%';
   document.getElementById('kpi-falta').textContent=pctFalta;
 
+  // ── KPI: Ticket médio (mês até hoje) ──
+  document.getElementById('kpi-tkt').textContent=curAteDia.ticket!=null?fmtBRL0(curAteDia.ticket):'—';
+
+  // ── KPI: Retenção 90 dias (referência = hoje, mesmo dia do mês anterior e do ano anterior) ──
+  const refRet=n=>{const d=new Date(hoje.getFullYear(),hoje.getMonth()-n,1);d.setDate(Math.min(diaHoje,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return d;};
+  const retAtual=retencao90(hoje);
+  document.getElementById('kpi-ret').textContent=retAtual!=null?retAtual.toFixed(0)+'%':'—';
+
   // Comparativos
   const momSuffix=mesAnt?'vs. '+mesLabel(mesAnt)+' de '+mesAnt.split('-')[0]:'';
   const yoySuffix=mesYoY?'vs. '+mesLabel(mesYoY)+' de '+mesYoY.split('-')[0]:'';
@@ -2036,23 +2142,22 @@ function processAndRender(){
     const cp=curAteDia.total?curAteDia.faltas/curAteDia.total*100:0;
     const pp=prevAteDia.total?prevAteDia.faltas/prevAteDia.total*100:0;
     setCompPP('kpi-falta-mom',cp,pp,momSuffix);
+    setCompOpc('kpi-tkt-mom',curAteDia.ticket,prevAteDia.ticket,momSuffix);
   }
+  setCompPts('kpi-ret-mom',retAtual,retencao90(refRet(1)),momSuffix);
   if(pyoyAteDia){
     setComp('kpi-fat-yoy',curFatAteDia,pyoyFatAteDia,yoySuffix);
     setComp('kpi-pac-yoy',cur.pac,pyoy?pyoy.pac:null,yoySuffix);
     const cp=curAteDia.total?curAteDia.faltas/curAteDia.total*100:0;
     const yp=pyoyAteDia.total?pyoyAteDia.faltas/pyoyAteDia.total*100:0;
     setCompPP('kpi-falta-yoy',cp,yp,yoySuffix);
+    setCompOpc('kpi-tkt-yoy',curAteDia.ticket,pyoyAteDia.ticket,yoySuffix);
   }
+  setCompPts('kpi-ret-yoy',retAtual,retencao90(refRet(12)),yoySuffix);
 
-  // ── Gráficos histórico ──
-  const labels=meses.map(mesLabel);
-  const fatArr=meses.map(m=>rows.filter(r=>r._anoMes===m).reduce((s,r)=>s+r._valorTotal,0));
-  const pacArr=meses.map(m=>new Set(rows.filter(r=>r._anoMes===m&&!r._wellz).map(r=>r._paciente)).size);
-  const fltArr=meses.map(m=>rows.filter(r=>r._anoMes===m&&r._falta).length);
-  renderBar('chart-fat',labels,fatArr,'R$','#4e553e');
-  renderBar('chart-pac',labels,pacArr,'Pac','#4e553e');
-  renderBar('chart-falta',labels,fltArr,'Flt','#4e553e');
+  // ── Painéis analíticos ──
+  renderHistorico();
+  renderAcumulado();
 
   // ── Saldo (badge, formato v1) ──
   const pacAtivos=nomesPacientesAtivosNoCadastro();
@@ -2068,39 +2173,13 @@ function processAndRender(){
     .map(([k,v])=>({paciente:v.iniciais,horario:horarioMap[k]||'',saldo:v.sessoes-v.comp}));
   renderSaldoTable();
 
-  // ── Donut ──
-  updateDonut();
+  // ── Perfil, origem da receita e painéis de risco ──
+  updateProfileBars();
   updateDonutFat();
-
-  // ── % Faltas por paciente ativo ──
-  // faltas = Comparecimento === 'Não'
-  // total  = Comparecimento !== '' (não nulo)
-  const faltasPac={};
-  rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
-    const k=r._paciente;
-    if(!faltasPac[k])faltasPac[k]={iniciais:r._iniciais||k,horario:r._horario||'',faltas:0,total:0};
-    faltasPac[k].horario=r._horario||faltasPac[k].horario;
-    if(r._comparecimento!==''&&!r._canceladaPsicologa)faltasPac[k].total+=1;
-    if(r._falta)faltasPac[k].faltas+=1;
-  });
-  const faltaPacArr=Object.entries(faltasPac)
-    .filter(([,v])=>v.total>0)
-    .map(([,v])=>({label:v.iniciais+(v.horario?' | '+v.horario:''),pct:v.faltas/v.total*100,faltas:v.faltas,total:v.total}))
-    .sort((a,b)=>b.pct-a.pct);
-
-  const ml=document.getElementById('motivos-list');ml.innerHTML='';
-  faltaPacArr.forEach(({label,pct,faltas,total})=>{
-    const pctFmt=pct.toFixed(1)+'%';
-    const barColor=pct>=30?'#c0392b':pct>=15?'#e07070':'#c8bc96';
-    ml.innerHTML+=`<div class="motivo-row" title="${faltas} faltas de ${total} atendimentos">
-      <span class="motivo-nome">${label}</span>
-      <div style="flex:1;height:6px;background:#f0ece6;border-radius:3px;margin:0 8px;align-self:center;">
-        <div style="width:${Math.min(pct,100)}%;height:100%;background:${barColor};border-radius:3px;"></div>
-      </div>
-      <span class="motivo-qty">${pctFmt}</span>
-    </div>`;
-  });
-
+  renderMapaAgenda();
+  renderAtencao();
+  renderConcentracao();
+  renderPermanencia(retAtual);
 }
 
 function isoDate(d){return d.toISOString().slice(0,10);}
@@ -2470,120 +2549,347 @@ async function salvarEdicaoSessao(){
   }catch(e){toast(e.message,5000)}
 }
 
-function updateDonut(){
-  const sel=document.getElementById('profile-select').value;
-  const fn=sel==='genero'?r=>r._genero:sel==='faixa'?r=>r._faixaEtaria:r=>r._modalidade;
-  // Um registro por paciente ATIVO no cadastro (não só quem tem a flag
-  // "Ativo" na sessão mais recente): para cada campo, vale o último valor
-  // preenchido nas sessões do paciente.
-  const nomes=nomesPacientesAtivosNoCadastro(),porPac={};
-  _rows.forEach(r=>{
-    if(!nomes.has(r._paciente))return;
-    const p=porPac[r._paciente]||(porPac[r._paciente]={_paciente:r._paciente});
-    ['_genero','_faixaEtaria','_modalidade'].forEach(k=>{if(r[k])p[k]=r[k];});
+// ══════════════════════════════════════════════════════════
+// DASHBOARD: painéis analíticos (tudo calculado a partir de _rows / cadastro)
+// ══════════════════════════════════════════════════════════
+// Horários FIXOS da Wellz (editar aqui). Chave = dia da semana JS (1=seg … 5=sex),
+// valor = horas cheias ocupadas. Aparecem hachurados no Mapa da agenda e entram
+// no total de atendimentos/dia.
+const WELLZ_HORARIOS_FIXOS={
+  2:[8,11,12,16,17],   // terça
+  3:[17,18],           // quarta
+  4:[12,15,17,18]      // quinta
+};
+const LIMITE_ATENDIMENTOS_DIA=7;     // teto confortável de atendimentos por dia (app + Wellz)
+const MAPA_AGENDA_JANELA_DIAS=90;    // janela (≈3 meses) da taxa de faltas por horário
+const MAPA_FALTAS_POUCAS=0.10;       // taxa ≤ 10% = "poucas"; ≤ 25% = "média"; acima = "alta"
+const MAPA_FALTAS_MEDIAS=0.25;
+const ATENCAO_JANELA_TAXA_DIAS=180;  // janela da taxa de faltas por paciente
+const ATENCAO_MIN_SESSOES=6;         // mínimo de atendimentos na janela para avaliar a taxa
+const ATENCAO_TAXA_MIN=0.20;         // além de acima da média, taxa mínima para virar risco
+const ATENCAO_SEM_SESSAO_DIAS=21;    // paciente com horário fixo sem sessão há mais que isso
+const ATENCAO_MAX_ITENS=6;
+const DIA_MS=86400000;
+const MESES_ABREV=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESES_LONGO=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function fmtBRL0(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtMil(v){return Math.abs(v)>=1000?'R$ '+(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':fmtBRL0(v);}
+function fmtDM(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
+function hojeSemHora(){const d=new Date();d.setHours(0,0,0,0);return d;}
+// Privacidade: nos painéis novos aparecem só as iniciais (ex.: "Maria Alves" → "M.A.").
+function siglaPaciente(nome){
+  const partes=String(nome||'').trim().split(/\s+/).filter(p=>p&&!/^(d[aeo]s?|e)$/i.test(p)).slice(0,2);
+  return partes.map(p=>p[0].toUpperCase()+'.').join('');
+}
+function horaDoHorario(h){const m=String(h||'').match(/(\d{1,2})\s*(?:h|:)/i);return m?Number(m[1]):null;}
+function vazioHtml(msg){return `<div class="dsh-empty">${escHtml(msg)}</div>`;}
+
+// Retenção 90 dias na data `ref`: entre quem teve atendimento realizado entre 180 e 90
+// dias antes de `ref`, % que voltou a ter atendimento realizado nos 90 dias até `ref`.
+function retencao90(ref){
+  const t=new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()).getTime();
+  const por={};
+  _rows.forEach(r=>{if(r._wellz||r._soValor||!r._compSim||!r._data)return;(por[r._paciente]||(por[r._paciente]=[])).push(r._data.getTime());});
+  let base=0,ret=0;
+  Object.values(por).forEach(ds=>{
+    if(!ds.some(x=>x>=t-180*DIA_MS&&x<t-90*DIA_MS))return;
+    base++;
+    if(ds.some(x=>x>=t-90*DIA_MS&&x<t+DIA_MS))ret++;
   });
-  const data=countBy(Object.values(porPac),fn);
-  drawDonut('chart-donut',Object.keys(data),Object.values(data),v=>String(v));
+  return base?ret/base*100:null;
 }
 
-// Faturamento do mês corrente por origem: Wellz x Particular.
-function updateDonutFat(){
-  const el=document.getElementById('chart-donut-fat');
-  if(!el)return;
-  const mes=anoMes(new Date()),rows=_rows.filter(r=>r._anoMes===mes);
-  const wellz=rows.filter(r=>r._wellz).reduce((s,r)=>s+r._valorTotal,0);
-  const part=rows.filter(r=>!r._wellz).reduce((s,r)=>s+r._valorTotal,0);
-  const tit=document.getElementById('donut-fat-mes');
-  if(tit)tit.textContent=mesLabel(mes)+'/'+mes.split('-')[0];
-  drawDonut('chart-donut-fat',['Wellz','Particular'],[wellz,part],v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}));
+// ── Histórico: ano atual × ano anterior ──
+let _histMetrica='valor';
+function setHistMetrica(m){
+  _histMetrica=m;
+  document.querySelectorAll('#hist-seg button').forEach(b=>b.classList.toggle('on',b.dataset.metrica===m));
+  renderHistorico();
 }
-
-function drawDonut(id,labels,vals,fmt){
-  dC(id);
-  const total=vals.reduce((a,b)=>a+b,0);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
-    type:'doughnut',
-    data:{labels,datasets:[{data:vals,backgroundColor:COLORS.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-    options:{
-      responsive:true,cutout:'68%',
-      layout:{padding:{left:10,right:10,top:40,bottom:40}},
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fmt(ctx.parsed)} (${total?(ctx.parsed/total*100).toFixed(2):'0.00'}%)`}}
-      }
-    },
-    plugins:[{
-      id:'outerLabels',
-      afterDraw(chart){
-        const{ctx,data,chartArea}=chart;
-        const meta=chart.getDatasetMeta(0);
-        ctx.save();
-        const canvasW=chart.width, canvasH=chart.height;
-        meta.data.forEach((arc,i)=>{
-          const angle=(arc.startAngle+arc.endAngle)/2;
-          const or=arc.outerRadius;
-          const lineLen=16;
-          const xEdge=arc.x+Math.cos(angle)*or;
-          const yEdge=arc.y+Math.sin(angle)*or;
-          const xLine=arc.x+Math.cos(angle)*(or+lineLen);
-          const yLine=arc.y+Math.sin(angle)*(or+lineLen);
-          const isRight=Math.cos(angle)>=0;
-          const pct=total?(data.datasets[0].data[i]/total*100).toFixed(2):'0.00';
-          const label=data.labels[i];
-          const qty=data.datasets[0].data[i];
-          const line1=label;
-          const line2=`${fmt(qty)} (${pct}%)`;
-
-          // Mede largura do texto mais longo
-          ctx.font='bold 10px DM Sans';
-          const w1=ctx.measureText(line1).width;
-          ctx.font='10px DM Sans';
-          const w2=ctx.measureText(line2).width;
-          const maxW=Math.max(w1,w2);
-
-          // Posição X do texto: clamp para não sair do canvas
-          let xText=xLine+(isRight?4:-4);
-          if(isRight) xText=Math.min(xText, canvasW-maxW-4);
-          else        xText=Math.max(xText, maxW+4);
-
-          // Linha
-          ctx.strokeStyle=COLORS[i%COLORS.length];
-          ctx.lineWidth=1.2;
-          ctx.beginPath();ctx.moveTo(xEdge,yEdge);ctx.lineTo(xLine,yLine);ctx.stroke();
-
-          // Labels
-          ctx.textAlign=isRight?'left':'right';
-          ctx.textBaseline='middle';
-          ctx.font='bold 10px DM Sans';
-          ctx.fillStyle='#2a2a2a';
-          ctx.fillText(line1,xText,yLine-7);
-          ctx.font='10px DM Sans';
-          ctx.fillStyle='#888';
-          ctx.fillText(line2,xText,yLine+7);
-        });
-        ctx.restore();
-      }
-    }]
-  });
+function serieAnual(ano,metrica,mesAtualYm){
+  const out=[];
+  for(let m=1;m<=12;m++){
+    const ym=ano+'-'+String(m).padStart(2,'0');
+    const rs=ym>mesAtualYm?[]:_rows.filter(r=>r._anoMes===ym);
+    if(!rs.length){out.push(null);continue;}
+    out.push(metrica==='valor'?rs.reduce((s,r)=>s+r._valorTotal,0)
+      :metrica==='pac'?new Set(rs.filter(r=>!r._wellz).map(r=>r._paciente)).size
+      :rs.filter(r=>r._falta).length);
+  }
+  return out;
 }
+function renderHistorico(){
+  const cv=document.getElementById('chart-hist');if(!cv)return;
+  const hoje=new Date(),anoAtual=hoje.getFullYear(),anoAnt=anoAtual-1,mesAtualYm=anoMes(hoje),idxAtual=hoje.getMonth();
+  const met=_histMetrica;
+  const cur=serieAnual(anoAtual,met,mesAtualYm),ant=serieAnual(anoAnt,met,mesAtualYm);
+  const fmt=v=>met==='valor'?fmtBRL0(v):String(v);
+  document.getElementById('hist-ano-ant').textContent=anoAnt;
+  document.getElementById('hist-ano-atual').textContent=anoAtual;
+  document.getElementById('hist-parcial').textContent=MESES_ABREV[idxAtual]+'/'+String(anoAtual).slice(2)+' parcial até o dia '+hoje.getDate();
 
-function renderBar(id,labels,data,yLabel,color){
-  dC(id);
-  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+  dC('chart-hist');
+  charts['chart-hist']=new Chart(cv.getContext('2d'),{
     type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:color,borderRadius:2}]},
+    data:{labels:MESES_ABREV,datasets:[
+      {label:String(anoAnt),data:ant,backgroundColor:'#d9cdb8',borderRadius:2},
+      {label:String(anoAtual),data:cur,backgroundColor:cur.map((_,i)=>i===idxAtual?'#899776':'#4e553e'),borderRadius:2}
+    ]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>yLabel==='R$'?' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:0}):(` ${ctx.parsed.y}`)}}
-      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}`}}},
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45}},
-        y:{grid:{color:'#f0ece6'},ticks:{font:{size:9}}}
+        x:{grid:{display:false},ticks:{font:{size:10}}},
+        y:{beginAtZero:true,grid:{color:'#f0ece6'},ticks:{font:{size:9},callback:v=>met==='valor'&&v>=1000?(v/1000)+'k':v}}
       }
     }
   });
+
+  // Resumo: compara só meses fechados (o mês corrente é parcial); em janeiro, inclui o corrente.
+  const fim=idxAtual>0?idxAtual-1:0;
+  const idx=[];for(let i=0;i<=fim;i++)idx.push(i);
+  const pares=idx.filter(i=>cur[i]!=null&&ant[i]!=null);
+  const soma=arr=>idx.reduce((s,i)=>s+(arr[i]||0),0);
+  const nVal=arr=>idx.filter(i=>arr[i]!=null).length;
+  const agg=arr=>met==='pac'?(nVal(arr)?soma(arr)/nVal(arr):0):soma(arr);
+  const aC=agg(cur),aA=agg(ant);
+  const fmtAgg=v=>met==='valor'?fmtMil(v):met==='pac'?v.toLocaleString('pt-BR',{maximumFractionDigits:1}):String(v);
+  const pct=aA>0?(aC-aA)/aA*100:null;
+  const bom=met==='falta'?aC<=aA:aC>=aA;
+  const setaPct=pct==null?'':` · <b class="${bom?'up':'dn'}">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1).replace('.',',')}%</b>`;
+  const rotAgg=met==='pac'?'Média mensal':'Acumulado';
+  const chips=[`<span class="dsh-chip">${rotAgg} ${anoAtual} (até ${MESES_ABREV[fim]}) <b>${fmtAgg(aC)}</b> · ${anoAnt} <b>${fmtAgg(aA)}</b>${setaPct}</span>`];
+  const validos=idx.filter(i=>cur[i]!=null);
+  if(validos.length){
+    const pior=met==='falta';
+    const melhor=validos.reduce((b,i)=>(pior?cur[i]<cur[b]:cur[i]>cur[b])?i:b,validos[0]);
+    chips.push(`<span class="dsh-chip">${pior?'Mês com menos faltas':'Melhor mês'} de ${anoAtual}: <b>${MESES_ABREV[melhor]} · ${met==='valor'?fmtMil(cur[melhor]):cur[melhor]}</b></span>`);
+  }
+  if(pares.length){
+    const acima=pares.filter(i=>met==='falta'?cur[i]<ant[i]:cur[i]>ant[i]).length;
+    chips.push(`<span class="dsh-chip">${met==='falta'?'Meses com menos faltas que':'Meses acima de'} ${anoAnt}: <b>${acima} de ${pares.length}</b></span>`);
+  }
+  document.getElementById('hist-chips').innerHTML=chips.join('');
+}
+
+// ── Receita acumulada no mês corrente × média dos 3 meses anteriores ──
+// Sem projeção: o valor entra por pacote/Wellz (não por sessão agendada), então a agenda
+// futura não é uma base confiável para estimar o fechamento.
+function renderAcumulado(){
+  const cv=document.getElementById('chart-acum');if(!cv)return;
+  const hoje=new Date(),dia=hoje.getDate(),ym=anoMes(hoje);
+  const nDias=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();
+  const curva=(mes,n)=>{
+    const d=new Array(n+1).fill(0);
+    _rows.forEach(r=>{if(r._anoMes===mes&&r._data)d[Math.min(r._data.getDate(),n)]+=r._valorTotal;});
+    let acc=0;return d.map((v,i)=>i===0?0:(acc+=v));
+  };
+  const at=(c,d)=>c[Math.min(d,c.length-1)];
+  const real=curva(ym,nDias);
+  const anteriores=[1,2,3].map(n=>{const d=new Date(hoje.getFullYear(),hoje.getMonth()-n,1);return curva(anoMes(d),new Date(d.getFullYear(),d.getMonth()+1,0).getDate());})
+    .filter(c=>c[c.length-1]>0);
+  const media=d=>anteriores.length?anteriores.reduce((s,c)=>s+at(c,d),0)/anteriores.length:null;
+  const labels=[],dReal=[],dMedia=[];
+  for(let d=1;d<=nDias;d++){labels.push(d);dReal.push(d<=dia?real[d]:null);dMedia.push(media(d));}
+  document.getElementById('acum-titulo').textContent='Receita acumulada em '+MESES_LONGO[hoje.getMonth()];
+  const mDia=media(dia),r=real[dia];
+  let sub=`Realizado ${fmtBRL0(r)} até ${fmtDM(hoje)}`;
+  if(mDia!=null&&mDia>0){const v=(r-mDia)/mDia*100;sub+=` · média dos ${anteriores.length} ${anteriores.length>1?'meses anteriores':'mês anterior'} no mesmo ponto: ${fmtBRL0(mDia)} (${v>=0?'+':''}${v.toFixed(1).replace('.',',')}%).`;}
+  else sub+=' · sem meses anteriores para comparar.';
+  sub+=' Sem projeção: a receita entra por pacote e Wellz, não por sessão agendada.';
+  document.getElementById('acum-sub').textContent=sub;
+  dC('chart-acum');
+  charts['chart-acum']=new Chart(cv.getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Média 3 meses anteriores',data:dMedia,borderColor:'#d9cdb8',backgroundColor:'#d9cdb8',borderWidth:2.5,pointRadius:0,tension:.2},
+      {label:'Realizado',data:dReal,borderColor:'#4e553e',backgroundColor:'#4e553e',borderWidth:3,pointRadius:dReal.map((_,i)=>i===dia-1?4:0),tension:.2}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>'Dia '+it[0].label,label:c=>c.parsed.y==null?null:` ${c.dataset.label}: ${fmtBRL0(c.parsed.y)}`}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},autoSkip:true,maxTicksLimit:8}},
+        y:{beginAtZero:true,grid:{color:'#f0ece6'},ticks:{font:{size:9},callback:v=>v>=1000?(v/1000)+'k':v}}
+      }
+    }
+  });
+}
+
+// ── Mapa da agenda: horas × Seg–Sex, cor = taxa de faltas dos últimos ~3 meses ──
+function renderMapaAgenda(){
+  const el=document.getElementById('agenda-map');if(!el)return;
+  const hoje=hojeSemHora(),ini=new Date(hoje.getTime()-MAPA_AGENDA_JANELA_DIAS*DIA_MS);
+  const cel={};
+  _rows.forEach(r=>{
+    if(r._wellz||r._soValor||r._canceladaPsicologa||!r._comparecimento||!r._data||r._data<ini||r._data>hoje)return;
+    const dow=r._data.getDay();if(dow<1||dow>5)return;
+    const h=horaDoHorario(r._horario);if(h==null)return;
+    const c=cel[dow+'|'+h]||(cel[dow+'|'+h]={n:0,f:0});c.n++;c.f+=r._falta;
+  });
+  const horas=new Set();
+  Object.keys(cel).forEach(k=>horas.add(Number(k.split('|')[1])));
+  Object.values(WELLZ_HORARIOS_FIXOS).forEach(hs=>hs.forEach(h=>horas.add(h)));
+  if(!horas.size){el.style.display='block';el.innerHTML=vazioHtml('Sem atendimentos com horário nos últimos 3 meses.');return;}
+  el.style.display='';
+  const hMin=Math.min(...horas),hMax=Math.max(...horas);
+  const dias=[['Seg',1],['Ter',2],['Qua',3],['Qui',4],['Sex',5]];
+  let html='<div></div>'+dias.map(d=>`<div class="dh">${d[0]}</div>`).join('');
+  for(let h=hMin;h<=hMax;h++){
+    html+=`<div class="lb">${String(h).padStart(2,'0')}h</div>`;
+    dias.forEach(([nome,dow])=>{
+      const c=cel[dow+'|'+h],wellz=(WELLZ_HORARIOS_FIXOS[dow]||[]).includes(h);
+      if(wellz){html+=`<div class="hc hw" title="${nome} ${h}h · horário fixo da Wellz">W</div>`;return;}
+      if(!c){html+='<div class="hc hn"></div>';return;}
+      const taxa=c.f/c.n,cls=c.f===0?'h0':taxa<=MAPA_FALTAS_POUCAS?'h1':taxa<=MAPA_FALTAS_MEDIAS?'h2':'h3';
+      html+=`<div class="hc ${cls}" title="${nome} ${h}h · ${c.n} atendimento${c.n>1?'s':''}, ${c.f} falta${c.f!==1?'s':''} (${Math.round(taxa*100)}%)"></div>`;
+    });
+  }
+  html+='<div class="lb">Total</div>';
+  dias.forEach(([,dow])=>{
+    if(_regrasAgendaSlots==null){html+='<div class="hc ht">—</div>';return;}
+    const t=_regrasAgendaSlots.filter(x=>x.dia===dow).length+(WELLZ_HORARIOS_FIXOS[dow]||[]).length;
+    html+=`<div class="hc ht${t>=LIMITE_ATENDIMENTOS_DIA?' full':''}">${t}/${LIMITE_ATENDIMENTOS_DIA}</div>`;
+  });
+  el.innerHTML=html;
+  document.getElementById('agenda-map-nota').textContent=_regrasAgendaSlots==null
+    ?'Total do dia indisponível (grade semanal da Agenda não carregou).'
+    :`Última linha: atendimentos no dia (grade semanal da Agenda + Wellz) sobre o limite de ${LIMITE_ATENDIMENTOS_DIA}.`;
+}
+
+// ── Pacientes por gênero / faixa etária / modalidade (barras + iniciais) ──
+function updateProfileBars(){
+  const el=document.getElementById('perfil-bars');if(!el)return;
+  const sel=document.getElementById('profile-select').value;
+  const campo=sel==='genero'?'_genero':sel==='faixa'?'_faixaEtaria':'_modalidade';
+  // Um registro por paciente ATIVO no cadastro: vale o último valor preenchido nas sessões.
+  const nomes=nomesPacientesAtivosNoCadastro(),porPac={};
+  _rows.forEach(r=>{
+    if(!nomes.has(r._paciente))return;
+    const p=porPac[r._paciente]||(porPac[r._paciente]={});
+    ['_genero','_faixaEtaria','_modalidade'].forEach(k=>{if(r[k])p[k]=r[k];});
+  });
+  const grupos={};
+  Object.entries(porPac).forEach(([nome,p])=>{const g=p[campo]||'Não informado';(grupos[g]||(grupos[g]=[])).push(siglaPaciente(nome));});
+  const primeiroNum=l=>{const m=String(l).match(/\d+/);return m?Number(m[0]):Infinity;};
+  const lista=Object.entries(grupos).sort((a,b)=>{
+    if(a[0]==='Não informado')return 1;if(b[0]==='Não informado')return -1;
+    return sel==='faixa'&&primeiroNum(a[0])!==primeiroNum(b[0])?primeiroNum(a[0])-primeiroNum(b[0]):b[1].length-a[1].length;
+  });
+  if(!lista.length){el.innerHTML=vazioHtml('Sem pacientes ativos.');return;}
+  const max=Math.max(...lista.map(g=>g[1].length));
+  el.innerHTML=lista.map(([nome,sig])=>`<div class="dsh-fx"><div class="nm">${escHtml(nome)}</div><div><div class="bar"><div class="dsh-trk"><div class="dsh-fil" style="width:${sig.length/max*100}%;background:var(--olive)"></div></div><span class="dsh-num">${sig.length}</span></div><div class="names">${sig.sort((a,b)=>a.localeCompare(b,'pt-BR')).map(escHtml).join(' · ')}</div></div></div>`).join('');
+}
+
+// ── Origem da receita do mês corrente: Wellz × Particular + ticket médio por origem ──
+function updateDonutFat(){
+  const cv=document.getElementById('chart-donut-fat');if(!cv)return;
+  const mes=anoMes(new Date()),rows=_rows.filter(r=>r._anoMes===mes);
+  const resumo=lista=>{
+    const comCob=lista.filter(r=>!r._soValor&&r._sessoesCob>0),cob=comCob.reduce((s,r)=>s+r._sessoesCob,0);
+    return{valor:lista.reduce((s,r)=>s+r._valorTotal,0),ticket:cob>0?comCob.reduce((s,r)=>s+r._valorTotal,0)/cob:null};
+  };
+  const part=resumo(rows.filter(r=>!r._wellz)),well=resumo(rows.filter(r=>r._wellz));
+  const total=part.valor+well.valor;
+  document.getElementById('donut-fat-mes').textContent=MESES_ABREV[+mes.split('-')[1]-1]+'/'+mes.split('-')[0];
+  dC('chart-donut-fat');
+  charts['chart-donut-fat']=new Chart(cv.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Particular','Wellz'],datasets:[{data:[part.valor,well.valor],backgroundColor:['#4e553e','#b86a49'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtBRL0(c.parsed)}`}}}}
+  });
+  const pc=v=>total>0?Math.round(v/total*100)+'%':'—';
+  document.getElementById('origem-legenda').innerHTML=total>0
+    ?`<div><i class="dsh-sw" style="background:#4e553e"></i>Particular <b>${fmtBRL0(part.valor)}</b> · ${pc(part.valor)}</div><div><i class="dsh-sw" style="background:#b86a49"></i>Wellz <b>${fmtBRL0(well.valor)}</b> · ${pc(well.valor)}</div>`
+    :'<span style="color:var(--muted)">Sem receita neste mês.</span>';
+  const maxT=Math.max(part.ticket||0,well.ticket||0);
+  const linha=(nome,t,cor)=>`<div class="dsh-row" style="grid-template-columns:62px minmax(0,1fr) 44px"><span>${nome}</span><div class="dsh-trk"><div class="dsh-fil" style="width:${t&&maxT?t/maxT*100:0}%;background:${cor}"></div></div><span class="dsh-num"><b style="color:var(--text)">${t!=null?fmtBRL0(t):'—'}</b></span></div>`;
+  let h=linha('Particular',part.ticket,'var(--olive)')+linha('Wellz',well.ticket,'var(--terracotta)');
+  if(part.ticket&&well.ticket){
+    const d=(well.ticket/part.ticket-1)*100;
+    h+=`<div class="dsh-callout neutral">Sessão Wellz rende <b>${Math.abs(d).toFixed(0)}% ${d<0?'menos':'mais'}</b> que Particular.</div>`;
+  }
+  document.getElementById('origem-ticket').innerHTML=h;
+}
+
+// ── Pacientes em atenção (faltas), por risco ──
+function renderAtencao(){
+  const el=document.getElementById('atencao-lista');if(!el)return;
+  const hoje=hojeSemHora(),jan=new Date(hoje.getTime()-ATENCAO_JANELA_TAXA_DIAS*DIA_MS);
+  const nomes=nomesPacientesAtivosNoCadastro(),por={};
+  _rows.forEach(r=>{
+    if(r._wellz||r._soValor||!r._data||r._data>hoje||!r._comparecimento||!nomes.has(r._paciente))return;
+    (por[r._paciente]||(por[r._paciente]=[])).push(r);
+  });
+  let fT=0,nT=0;
+  Object.values(por).forEach(rs=>rs.forEach(r=>{if(r._data>=jan&&!r._canceladaPsicologa){nT++;fT+=r._falta;}}));
+  const media=nT?fT/nT:0;
+  const itens=[];
+  Object.entries(por).forEach(([nome,rs])=>{
+    rs.sort((a,b)=>a._data-b._data);
+    const sig=siglaPaciente(nome),res=rs.filter(r=>r._compSim||r._falta);
+    let seq=0;for(let i=res.length-1;i>=0&&res[i]._falta;i--)seq++;
+    const ultReal=[...res].reverse().find(r=>r._compSim);
+    const jr=rs.filter(r=>r._data>=jan&&!r._canceladaPsicologa),tot=jr.length,fal=jr.filter(r=>r._falta).length,taxa=tot?fal/tot:0;
+    const ult=rs[rs.length-1],dias=Math.floor((hoje-ult._data)/DIA_MS);
+    const horario=[...rs].reverse().map(r=>r._horario).find(Boolean)||'';
+    if(seq>=2){
+      const datas=res.slice(-seq).map(r=>fmtDM(r._data));
+      const quando=datas.length>1?datas.slice(0,-1).join(', ')+' e '+datas[datas.length-1]:datas[0];
+      itens.push({nivel:0,peso:seq,sig,titulo:`${seq} faltas seguidas`,desc:`${quando}. ${ultReal?'Última sessão realizada há '+Math.floor((hoje-ultReal._data)/DIA_MS)+' dias.':'Sem sessão realizada registrada.'}`,tag:'Risco alto'});
+    }else if(tot>=ATENCAO_MIN_SESSOES&&fal>=2&&taxa>media&&taxa>=ATENCAO_TAXA_MIN){
+      itens.push({nivel:0,peso:taxa,sig,titulo:`${fal} faltas em ${tot} sessões`,desc:`Taxa de ${Math.round(taxa*100)}%, acima da média de ${Math.round(media*100)}% (últimos 6 meses).${horario?' '+horario+'.':''}`,tag:'Risco alto'});
+    }else if(dias>ATENCAO_SEM_SESSAO_DIAS&&horario){
+      itens.push({nivel:1,peso:dias,sig,titulo:`sem sessão há ${dias} dias`,desc:`Horário de ${horario} segue reservado e sem uso.`,tag:'Atenção'});
+    }
+  });
+  itens.sort((a,b)=>a.nivel-b.nivel||b.peso-a.peso);
+  if(!itens.length){el.innerHTML=vazioHtml('Nenhum paciente em atenção agora.');return;}
+  el.innerHTML=itens.slice(0,ATENCAO_MAX_ITENS).map(i=>`<div class="dsh-al"><div class="dsh-av">${escHtml(i.sig.replace(/\./g,''))}</div><div style="min-width:0"><div class="dsh-atl">${escHtml(i.sig)} · ${escHtml(i.titulo)}</div><div class="dsh-ad">${escHtml(i.desc)}</div></div><span class="dsh-tag${i.nivel?' y':''}">${i.tag}</span></div>`).join('')
+    +(itens.length>ATENCAO_MAX_ITENS?`<div class="dsh-empty">+ ${itens.length-ATENCAO_MAX_ITENS} em atenção</div>`:'');
+}
+
+// ── Concentração da receita Particular por paciente (últimos 12 meses) ──
+function renderConcentracao(){
+  const el=document.getElementById('concentracao-lista');if(!el)return;
+  const hoje=new Date(),inicio=anoMes(new Date(hoje.getFullYear(),hoje.getMonth()-11,1));
+  const porPac={};let wellz=0,part=0;
+  _rows.forEach(r=>{
+    if(!r._anoMes||r._anoMes<inicio)return;
+    if(r._wellz){wellz+=r._valorTotal;return;}
+    part+=r._valorTotal;porPac[r._paciente]=(porPac[r._paciente]||0)+r._valorTotal;
+  });
+  const lista=Object.entries(porPac).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(!(part>0)||!lista.length){el.innerHTML=vazioHtml('Sem receita Particular nos últimos 12 meses.');return;}
+  const top=lista.slice(0,5),resto=lista.slice(5);
+  const maxTop=top[0][1];
+  let h=top.map(([nome,v])=>`<div class="dsh-row"><span>${escHtml(siglaPaciente(nome))}</span><div class="dsh-trk"><div class="dsh-fil" style="width:${v/maxTop*100}%;background:var(--olive)"></div></div><span class="dsh-num">${Math.round(v/part*100)}%</span></div>`).join('');
+  if(resto.length){const vr=resto.reduce((s,x)=>s+x[1],0);h+=`<div class="dsh-row"><span>Demais ${resto.length}</span><div class="dsh-trk"><div class="dsh-fil" style="width:100%;background:var(--sand)"></div></div><span class="dsh-num">${Math.round(vr/part*100)}%</span></div>`;}
+  if(wellz>0)h+=`<div class="dsh-callout"><b>Canal Wellz:</b> ${Math.round(wellz/(wellz+part)*100)}% da receita total (12 meses), de várias pacientes da plataforma; é risco de canal, não de uma pessoa.</div>`;
+  el.innerHTML=h;
+}
+
+// ── Tempo de acompanhamento dos pacientes ativos + retenção 90 dias ──
+function renderPermanencia(retencao){
+  const el=document.getElementById('perm-lista');if(!el)return;
+  document.getElementById('perm-ret').innerHTML=retencao!=null?`retenção 90d: <b style="color:${retencao>=70?'#27ae60':'var(--danger)'}">${retencao.toFixed(0)}%</b>`:'';
+  const nomes=nomesPacientesAtivosNoCadastro(),primeira={};
+  _rows.forEach(r=>{if(r._wellz||r._soValor||!r._data||!nomes.has(r._paciente))return;if(!primeira[r._paciente]||r._data<primeira[r._paciente])primeira[r._paciente]=r._data;});
+  // Data de início do cadastro (quando existir e for anterior) vale como início do acompanhamento.
+  Object.values(_pacientesById||{}).forEach(p=>{
+    if(!nomes.has(p.nome)||!/^\d{4}-\d{2}-\d{2}/.test(p.inicio_atendimentos||''))return;
+    const d=new Date(p.inicio_atendimentos.slice(0,10)+'T00:00:00');
+    if(!isNaN(d)&&(!primeira[p.nome]||d<primeira[p.nome]))primeira[p.nome]=d;
+  });
+  const faixas=[['< 3 meses',0,3],['3–6 meses',3,6],['6–12 meses',6,12],['1–2 anos',12,24],['> 2 anos',24,Infinity]];
+  const cont=faixas.map(()=>0),hoje=hojeSemHora();
+  Object.values(primeira).forEach(d=>{const m=(hoje-d)/(DIA_MS*30.4375);const i=faixas.findIndex(f=>m>=f[1]&&m<f[2]);if(i>=0)cont[i]++;});
+  const max=Math.max(...cont);
+  if(!max){el.innerHTML=vazioHtml('Sem pacientes ativos com histórico.');return;}
+  el.innerHTML=faixas.map((f,i)=>`<div class="dsh-row" style="grid-template-columns:76px minmax(0,1fr) 24px"><span>${f[0]}</span><div class="dsh-trk"><div class="dsh-fil" style="width:${cont[i]/max*100}%;background:var(--olive)"></div></div><span class="dsh-num">${cont[i]}</span></div>`).join('')
+    +'<div class="dsh-callout neutral">Retenção: % de quem atendeu há 3–6 meses e continuou atendendo nos últimos 3 meses.</div>';
 }
 
 // ══════════════════════════════════════════════════════════

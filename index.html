@@ -151,6 +151,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 /* ── Donut ── */
 .donut-wrap{position:relative;max-width:280px;margin:0 auto;}
 .donut-wrap canvas{width:100%!important;}
+.donut-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.donut-col>.panel{flex:1;display:flex;flex-direction:column;}
+.donut-col>.panel .donut-wrap{flex:1;display:flex;align-items:center;width:100%;}
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
 /* ── Motivos ── */
@@ -673,7 +676,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </table>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div class="donut-col">
       <div class="panel">
         <h3>
           Quantidade de Pacientes

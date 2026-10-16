@@ -557,7 +557,17 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .alerts-title{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.05rem;color:var(--olive);margin-bottom:10px;}
 .alerts-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 24px;align-items:start;}
 .alert-group{margin-top:10px;}
-.alerts-resumo{float:right;font-family:'Source Sans 3',sans-serif;font-style:normal;font-size:.76rem;color:var(--muted);}
+.alerts-panel.faixa{padding:0;overflow:hidden;}
+.alerts-toggle{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:8px 18px;min-height:44px;cursor:pointer;}
+.alerts-toggle:focus-visible{outline:2px solid var(--olive);outline-offset:-2px;}
+.alerts-toggle .alerts-title{margin:0;}
+.alerts-resumo{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px;font-size:.76rem;}
+.alerts-resumo .alert-nada{color:var(--muted);font-style:italic;}
+.alerts-seta{color:var(--muted);transition:transform .15s;}
+.alerts-panel.faixa[data-open="true"] .alerts-seta{transform:rotate(180deg);}
+.alerts-panel.faixa #alerts-content{display:none;border-top:1px solid var(--border);padding:6px 18px 14px;}
+.alerts-panel.faixa[data-open="true"] #alerts-content{display:block;}
+@media(prefers-reduced-motion:reduce){.alerts-seta{transition:none;}}
 .alert-lista{list-style:none;margin:0;padding:0;}
 .alert-lista li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem;}
 .alert-lista li:last-child{border-bottom:0;}
@@ -733,8 +743,12 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
   </div>
 
-  <div class="alerts-panel" id="dashboard-alerts">
-    <div class="alerts-title">🔔 Atenção<span class="alerts-resumo" id="alerts-resumo"></span></div>
+  <div class="alerts-panel faixa" id="dashboard-alerts" data-open="false">
+    <button type="button" class="alerts-toggle" id="alerts-toggle" aria-expanded="false" aria-controls="alerts-content" onclick="alternarAlertas()">
+      <span class="alerts-title">🔔 Atenção</span>
+      <span class="alerts-resumo"><span id="ar-dev"></span><span id="ar-ren"></span><span id="ar-pro"></span></span>
+      <span class="alerts-seta" aria-hidden="true">▾</span>
+    </button>
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
   </div>
 
@@ -2394,8 +2408,24 @@ async function calcularAlertas() {
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
   el.innerHTML=html;
-  const resumo=document.getElementById('alerts-resumo');
-  if(resumo)resumo.textContent=[dividasVisiveis.length&&`${dividasVisiveis.length} devem`,renovacoes.length&&`${renovacoes.length} renovam`].filter(Boolean).join(' · ');
+  const setRes=(id,txt,cls)=>{const e=document.getElementById(id);if(e)e.innerHTML=txt?`<span class="alert-badge ${cls}">${txt}</span>`:'';};
+  setRes('ar-dev',dividasVisiveis.length&&`${dividasVisiveis.length} ${dividasVisiveis.length===1?'deve':'devem'}`,'alert-red');
+  setRes('ar-ren',renovacoes.length&&`${renovacoes.length} ${renovacoes.length===1?'renova':'renovam'}`,'alert-green');
+  if(!renovacoes.length&&!dividasVisiveis.length&&!document.getElementById('ar-pro')?.textContent)document.getElementById('ar-dev').innerHTML='<span class="alert-nada">nada pendente</span>';
+  // Preferência da usuária vence; sem preferência, abre sozinha quando há renovação nesta semana.
+  let pref=null;try{pref=localStorage.getItem('alertas-aberto');}catch(e){}
+  definirAlertasAberto(pref!==null?pref==='1':renovacoes.length>0);
+}
+
+function definirAlertasAberto(aberto){
+  const p=document.getElementById('dashboard-alerts'),b=document.getElementById('alerts-toggle');
+  if(!p||!b)return;
+  p.setAttribute('data-open',String(aberto));b.setAttribute('aria-expanded',String(aberto));
+}
+function alternarAlertas(){
+  const aberto=document.getElementById('dashboard-alerts').getAttribute('data-open')!=='true';
+  definirAlertasAberto(aberto);
+  try{localStorage.setItem('alertas-aberto',aberto?'1':'0');}catch(e){}
 }
 
 async function carregarAlertaProntuarios(){
@@ -2425,6 +2455,9 @@ async function carregarAlertaProntuarios(){
     const pioSufixo=pior?`; o mais antigo está há ${pior.dias} dias`:'';
     const html=`<div class="alert-rodape">📋 ${atrasados.length} prontuário${atrasados.length===1?'':'s'} sem registro há mais de 7 dias${pioSufixo}</div>`;
     el.insertAdjacentHTML('beforeend',html);
+    const pro=document.getElementById('ar-pro');
+    if(pro)pro.innerHTML=`<span class="alert-badge alert-item-red">${atrasados.length} pront.</span>`;
+    document.querySelector('#ar-dev .alert-nada')?.remove();
   }catch(e){console.warn('Não foi possível checar prontuários desatualizados:',e);}
 }
 

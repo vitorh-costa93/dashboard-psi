@@ -148,7 +148,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .dsh-hm .lb{display:flex;align-items:center;justify-content:flex-end;padding-right:5px;}
 .dsh-hm .dh{text-align:center;padding-bottom:1px;}
 .hc{min-height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;}
-.hn{background:#f6f2e8;}.h0{background:#e3ead8;}.h1{background:#efe0b8;}.h2{background:#e8b48f;}.h3{background:#c9674a;}
+.hn{background:#f6f2e8;}
+.ho{background:#e3ead8;color:var(--olive);font-weight:600;justify-content:flex-start;padding:0 4px;min-height:18px;overflow:hidden;}
+.ho span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .hw{background:repeating-linear-gradient(135deg,#b86a49 0 3px,#f3dccf 3px 6px);color:#fff;}
 .ht{height:18px;color:var(--text);font-size:.7rem;border-top:1px solid var(--border);border-radius:0;margin-top:3px;}
 .ht.full{color:var(--terracotta);}
@@ -790,7 +792,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </section>
 
     <section class="panel dsh-c2">
-      <h3>Mapa da agenda <small>pacientes ativos · faltas em 3 meses</small></h3>
+      <h3>Mapa da agenda <small>pacientes ativos · grade semanal</small></h3>
       <div class="dsh-leg"><span><i class="dsh-sw" style="background:#e3ead8"></i>Sem faltas</span><span><i class="dsh-sw" style="background:#efe0b8"></i>Poucas</span><span><i class="dsh-sw" style="background:#e8b48f"></i>Média</span><span><i class="dsh-sw" style="background:#c9674a"></i>Alta</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
       <div class="dsh-hm" id="agenda-map"></div>
       <p class="dsh-sub" style="margin:6px 0 0" id="agenda-map-nota">Última linha: atendimentos no dia (app + Wellz) sobre o limite de 7.</p>
@@ -2139,7 +2141,8 @@ async function carregarHorariosAtivos(){
     const slots=new Set((d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>x.dia_semana+'|'+String(x.horario).slice(0,5)));
     _horariosAtivosRegras=slots.size;
     // Grade semanal vigente (dia 1=seg..7=dom, hora cheia) usada no total/dia do Mapa da agenda.
-    _regrasAgendaSlots=(d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>({dia:Number(x.dia_semana),hora:Number(String(x.horario).slice(0,2))}));
+    const nomePorId=new Map((d.patients||[]).map(p=>[p.id,p.nome]));
+    _regrasAgendaSlots=(d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>({dia:Number(x.dia_semana),hora:Number(String(x.horario).slice(0,2)),nome:nomePorId.get(x.paciente_id)||''}));
     renderMapaAgenda();
     const el=document.getElementById('kpi-pac'),m=el&&el.textContent.match(/^(\d+) \(/);
     if(m)el.textContent=m[1]+' ('+slots.size+' horas)';
@@ -2168,7 +2171,8 @@ function processAndRender(){
     const base=r.filter(x=>!x._canceladaPsicologa&&!x._soValor);
     // Ticket médio = valor recebido nas linhas com sessão paga ÷ sessões pagas
     // (linhas "só valor" do histórico mensal não têm sessões, ficam de fora).
-    const comCob=r.filter(x=>!x._soValor&&x._sessoesCob>0);
+    // Wellz fica de fora: o valor é fixo e definido pela plataforma, não é algo que controlamos.
+    const comCob=r.filter(x=>!x._soValor&&!x._wellz&&x._sessoesCob>0);
     const cob=comCob.reduce((s,x)=>s+x._sessoesCob,0);
     return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length,ticket:cob>0?comCob.reduce((s,x)=>s+x._valorTotal,0)/cob:null};
   }
@@ -2662,9 +2666,7 @@ const WELLZ_HORARIOS_FIXOS={
   4:[12,15,17,18]      // quinta
 };
 const LIMITE_ATENDIMENTOS_DIA=7;     // teto confortável de atendimentos por dia (app + Wellz)
-const MAPA_AGENDA_JANELA_DIAS=90;    // janela (≈3 meses) da taxa de faltas por horário
-const MAPA_FALTAS_POUCAS=0.20;       // taxa ≤ 20% = "poucas"; ≤ 40% = "média"; acima = "alta" (50% de faltas já seria extremo)
-const MAPA_FALTAS_MEDIAS=0.40;
+const MAPA_AGENDA_JANELA_DIAS=90;    // janela (≈3 meses) do histórico usado enquanto a grade semanal não carrega
 const ATENCAO_JANELA_TAXA_DIAS=180;  // janela da taxa de faltas por paciente
 const ATENCAO_MIN_SESSOES=6;         // mínimo de atendimentos na janela para avaliar a taxa
 const ATENCAO_TAXA_MIN=0.20;         // além de acima da média, taxa mínima para virar risco
@@ -2819,21 +2821,28 @@ function renderAcumulado(){
   });
 }
 
-// ── Mapa da agenda: horas × Seg–Sex, cor = taxa de faltas dos últimos ~3 meses ──
+// ── Mapa da agenda: horas × Seg–Sex, horários ocupados com o nome do paciente ──
 function renderMapaAgenda(){
   const el=document.getElementById('agenda-map');if(!el)return;
   const hoje=hojeSemHora(),ini=new Date(hoje.getTime()-MAPA_AGENDA_JANELA_DIAS*DIA_MS);
   const cel={},ativos=nomesPacientesAtivosNoCadastro();
-  _rows.forEach(r=>{
-    if(r._wellz||r._soValor||r._canceladaPsicologa||!r._comparecimento||!r._data||r._data<ini||r._data>hoje||!ativos.has(r._paciente))return;
-    const dow=r._data.getDay();if(dow<1||dow>5)return;
-    const h=horaDoHorario(r._horario);if(h==null)return;
-    const c=cel[dow+'|'+h]||(cel[dow+'|'+h]={n:0,f:0});c.n++;c.f+=r._falta;
-  });
+  const add=(dow,h,nome)=>{const c=cel[dow+'|'+h]||(cel[dow+'|'+h]=new Set());if(nome)c.add(nome);};
+  if(_regrasAgendaSlots!=null){
+    // Grade semanal vigente da Agenda: é a fonte dos horários ocupados.
+    _regrasAgendaSlots.forEach(x=>{if(x.dia>=1&&x.dia<=5)add(x.dia,x.hora,x.nome);});
+  }else{
+    // Enquanto a grade não carrega, usa o histórico dos últimos ~3 meses.
+    _rows.forEach(r=>{
+      if(r._wellz||r._soValor||r._canceladaPsicologa||!r._comparecimento||!r._data||r._data<ini||r._data>hoje||!ativos.has(r._paciente))return;
+      const dow=r._data.getDay();if(dow<1||dow>5)return;
+      const h=horaDoHorario(r._horario);if(h==null)return;
+      add(dow,h,r._paciente);
+    });
+  }
   const horas=new Set();
   Object.keys(cel).forEach(k=>horas.add(Number(k.split('|')[1])));
   Object.values(WELLZ_HORARIOS_FIXOS).forEach(hs=>hs.forEach(h=>horas.add(h)));
-  if(!horas.size){el.style.display='block';el.innerHTML=vazioHtml('Sem atendimentos com horário nos últimos 3 meses.');return;}
+  if(!horas.size){el.style.display='block';el.innerHTML=vazioHtml('Sem horários ocupados na grade semanal.');return;}
   el.style.display='';
   const hMin=Math.min(...horas),hMax=Math.max(...horas);
   const dias=[['Seg',1],['Ter',2],['Qua',3],['Qui',4],['Sex',5]];
@@ -2844,8 +2853,8 @@ function renderMapaAgenda(){
       const c=cel[dow+'|'+h],wellz=(WELLZ_HORARIOS_FIXOS[dow]||[]).includes(h);
       if(wellz){html+=`<div class="hc hw" title="${nome} ${h}h · horário fixo da Wellz">W</div>`;return;}
       if(!c){html+='<div class="hc hn"></div>';return;}
-      const taxa=c.f/c.n,cls=c.f===0?'h0':taxa<=MAPA_FALTAS_POUCAS?'h1':taxa<=MAPA_FALTAS_MEDIAS?'h2':'h3';
-      html+=`<div class="hc ${cls}" title="${nome} ${h}h · ${c.n} atendimento${c.n>1?'s':''}, ${c.f} falta${c.f!==1?'s':''} (${Math.round(taxa*100)}%)"></div>`;
+      const nomes=[...c].map(iniciais).join(' / ');
+      html+=`<div class="hc ho" title="${nome} ${h}h · ${escHtml(nomes)}"><span>${escHtml(nomes)}</span></div>`;
     });
   }
   html+='<div class="lb">Total</div>';

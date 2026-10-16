@@ -24,7 +24,7 @@ GRANT ALL ON TABLE public.dashboard_cache_meta, public.dashboard_cache TO servic
 CREATE OR REPLACE FUNCTION public.dashboard_cache_invalidar() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  UPDATE public.dashboard_cache_meta SET versao = versao + 1;
+  UPDATE public.dashboard_cache_meta SET versao = versao + 1 WHERE singleton;
   RETURN NULL;
 END $$;
 

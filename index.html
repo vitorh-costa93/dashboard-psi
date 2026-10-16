@@ -557,12 +557,19 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .alerts-title{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.05rem;color:var(--olive);margin-bottom:10px;}
 .alerts-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 24px;align-items:start;}
 .alert-group{margin-top:10px;}
+.alerts-resumo{float:right;font-family:'Source Sans 3',sans-serif;font-style:normal;font-size:.76rem;color:var(--muted);}
+.alert-lista{list-style:none;margin:0;padding:0;}
+.alert-lista li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.alert-lista li:last-child{border-bottom:0;}
+.alert-lista .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.alert-rodape{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:.78rem;color:var(--danger);}
 .alert-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px;}
 .alert-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;background:var(--light);margin-bottom:5px;font-size:.8rem;}
 .alert-item:last-child{margin-bottom:0;}
 .alert-badge{font-size:.68rem;padding:3px 7px;border-radius:12px;white-space:nowrap;}
 .alert-green{background:#eef4eb;color:#557548;}
 .alert-red{background:#fdecea;color:var(--danger);}
+.alert-gold{background:#fbf3dc;color:#8a6410;}
 .alert-item-red{background:#fdecea;color:var(--danger);}
 .alert-yellow{background:#fef9ec;color:#9a7724;}
 .alert-empty{color:var(--muted);font-size:.78rem;font-style:italic;padding:5px 0;}
@@ -727,7 +734,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 
   <div class="alerts-panel" id="dashboard-alerts">
-    <div class="alerts-title">🔔 Atenção</div>
+    <div class="alerts-title">🔔 Atenção<span class="alerts-resumo" id="alerts-resumo"></span></div>
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
   </div>
 
@@ -2371,14 +2378,15 @@ async function calcularAlertas() {
   const dividasVisiveis=dividas.filter(x=>ultimaSemana||x.temSessaoEstaSemana);
   let html='';
   if(renovacoes.length || dividasVisiveis.length) html+='<div class="alerts-columns">';
-  if(renovacoes.length){
-    html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
-    html+=renovacoes.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></div>`).join('');
-    html+='</div>';
-  }
+  // Pendências (pedem ação) à esquerda; renovações (lembrete) à direita.
   if(dividasVisiveis.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
-    html+=dividasVisiveis.map(x=>`<div class="alert-item"><span>${x.label}</span><span class="alert-badge alert-red">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></div>`).join('');
+    html+='<ul class="alert-lista">'+dividasVisiveis.map(x=>`<li><span class="nm">${x.label}</span><span class="alert-badge ${x.qtd>=2?'alert-red':'alert-gold'}">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></li>`).join('')+'</ul>';
+    html+='</div>';
+  }
+  if(renovacoes.length){
+    html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
+    html+='<ul class="alert-lista">'+renovacoes.map(x=>`<li><span class="nm">${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></li>`).join('')+'</ul>';
     html+='</div>';
   }
   if(renovacoes.length || dividasVisiveis.length){
@@ -2386,6 +2394,8 @@ async function calcularAlertas() {
   }
   if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
   el.innerHTML=html;
+  const resumo=document.getElementById('alerts-resumo');
+  if(resumo)resumo.textContent=[dividasVisiveis.length&&`${dividasVisiveis.length} devem`,renovacoes.length&&`${renovacoes.length} renovam`].filter(Boolean).join(' · ');
 }
 
 async function carregarAlertaProntuarios(){
@@ -2413,9 +2423,7 @@ async function carregarAlertaProntuarios(){
     // usado pro saldo negativo.
     const pior=atrasados.find(x=>x.dias!==null);
     const pioSufixo=pior?`; o mais antigo está há ${pior.dias} dias`:'';
-    const html=`<div class="alert-group"><div class="alert-group-title">📋 Prontuários desatualizados</div>`
-      +`<div class="alert-item alert-item-red"><span>${atrasados.length} prontuário${atrasados.length===1?'':'s'} sem registro há mais de 7 dias${pioSufixo}</span></div>`
-      +'</div>';
+    const html=`<div class="alert-rodape">📋 ${atrasados.length} prontuário${atrasados.length===1?'':'s'} sem registro há mais de 7 dias${pioSufixo}</div>`;
     el.insertAdjacentHTML('beforeend',html);
   }catch(e){console.warn('Não foi possível checar prontuários desatualizados:',e);}
 }

@@ -75,15 +75,29 @@ export async function supabase(path, options = {}) {
   });
 }
 
+const SEM_MEMO = !!process.env.NODE_TEST_CONTEXT;
+let adminMemo = null;
 export async function getAdminRecord() {
+  // O administrador é um registro único e quase nunca muda: 60 s de memória por instância
+  // poupam uma ida ao banco em cada requisição.
+  if (!SEM_MEMO && adminMemo && Date.now() - adminMemo.t < 60000) return adminMemo.v;
   const response = await supabase('/rest/v1/app_admin?select=user_id&singleton=eq.true&limit=1');
   if (!response.ok) throw new Error('Não foi possível verificar o administrador');
   const rows = await response.json();
+  if (rows[0] && !SEM_MEMO) adminMemo = {t: Date.now(), v: rows[0]};
   return rows[0] || null;
 }
 
+const userMemo = new Map();
 async function userFromToken(token) {
   if (!token) return null;
+  const hit = userMemo.get(token);
+  if (!SEM_MEMO && hit && Date.now() - hit.t < 30000) return hit.v;
+  const user = await userFromTokenRemoto(token);
+  if (user && !SEM_MEMO) { if (userMemo.size > 50) userMemo.clear(); userMemo.set(token, {t: Date.now(), v: user}); }
+  return user;
+}
+async function userFromTokenRemoto(token) {
   const response = await supabase('/auth/v1/user', {
     headers: {Authorization: `Bearer ${token}`},
   });

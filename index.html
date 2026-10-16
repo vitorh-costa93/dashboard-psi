@@ -123,7 +123,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
 /* ── Painéis do Dashboard (grade compacta) ── */
 .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--shadow);animation:fadeUp .55s ease both;min-width:0;}
-.panel h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.panel h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.92rem;color:var(--olive);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;}
 .panel h3 small{font-family:'DM Sans',sans-serif;font-style:normal;font-size:.7rem;color:var(--muted);}
 .dsh-g{display:grid;gap:12px;min-width:0;margin-bottom:12px;}
 .dsh-g75{grid-template-columns:minmax(0,7.3fr) minmax(0,4.7fr);}
@@ -150,19 +150,13 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .hw{background:repeating-linear-gradient(135deg,#b86a49 0 3px,#f3dccf 3px 6px);color:#fff;}
 .ht{height:18px;color:var(--text);font-size:.7rem;border-top:1px solid var(--border);border-radius:0;margin-top:3px;}
 .ht.full{color:var(--terracotta);}
-/* Barras horizontais (pacientes por perfil, origem, concentração, permanência) */
+/* Barras horizontais (tempo de acompanhamento) */
 .dsh-row{display:grid;grid-template-columns:70px minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:.76rem;padding:4px 0;}
 .dsh-trk{height:9px;background:#f1ece0;border-radius:5px;overflow:hidden;}.dsh-fil{height:100%;border-radius:5px;}
 .dsh-num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);}
-.dsh-fx{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:5px 0;border-top:1px solid var(--border);align-items:start;}
-.dsh-fx:first-of-type{border-top:0;}
-.dsh-fx .nm{font-size:.74rem;font-weight:500;overflow-wrap:anywhere;}
-.dsh-fx .bar{display:flex;align-items:center;gap:6px;}.dsh-fx .bar .dsh-trk{flex:1;}
-.dsh-fx .names{font-size:.64rem;color:var(--muted);margin-top:2px;line-height:1.35;}
 /* Pacientes em atenção */
-.dsh-al{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--border);}
+.dsh-al{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--border);}
 .dsh-al:first-of-type{border-top:0;}
-.dsh-av{width:28px;height:28px;border-radius:50%;background:var(--light);border:1px solid var(--border);color:var(--olive);font-size:.64rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .dsh-atl{font-size:.74rem;font-weight:500;}.dsh-ad{font-size:.64rem;color:var(--muted);line-height:1.35;}
 .dsh-tag{font-size:.62rem;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap;background:#fdecea;color:var(--danger);}
 .dsh-tag.y{background:#fef9ec;color:#8a6a1a;}
@@ -170,9 +164,31 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .dsh-callout.neutral{background:var(--light);border-color:var(--border);color:var(--muted);}
 .dsh-callout.neutral b{color:var(--text);}
 /* Origem da receita */
-.dsh-origem{display:flex;gap:10px;align-items:center;}
-.dsh-origem .dsh-donut{position:relative;width:108px;height:108px;flex:none;}
-.dsh-origem .dsh-donut canvas{width:100%!important;height:100%!important;}
+.dsh-origem{display:flex;gap:12px;align-items:center;}
+.dsh-origem .dsh-donut{position:relative;width:100px;height:100px;flex:none;}
+.dsh-origem .dsh-donut canvas{width:100%!important;height:100%!important;cursor:pointer;}
+.dsh-donut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;line-height:1.15;}
+.dsh-donut-c b{font-size:.95rem;font-variant-numeric:tabular-nums;}.dsh-donut-c span{font-size:.6rem;color:var(--muted);}
+.dsh-lg{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:.76rem;}
+.dsh-lg button,.dsh-lg .li{display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%;padding:5px 6px;border:0;border-radius:6px;background:none;font:inherit;color:var(--text);text-align:left;}
+.dsh-lg button{cursor:pointer;min-height:34px;}.dsh-lg button:hover,.dsh-lg button.on{background:var(--light);}
+.dsh-lg .nm{flex:1 1 auto;min-width:0;overflow-wrap:break-word;}.dsh-lg .n{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;}.dsh-lg .n b{color:var(--text);}
+.dsh-fill{display:flex;flex-direction:column;position:relative;}
+.dsh-fill>.dsh-body{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:10px;position:relative;}
+.dsh-pop{position:absolute;left:0;right:0;bottom:0;max-height:100%;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.16);padding:10px 12px;z-index:5;font-size:.78rem;}
+.dsh-pop[hidden]{display:none;}
+.dsh-pop h4{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.78rem;margin-bottom:6px;}
+.dsh-pop h4 button{border:0;background:var(--light);border-radius:6px;width:32px;height:32px;font-size:1rem;cursor:pointer;color:var(--muted);flex:none;}
+.dsh-pop ul{list-style:none;columns:2;column-gap:14px;}.dsh-pop li{padding:3px 0;break-inside:avoid;overflow-wrap:anywhere;}
+/* Grade 4 × 2: Saldo ocupa a coluna 1 inteira; Mapa 2/3 + Origem na linha 1; três painéis na linha 2 */
+.dsh-g4x2{grid-template-columns:repeat(4,minmax(0,1fr));}
+.dsh-g4x2>.dsh-r2{grid-row:span 2;}.dsh-g4x2>.dsh-c2{grid-column:span 2;}
+/* Comparecimento: pílula com borda, miolo translúcido e texto na cor da borda */
+.pill{display:inline-block;padding:2px 11px;border-radius:999px;border:1px solid currentColor;font-size:.74rem;font-weight:600;line-height:1.5;white-space:nowrap;}
+.pill-ok{color:#3f6b2c;background:rgba(63,107,44,.13);}
+.pill-no{color:#b3341f;background:rgba(179,52,31,.12);}
+.pill-cx{color:#94690f;background:rgba(148,105,15,.14);}
+.pill-nd{color:var(--muted);background:rgba(107,107,107,.1);}
 
 /* ── Saldo — formato badge ── */
 .saldo-table{width:100%;border-collapse:collapse;font-size:.78rem;}
@@ -193,8 +209,22 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 /* ── Seletor de perfil ── */
 .profile-select{font-family:'DM Sans',sans-serif;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--text);background:var(--light);cursor:pointer;}
 
+@media(max-width:1100px){
+  .dsh-g4x2{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .dsh-g4x2>.dsh-r2{grid-row:auto;}
+  .dsh-g4x2>.dsh-r2 .dsh-saldo-scroll{max-height:380px;overflow:auto;}
+}
 @media(max-width:900px){
-  .kpi-row,.dsh-g75,.dsh-g332,.dsh-g4{grid-template-columns:minmax(0,1fr);}
+  .kpi-row,.dsh-g75{grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:700px){
+  .dsh-g4x2{grid-template-columns:minmax(0,1fr);}
+  .dsh-g4x2>.dsh-c2{grid-column:auto;}
+  .dsh-seg{display:flex;width:100%;}
+  .dsh-seg button{flex:1;padding:9px 6px;font-size:.78rem;}
+  .hc{height:17px;}
+  .dsh-pop ul{columns:1;}
+  .profile-select{padding:6px 8px;font-size:.8rem;}
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -721,41 +751,10 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </section>
   </div>
 
-  <div class="dsh-g dsh-g332">
-    <section class="panel">
-      <h3>Mapa da agenda <small>faltas · 3 meses · atendimentos por dia</small></h3>
-      <div class="dsh-leg"><span><i class="dsh-sw" style="background:#e3ead8"></i>Sem faltas</span><span><i class="dsh-sw" style="background:#efe0b8"></i>Poucas</span><span><i class="dsh-sw" style="background:#e8b48f"></i>Média</span><span><i class="dsh-sw" style="background:#c0392b"></i>Alta</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
-      <div class="dsh-hm" id="agenda-map"></div>
-      <p class="dsh-sub" style="margin:6px 0 0" id="agenda-map-nota">Última linha: atendimentos no dia (app + Wellz) sobre o limite de 7.</p>
-    </section>
-
-    <section class="panel">
-      <h3>
-        Pacientes por
-        <select class="profile-select" id="profile-select" onchange="updateProfileBars()">
-          <option value="genero">Gênero</option>
-          <option value="faixa">Faixa Etária</option>
-          <option value="modal">Modalidade</option>
-        </select>
-      </h3>
-      <div id="perfil-bars"></div>
-    </section>
-
-    <section class="panel">
-      <h3>Origem da receita <small id="donut-fat-mes"></small></h3>
-      <div class="dsh-origem">
-        <div class="dsh-donut"><canvas id="chart-donut-fat"></canvas></div>
-        <div id="origem-legenda" style="font-size:.74rem;line-height:1.9"></div>
-      </div>
-      <div style="margin-top:6px;font-size:.7rem;color:var(--muted)">Ticket médio por sessão</div>
-      <div id="origem-ticket"></div>
-    </section>
-  </div>
-
-  <div class="dsh-g dsh-g4">
-    <section class="panel">
+  <div class="dsh-g dsh-g4x2">
+    <section class="panel dsh-r2">
       <h3>Sessões Restantes | Pacote</h3>
-      <div style="max-height:340px;overflow:auto">
+      <div class="dsh-saldo-scroll">
       <table class="saldo-table">
         <thead><tr>
           <td data-tabela="saldo" data-col="paciente" onclick="ordenarTabela('saldo','paciente');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
@@ -766,17 +765,55 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </table>
       </div>
     </section>
-    <section class="panel">
+
+    <section class="panel dsh-c2">
+      <h3>Mapa da agenda <small>pacientes ativos · faltas em 3 meses</small></h3>
+      <div class="dsh-leg"><span><i class="dsh-sw" style="background:#e3ead8"></i>Sem faltas</span><span><i class="dsh-sw" style="background:#efe0b8"></i>Poucas</span><span><i class="dsh-sw" style="background:#e8b48f"></i>Média</span><span><i class="dsh-sw" style="background:#c0392b"></i>Alta</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
+      <div class="dsh-hm" id="agenda-map"></div>
+      <p class="dsh-sub" style="margin:6px 0 0" id="agenda-map-nota">Última linha: atendimentos no dia (app + Wellz) sobre o limite de 7.</p>
+    </section>
+
+    <section class="panel dsh-fill">
+      <h3>Origem da receita <small id="donut-fat-mes"></small></h3>
+      <div class="dsh-body">
+        <div class="dsh-origem">
+          <div class="dsh-donut"><canvas id="chart-donut-fat"></canvas><div class="dsh-donut-c" id="origem-centro"></div></div>
+          <div id="origem-legenda" class="dsh-lg"></div>
+        </div>
+        <div>
+          <div class="dsh-sub" style="margin:0 0 2px">Ticket médio por sessão</div>
+          <div id="origem-ticket"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel dsh-fill">
+      <h3>
+        Pacientes por
+        <select class="profile-select" id="profile-select" onchange="updateProfileBars()" aria-label="Agrupar pacientes por">
+          <option value="genero">Gênero</option>
+          <option value="faixa">Faixa Etária</option>
+          <option value="modal">Modalidade</option>
+        </select>
+      </h3>
+      <div class="dsh-body" id="perfil-wrap">
+        <div class="dsh-origem">
+          <div class="dsh-donut"><canvas id="chart-perfil"></canvas><div class="dsh-donut-c" id="perfil-centro"></div></div>
+          <div id="perfil-legenda" class="dsh-lg"></div>
+        </div>
+        <p class="dsh-sub" style="margin:0">Toque numa fatia ou numa linha para ver quem são.</p>
+        <div class="dsh-pop" id="perfil-pop" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel dsh-fill">
       <h3>Pacientes em atenção <small>faltas · por risco</small></h3>
       <div id="atencao-lista"></div>
     </section>
-    <section class="panel">
-      <h3>Concentração <small>% do Particular · 12 meses</small></h3>
-      <div id="concentracao-lista"></div>
-    </section>
-    <section class="panel">
+
+    <section class="panel dsh-fill">
       <h3>Tempo de acompanhamento <small id="perm-ret"></small></h3>
-      <div id="perm-lista"></div>
+      <div class="dsh-body" id="perm-lista"></div>
     </section>
   </div>
 
@@ -1928,7 +1965,11 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('error-msg').style.display='none';
   try{
-    const res=await fetch('/api/operational',{cache:'no-store'});
+    // Tudo que o Dashboard precisa sai em paralelo (antes era uma fila: sessões → pacientes → agenda ×2 → prontuários).
+    _agendaMemo.clear();
+    const hojeMes=new Date();
+    buscarAgendaMes(anoMes(hojeMes));
+    const [res]=await Promise.all([fetch('/api/operational',{cache:'no-store'}),carregarPacientes()]);
     if(res.status===401){window.location.reload();return;}
     if(!res.ok)throw new Error('HTTP '+res.status);
     const raw=(await res.json()).filter(r=>r['Data']&&String(r['Data']).trim());
@@ -1965,7 +2006,7 @@ async function loadData(){
     // carregarPacientes() precisa rodar sempre (não só quando a aba Prontuários
     // já foi aberta) -- a sub-aba de CNPJ do Dashboard depende do
     // contabiliza_cnpj de cada paciente.
-    await carregarPacientes();
+    if(!Object.keys(_pacientesById||{}).length)pacientesFallbackLegado();
     if (window._prontInit) {
       preencherDropdownProntuarios();
       await carregarProntuarios();
@@ -1977,12 +2018,12 @@ async function loadData(){
     // carregarAlertaProntuarios(), que só ANEXA ao final de #alerts-content
     // (senão a ordem de chegada das duas respostas de rede poderia fazer uma
     // sobrescrever o que a outra já tinha desenhado).
-    await calcularAlertas();
-    await carregarAlertaProntuarios();
-    popularFiltroDsess();
+    // O painel aparece assim que os dados principais chegam; alertas e sessões detalhadas completam em seguida.
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
     document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    popularFiltroDsess();
+    calcularAlertas().then(()=>carregarAlertaProntuarios()).catch(e=>console.warn('Alertas:',e));
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
@@ -2051,12 +2092,22 @@ function nomesPacientesAtivosNoCadastro(){
   // o cadastro: mantém o filtro legado até a próxima sincronização válida.
   return new Set(_rows.filter(r=>r._ativo==='Ativo').map(r=>r._paciente));
 }
+// Mesma resposta da Agenda é pedida por vários painéis ao abrir o Dashboard: uma ida só (dedupe de 8 s;
+// o dado em si vem do cache do servidor, que é invalidado a cada escrita).
+const _agendaMemo=new Map();
+function buscarAgendaMes(mes){
+  const hit=_agendaMemo.get(mes);
+  if(hit&&Date.now()-hit.t<8000)return hit.p;
+  const p=fetch('/api/operational?resource=agenda&month='+encodeURIComponent(mes)).then(r=>r.ok?r.json():null).catch(()=>null);
+  _agendaMemo.set(mes,{t:Date.now(),p});
+  return p;
+}
 let _horariosAtivosRegras=null,_horariosAtivosCarregando=false,_regrasAgendaSlots=null;
 async function carregarHorariosAtivos(){
   if(_horariosAtivosCarregando)return;_horariosAtivosCarregando=true;
   try{
-    const r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(anoMes(new Date())));
-    if(!r.ok)return;const d=await r.json();
+    const d=await buscarAgendaMes(anoMes(new Date()));
+    if(!d)return;
     const ativos=new Set((d.patients||[]).filter(p=>p.nome!=='Wellz'&&(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').map(p=>p.id));
     const slots=new Set((d.rules||[]).filter(x=>ativos.has(x.paciente_id)&&x.horario).map(x=>x.dia_semana+'|'+String(x.horario).slice(0,5)));
     _horariosAtivosRegras=slots.size;
@@ -2178,7 +2229,6 @@ function processAndRender(){
   updateDonutFat();
   renderMapaAgenda();
   renderAtencao();
-  renderConcentracao();
   renderPermanencia(retAtual);
 }
 
@@ -2194,11 +2244,11 @@ async function buscarAgendaSemana(inicioSemana,fimSemana){
   const inicioISO=isoDate(inicioSemana),fimISO=isoDate(fimSemana);
   const meses=[...new Set([anoMes(inicioSemana),anoMes(fimSemana)])];
   const datasEstaSemana=new Map(),migrados=new Set();
+  meses.forEach(buscarAgendaMes);
   for(const mes of meses){
     try{
-      const r=await fetch('/api/operational?resource=agenda&month='+encodeURIComponent(mes));
-      if(!r.ok)continue;
-      const d=await r.json();
+      const d=await buscarAgendaMes(mes);
+      if(!d)continue;
       const nomePorId={};
       (d.patients||[]).forEach(p=>{nomePorId[p.id]=p.nome;});
       (d.rules||[]).forEach(rule=>{const nome=nomePorId[rule.paciente_id];if(nome)migrados.add(nome);});
@@ -2473,6 +2523,10 @@ async function carregarSessoesDetalhado(){
     renderSessoesDetalhado();
   }catch(e){tbody.innerHTML=`<tr><td colspan="9" class="agenda-empty">${agendaEscape(e.message)}</td></tr>`;}
 }
+function pillComparecimento(v){
+  const m={'Sim':['pill-ok','Compareceu'],'Não':['pill-no','Faltou'],'Cancelado':['pill-cx','Cancelado']}[v];
+  return m?`<span class="pill ${m[0]}">${m[1]}</span>`:(v?`<span class="pill pill-nd">${agendaEscape(v)}</span>`:'');
+}
 function renderSessoesDetalhado(){
   const tbody=document.getElementById('dsess-tbody');
   if(!tbody)return;
@@ -2491,7 +2545,7 @@ function renderSessoesDetalhado(){
   });
   tbody.innerHTML=rows.length?rows.map(x=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${agendaEscape(x.comparecimento||'')}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
+    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
   // Totais só fazem sentido com um paciente escolhido (senão seria a soma
@@ -2722,9 +2776,9 @@ function renderAcumulado(){
 function renderMapaAgenda(){
   const el=document.getElementById('agenda-map');if(!el)return;
   const hoje=hojeSemHora(),ini=new Date(hoje.getTime()-MAPA_AGENDA_JANELA_DIAS*DIA_MS);
-  const cel={};
+  const cel={},ativos=nomesPacientesAtivosNoCadastro();
   _rows.forEach(r=>{
-    if(r._wellz||r._soValor||r._canceladaPsicologa||!r._comparecimento||!r._data||r._data<ini||r._data>hoje)return;
+    if(r._wellz||r._soValor||r._canceladaPsicologa||!r._comparecimento||!r._data||r._data<ini||r._data>hoje||!ativos.has(r._paciente))return;
     const dow=r._data.getDay();if(dow<1||dow>5)return;
     const h=horaDoHorario(r._horario);if(h==null)return;
     const c=cel[dow+'|'+h]||(cel[dow+'|'+h]={n:0,f:0});c.n++;c.f+=r._falta;
@@ -2759,9 +2813,20 @@ function renderMapaAgenda(){
     :`Última linha: atendimentos no dia (grade semanal da Agenda + Wellz) sobre o limite de ${LIMITE_ATENDIMENTOS_DIA}.`;
 }
 
-// ── Pacientes por gênero / faixa etária / modalidade (barras + iniciais) ──
+// ── Pacientes por gênero / faixa etária / modalidade (donut + nomes ao clicar/tocar) ──
+const PERFIL_CORES=['#4e553e','#b86a49','#899776','#d9b36a','#7a5c48','#b9c3a5'];
+let _perfilGrupos=[];
+function fecharPerfilPop(){const pop=document.getElementById('perfil-pop');if(pop)pop.hidden=true;document.querySelectorAll('#perfil-legenda button.on').forEach(b=>b.classList.remove('on'));}
+function abrirPerfilPop(i){
+  const g=_perfilGrupos[i],pop=document.getElementById('perfil-pop');if(!g||!pop)return;
+  pop.innerHTML=`<h4><span>${escHtml(g.nome)} · ${g.pacientes.length}</span><button type="button" onclick="fecharPerfilPop()" aria-label="Fechar">×</button></h4><ul>${g.pacientes.map(n=>`<li>${escHtml(n)}</li>`).join('')}</ul>`;
+  pop.hidden=false;
+  document.querySelectorAll('#perfil-legenda button').forEach((b,k)=>b.classList.toggle('on',k===i));
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#perfil-wrap'))fecharPerfilPop();});
 function updateProfileBars(){
-  const el=document.getElementById('perfil-bars');if(!el)return;
+  const cv=document.getElementById('chart-perfil');if(!cv)return;
+  fecharPerfilPop();
   const sel=document.getElementById('profile-select').value;
   const campo=sel==='genero'?'_genero':sel==='faixa'?'_faixaEtaria':'_modalidade';
   // Um registro por paciente ATIVO no cadastro: vale o último valor preenchido nas sessões.
@@ -2772,15 +2837,26 @@ function updateProfileBars(){
     ['_genero','_faixaEtaria','_modalidade'].forEach(k=>{if(r[k])p[k]=r[k];});
   });
   const grupos={};
-  Object.entries(porPac).forEach(([nome,p])=>{const g=p[campo]||'Não informado';(grupos[g]||(grupos[g]=[])).push(siglaPaciente(nome));});
+  Object.entries(porPac).forEach(([nome,p])=>{const g=p[campo]||'Não informado';(grupos[g]||(grupos[g]=[])).push(iniciais(nome));});
   const primeiroNum=l=>{const m=String(l).match(/\d+/);return m?Number(m[0]):Infinity;};
   const lista=Object.entries(grupos).sort((a,b)=>{
     if(a[0]==='Não informado')return 1;if(b[0]==='Não informado')return -1;
     return sel==='faixa'&&primeiroNum(a[0])!==primeiroNum(b[0])?primeiroNum(a[0])-primeiroNum(b[0]):b[1].length-a[1].length;
   });
-  if(!lista.length){el.innerHTML=vazioHtml('Sem pacientes ativos.');return;}
-  const max=Math.max(...lista.map(g=>g[1].length));
-  el.innerHTML=lista.map(([nome,sig])=>`<div class="dsh-fx"><div class="nm">${escHtml(nome)}</div><div><div class="bar"><div class="dsh-trk"><div class="dsh-fil" style="width:${sig.length/max*100}%;background:var(--olive)"></div></div><span class="dsh-num">${sig.length}</span></div><div class="names">${sig.sort((a,b)=>a.localeCompare(b,'pt-BR')).map(escHtml).join(' · ')}</div></div></div>`).join('');
+  dC('chart-perfil');
+  const leg=document.getElementById('perfil-legenda'),centro=document.getElementById('perfil-centro');
+  if(!lista.length){_perfilGrupos=[];leg.innerHTML=vazioHtml('Sem pacientes ativos.');centro.innerHTML='';return;}
+  let k=0;
+  _perfilGrupos=lista.map(([nome,pacs])=>({nome,pacientes:pacs.sort((a,b)=>a.localeCompare(b,'pt-BR')),cor:nome==='Não informado'?'#c9c4b8':PERFIL_CORES[k++%PERFIL_CORES.length]}));
+  const total=_perfilGrupos.reduce((s,g)=>s+g.pacientes.length,0);
+  centro.innerHTML=`<b>${total}</b><span>pacientes</span>`;
+  leg.innerHTML=_perfilGrupos.map((g,i)=>`<button type="button" onclick="event.stopPropagation();abrirPerfilPop(${i})"><i class="dsh-sw" style="background:${g.cor}"></i><span class="nm">${escHtml(g.nome)}</span><span class="n"><b>${g.pacientes.length}</b> · ${Math.round(g.pacientes.length/total*100)}%</span></button>`).join('');
+  charts['chart-perfil']=new Chart(cv.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:_perfilGrupos.map(g=>g.nome),datasets:[{data:_perfilGrupos.map(g=>g.pacientes.length),backgroundColor:_perfilGrupos.map(g=>g.cor),borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{enabled:false}},
+      onClick:(ev,els)=>{if(els.length){if(ev.native)ev.native.stopPropagation();abrirPerfilPop(els[0].index);}}}
+  });
 }
 
 // ── Origem da receita do mês corrente: Wellz × Particular + ticket médio por origem ──
@@ -2793,6 +2869,7 @@ function updateDonutFat(){
   };
   const part=resumo(rows.filter(r=>!r._wellz)),well=resumo(rows.filter(r=>r._wellz));
   const total=part.valor+well.valor;
+  document.getElementById('origem-centro').innerHTML=total>0?`<b>${fmtBRL0(total)}</b><span>no mês</span>`:'';
   document.getElementById('donut-fat-mes').textContent=MESES_ABREV[+mes.split('-')[1]-1]+'/'+mes.split('-')[0];
   dC('chart-donut-fat');
   charts['chart-donut-fat']=new Chart(cv.getContext('2d'),{
@@ -2802,7 +2879,7 @@ function updateDonutFat(){
   });
   const pc=v=>total>0?Math.round(v/total*100)+'%':'—';
   document.getElementById('origem-legenda').innerHTML=total>0
-    ?`<div><i class="dsh-sw" style="background:#4e553e"></i>Particular <b>${fmtBRL0(part.valor)}</b> · ${pc(part.valor)}</div><div><i class="dsh-sw" style="background:#b86a49"></i>Wellz <b>${fmtBRL0(well.valor)}</b> · ${pc(well.valor)}</div>`
+    ?`<div class="li"><i class="dsh-sw" style="background:#4e553e"></i><span class="nm">Particular</span><span class="n"><b>${fmtBRL0(part.valor)}</b> · ${pc(part.valor)}</span></div><div class="li"><i class="dsh-sw" style="background:#b86a49"></i><span class="nm">Wellz</span><span class="n"><b>${fmtBRL0(well.valor)}</b> · ${pc(well.valor)}</span></div>`
     :'<span style="color:var(--muted)">Sem receita neste mês.</span>';
   const maxT=Math.max(part.ticket||0,well.ticket||0);
   const linha=(nome,t,cor)=>`<div class="dsh-row" style="grid-template-columns:62px minmax(0,1fr) 44px"><span>${nome}</span><div class="dsh-trk"><div class="dsh-fil" style="width:${t&&maxT?t/maxT*100:0}%;background:${cor}"></div></div><span class="dsh-num"><b style="color:var(--text)">${t!=null?fmtBRL0(t):'—'}</b></span></div>`;
@@ -2829,7 +2906,7 @@ function renderAtencao(){
   const itens=[];
   Object.entries(por).forEach(([nome,rs])=>{
     rs.sort((a,b)=>a._data-b._data);
-    const sig=siglaPaciente(nome),res=rs.filter(r=>r._compSim||r._falta);
+    const sig=iniciais(nome),res=rs.filter(r=>r._compSim||r._falta);
     let seq=0;for(let i=res.length-1;i>=0&&res[i]._falta;i--)seq++;
     const ultReal=[...res].reverse().find(r=>r._compSim);
     const jr=rs.filter(r=>r._data>=jan&&!r._canceladaPsicologa),tot=jr.length,fal=jr.filter(r=>r._falta).length,taxa=tot?fal/tot:0;
@@ -2847,28 +2924,8 @@ function renderAtencao(){
   });
   itens.sort((a,b)=>a.nivel-b.nivel||b.peso-a.peso);
   if(!itens.length){el.innerHTML=vazioHtml('Nenhum paciente em atenção agora.');return;}
-  el.innerHTML=itens.slice(0,ATENCAO_MAX_ITENS).map(i=>`<div class="dsh-al"><div class="dsh-av">${escHtml(i.sig.replace(/\./g,''))}</div><div style="min-width:0"><div class="dsh-atl">${escHtml(i.sig)} · ${escHtml(i.titulo)}</div><div class="dsh-ad">${escHtml(i.desc)}</div></div><span class="dsh-tag${i.nivel?' y':''}">${i.tag}</span></div>`).join('')
+  el.innerHTML=itens.slice(0,ATENCAO_MAX_ITENS).map(i=>`<div class="dsh-al"><div style="min-width:0"><div class="dsh-atl">${escHtml(i.sig)} · ${escHtml(i.titulo)}</div><div class="dsh-ad">${escHtml(i.desc)}</div></div><span class="dsh-tag${i.nivel?' y':''}">${i.tag}</span></div>`).join('')
     +(itens.length>ATENCAO_MAX_ITENS?`<div class="dsh-empty">+ ${itens.length-ATENCAO_MAX_ITENS} em atenção</div>`:'');
-}
-
-// ── Concentração da receita Particular por paciente (últimos 12 meses) ──
-function renderConcentracao(){
-  const el=document.getElementById('concentracao-lista');if(!el)return;
-  const hoje=new Date(),inicio=anoMes(new Date(hoje.getFullYear(),hoje.getMonth()-11,1));
-  const porPac={};let wellz=0,part=0;
-  _rows.forEach(r=>{
-    if(!r._anoMes||r._anoMes<inicio)return;
-    if(r._wellz){wellz+=r._valorTotal;return;}
-    part+=r._valorTotal;porPac[r._paciente]=(porPac[r._paciente]||0)+r._valorTotal;
-  });
-  const lista=Object.entries(porPac).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  if(!(part>0)||!lista.length){el.innerHTML=vazioHtml('Sem receita Particular nos últimos 12 meses.');return;}
-  const top=lista.slice(0,5),resto=lista.slice(5);
-  const maxTop=top[0][1];
-  let h=top.map(([nome,v])=>`<div class="dsh-row"><span>${escHtml(siglaPaciente(nome))}</span><div class="dsh-trk"><div class="dsh-fil" style="width:${v/maxTop*100}%;background:var(--olive)"></div></div><span class="dsh-num">${Math.round(v/part*100)}%</span></div>`).join('');
-  if(resto.length){const vr=resto.reduce((s,x)=>s+x[1],0);h+=`<div class="dsh-row"><span>Demais ${resto.length}</span><div class="dsh-trk"><div class="dsh-fil" style="width:100%;background:var(--sand)"></div></div><span class="dsh-num">${Math.round(vr/part*100)}%</span></div>`;}
-  if(wellz>0)h+=`<div class="dsh-callout"><b>Canal Wellz:</b> ${Math.round(wellz/(wellz+part)*100)}% da receita total (12 meses), de várias pacientes da plataforma; é risco de canal, não de uma pessoa.</div>`;
-  el.innerHTML=h;
 }
 
 // ── Tempo de acompanhamento dos pacientes ativos + retenção 90 dias ──
@@ -4798,15 +4855,18 @@ async function carregarPacientes() {
   } catch(e) {
     console.warn(e);
     _pacientesById = {};
-    // Fallback temporário: permite usar o dashboard mesmo antes do schema novo.
-    (_ativosArr || []).forEach(r => {
-      _pacientesById['legacy:'+r._paciente] = {
-        id:'legacy:'+r._paciente, nome:r._paciente, ativo:true,
-        ultima_chave:r._paciente,
-        ultimo_label:(r._iniciais||r._paciente)+(r._horario?' | '+r._horario:'')
-      };
-    });
+    pacientesFallbackLegado();
   }
+}
+// Fallback temporário: permite usar o dashboard mesmo antes do schema novo.
+function pacientesFallbackLegado(){
+  (_ativosArr || []).forEach(r => {
+    _pacientesById['legacy:'+r._paciente] = {
+      id:'legacy:'+r._paciente, nome:r._paciente, ativo:true,
+      ultima_chave:r._paciente,
+      ultimo_label:(r._iniciais||r._paciente)+(r._horario?' | '+r._horario:'')
+    };
+  });
 }
 
 function preencherDropdownProntuarios() {

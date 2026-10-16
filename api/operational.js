@@ -1,8 +1,21 @@
 import {requireAuth,supabase} from './_auth.js';
+import {cached} from './_cache.js';
 import {buildOccurrences,inferRule,isoAddDays,monthBounds,normalizeMonth,normalizeTime} from '../lib/agenda.js';
 import {INICIO_SEMANAL,TARIFAS,TIPOS,WELLZ_NOME,ehSexta,linhasDashboard,linhasDetalhadas,quantidade,sextasDoMes,valorSemana} from '../lib/wellz.js';
 async function rest(path,options={},label='Falha no banco'){const r=await supabase('/rest/v1/'+path,options),data=await r.json().catch(()=>null);if(!r.ok){if(data?.code==='23505'&&/pacientes_nome_key/.test(data.message||''))throw new Error('Já existe um paciente cadastrado com esse nome.');if(label==='Não foi possível salvar o lote'&&data?.message)throw new Error(`${label}: ${String(data.message).slice(0,300)}`);throw new Error(`${label}: ${r.status}`);}return data;}
-async function allSessions(){const rows=[];for(let from=0;;from+=1000){const page=await rest('sessoes?select=data_sessao,genero,faixa_etaria,modalidade,horario,comparecimento,motivo,valor_sessao,sessoes_cobradas,valor_total,valor_final,cnpj,comentario,pacientes!inner(nome,ativo),convenios(nome)&order=data_sessao.asc',{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar sessões');rows.push(...page);if(page.length<1000)break;}return rows;}
+// Paginação em paralelo: 1ª página traz o total (Content-Range) e as demais saem juntas,
+// em vez de uma consulta por vez.
+async function restAll(path,size,label){
+  const pedir=from=>supabase('/rest/v1/'+path,{headers:{Range:`${from}-${from+size-1}`,Prefer:'count=exact'}});
+  const r0=await pedir(0),first=await r0.json().catch(()=>null);
+  if(!r0.ok||!Array.isArray(first))throw new Error(`${label}: ${r0.status}`);
+  const total=Number(String(r0.headers?.get?.('content-range')||'').split('/')[1]);
+  if(!Number.isFinite(total)||first.length>=total)return first;
+  const froms=[];for(let f=size;f<total;f+=size)froms.push(f);
+  const pages=await Promise.all(froms.map(async f=>{const r=await pedir(f),d=await r.json().catch(()=>null);if(!r.ok||!Array.isArray(d))throw new Error(`${label}: ${r.status}`);return d;}));
+  return first.concat(...pages);
+}
+async function allSessions(){return restAll('sessoes?select=data_sessao,genero,faixa_etaria,modalidade,horario,comparecimento,motivo,valor_sessao,sessoes_cobradas,valor_total,valor_final,cnpj,comentario,pacientes!inner(nome,ativo),convenios(nome)&order=data_sessao.asc,id.asc',1000,'Falha ao carregar sessões');}
 async function allAgendaSessions(){const rows=[];for(let from=0;;from+=500){const page=await rest('sessoes?select=id,paciente_id,data_sessao,horario,comparecimento,convenio_id,modalidade,valor_sessao&order=data_sessao.asc',{headers:{Range:`${from}-${from+499}`}},'Falha ao carregar histórico');rows.push(...page);if(page.length<500)break;}return rows;}
 // Wellz: lançamento semanal (5 quantidades) + histórico mensal fixo. Vira linhas
 // extras no dashboard e na tabela detalhada; ver lib/wellz.js.
@@ -37,10 +50,10 @@ function rotuloAgenda(nome,diaSemana,horario){
 function mesesSeguintes(mesInicial,n){const out=[];let[y,m]=mesInicial.split('-').map(Number);for(let i=0;i<n;i++){out.push(`${y}-${String(m).padStart(2,'0')}`);m++;if(m>12){m=1;y++;}}return out;}
 function historicalStatus(value,date){if(String(date)>=agendaToday())return'agendado';const v=String(value||'').toLowerCase();if(/cancel/.test(v))return'cancelado';if(/falta|faltou|ausente|não compareceu|nao compareceu/.test(v))return'falta';return'realizado';}
 function brDate(v){const[y,m,d]=String(v).split('-');return`${d}/${m}/${y}`;}function agendaToday(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),get=t=>parts.find(x=>x.type===t)?.value;return`${get('year')}-${get('month')}-${get('day')}`;}function text(v,max=160){const s=String(v||'').trim();if(!s||s.length>max)throw new Error('Campo obrigatório inválido');return s;}function status(v){return['ativo','pausado','inativo'].includes(v)?v:'ativo';}
-async function allSessionBalances(){const rows=[];for(let from=0;;from+=1000){const page=await rest('sessoes?select=paciente_id,sessoes_cobradas,sessao_consumida',{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar saldos');rows.push(...page);if(page.length<1000)break;}return rows.reduce((out,row)=>{out[row.paciente_id]=(out[row.paciente_id]||0)+Number(row.sessoes_cobradas||0)-Number(row.sessao_consumida||0);return out;},{});}
+async function allSessionBalances(){const rows=await restAll('sessoes?select=paciente_id,sessoes_cobradas,sessao_consumida&order=id.asc',1000,'Falha ao carregar saldos');return rows.reduce((out,row)=>{out[row.paciente_id]=(out[row.paciente_id]||0)+Number(row.sessoes_cobradas||0)-Number(row.sessao_consumida||0);return out;},{});}
 async function state(month){const{first,last}=monthBounds(month);const[patients,rules,appointments,insurances,balances]=await Promise.all([rest('pacientes?select=id,nome,ultimo_label,ativo,status_operacional,pausado_ate,inativo_em,contabiliza_cnpj,data_nascimento,responsavel_nome,cpf_paciente,cpf_responsavel,inicio_atendimentos,data_anamnese,atualizado_em&order=nome.asc'),rest('recorrencias_atendimento?select=*&ativo=eq.true&order=vigencia_inicio.desc'),rest(`agenda_atendimentos?select=*,pacientes(nome,status_operacional),convenios(nome),sessoes(sessoes_cobradas,sessao_consumida,valor_final,comentario)&data_atendimento=gte.${first}&data_atendimento=lte.${last}&order=data_atendimento.asc,horario.asc`),rest('convenios?select=id,nome&ativo=eq.true&order=nome.asc'),allSessionBalances()]);const wellz=await rest(`wellz_semanas?select=*&semana_ref=gte.${first}&semana_ref=lte.${last}&order=semana_ref.asc`,{},'Falha ao carregar Wellz');return{month,patients,rules,appointments,insurances,balances,wellz:{tarifas:TARIFAS,tipos:TIPOS,inicio:INICIO_SEMANAL,sextas:sextasDoMes(month,INICIO_SEMANAL),semanas:wellz}};}
 async function agenda(req,res){
- if(req.method==='GET')return res.status(200).json(await state(normalizeMonth(req.query.month||new Date().toISOString().slice(0,7))));
+ if(req.method==='GET'){const mes=normalizeMonth(req.query.month||new Date().toISOString().slice(0,7));return res.status(200).json(await cached('agenda:'+mes,()=>state(mes)));}
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='wellz_save'){
   const semana=text(b.semana_ref,10);
@@ -113,7 +126,7 @@ async function sessions(req,res){
   // tudo o que foi acertado"). Sem filtro de data, a tabela sessoes já
   // passa de 1000 linhas -- pagina em blocos de 1000 igual allSessions(),
   // senão o PostgREST corta silenciosamente no limite padrão.
-  let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome,ativo),convenios(nome)&order=data_sessao.asc,horario.asc`;
+  let path=`sessoes?select=id,paciente_id,source_key,data_sessao,horario,modalidade,comparecimento,sessoes_cobradas,valor_sessao,valor_final,comentario,pacientes(nome,ativo),convenios(nome)&order=data_sessao.asc,horario.asc,id.asc`;
   if(req.query.month){const{first,last}=monthBounds(normalizeMonth(req.query.month));path+=`&data_sessao=gte.${first}&data_sessao=lte.${last}`;}
   if(req.query.paciente_id)path+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
   // Valor combinado atual de cada paciente (recorrência ativa): sugestão para
@@ -125,14 +138,11 @@ async function sessions(req,res){
     return list.map(x=>Number(x.valor_sessao)>0?x:{...x,valor_sugerido:porPaciente[x.paciente_id]||0});
   };
   const extrasWellz=async()=>{const w=await wellzDados();if(!w.pacienteId||(req.query.paciente_id&&req.query.paciente_id!==w.pacienteId))return[];return linhasDetalhadas(w.semanas,w.historico,w.pacienteId,{month:req.query.month?normalizeMonth(req.query.month):''});};
-  if(req.query.month)return res.status(200).json([...await comSugestao(await rest(path,{},'Falha ao carregar atendimentos')),...await extrasWellz()]);
-  const rows=[];
-  for(let from=0;;from+=1000){
-    const page=await rest(path,{headers:{Range:`${from}-${from+999}`}},'Falha ao carregar atendimentos');
-    rows.push(...page);
-    if(page.length<1000)break;
-  }
-  return res.status(200).json([...await comSugestao(rows),...await extrasWellz()]);
+  const chave='sessions:'+(req.query.month||'')+':'+(req.query.paciente_id||'');
+  return res.status(200).json(await cached(chave,async()=>{
+    const [rows,extras]=await Promise.all([restAll(path,1000,'Falha ao carregar atendimentos'),extrasWellz()]);
+    return[...await comSugestao(rows),...extras];
+  }));
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};
  if(b.action==='update_session'){
@@ -162,4 +172,4 @@ async function sessions(req,res){
  }
  throw new Error('Ação inválida');
 }
-export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const rows=await allSessions(),wellz=await wellzDados();return res.status(200).json([...rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':Number(r.valor_sessao)>0?r.valor_sessao:(Number(r.sessoes_cobradas)>0&&Number(r.valor_final)>0?Math.round(r.valor_final/r.sessoes_cobradas*100)/100:r.valor_sessao),'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})),...linhasDashboard(wellz.semanas,wellz.historico)]);}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}
+export default async function handler(req,res){if(!await requireAuth(req,res))return;req.query=req.query||{};try{if(req.query.resource==='agenda')return await agenda(req,res);if(req.query.resource==='sessions')return await sessions(req,res);if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});return res.status(200).json(await cached('operational',async()=>{const[rows,wellz]=await Promise.all([allSessions(),wellzDados()]);return[...rows.map(r=>({'Data':brDate(r.data_sessao),'Paciente':r.pacientes.nome,'Gênero':r.genero||'','Faixa Etária':r.faixa_etaria||'','Modalidade':r.modalidade||'','Convênio':r.convenios?.nome||'','Horário':r.horario||'','Valor da sessão':Number(r.valor_sessao)>0?r.valor_sessao:(Number(r.sessoes_cobradas)>0&&Number(r.valor_final)>0?Math.round(r.valor_final/r.sessoes_cobradas*100)/100:r.valor_sessao),'Sessões cobradas':r.sessoes_cobradas,'Valor total':r.valor_total,'Valor final':r.valor_final,'Ativo':r.pacientes.ativo?'Ativo':'','Comparecimento':r.comparecimento||'','Motivo':r.motivo||'','CNPJ?':r.cnpj?'Sim':'Não','Comentário':r.comentario||''})),...linhasDashboard(wellz.semanas,wellz.historico)];}));}catch(e){return res.status(/inválid|obrigatór/i.test(e.message)?400:500).json({error:e.message||'Não foi possível concluir'});}}

@@ -796,7 +796,6 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <h3>Mapa da agenda <small>pacientes ativos · grade semanal</small></h3>
       <div class="dsh-leg"><span><i class="dsh-sw" style="background:#f6f2e8"></i>Livre</span><span><i class="dsh-sw" style="background:#e3ead8"></i>Ocupado</span><span><i class="dsh-sw" style="background:#dceaf4"></i>Quinzenal · vaga para revezar</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
       <div class="dsh-hm" id="agenda-map"></div>
-      <p class="dsh-sub" style="margin:6px 0 0" id="agenda-map-nota">Última linha: atendimentos no dia (app + Wellz) sobre o limite de 7.</p>
     </section>
 
     <section class="panel dsh-fill">
@@ -2877,16 +2876,15 @@ function renderMapaAgenda(){
       html+=`<div class="hc ho${vagaQuinzenal?' hq':''}" title="${nome} ${h}h · ${escHtml(nomes)}${detalhe}"><span>${escHtml(nomes)}${vagaQuinzenal?' · 15d + vaga':''}</span></div>`;
     });
   }
-  html+='<div class="lb">Total</div>';
+  html+='<div class="lb" title="Total de horários ocupados">Total</div>';
   dias.forEach(([,dow])=>{
     if(_regrasAgendaSlots==null){html+='<div class="hc ht">—</div>';return;}
-    const t=_regrasAgendaSlots.filter(x=>x.dia===dow).length+(WELLZ_HORARIOS_FIXOS[dow]||[]).length;
-    html+=`<div class="hc ht${t>=LIMITE_ATENDIMENTOS_DIA?' full':''}">${t}/${LIMITE_ATENDIMENTOS_DIA}</div>`;
+    const horarios=new Set(_regrasAgendaSlots.filter(x=>x.dia===dow).map(x=>x.hora));
+    (WELLZ_HORARIOS_FIXOS[dow]||[]).forEach(h=>horarios.add(h));
+    const t=horarios.size;
+    html+=`<div class="hc ht${t>=LIMITE_ATENDIMENTOS_DIA?' full':''}" title="${t} horários ocupados / limite de ${LIMITE_ATENDIMENTOS_DIA}">${t}/${LIMITE_ATENDIMENTOS_DIA}</div>`;
   });
   el.innerHTML=html;
-  document.getElementById('agenda-map-nota').textContent=_regrasAgendaSlots==null
-    ?'Total do dia indisponível (grade semanal da Agenda não carregou).'
-    :`Cores indicam ocupação, não faltas. Azul: quinzenal sozinho no horário, com vaga na semana alternada. Última linha: atendimentos no dia (grade semanal da Agenda + Wellz) sobre o limite de ${LIMITE_ATENDIMENTOS_DIA}.`;
 }
 
 // ── Pacientes por gênero / faixa etária / modalidade (donut + nomes ao clicar/tocar) ──

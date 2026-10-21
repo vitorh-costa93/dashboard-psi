@@ -23,7 +23,7 @@ test('quinzenal sozinho ganha cor, texto e explicação de vaga alternada',()=>{
   assert.match(el['agenda-map'].innerHTML,/class="hc ho hq"/);
   assert.match(el['agenda-map'].innerHTML,/Ana · 15d \+ vaga/);
   assert.match(el['agenda-map'].innerHTML,/vaga para revezar na semana alternada/);
-  assert.match(el['agenda-map-nota'].textContent,/Cores indicam ocupação, não faltas/);
+  assert.doesNotMatch(html,/id="agenda-map-nota"/);
 });
 test('semanal e dois quinzenais no mesmo horário não indicam vaga',()=>{
   for(const rules of [[rule('Ana','semanal')],[rule('Ana','quinzenal'),rule('Bia','quinzenal')]]){
@@ -44,4 +44,12 @@ test('legenda descreve ocupação e não níveis de faltas',()=>{
   assert.match(legend,/Ocupado/);
   assert.match(legend,/Quinzenal · vaga para revezar/);
   assert.doesNotMatch(legend,/Sem faltas|Poucas|Média|Alta/);
+});
+
+test('total conta sete horários mesmo com oito pacientes e deduplica Wellz',()=>{
+  const rules=[9,10,13,14,16,17,18].map(hora=>({...rule('Ana','semanal'),dia:3,hora}));
+  rules.push({...rule('Bia','quinzenal'),dia:3,hora:16});
+  const result=render(rules,{3:[17,18]})['agenda-map'].innerHTML;
+  assert.match(result,/title="7 horários ocupados \/ limite de 7">7\/7/);
+  assert.doesNotMatch(result,/>8\/7|>10\/7/);
 });

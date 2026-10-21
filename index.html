@@ -748,7 +748,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   <div class="alerts-panel faixa" id="dashboard-alerts" data-open="false">
     <button type="button" class="alerts-toggle" id="alerts-toggle" aria-expanded="false" aria-controls="alerts-content" onclick="alternarAlertas()">
       <span class="alerts-title">🔔 Atenção</span>
-      <span class="alerts-resumo"><span id="ar-dev"></span><span id="ar-ren"></span><span id="ar-pro"></span></span>
+      <span class="alerts-resumo"><span id="ar-dev"></span><span id="ar-ren"></span><span id="ar-ani"></span><span id="ar-pro"></span></span>
       <span class="alerts-seta" aria-hidden="true">▾</span>
     </button>
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
@@ -2294,6 +2294,20 @@ async function buscarAgendaSemana(inicioSemana,fimSemana){
   }
   return{datasEstaSemana,migrados};
 }
+function aniversariantesDaSemana(pacientes,inicioSemana,fimSemana){
+  return Object.values(pacientes||{}).filter(p=>pacienteAtivo(p)&&p.nome!=='Wellz').flatMap(p=>{
+    const partes=/^(\d{4})-(\d{2})-(\d{2})$/.exec(p.data_nascimento||'');
+    if(!partes)return [];
+    const mes=Number(partes[2])-1,dia=Number(partes[3]);
+    const nascimento=new Date(Number(partes[1]),mes,dia);
+    if(nascimento.getFullYear()!==Number(partes[1])||nascimento.getMonth()!==mes||nascimento.getDate()!==dia)return [];
+    // Verifica cada dia da semana para incluir corretamente a virada do ano.
+    for(const data=new Date(inicioSemana);data<=fimSemana;data.setDate(data.getDate()+1)){
+      if(data.getMonth()===mes&&data.getDate()===dia)return [{id:p.id,label:iniciais(p.nome),data:new Date(data)}];
+    }
+    return [];
+  }).sort((a,b)=>a.data-b.data||a.label.localeCompare(b.label,'pt-BR'));
+}
 async function calcularAlertas() {
   const el=document.getElementById('alerts-content');
   if(!el)return;
@@ -2304,6 +2318,7 @@ async function calcularAlertas() {
   const desloc=diaSemana===0?-6:1-diaSemana;
   inicioSemana.setDate(hoje.getDate()+desloc);
   const fimSemana=new Date(inicioSemana); fimSemana.setDate(inicioSemana.getDate()+6);
+  const aniversariantes=aniversariantesDaSemana(_pacientesById,inicioSemana,fimSemana);
   const {datasEstaSemana,migrados}=await buscarAgendaSemana(inicioSemana,fimSemana);
 
   const ultimoDia=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
@@ -2395,7 +2410,7 @@ async function calcularAlertas() {
   renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);
   const dividasVisiveis=dividas.filter(x=>ultimaSemana||x.temSessaoEstaSemana);
   let html='';
-  if(renovacoes.length || dividasVisiveis.length) html+='<div class="alerts-columns">';
+  html+='<div class="alerts-columns">';
   // Pendências (pedem ação) à esquerda; renovações (lembrete) à direita.
   if(dividasVisiveis.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
@@ -2407,15 +2422,15 @@ async function calcularAlertas() {
     html+='<ul class="alert-lista">'+renovacoes.map(x=>`<li><span class="nm">${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></li>`).join('')+'</ul>';
     html+='</div>';
   }
-  if(renovacoes.length || dividasVisiveis.length){
-    html+='</div>';
-  }
-  if(!html)html='<div class="alert-empty">Nenhuma renovação ou pendência relevante para este período.</div>';
+  html+='<div class="alert-group"><div class="alert-group-title">🎂 Aniversariantes da semana</div>';
+  html+=aniversariantes.length?'<ul class="alert-lista">'+aniversariantes.map(x=>`<li><span class="nm">${escHtml(x.label)}</span><span class="alert-badge alert-gold">${fmt(x.data)}</span></li>`).join('')+'</ul>':'<div class="alert-empty">Nenhum aniversariante nesta semana.</div>';
+  html+='</div></div>';
   el.innerHTML=html;
   const setRes=(id,txt,cls)=>{const e=document.getElementById(id);if(e)e.innerHTML=txt?`<span class="alert-badge ${cls}">${txt}</span>`:'';};
   setRes('ar-dev',dividasVisiveis.length&&`${dividasVisiveis.length} ${dividasVisiveis.length===1?'deve':'devem'}`,'alert-red');
   setRes('ar-ren',renovacoes.length&&`${renovacoes.length} ${renovacoes.length===1?'renova':'renovam'}`,'alert-green');
-  if(!renovacoes.length&&!dividasVisiveis.length&&!document.getElementById('ar-pro')?.textContent)document.getElementById('ar-dev').innerHTML='<span class="alert-nada">nada pendente</span>';
+  setRes('ar-ani',aniversariantes.length&&`${aniversariantes.length} ${aniversariantes.length===1?'aniversariante':'aniversariantes'}`,'alert-gold');
+  if(!renovacoes.length&&!dividasVisiveis.length&&!aniversariantes.length&&!document.getElementById('ar-pro')?.textContent)document.getElementById('ar-dev').innerHTML='<span class="alert-nada">nada pendente</span>';
   // Preferência da usuária vence; sem preferência, abre sozinha quando há renovação nesta semana.
   let pref=null;try{pref=localStorage.getItem('alertas-aberto');}catch(e){}
   definirAlertasAberto(pref!==null?pref==='1':renovacoes.length>0);

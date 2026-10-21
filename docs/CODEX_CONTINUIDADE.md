@@ -1,17 +1,14 @@
 # Continuidade — dashboard-psi
 
-Atualizado: 05/10/2026. Otimização das instruções instalada; nenhum código funcional alterado nesta etapa.
-
-## Estado e próximo passo
-- Não há tarefa funcional em andamento registrada por esta instalação. Confirme `git status -sb` e histórico local antes de continuar; não sobrescreva alterações existentes.
-- Leia somente as referências necessárias ao pedido. Regras obrigatórias em `AGENTS.md`.
-- Ao encerrar a próxima etapa, substitua este estado pelo objetivo, decisões, caminhos alterados, verificações executadas e pendências reais.
-- No live-coach, separar iRacing V3 e AMS2 no registro.
+Atualizado: 21/10/2026.
 
 ## Entrega mais recente
-- Objetivo: a preencher na próxima tarefa funcional.
-- Evidência de validação: a preencher; testes da aplicação não foram executados por esta instalação de instruções.
-- Pendências: a confirmar pelo usuário/pedido atual; não inferir conclusão de planos históricos.
+- Base: main, commit `28129f917dd5df89e490f8984392f97a92a2e646`.
+- Pedido: aniversariantes da semana no painel de alertas, ao lado de pendências e renovações.
+- `index.html`: nomes curtos e dia/mês, ordenados por data; contador e estado vazio. Usa `data_nascimento` apenas dos pacientes ativos do cadastro, exclui Wellz e independe do histórico financeiro. Semana de segunda a domingo, incluindo virada do ano; 29/02 somente quando existe no ano.
+- `tests/birthday-alerts.test.js`: cinco testes de calendário, elegibilidade e renderização/resumo, incluindo escape de HTML e limpeza do contador.
+- Validação: `npm test` passou nos 22 arquivos; os cinco testes específicos passaram em execução direta. Sintaxe dos scripts inline verificada.
+- Sem alteração de API, schema ou regras financeiras. Usuário autorizou push direto na main e fará a conferência em PRD.
 
-## Mensagem para novo chat
-Trabalhe em `C:\Users\Vitor\Documents\dashboard-psi`. Leia AGENTS.md e as seções pertinentes deste registro; confirme Git e implemente o pedido atual com validação proporcional.
+## Próximo passo
+- Conferir a coluna no ambiente publicado com cadastro real. Ler `AGENTS.md` antes de novas alterações.

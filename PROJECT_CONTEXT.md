@@ -223,6 +223,11 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - O carregamento do Dashboard não pode escrever em `pacientes`: os dados de sessões históricas servem somente para relatórios e podem conter rótulos abreviados ou antigos.
 - O cadastro administrativo em `pacientes` é a fonte de verdade para nome completo e demais dados do perfil. Qualquer importação legada precisa ser uma ação explícita, revisável e idempotente — nunca uma consequência de abrir ou atualizar o Dashboard.
 
+## KPI financeiro — valor efetivamente recebido (29/10/2026)
+
+- O KPI “Valor Recebido”, seus comparativos, gráficos, ticket médio e o resumo CNPJ usam o campo `valor_final` persistido em cada sessão, que é o valor efetivamente recebido informado na interface.
+- A quantidade de sessões pagas e o valor unitário permanecem campos operacionais e não recalculam o valor financeiro consolidado. Linhas mensais históricas da Wellz preservam seu valor próprio.
+
 ## Cadastro é a única verdade — importação da planilha (18/09/2026)
 
 - `lib/sheet-import.js` (job horário, `api/trends.js?job=import-sheet`, disparado por gatilho externo às :07) **não escreve em pacientes existentes**: nem nome/rótulos, nem `ativo`/status. Só cria pacientes realmente novos (inativos) e vincula linhas por `pacientes_origem`. Sobrescrever nome completo com o nome abreviado da planilha causou perda de edições do cadastro.

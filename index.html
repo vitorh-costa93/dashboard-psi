@@ -2020,7 +2020,10 @@ async function loadData(){
       r._compSim        =(r._comparecimento==='Sim'||r._motivo==='Sem justificativa - Cobrado')?1:0;
       r._wellz          =!!r['Wellz'];
       r._soValor        =!!r['Só valor'];   // histórico mensal: soma valor, não conta sessão nem falta
-      r._valorTotal     =r['Valor histórico']!=null?Number(r['Valor histórico'])||0:r._sessoesCob*r._valorSessao;
+      // "Valor Recebido" é a fonte de verdade financeira: não deve ser
+      // recalculado pela quantidade de sessões pagas nem pelo valor unitário.
+      // Linhas históricas da Wellz continuam usando o valor mensal próprio.
+      r._valorRecebido  =r['Valor histórico']!=null?Number(r['Valor histórico'])||0:pVal(r['Valor final']);
       // Cancelamento feito pela PSICÓLOGA (não pelo paciente) não é sinal de
       // risco de abandono do paciente -- fica de fora do cálculo de faltas
       // (numerador e denominador), mostrado à parte no painel "Faltas por
@@ -2174,7 +2177,7 @@ function processAndRender(){
     // Wellz fica de fora: o valor é fixo e definido pela plataforma, não é algo que controlamos.
     const comCob=r.filter(x=>!x._soValor&&!x._wellz&&x._sessoesCob>0);
     const cob=comCob.reduce((s,x)=>s+x._sessoesCob,0);
-    return{fat:r.reduce((s,x)=>s+x._valorTotal,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length,ticket:cob>0?comCob.reduce((s,x)=>s+x._valorTotal,0)/cob:null};
+    return{fat:r.reduce((s,x)=>s+x._valorRecebido,0),pac:new Set(r.filter(x=>!x._wellz).map(x=>x._paciente)).size,faltas:base.filter(x=>x._falta).length,total:base.length,ticket:cob>0?comCob.reduce((s,x)=>s+x._valorRecebido,0)/cob:null};
   }
 
   // Mês atual: todos os dados (mês em curso)
@@ -2511,8 +2514,8 @@ function mesUltimoCompleto(){
   return anoMes(d);
 }
 // Sub-aba "Notas Fiscais (CNPJ)": soma, por paciente marcado com
-// contabiliza_cnpj=true no perfil, o valor recebido (mesmo cálculo do
-// gráfico "Valor Recebido": sessões cobradas × valor da sessão) em TODO o
+// contabiliza_cnpj=true no perfil, o valor efetivamente recebido (mesma
+// fonte do gráfico "Valor Recebido") em TODO o
 // histórico já carregado em _rows -- não só no mês corrente -- para a
 // psicóloga poder escolher um mês passado (ex.: agosto) e conferir contra
 // as notas fiscais que já emitiu.
@@ -2538,7 +2541,7 @@ function renderCnpjResumo(){
   rows.forEach(r=>{
     if(!porPaciente[r._paciente])porPaciente[r._paciente]={sessoes:0,valor:0,comentarios:[]};
     porPaciente[r._paciente].sessoes+=r._sessoesCob;
-    porPaciente[r._paciente].valor+=r._valorTotal;
+    porPaciente[r._paciente].valor+=r._valorRecebido;
     if(r._comentario)porPaciente[r._paciente].comentarios.push(r._comentario);
   });
   const base=_sortState.cnpj?.col?Object.entries(porPaciente):Object.entries(porPaciente).sort((a,b)=>b[1].valor-a[1].valor);
@@ -2731,7 +2734,7 @@ function serieAnual(ano,metrica,mesAtualYm){
     const ym=ano+'-'+String(m).padStart(2,'0');
     const rs=ym>mesAtualYm?[]:_rows.filter(r=>r._anoMes===ym);
     if(!rs.length){out.push(null);continue;}
-    out.push(metrica==='valor'?rs.reduce((s,r)=>s+r._valorTotal,0)
+    out.push(metrica==='valor'?rs.reduce((s,r)=>s+r._valorRecebido,0)
       :metrica==='pac'?new Set(rs.filter(r=>!r._wellz).map(r=>r._paciente)).size
       :rs.filter(r=>r._falta).length);
   }
@@ -2800,7 +2803,7 @@ function renderAcumulado(){
   const nDias=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();
   const curva=(mes,n)=>{
     const d=new Array(n+1).fill(0);
-    _rows.forEach(r=>{if(r._anoMes===mes&&r._data)d[Math.min(r._data.getDate(),n)]+=r._valorTotal;});
+    _rows.forEach(r=>{if(r._anoMes===mes&&r._data)d[Math.min(r._data.getDate(),n)]+=r._valorRecebido;});
     let acc=0;return d.map((v,i)=>i===0?0:(acc+=v));
   };
   const at=(c,d)=>c[Math.min(d,c.length-1)];
@@ -2942,7 +2945,7 @@ function updateDonutFat(){
   const mes=anoMes(new Date()),rows=_rows.filter(r=>r._anoMes===mes);
   const resumo=lista=>{
     const comCob=lista.filter(r=>!r._soValor&&r._sessoesCob>0),cob=comCob.reduce((s,r)=>s+r._sessoesCob,0);
-    return{valor:lista.reduce((s,r)=>s+r._valorTotal,0),ticket:cob>0?comCob.reduce((s,r)=>s+r._valorTotal,0)/cob:null};
+    return{valor:lista.reduce((s,r)=>s+r._valorRecebido,0),ticket:cob>0?comCob.reduce((s,r)=>s+r._valorRecebido,0)/cob:null};
   };
   const part=resumo(rows.filter(r=>!r._wellz)),well=resumo(rows.filter(r=>r._wellz));
   const total=part.valor+well.valor;

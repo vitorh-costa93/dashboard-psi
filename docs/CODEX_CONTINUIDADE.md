@@ -13,7 +13,8 @@ Atualizado: 29/10/2026. KPI financeiro concluído: consolidação pelo valor efe
 - Arquivos: `index.html`, `tests/dashboard-financials.test.js`, `PROJECT_CONTEXT.md`.
 - Decisão: KPI, comparativos, gráficos, ticket médio e resumo CNPJ compartilham a mesma fonte financeira; linhas mensais históricas Wellz mantêm o valor histórico próprio.
 - Evidência de validação: `node --test tests/dashboard-financials.test.js` e `npm test` (148 testes aprovados).
-- Pendências: nenhuma funcional; publicação em GitHub e produção é a etapa de encerramento em curso.
+- Publicação: `469f423` em `main`; deploy de produção pronto e alias externo reapontado em 29/10/2026.
+- Pendências: nenhuma.
 
 ## Próximo passo
 - Conferir o mapa no ambiente publicado com cadastro real. A coluna de aniversariantes ativos foi entregue no commit anterior. Ler `AGENTS.md` antes de novas alterações.

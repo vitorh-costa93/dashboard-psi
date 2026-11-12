@@ -22,22 +22,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: npm
-      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Aplicar e verificar cadastro em produção
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_5TOFRVNzimmU6aZE8ZvDyNwV
-          VERCEL_PROJECT_ID: prj_Eztc3pNA9P7KYhTEJIhnymVIpeOa
           RESPONSE_ID: ${{ inputs.response_id }}
           APPLY: ${{ inputs.apply }}
         shell: bash
         run: |
           set -euo pipefail
-          umask 077
-          env_file="$RUNNER_TEMP/registration.env"
-          trap 'rm -f "$env_file"' EXIT
-          npm run vercel -- env pull "$env_file" --environment=production --yes
           args=()
           if [ "$APPLY" = 'true' ]; then args+=(--apply); fi
-          node --env-file="$env_file" scripts/reconcile-approved-registration.mjs "$RESPONSE_ID" "${args[@]}"
+          node scripts/reconcile-approved-registration.mjs "$RESPONSE_ID" "${args[@]}"

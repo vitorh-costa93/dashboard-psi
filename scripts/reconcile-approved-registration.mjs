@@ -1,5 +1,6 @@
 import {decryptClinicalData} from '../api/_clinical-crypto.js';
 import {pathToFileURL} from 'node:url';
+let stage='preparação';
 
 // Recuperação administrativa explícita de respostas aprovadas antes da
 // sincronização. Nunca registra conteúdo, identificação ou credenciais.
@@ -25,15 +26,20 @@ export async function reconcile(responseId,apply=false){
     if(!r.ok)throw new Error('Falha na operação do cadastro: HTTP '+r.status);
     return r.json();
   };
+  stage='leitura da resposta aprovada';
   const [response]=await request('formularios_respostas?select=status,conteudo,formularios_convites!inner(paciente_id,formularios_modelos!inner(destino))&id=eq.'+responseId);
   if(response?.status!=='approved'||response.formularios_convites.formularios_modelos.destino!=='cadastro')throw new Error('Exige resposta cadastral aprovada');
+  stage='abertura e validação dos campos';
   const patch=profilePatch(decryptClinicalData(response.conteudo));
   const id=response.formularios_convites.paciente_id;
+  stage='leitura do perfil';
   const [before]=await request('pacientes?select=id,atualizado_em&id=eq.'+id);
   if(!before)throw new Error('Paciente não encontrado');
   if(!apply)return {aplicar:false,campos:Object.keys(patch)};
+  stage='gravação do perfil';
   const updated=await request('pacientes?id=eq.'+id+'&atualizado_em=eq.'+encodeURIComponent(before.atualizado_em),{method:'PATCH',body:JSON.stringify({...patch,atualizado_em:new Date().toISOString()})});
   if(updated.length!==1)throw new Error('Cadastro alterado concorrentemente; nenhuma atualização aplicada');
+  stage='verificação do perfil';
   const [saved]=await request('pacientes?select='+Object.keys(patch).join(',')+'&id=eq.'+id);
   if(!saved||!Object.entries(patch).every(([k,v])=>saved[k]===v))throw new Error('Verificação após gravação falhou');
   return {aplicar:true,verificado:true,campos:Object.keys(patch)};
@@ -42,6 +48,7 @@ export async function reconcile(responseId,apply=false){
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   try{
     if(process.env.VERCEL_TOKEN){
+      stage='carregamento da configuração de produção';
       const r=await fetch('https://api.vercel.com/v10/projects/prj_Eztc3pNA9P7KYhTEJIhnymVIpeOa/env?decrypt=true&teamId=team_5TOFRVNzimmU6aZE8ZvDyNwV',{headers:{Authorization:'Bearer '+process.env.VERCEL_TOKEN}});
       if(!r.ok)throw new Error('Falha ao preparar ambiente de produção');
       const {envs}=await r.json();
@@ -50,8 +57,9 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
         if(!env?.value)throw new Error('Configuração de produção indisponível');
         process.env[key]=env.value;
       }
+      if(!process.env.SUPABASE_URL.startsWith('https://'))throw new Error('Configuração indisponível');
     }
     console.log(JSON.stringify(await reconcile(process.argv[2],process.argv[3]==='--apply')));
   }
-  catch{console.error('Não foi possível reaplicar e verificar o cadastro. Nenhum dado pessoal foi registrado.');process.exitCode=1;}
+  catch(error){console.error('Falha na etapa: '+stage+'. Tipo: '+error.name);process.exitCode=1;}
 }

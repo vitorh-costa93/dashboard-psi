@@ -21,6 +21,10 @@ export default async function handler(req,res){
       // online agora traz todas as perguntas da sub-aba Anamnese (mais de 100
       // campos, vários textarea), o limite anterior (64KB) era justo demais.
       const conteudo=req.body?.conteudo;if(!conteudo||typeof conteudo!=='object'||Array.isArray(conteudo)||JSON.stringify(conteudo).length>131072)return res.status(400).json({error:'Resposta inválida'});
+      for(const campo of ['cpf','cpf_paciente','cpf_responsavel']){
+        const valor=String(conteudo[campo]??'').trim();
+        if(valor&&valor.replace(/\D/g,'').length!==11)return res.status(400).json({error:'Informe o CPF completo, com 11 dígitos.'});
+      }
       const response=await supabase('/rest/v1/rpc/enviar_formulario_externo',{method:'POST',body:JSON.stringify({p_token_hash:tokenHash,p_conteudo:encryptClinicalData(conteudo)})});
       return res.status(response.ok?201:404).json(response.ok?{ok:true}:{error:'Link inválido, expirado ou já utilizado'});
     }

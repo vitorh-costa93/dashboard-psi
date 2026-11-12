@@ -51,6 +51,11 @@ async function init(){
       const input=document.createElement(f.type==='textarea'?'textarea':f.type==='select'?'select':'input');
       input.name=f.key||`campo_${i+1}`;input.required=!!f.required;
       if(input.tagName==='INPUT')input.type=f.type||'text';
+      if(input.tagName==='INPUT'&&/cpf/i.test(input.name)){
+        input.type='text';input.inputMode='numeric';input.maxLength=14;
+        input.pattern='[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]{2}';
+        input.title='Informe o CPF completo, com 11 dígitos.';
+      }
       if(input.tagName==='SELECT')(f.options||[]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;input.appendChild(o)});
       fields.append(label,input);
     });

@@ -135,6 +135,9 @@ export default async function handler(req,res){
         if(!respostaResp.ok||!respostaRows?.[0])return res.status(409).json({error:'Não foi possível carregar a resposta para atualizar o perfil'});
         try{perfil=extrairPerfilDeAnamnese(decryptClinicalData(respostaRows[0].conteudo));}
         catch{return res.status(500).json({error:'Não foi possível abrir os dados para atualizar o perfil'});}
+        for(const [campo,rotulo] of [['cpf_paciente','paciente'],['cpf_responsavel','responsável']]){
+          if(perfil[campo]&&perfil[campo].replace(/\D/g,'').length!==11)return res.status(422).json({error:`O CPF do ${rotulo} nesta resposta está incompleto. São necessários 11 dígitos. Nenhum dado do perfil foi alterado.`});
+        }
       }
       if(action==='sync_profile'){
         const response=await supabase('/rest/v1/rpc/reaplicar_cadastro_aprovado',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_revisor:user.id,p_perfil:perfil})});

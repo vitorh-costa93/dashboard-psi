@@ -125,3 +125,24 @@ test('reaplicar cadastro aprovado usa a transação auditável e dados decifrado
   assert.equal(res.code,200);assert.equal(payload.p_revisor,'test-user');
   assert.equal(payload.p_perfil.nome,'Paciente Completo');assert.equal(payload.p_perfil.cpf_paciente,'123.456.789-01');
 });
+
+
+test('CPF incompleto explica bloqueio e não chama a transação de aprovação/reaplicação',async()=>{
+  for(const action of ['approve','sync_profile']){
+    let writes=0;
+    global.fetch=authFetchStub(async url=>{
+      if(url.includes('formularios_respostas?select=conteudo'))return supabaseReply([{conteudo:{nome_completo:'Paciente Teste',cpf:'123.456.78'}}]);
+      writes++;return supabaseReply(null);
+    });
+    const req=baseReq({resposta_id:'resposta-teste',action});req.method='PATCH';
+    const res=response();await forms(req,res);
+    assert.equal(res.code,422);assert.match(res.body.error,/11 dígitos/);assert.equal(writes,0);
+  }
+});
+
+test('formulário público recusa CPF incompleto antes de consumir o convite',async()=>{
+  const {default:publicForm}=await import('../api/form.js');
+  let writes=0;global.fetch=async()=>{writes++;return supabaseReply(null);};
+  const res=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'123.456.78'}}},res);
+  assert.equal(res.code,400);assert.match(res.body.error,/11 dígitos/);assert.equal(writes,0);
+});

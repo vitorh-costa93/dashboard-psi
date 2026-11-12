@@ -9,3 +9,8 @@ Atualizado: 12/11/2026.
 - Validação: 162 testes aprovados; scripts da página válidos; migration aplicada; teste SQL transacional com dados fictícios passou (gravação, auditoria e bloqueio de resposta pendente; rollback completo).
 - Publicação do complemento: `9438c49` em main e produção READY; botão conferido na página publicada e alias externo confirmado. Tentativa de recuperação por runner foi removida: variáveis sensíveis de produção não são exportáveis; usar o fluxo autenticado da aplicação.
 - Próximo passo: perfil aberto no navegador para o usuário informar o CPF completo. Depois conferir/salvar pelo fluxo normal. Os outros campos pessoais equivalentes já conferem. Resposta original preservada; nenhuma alteração aplicada nesta conferência.
+
+## Verificação Vercel e validação de CPF
+- Consulta direta confirmou builds READY e nenhum deploy ERROR em 12/11; últimos 30 minutos sem logs/clusters de erro. Build mostrou somente avisos de instalação/configuração. As três execuções antigas de recuperação no GitHub falharam; esse fluxo já foi removido.
+- Corrigida a mensagem genérica de aprovação/reaplicação: CPF incompleto agora retorna 422 claro antes de qualquer escrita. Formulário público impede CPF parcial no navegador e na API, sem consumir convite.
+- Arquivos adicionais: `api/form.js`, `form.html`, `api/forms.js`, `tests/forms-template.test.js`. Validação: 164 testes aprovados. Publicar e verificar retorno 400 na API pública em produção.

@@ -260,3 +260,5 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - Migration: `20261112191713_registration_profile_approval.sql`. Rollback: restaurar a função `revisar_formulario_com_cadastro` da migration de cadastro único anterior; a função auxiliar pode permanecer sem acesso público.
 
 - Respostas cadastrais já aprovadas oferecem “Atualizar perfil”: ação administrativa explícita que reaplica os campos correspondentes e registra autor/data na resposta. RPC restrita ao servidor, com validação do status, destino e arquivamento; preserva o histórico e os marcadores da Anamnese. Migration `20261112193332_reapply_approved_registration.sql`.
+
+- Formulários externos validam CPF não vazio com 11 dígitos no navegador e na API antes de consumir o convite. Aprovação/reaplicação informa explicitamente CPF incompleto (HTTP 422), sem alterar o perfil; nunca aceitar identificador parcial para contornar a validação do banco.

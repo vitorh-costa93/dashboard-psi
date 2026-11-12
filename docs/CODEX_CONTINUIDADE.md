@@ -1,20 +1,10 @@
-# Continuidade — dashboard-psi
+# Continuidade — Dashboard Psi
 
-Atualizado: 29/10/2026. KPI financeiro concluído: consolidação pelo valor efetivamente recebido.
+Atualizado: 12/11/2026.
 
-## Estado e próximo passo
-- Não há tarefa funcional pendente desta etapa. Antes de uma nova alteração, confirme `git status -sb` e o histórico remoto; não sobrescreva alterações existentes.
-- Leia somente as referências necessárias ao pedido. Regras obrigatórias em `AGENTS.md`.
-- Ao encerrar a próxima etapa, substitua este estado pelo objetivo, decisões, caminhos alterados, verificações executadas e pendências reais.
-- No live-coach, separar iRacing V3 e AMS2 no registro.
-
-## Entrega mais recente
-- Objetivo concluído: somar `valor_final`/“Valor Recebido” persistido, sem derivar valor de `sessões cobradas × valor da sessão`.
-- Arquivos: `index.html`, `tests/dashboard-financials.test.js`, `PROJECT_CONTEXT.md`.
-- Decisão: KPI, comparativos, gráficos, ticket médio e resumo CNPJ compartilham a mesma fonte financeira; linhas mensais históricas Wellz mantêm o valor histórico próprio.
-- Evidência de validação: `node --test tests/dashboard-financials.test.js` e `npm test` (148 testes aprovados).
-- Publicação: `469f423` em `main`; deploy de produção pronto e alias externo reapontado em 29/10/2026.
-- Pendências: nenhuma.
-
-## Próximo passo
-- Conferir o mapa no ambiente publicado com cadastro real. A coluna de aniversariantes ativos foi entregue no commit anterior. Ler `AGENTS.md` antes de novas alterações.
+- Objetivo: Informações iniciais online atualizam o perfil na aprovação; sessões esporádicas não substituem o horário recorrente na identificação do Dashboard.
+- Arquivos: `api/forms.js`, `index.html`, migration `20261112191713_registration_profile_approval.sql`, testes de formulário/horário e `tests/sql/registration-profile-approval.sql`.
+- Decisões: cada aprovação de cadastro aplica campos equivalentes não vazios; não altera marcadores da Anamnese. Respostas antigas já aprovadas não são reaplicadas automaticamente. Histórico mantém o horário real.
+- Validação: 161 testes aprovados; migration aplicada; teste SQL transacional passou com rollback, incluindo rejeição, CPF inválido, repetição e permissões.
+- Publicação: alterações preparadas para main e produção; confirmar deploy e alias externo ao concluir.
+- Pendências funcionais: nenhuma; dados de respostas antigas permanecem preservados para revisão administrativa.

@@ -251,3 +251,10 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - `/api/operational` acrescenta linhas Wellz ao contrato do dashboard (uma por atendimento: falta = Comparecimento "Não"; realizado = "Sim") e à tabela "Atendimentos — detalhado" (linhas resumidas, somente leitura). O histórico mensal vira linhas só de valor divididas entre as sextas do mês (`Só valor`): entram em Valor Recebido/CNPJ, não contam como sessão nem falta. Ação `wellz_save` em `resource=agenda` grava a semana e calcula o valor no servidor.
 - No frontend, Wellz fica fora das contagens de pacientes, saldo, pacotes e % de faltas por paciente (`nomesPacientesAtivosNoCadastro` exclui). Painel "Wellz — lançamento semanal" na aba Agenda.
 - Se as tarifas mudarem, alterar `TARIFAS`: as linhas do dashboard usam a tarifa vigente; `valor_total` gravado de semanas antigas não é recalculado.
+
+## Informações iniciais e horário de identificação (12/11/2026)
+
+- Informações iniciais online continuam sujeitas à revisão administrativa. Cada aprovação atualiza os campos equivalentes presentes no perfil (nome, CPF, nascimento e responsável), em transação com a aprovação. Campos vazios preservam o cadastro; informações sem campo correspondente continuam na resposta protegida.
+- Essa atualização não registra data de Anamnese nem consome a sincronização única da primeira Anamnese. Respostas antigas já aprovadas não são reaplicadas automaticamente, preservando edições manuais posteriores.
+- Saldo, alertas de pacotes e atenção usam o horário do rótulo do cadastro. Uma sessão avulsa conserva seu horário real no histórico, mas não substitui a identificação recorrente.
+- Migration: `20261112191713_registration_profile_approval.sql`. Rollback: restaurar a função `revisar_formulario_com_cadastro` da migration de cadastro único anterior; a função auxiliar pode permanecer sem acesso público.

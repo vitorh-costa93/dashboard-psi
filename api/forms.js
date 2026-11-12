@@ -127,14 +127,14 @@ export default async function handler(req,res){
       const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject'].includes(action))return res.status(400).json({error:'Revisão inválida'});
       // Ao aprovar, o conteúdo precisa ser lido e decifrado aqui (a função no
       // banco só copia o envelope cifrado, sem a chave pra abri-lo) pra poder
-      // extrair os campos que sincronizam o cadastro na primeira Anamnese.
+      // extrair os campos do cadastro ou da primeira Anamnese.
       let perfil={};
       if(action==='approve'){
         const respostaResp=await supabase(`/rest/v1/formularios_respostas?select=conteudo&id=eq.${encodeURIComponent(resposta_id)}&limit=1`);
         const respostaRows=await safeJson(respostaResp);
-        if(respostaResp.ok&&respostaRows?.[0]){
-          try{perfil=extrairPerfilDeAnamnese(decryptClinicalData(respostaRows[0].conteudo));}catch{}
-        }
+        if(!respostaResp.ok||!respostaRows?.[0])return res.status(409).json({error:'Não foi possível carregar a resposta para atualizar o perfil'});
+        try{perfil=extrairPerfilDeAnamnese(decryptClinicalData(respostaRows[0].conteudo));}
+        catch{return res.status(500).json({error:'Não foi possível abrir os dados para atualizar o perfil'});}
       }
       const response=await supabase('/rest/v1/rpc/revisar_formulario_com_cadastro',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_acao:action,p_revisor:user.id,p_perfil:perfil})});
       return res.status(response.ok?200:409).json(response.ok?{ok:true,anamnese_versao_id:await safeJson(response)}:{error:'Resposta não está pendente'});

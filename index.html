@@ -1860,6 +1860,13 @@ function iniciais(nome){const partes=String(nome||'').trim().split(/\s+/).filter
 // Ativo de verdade = flag ativo E status operacional "ativo" (pausado/inativo ficam de fora de todo dropdown).
 function pacienteAtivo(p){return !!p&&p.ativo===true&&(p.status_operacional||'ativo')==='ativo';}
 function rotuloPaciente(p){return p?.ultimo_label||iniciais(p?.nome);}
+// O horário de identificação vem do cadastro; sessões avulsas mantêm seu horário real.
+function horarioPerfilPaciente(nome,fallback=''){
+  const p=Object.values(_pacientesById||{}).find(p=>p.nome===nome);
+  if(!p||String(p.id||'').startsWith('legacy:'))return fallback;
+  return (p.ultimo_label||'').split(' | ').slice(1).join(' | ');
+}
+
 
 // ── Ordenação por clique no cabeçalho, reutilizável em qualquer tabela ──
 // Uso: <th data-tabela="X" data-col="nome" onclick="ordenarTabela('X','nome');renderX()">
@@ -2250,7 +2257,7 @@ function processAndRender(){
   rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente;
     if(!saldoMap[k])saldoMap[k]={iniciais:r._iniciais,sessoes:0,comp:0};
-    horarioMap[k]=r._horario||horarioMap[k]||'';
+    horarioMap[k]=horarioPerfilPaciente(k,r._horario||horarioMap[k]||'');
     saldoMap[k].sessoes+=r._sessoesCob;
     saldoMap[k].comp+=r._compSim;
   });
@@ -2341,7 +2348,7 @@ async function calcularAlertas() {
   _rows.filter(r=>pacAtivos.has(r._paciente)).forEach(r=>{
     const k=r._paciente; if(!k)return;
     if(!ativos[k]) ativos[k]={iniciais:r._iniciais||k,horario:r._horario||'',sessoes:0,comp:0,compras:historicoCompras[k]||[]};
-    ativos[k].horario=r._horario||ativos[k].horario;
+    ativos[k].horario=horarioPerfilPaciente(k,r._horario||ativos[k].horario);
     ativos[k].sessoes+=r._sessoesCob;
     ativos[k].comp+=r._compSim;
   });
@@ -2991,7 +2998,7 @@ function renderAtencao(){
     const ultReal=[...res].reverse().find(r=>r._compSim);
     const jr=rs.filter(r=>r._data>=jan&&!r._canceladaPsicologa),tot=jr.length,fal=jr.filter(r=>r._falta).length,taxa=tot?fal/tot:0;
     const ult=rs[rs.length-1],dias=Math.floor((hoje-ult._data)/DIA_MS);
-    const horario=[...rs].reverse().map(r=>r._horario).find(Boolean)||'';
+    const horario=horarioPerfilPaciente(nome,[...rs].reverse().map(r=>r._horario).find(Boolean)||'');
     if(seq>=2){
       const datas=res.slice(-seq).map(r=>fmtDM(r._data));
       const quando=datas.length>1?datas.slice(0,-1).join(', ')+' e '+datas[datas.length-1]:datas[0];
@@ -4923,7 +4930,7 @@ function renderListaRespostas(rows,elId,badgeId,vazio){
 }
 function toggleResposta(id){const detail=document.getElementById('response-detail-'+id),arrow=document.getElementById('response-arrow-'+id);if(!detail)return;const abrir=detail.style.display==='none';detail.style.display=abrir?'block':'none';if(arrow)arrow.textContent=abrir?'⌃':'⌄';}
 async function excluirRespostaAprovada(id){if(!confirm('Excluir este registro aprovado da visualização?'))return;const r=await fetch(`/api/forms?resource=response&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Registro excluído.');await initFormularios();}
-async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='approve'?(cadastro?'Aprovar e arquivar este cadastro?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?(cadastro?'✅ Cadastro aprovado e arquivado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');if(action==='approve'&&!cadastro)await carregarPacientes();await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
+async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='approve'?(cadastro?'Aprovar estas informações e atualizar o perfil do paciente?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='approve'?(cadastro?'✅ Informações aprovadas e perfil atualizado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');if(action==='approve'){await loadData();if(_agendaState)await carregarAgenda();}await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
 
 async function carregarPacientes() {
   try {

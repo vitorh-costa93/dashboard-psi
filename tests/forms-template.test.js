@@ -83,3 +83,31 @@ test('action=template cria um modelo novo quando nenhum existe ainda', async () 
   assert.equal(res.code, 201);
   assert.equal(createdBody.nome, 'Cadastro do paciente');
 });
+
+
+test('aprovação encaminha os dados pessoais normalizados para a transação do perfil', async () => {
+  const {encryptClinicalData} = await import('../api/_clinical-crypto.js');
+  let profile;
+  global.fetch = authFetchStub(async (url, options) => {
+    if(url.includes('formularios_respostas?select=conteudo'))return supabaseReply([{conteudo:encryptClinicalData({nome_completo:'  Paciente Teste  ',cpf:'123.456.789-01',data_nascimento:'2000-01-02'})}]);
+    if(url.includes('/rpc/revisar_formulario_com_cadastro')){profile=JSON.parse(options.body).p_perfil;return supabaseReply(null);}
+    throw new Error('chamada inesperada');
+  });
+  const req=baseReq({resposta_id:'resposta-teste',action:'approve'});req.method='PATCH';
+  const res=response();await forms(req,res);
+  assert.equal(res.code,200);
+  assert.equal(profile.nome,'Paciente Teste');
+  assert.equal(profile.cpf_paciente,'123.456.789-01');
+  assert.equal(profile.data_nascimento,'2000-01-02');
+});
+
+test('falha ao abrir conteúdo impede aprovação sem atualizar o perfil', async () => {
+  let approved=false;
+  global.fetch=authFetchStub(async url=>{
+    if(url.includes('formularios_respostas?select=conteudo'))return supabaseReply(null,false,503);
+    approved=true;return supabaseReply(null);
+  });
+  const req=baseReq({resposta_id:'resposta-teste',action:'approve'});req.method='PATCH';
+  const res=response();await forms(req,res);
+  assert.equal(res.code,409);assert.equal(approved,false);
+});

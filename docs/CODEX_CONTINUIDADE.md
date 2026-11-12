@@ -2,9 +2,10 @@
 
 Atualizado: 12/11/2026.
 
-- Objetivo: Informações iniciais online atualizam o perfil na aprovação; sessões esporádicas não substituem o horário recorrente na identificação do Dashboard.
-- Arquivos: `api/forms.js`, `index.html`, migration `20261112191713_registration_profile_approval.sql`, testes de formulário/horário e `tests/sql/registration-profile-approval.sql`.
-- Decisões: cada aprovação de cadastro aplica campos equivalentes não vazios; não altera marcadores da Anamnese. Respostas antigas já aprovadas não são reaplicadas automaticamente. Histórico mantém o horário real.
-- Validação: 161 testes aprovados; migration aplicada; teste SQL transacional passou com rollback, incluindo rejeição, CPF inválido, repetição e permissões.
-- Publicação: código `281a117` em main e produção READY; alias externo confirmado. Página publicada contém a correção e a API mantém autenticação obrigatória. Publicação via Git; CLI local recusou autorização, integração conectada concluiu normalmente.
-- Pendências funcionais: nenhuma; dados de respostas antigas permanecem preservados para revisão administrativa.
+- Objetivo atual: reaplicar ao perfil a resposta cadastral de hoje, já aprovada antes da correção de sincronização. A atualização da paciente ainda depende de acesso ao painel autenticado; não afirmar que foi concluída.
+- Solução geral publicada anteriormente: aprovação das Informações iniciais atualiza o perfil; identificação no Dashboard usa horário recorrente, sem alterar o histórico das sessões avulsas.
+- Complemento: botão “Atualizar perfil” nas respostas cadastrais aprovadas e RPC `reaplicar_cadastro_aprovado`, exclusiva do servidor, valida status/destino/arquivamento e registra autor/data. Campos decifrados somente no servidor; nenhuma credencial ou dado pessoal registrado.
+- Arquivos: `api/forms.js`, `index.html`, migration `20261112193332_reapply_approved_registration.sql`, `tests/forms-template.test.js`, `PROJECT_CONTEXT.md`.
+- Validação: 162 testes aprovados; scripts da página válidos; migration aplicada; teste SQL transacional com dados fictícios passou (gravação, auditoria e bloqueio de resposta pendente; rollback completo).
+- Publicação do complemento: enviar main e confirmar produção/alias. Tentativa de recuperação por runner foi removida: variáveis sensíveis de produção não são exportáveis; usar o fluxo autenticado da aplicação.
+- Próximo passo: após login solicitado no navegador aberto, abrir Informações iniciais > Online, localizar a resposta de hoje, expandir e clicar “Atualizar perfil”; conferir campos no cadastro sem registrar dados pessoais. Resposta já aprovada não requer novo envio da paciente.

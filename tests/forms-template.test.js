@@ -111,3 +111,17 @@ test('falha ao abrir conteúdo impede aprovação sem atualizar o perfil', async
   const res=response();await forms(req,res);
   assert.equal(res.code,409);assert.equal(approved,false);
 });
+
+
+test('reaplicar cadastro aprovado usa a transação auditável e dados decifrados',async()=>{
+  let payload;
+  global.fetch=authFetchStub(async(url,options)=>{
+    if(url.includes('formularios_respostas?select=conteudo'))return supabaseReply([{conteudo:{nome_completo:'Paciente Completo',cpf:'123.456.789-01'}}]);
+    if(url.includes('/rpc/reaplicar_cadastro_aprovado')){payload=JSON.parse(options.body);return supabaseReply(null);}
+    throw new Error('chamada inesperada');
+  });
+  const req=baseReq({resposta_id:'resposta-teste',action:'sync_profile'});req.method='PATCH';
+  const res=response();await forms(req,res);
+  assert.equal(res.code,200);assert.equal(payload.p_revisor,'test-user');
+  assert.equal(payload.p_perfil.nome,'Paciente Completo');assert.equal(payload.p_perfil.cpf_paciente,'123.456.789-01');
+});

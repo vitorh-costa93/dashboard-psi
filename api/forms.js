@@ -124,17 +124,21 @@ export default async function handler(req,res){
       const origin=String(process.env.PUBLIC_FORM_ORIGIN||`https://${req.headers.host}`).replace(/\/$/,'');return res.status(201).json({url:`${origin}/form.html?token=${encodeURIComponent(token)}`,expira_em});
     }
     if(req.method==='PATCH'){
-      const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject'].includes(action))return res.status(400).json({error:'Revisão inválida'});
+      const {resposta_id,action}=req.body||{};if(!resposta_id||!['approve','reject','sync_profile'].includes(action))return res.status(400).json({error:'Revisão inválida'});
       // Ao aprovar, o conteúdo precisa ser lido e decifrado aqui (a função no
       // banco só copia o envelope cifrado, sem a chave pra abri-lo) pra poder
       // extrair os campos do cadastro ou da primeira Anamnese.
       let perfil={};
-      if(action==='approve'){
+      if(action==='approve'||action==='sync_profile'){
         const respostaResp=await supabase(`/rest/v1/formularios_respostas?select=conteudo&id=eq.${encodeURIComponent(resposta_id)}&limit=1`);
         const respostaRows=await safeJson(respostaResp);
         if(!respostaResp.ok||!respostaRows?.[0])return res.status(409).json({error:'Não foi possível carregar a resposta para atualizar o perfil'});
         try{perfil=extrairPerfilDeAnamnese(decryptClinicalData(respostaRows[0].conteudo));}
         catch{return res.status(500).json({error:'Não foi possível abrir os dados para atualizar o perfil'});}
+      }
+      if(action==='sync_profile'){
+        const response=await supabase('/rest/v1/rpc/reaplicar_cadastro_aprovado',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_revisor:user.id,p_perfil:perfil})});
+        return res.status(response.ok?200:409).json(response.ok?{ok:true}:{error:'Não foi possível atualizar o perfil com esta resposta aprovada'});
       }
       const response=await supabase('/rest/v1/rpc/revisar_formulario_com_cadastro',{method:'POST',body:JSON.stringify({p_resposta_id:resposta_id,p_acao:action,p_revisor:user.id,p_perfil:perfil})});
       return res.status(response.ok?200:409).json(response.ok?{ok:true,anamnese_versao_id:await safeJson(response)}:{error:'Resposta não está pendente'});

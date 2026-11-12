@@ -258,3 +258,5 @@ A exclusão definitiva remove também `prontuarios`, `registros_clinicos` e `ana
 - Essa atualização não registra data de Anamnese nem consome a sincronização única da primeira Anamnese. Respostas antigas já aprovadas não são reaplicadas automaticamente, preservando edições manuais posteriores.
 - Saldo, alertas de pacotes e atenção usam o horário do rótulo do cadastro. Uma sessão avulsa conserva seu horário real no histórico, mas não substitui a identificação recorrente.
 - Migration: `20261112191713_registration_profile_approval.sql`. Rollback: restaurar a função `revisar_formulario_com_cadastro` da migration de cadastro único anterior; a função auxiliar pode permanecer sem acesso público.
+
+- Recuperação explícita de respostas cadastrais já aprovadas: workflow manual `reconcile-registration.yml` executa `scripts/reconcile-approved-registration.mjs` com UUID da resposta, exige destino cadastro/status aprovado, controla concorrência e confere os campos gravados. Simulação é padrão; aplicação é explícita. Credenciais ficam no runner, arquivo temporário é removido e logs contêm apenas nomes de campos e resultado.

@@ -1,6 +1,6 @@
 import {requireAuth,supabase} from './_auth.js';
 import {cached} from './_cache.js';
-import {buildOccurrences,inferRule,isoAddDays,monthBounds,normalizeMonth,normalizeTime} from '../lib/agenda.js';
+import {buildOccurrences,inferRule,isoAddDays,marcarSessoesPagas,monthBounds,normalizeMonth,normalizeTime} from '../lib/agenda.js';
 import {INICIO_SEMANAL,TARIFAS,TIPOS,WELLZ_NOME,ehSexta,linhasDashboard,linhasDetalhadas,quantidade,sextasDoMes,valorSemana} from '../lib/wellz.js';
 async function rest(path,options={},label='Falha no banco'){const r=await supabase('/rest/v1/'+path,options),data=await r.json().catch(()=>null);if(!r.ok){if(data?.code==='23505'&&/pacientes_nome_key/.test(data.message||''))throw new Error('Já existe um paciente cadastrado com esse nome.');if(label==='Não foi possível salvar o lote'&&data?.message)throw new Error(`${label}: ${String(data.message).slice(0,300)}`);throw new Error(`${label}: ${r.status}`);}return data;}
 // Paginação em paralelo: 1ª página traz o total (Content-Range) e as demais saem juntas,
@@ -148,8 +148,15 @@ async function sessions(req,res){
   const extrasWellz=async()=>{const w=await wellzDados();if(!w.pacienteId||(req.query.paciente_id&&req.query.paciente_id!==w.pacienteId))return[];return linhasDetalhadas(w.semanas,w.historico,w.pacienteId,{month:req.query.month?normalizeMonth(req.query.month):''});};
   const chave='sessions:'+(req.query.month||'')+':'+(req.query.paciente_id||'');
   return res.status(200).json(await cached(chave,async()=>{
-    const [rows,extras]=await Promise.all([restAll(path,1000,'Falha ao carregar atendimentos'),extrasWellz()]);
-    return[...await comSugestao(rows),...extras];
+    let histPath='sessoes?select=id,paciente_id,source_key,data_sessao,horario,comparecimento,sessoes_cobradas&order=data_sessao.asc,horario.asc,id.asc';
+    if(req.query.paciente_id)histPath+=`&paciente_id=eq.${encodeURIComponent(req.query.paciente_id)}`;
+    const [rows,extras,historyRows]=await Promise.all([
+      restAll(path,1000,'Falha ao carregar atendimentos'),
+      extrasWellz(),
+      req.query.month?restAll(histPath,1000,'Falha ao carregar histórico de pagamentos'):Promise.resolve(null)
+    ]);
+    const sugeridas=await comSugestao(rows);
+    return marcarSessoesPagas([...sugeridas,...extras],historyRows||sugeridas);
   }));
  }
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});const b=req.body||{};

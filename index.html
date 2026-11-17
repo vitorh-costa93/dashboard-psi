@@ -2618,13 +2618,16 @@ function renderSessoesDetalhado(){
     paciente:x=>x.pacientes?.nome||'',
     modalidade:x=>x.modalidade||'',
     comparecimento:x=>x.comparecimento||'',
-    cobradas:x=>x.sessoes_cobradas||0,
+    cobradas:x=>x.paga===true?2:(x.paga===false?1:0),
     valor:x=>x.valor_final||0
   });
   _dsessRenderedRows=rows;
+  const badgePago=x=>x.paga===true
+    ?`<span title="Sessão paga (${x.sessoes_cobradas||0} lançada(s) nesta data)" aria-label="Sessão paga">✅</span>`
+    :(x.paga===false?'<span title="Sessão não paga (em aberto)" aria-label="Sessão não paga">❌</span>':'<span style="color:var(--muted)" title="Não consome sessão">—</span>');
   tbody.innerHTML=rows.length?rows.map((x,idx)=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="#" style="text-align:center;color:var(--muted);font-variant-numeric:tabular-nums">${idx+1}</td><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
+    return `<tr><td data-label="#" style="text-align:center;color:var(--muted);font-variant-numeric:tabular-nums">${idx+1}</td><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas" style="text-align:center">${badgePago(x)}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
   // Totais só fazem sentido com um paciente escolhido (senão seria a soma
@@ -2754,6 +2757,22 @@ function exportarImagemSessoesDetalhado(){
         }else if(vals[ci]){
           ctx.fillStyle='#2f3425';ctx.font='500 12px "DM Sans", system-ui, sans-serif';
           ctx.textAlign='center';ctx.fillText(truncar(vals[ci],col.w-16),cx+col.w/2,cy);
+        }
+      }else if(ci===6){
+        const mx=cx+col.w/2;
+        if(r.paga===true){
+          ctx.fillStyle='#e8f3e4';ctx.strokeStyle='#6ab068';ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.arc(mx,cy,9,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.strokeStyle='#2e7d32';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+          ctx.beginPath();ctx.moveTo(mx-4,cy+0.3);ctx.lineTo(mx-1.2,cy+3.3);ctx.lineTo(mx+4.5,cy-3);ctx.stroke();
+        }else if(r.paga===false){
+          ctx.fillStyle='#fbeaea';ctx.strokeStyle='#dfa4a1';ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.arc(mx,cy,9,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.strokeStyle='#b3261e';ctx.lineWidth=2;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(mx-3.3,cy-3.3);ctx.lineTo(mx+3.3,cy+3.3);ctx.moveTo(mx+3.3,cy-3.3);ctx.lineTo(mx-3.3,cy+3.3);ctx.stroke();
+        }else{
+          ctx.fillStyle='#8a8d7d';ctx.font='400 12.5px "DM Sans", system-ui, sans-serif';
+          ctx.textAlign='center';ctx.fillText('—',mx,cy);
         }
       }else{
         ctx.fillStyle=ci===0?'#7c806f':'#2f3425';

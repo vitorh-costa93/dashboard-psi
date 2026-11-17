@@ -1,4 +1,4 @@
-import test from'node:test';import assert from'node:assert/strict';import{buildOccurrences,inferRule,monthBounds,normalizeMonth}from'../lib/agenda.js';
+import test from'node:test';import assert from'node:assert/strict';import{buildOccurrences,inferRule,marcarSessoesPagas,monthBounds,normalizeMonth}from'../lib/agenda.js';
 test('valida mês e limites',()=>{assert.equal(normalizeMonth('2026-09'),'2026-09');assert.deepEqual(monthBounds('2026-02'),{month:'2026-02',first:'2026-02-01',last:'2026-02-28'});assert.throws(()=>normalizeMonth('2026-13'));});
 test('gera semanal na vigência',()=>assert.deepEqual(buildOccurrences({frequencia:'semanal',dia_semana:3,vigencia_inicio:'2026-09-07'},'2026-09'),['2026-09-09','2026-09-16','2026-09-23','2026-09-30']));
 test('quinzenal usa âncora',()=>assert.deepEqual(buildOccurrences({frequencia:'quinzenal',dia_semana:3,vigencia_inicio:'2026-09-02'},'2026-09'),['2026-09-02','2026-09-16','2026-09-30']));
@@ -23,4 +23,18 @@ test('vigência em dia diferente do dia da regra mantém o dia da semana (Aline)
   const rule={frequencia:'quinzenal',dia_semana:2,vigencia_inicio:'2026-09-17'};
   const dias=buildOccurrences(rule,'2026-10').map(d=>new Date(d+'T12:00:00Z').getUTCDay());
   assert.ok(dias.length&&dias.every(d=>d===2));
+});
+test('marcarSessoesPagas cobre sessão anterior com pagamento em bloco posterior e ignora faltas',()=>{
+  const hist=[
+    {id:'s1',paciente_id:'p1',data_sessao:'2026-04-17',horario:'09:30',comparecimento:'Sim',sessoes_cobradas:0},
+    {id:'s2',paciente_id:'p1',data_sessao:'2026-04-24',horario:'09:30',comparecimento:'Sim',sessoes_cobradas:2},
+    {id:'s3',paciente_id:'p1',data_sessao:'2026-05-08',horario:'09:30',comparecimento:'Não',sessoes_cobradas:0},
+    {id:'s4',paciente_id:'p1',data_sessao:'2026-05-15',horario:'09:30',comparecimento:'Sim',sessoes_cobradas:0}
+  ];
+  const res=marcarSessoesPagas(hist);
+  assert.deepEqual(res.map(x=>x.paga),[true,true,null,false]);
+  // Filtrando só o mês de abril, s1 continua paga pelo pagamento de s2
+  // e filtrando só maio, s4 continua em aberto mesmo sem s1/s2 na lista filtrada.
+  const soMaio=marcarSessoesPagas(hist.slice(2),hist);
+  assert.deepEqual(soMaio.map(x=>x.paga),[null,false]);
 });

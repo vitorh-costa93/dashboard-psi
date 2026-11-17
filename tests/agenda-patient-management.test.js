@@ -87,3 +87,16 @@ test('cadastro de paciente padroniza faixa etária Adulta e reflete modalidade n
   assert.match(sql, /ADD COLUMN IF NOT EXISTS modalidade text/);
   assert.match(sql, /SET faixa_etaria = 'Adulta'/);
 });
+
+test('tabela detalhada remove Convênio, inclui contador dinâmico de linhas e exporta imagem', async () => {
+  const html = await read('index.html');
+  const blocoTabela = html.match(/<div id="dashsub-atend">[\s\S]*?<\/table>/)[0];
+  assert.doesNotMatch(blocoTabela, />Convênio</);
+  assert.match(blocoTabela, /<th[^>]*>#<\/th>/);
+  assert.match(blocoTabela, /onclick="exportarImagemSessoesDetalhado\(\)"/);
+  assert.match(blocoTabela, /id="dsess-tfoot"/);
+  assert.match(blocoTabela, /id="dsess-total-comp"/);
+  assert.match(blocoTabela, /id="dsess-total-pagas"/);
+  assert.match(html, /data-label="#"[^>]*>\$\{idx\+1\}<\/td>/);
+  assert.match(html, /function exportarImagemSessoesDetalhado\(\)/);
+});

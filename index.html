@@ -849,7 +849,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
 
     <div id="dashsub-atend">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
         <div class="gen-field" style="min-width:220px"><label>Paciente</label>
           <div class="combo" id="dsess-paciente-combo">
             <button type="button" class="combo-trigger" onclick="comboToggle('dsess-paciente-combo')"><span class="combo-value placeholder" id="dsess-paciente-combo-value">Todos</span><span class="combo-caret">▾</span></button>
@@ -858,15 +858,16 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
           <input type="hidden" id="dsess-paciente-input">
         </div>
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+        <button type="button" class="btn-secondary" id="dsess-export-img-btn" onclick="exportarImagemSessoesDetalhado()" style="margin-left:auto">🖼 Exportar imagem</button>
       </div>
       <div id="dsess-totais" style="display:none;font-size:.78rem;color:var(--muted);margin:-6px 0 12px"></div>
       <div class="agenda-table-wrap">
         <table class="agenda-table">
           <thead><tr>
+            <th style="width:44px;text-align:center">#</th>
             <th data-tabela="dsess" data-col="data" onclick="ordenarTabela('dsess','data');renderSessoesDetalhado()">Data</th>
             <th data-tabela="dsess" data-col="horario" onclick="ordenarTabela('dsess','horario');renderSessoesDetalhado()">Horário</th>
             <th data-tabela="dsess" data-col="paciente" onclick="ordenarTabela('dsess','paciente');renderSessoesDetalhado()">Paciente</th>
-            <th data-tabela="dsess" data-col="convenio" onclick="ordenarTabela('dsess','convenio');renderSessoesDetalhado()">Convênio</th>
             <th data-tabela="dsess" data-col="modalidade" onclick="ordenarTabela('dsess','modalidade');renderSessoesDetalhado()">Modalidade</th>
             <th data-tabela="dsess" data-col="comparecimento" onclick="ordenarTabela('dsess','comparecimento');renderSessoesDetalhado()">Comparecimento</th>
             <th data-tabela="dsess" data-col="cobradas" onclick="ordenarTabela('dsess','cobradas');renderSessoesDetalhado()">Sessões Pagas</th>
@@ -874,6 +875,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
             <th></th>
           </tr></thead>
           <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
+          <tfoot id="dsess-tfoot" style="display:none"><tr style="font-weight:700;background:#f6f3ea"><td colspan="5">Total</td><td id="dsess-total-comp">—</td><td id="dsess-total-pagas">—</td><td colspan="2"></td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -2603,6 +2605,7 @@ function pillComparecimento(v){
   const m={'Sim':['pill-ok','Compareceu'],'Não':['pill-no','Faltou'],'Cancelado':['pill-cx','Cancelado']}[v];
   return m?`<span class="pill ${m[0]}">${m[1]}</span>`:(v?`<span class="pill pill-nd">${agendaEscape(v)}</span>`:'');
 }
+let _dsessRenderedRows=[];
 function renderSessoesDetalhado(){
   const tbody=document.getElementById('dsess-tbody');
   if(!tbody)return;
@@ -2613,15 +2616,15 @@ function renderSessoesDetalhado(){
     data:x=>x.data_sessao+' '+(x.horario||''),
     horario:x=>x.horario||'',
     paciente:x=>x.pacientes?.nome||'',
-    convenio:x=>x.convenios?.nome||'',
     modalidade:x=>x.modalidade||'',
     comparecimento:x=>x.comparecimento||'',
     cobradas:x=>x.sessoes_cobradas||0,
     valor:x=>x.valor_final||0
   });
-  tbody.innerHTML=rows.length?rows.map(x=>{
+  _dsessRenderedRows=rows;
+  tbody.innerHTML=rows.length?rows.map((x,idx)=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Convênio">${agendaEscape(x.convenios?.nome||'')}</td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
+    return `<tr><td data-label="#" style="text-align:center;color:var(--muted);font-variant-numeric:tabular-nums">${idx+1}</td><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas">${x.sessoes_cobradas||0}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
   // Totais só fazem sentido com um paciente escolhido (senão seria a soma
@@ -2637,6 +2640,156 @@ function renderSessoesDetalhado(){
       totaisEl.style.display='none';
     }
   }
+  const tfoot=document.getElementById('dsess-tfoot');
+  if(tfoot){
+    if(rows.length){
+      const totalComp=rows.filter(x=>x.comparecimento==='Sim').length;
+      const totalPagas=rows.reduce((s,x)=>s+Number(x.sessoes_cobradas||0),0);
+      document.getElementById('dsess-total-comp').textContent=String(totalComp);
+      document.getElementById('dsess-total-pagas').textContent=String(totalPagas);
+      tfoot.style.display='';
+    }else{
+      tfoot.style.display='none';
+    }
+  }
+}
+function exportarImagemSessoesDetalhado(){
+  const rows=_dsessRenderedRows||[];
+  if(!rows.length)return toast('Não há atendimentos na tabela para exportar.');
+  const nomePaciente=document.getElementById('dsess-paciente-input')?.value.trim()||'';
+  const mes=document.getElementById('dsess-mes')?.value||'';
+  const totaisEl=document.getElementById('dsess-totais');
+  const totaisTexto=(totaisEl&&totaisEl.style.display!=='none')?totaisEl.textContent.trim():'';
+  const mesLabel=mes?mes.split('-').reverse().join('/'):'Todos os meses';
+  const subtitulo=`Período: ${mesLabel} · ${rows.length} registro(s)`+(totaisTexto?` · ${totaisTexto}`:'');
+
+  const cols=[
+    {label:'#',w:48,align:'center'},
+    {label:'DATA',w:112,align:'left'},
+    {label:'HORÁRIO',w:104,align:'left'},
+    {label:'PACIENTE',w:260,align:'left'},
+    {label:'MODALIDADE',w:118,align:'left'},
+    {label:'COMPARECIMENTO',w:148,align:'center'},
+    {label:'SESSÕES PAGAS',w:122,align:'center'},
+    {label:'VALOR RECEBIDO',w:136,align:'right'}
+  ];
+  const padX=28,padTop=26,headerH=totaisTexto?62:56,theadH=38,rowH=38,tfootH=38,padBot=24;
+  const tableW=cols.reduce((s,c)=>s+c.w,0);
+  const W=tableW+padX*2;
+  const H=padTop+headerH+theadH+rows.length*rowH+tfootH+padBot;
+  const scale=2;
+  const canvas=document.createElement('canvas');
+  canvas.width=W*scale;canvas.height=H*scale;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(scale,scale);
+
+  ctx.fillStyle='#fbfaf6';
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle='#2f3425';
+  ctx.font='700 20px "Playfair Display", Georgia, serif';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillText(nomePaciente?`Atendimentos — ${nomePaciente}`:'Atendimentos — detalhado',padX,padTop+20);
+  ctx.fillStyle='#6c705f';
+  ctx.font='400 12.5px "DM Sans", system-ui, sans-serif';
+  ctx.fillText(subtitulo,padX,padTop+42);
+
+  const tableTop=padTop+headerH;
+  ctx.fillStyle='#ffffff';
+  ctx.strokeStyle='#e4dfd1';
+  ctx.lineWidth=1;
+  ctx.fillRect(padX,tableTop,tableW,theadH+rows.length*rowH+tfootH);
+  ctx.strokeRect(padX+0.5,tableTop+0.5,tableW-1,theadH+rows.length*rowH+tfootH-1);
+
+  ctx.fillStyle='#f6f3ea';
+  ctx.fillRect(padX+1,tableTop+1,tableW-2,theadH-1);
+  ctx.beginPath();ctx.moveTo(padX,tableTop+theadH+0.5);ctx.lineTo(padX+tableW,tableTop+theadH+0.5);ctx.strokeStyle='#e4dfd1';ctx.stroke();
+
+  ctx.fillStyle='#6c705f';
+  ctx.font='700 10.5px "DM Sans", system-ui, sans-serif';
+  ctx.textBaseline='middle';
+  let xPos=padX;
+  for(const col of cols){
+    ctx.textAlign=col.align;
+    const tx=col.align==='center'?xPos+col.w/2:(col.align==='right'?xPos+col.w-12:xPos+12);
+    ctx.fillText(col.label,tx,tableTop+theadH/2);
+    xPos+=col.w;
+  }
+
+  const badgeInfo=v=>({'Sim':['#e8f3e4','#356632','#9ec397','Compareceu'],'Não':['#fbeaea','#9e2a25','#dfa4a1','Faltou'],'Cancelado':['#efede6','#6a685f','#c8c3b4','Cancelado']}[v]||null);
+  const truncar=(txt,maxW)=>{
+    let s=String(txt||'');
+    if(ctx.measureText(s).width<=maxW)return s;
+    while(s.length>1&&ctx.measureText(s+'…').width>maxW)s=s.slice(0,-1);
+    return s+'…';
+  };
+
+  rows.forEach((r,idx)=>{
+    const ry=tableTop+theadH+idx*rowH;
+    if(idx%2===1){ctx.fillStyle='#fcfbf8';ctx.fillRect(padX+1,ry,tableW-2,rowH);}
+    if(idx>0){ctx.beginPath();ctx.moveTo(padX,ry+0.5);ctx.lineTo(padX+tableW,ry+0.5);ctx.strokeStyle='#eee9dc';ctx.stroke();}
+
+    const vals=[
+      String(idx+1),
+      r.data_sessao.split('-').reverse().join('/'),
+      r.horario||'',
+      r.pacientes?.nome||'',
+      r.modalidade||'',
+      r.comparecimento||'',
+      String(r.sessoes_cobradas||0),
+      `R$ ${Number(r.valor_final||0).toFixed(2)}`
+    ];
+
+    let cx=padX;
+    cols.forEach((col,ci)=>{
+      const cy=ry+rowH/2;
+      if(ci===5){
+        const b=badgeInfo(vals[ci]);
+        if(b){
+          const bw=104,bh=22,bx=cx+(col.w-bw)/2,by=cy-bh/2;
+          ctx.fillStyle=b[0];ctx.strokeStyle=b[2];ctx.lineWidth=1;
+          ctx.beginPath();ctx.roundRect(bx,by,bw,bh,11);ctx.fill();ctx.stroke();
+          ctx.fillStyle=b[1];ctx.font='600 11.5px "DM Sans", system-ui, sans-serif';
+          ctx.textAlign='center';ctx.fillText(b[3],cx+col.w/2,cy+0.5);
+        }else if(vals[ci]){
+          ctx.fillStyle='#2f3425';ctx.font='500 12px "DM Sans", system-ui, sans-serif';
+          ctx.textAlign='center';ctx.fillText(truncar(vals[ci],col.w-16),cx+col.w/2,cy);
+        }
+      }else{
+        ctx.fillStyle=ci===0?'#7c806f':'#2f3425';
+        ctx.font=(ci===3?'700':'400')+' 12.5px "DM Sans", system-ui, sans-serif';
+        ctx.textAlign=col.align;
+        const tx=col.align==='center'?cx+col.w/2:(col.align==='right'?cx+col.w-12:cx+12);
+        ctx.fillText(truncar(vals[ci],col.w-22),tx,cy);
+      }
+      cx+=col.w;
+    });
+  });
+
+  const tfootTop=tableTop+theadH+rows.length*rowH;
+  const totalComp=rows.filter(r=>r.comparecimento==='Sim').length;
+  const totalPagas=rows.reduce((s,r)=>s+Number(r.sessoes_cobradas||0),0);
+  ctx.fillStyle='#f6f3ea';
+  ctx.fillRect(padX+1,tfootTop,tableW-2,tfootH-1);
+  ctx.beginPath();ctx.moveTo(padX,tfootTop+0.5);ctx.lineTo(padX+tableW,tfootTop+0.5);ctx.strokeStyle='#e4dfd1';ctx.stroke();
+  ctx.fillStyle='#2f3425';
+  ctx.font='700 12.5px "DM Sans", system-ui, sans-serif';
+  ctx.textBaseline='middle';
+  ctx.textAlign='left';
+  ctx.fillText('Total',padX+12,tfootTop+tfootH/2);
+  let fx=padX;
+  cols.forEach((col,ci)=>{
+    if(ci===5){ctx.textAlign=col.align;ctx.fillText(String(totalComp),fx+col.w/2,tfootTop+tfootH/2);}
+    if(ci===6){ctx.textAlign=col.align;ctx.fillText(String(totalPagas),fx+col.w/2,tfootTop+tfootH/2);}
+    fx+=col.w;
+  });
+
+  const slug=(nomePaciente||'detalhado').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const filename=`atendimentos-${slug}${mes?'-'+mes:''}.png`;
+  const link=document.createElement('a');
+  link.download=filename;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
 }
 function abrirModalSessao(id){
   const row=_dsessRows.find(x=>x.id===id);

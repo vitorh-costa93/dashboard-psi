@@ -2645,8 +2645,8 @@ function renderSessoesDetalhado(){
     if(rows.length){
       const totalComp=rows.filter(x=>x.comparecimento==='Sim').length;
       const totalPagas=rows.reduce((s,x)=>s+Number(x.sessoes_cobradas||0),0);
-      document.getElementById('dsess-total-comp').textContent=String(totalComp);
-      document.getElementById('dsess-total-pagas').textContent=String(totalPagas);
+      document.getElementById('dsess-total-comp').textContent=`${totalComp} ${totalComp===1?'comparecimento':'comparecimentos'}`;
+      document.getElementById('dsess-total-pagas').textContent=`${totalPagas} ${totalPagas===1?'sessão paga':'sessões pagas'}`;
       tfoot.style.display='';
     }else{
       tfoot.style.display='none';
@@ -2769,18 +2769,20 @@ function exportarImagemSessoesDetalhado(){
   const tfootTop=tableTop+theadH+rows.length*rowH;
   const totalComp=rows.filter(r=>r.comparecimento==='Sim').length;
   const totalPagas=rows.reduce((s,r)=>s+Number(r.sessoes_cobradas||0),0);
+  const totalCompTxt=`${totalComp} ${totalComp===1?'comparecimento':'comparecimentos'}`;
+  const totalPagasTxt=`${totalPagas} ${totalPagas===1?'sessão paga':'sessões pagas'}`;
   ctx.fillStyle='#f6f3ea';
   ctx.fillRect(padX+1,tfootTop,tableW-2,tfootH-1);
   ctx.beginPath();ctx.moveTo(padX,tfootTop+0.5);ctx.lineTo(padX+tableW,tfootTop+0.5);ctx.strokeStyle='#e4dfd1';ctx.stroke();
   ctx.fillStyle='#2f3425';
-  ctx.font='700 12.5px "DM Sans", system-ui, sans-serif';
+  ctx.font='700 12px "DM Sans", system-ui, sans-serif';
   ctx.textBaseline='middle';
   ctx.textAlign='left';
   ctx.fillText('Total',padX+12,tfootTop+tfootH/2);
   let fx=padX;
   cols.forEach((col,ci)=>{
-    if(ci===5){ctx.textAlign=col.align;ctx.fillText(String(totalComp),fx+col.w/2,tfootTop+tfootH/2);}
-    if(ci===6){ctx.textAlign=col.align;ctx.fillText(String(totalPagas),fx+col.w/2,tfootTop+tfootH/2);}
+    if(ci===5){ctx.textAlign=col.align;ctx.fillText(totalCompTxt,fx+col.w/2,tfootTop+tfootH/2);}
+    if(ci===6){ctx.textAlign=col.align;ctx.fillText(totalPagasTxt,fx+col.w/2,tfootTop+tfootH/2);}
     fx+=col.w;
   });
 

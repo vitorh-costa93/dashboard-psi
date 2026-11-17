@@ -71,3 +71,19 @@ test('API bloqueia o antigo upsert de pacientes por nome', async () => {
   assert.match(api, /table === 'pacientes' && action === 'upsert'/);
   assert.match(api, /sincronização legada de pacientes foi desativada/);
 });
+
+test('cadastro de paciente padroniza faixa etária Adulta e reflete modalidade no Dashboard', async () => {
+  const html = await read('index.html');
+  const api = await read('api/operational.js');
+  const sql = await read('supabase/migrations/20261117093000_pacientes_modalidade_e_faixa_adulta.sql');
+  assert.match(html, /id="perfil-faixa">[^<]*<option value="">—<\/option><option>Criança<\/option><option>Adolescente<\/option><option>Adulta<\/option>/);
+  assert.match(html, /id="agenda-faixa">[^<]*<option value="">—<\/option><option>Criança<\/option><option>Adolescente<\/option><option>Adulta<\/option>/);
+  assert.match(html, /id="perfil-modalidade">[^<]*<option value="">Não informada<\/option><option>Online<\/option><option>Presencial<\/option>/);
+  assert.match(html, /id="agenda-modalidade">[^<]*<option value="">Não informada<\/option><option>Online<\/option><option>Presencial<\/option>/);
+  assert.match(html, /if\(c\.modalidade\)p\._modalidade=c\.modalidade/);
+  assert.match(api, /normalizarFaixa/);
+  assert.match(api, /x\.pacientes\?\.modalidade\|\|x\.modalidade/);
+  assert.match(api, /r\.pacientes\?\.modalidade\|\|r\.modalidade/);
+  assert.match(sql, /ADD COLUMN IF NOT EXISTS modalidade text/);
+  assert.match(sql, /SET faixa_etaria = 'Adulta'/);
+});

@@ -935,7 +935,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 10px">Vínculo clínico</h4>
     <div class="agenda-form-grid">
       <div class="gen-field"><label>Gênero</label><select id="perfil-genero"><option value="">—</option><option value="F">Feminino</option><option value="M">Masculino</option><option value="Outro">Outro</option></select></div>
-      <div class="gen-field"><label>Faixa etária</label><select id="perfil-faixa"><option value="">—</option><option>Criança</option><option>Adolescente</option><option>Adulto</option><option>Idoso</option></select></div>
+      <div class="gen-field"><label>Faixa etária</label><select id="perfil-faixa"><option value="">—</option><option>Criança</option><option>Adolescente</option><option>Adulta</option><option>Idoso</option></select></div>
       <div class="gen-field"><label>Início dos atendimentos</label><input type="date" id="perfil-inicio-atendimentos"></div>
       <div class="gen-field"><label>Data da Anamnese</label><input type="text" id="perfil-data-anamnese" readonly title="Preenchida automaticamente quando a primeira Anamnese do paciente é concluída"></div>
     </div>
@@ -1008,7 +1008,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="gen-field"><label>Responsável (se aplicável)</label><input id="agenda-responsavel" maxlength="160"></div>
       <div class="gen-field"><label>CPF do responsável</label><input id="agenda-cpf-responsavel" inputmode="numeric" maxlength="14"></div>
       <div class="gen-field"><label>Gênero</label><select id="agenda-genero"><option value="">—</option><option value="F">Feminino</option><option value="M">Masculino</option><option value="Outro">Outro</option></select></div>
-      <div class="gen-field"><label>Faixa etária</label><select id="agenda-faixa"><option value="">—</option><option>Criança</option><option>Adolescente</option><option>Adulto</option><option>Idoso</option></select></div>
+      <div class="gen-field"><label>Faixa etária</label><select id="agenda-faixa"><option value="">—</option><option>Criança</option><option>Adolescente</option><option>Adulta</option><option>Idoso</option></select></div>
       <div class="gen-field"><label>Início dos atendimentos</label><input type="date" id="agenda-inicio-atendimentos"></div>
       <div class="gen-field"><label>Status</label><select id="agenda-paciente-status" onchange="agendaStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div>
       <div class="gen-field" id="agenda-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="agenda-pausado-ate"></div>
@@ -2920,11 +2920,11 @@ function updateProfileBars(){
     const p=porPac[r._paciente]||(porPac[r._paciente]={});
     ['_genero','_faixaEtaria','_modalidade'].forEach(k=>{if(r[k])p[k]=r[k];});
   });
-  // O cadastro do paciente (Gênero / Faixa etária) prevalece sobre o que veio nas sessões.
-  Object.values(_pacientesById||{}).forEach(c=>{const p=porPac[c.nome];if(!p)return;if(c.genero)p._genero=c.genero;if(c.faixa_etaria)p._faixaEtaria=c.faixa_etaria;});
+  // O cadastro do paciente (Gênero / Faixa etária / Modalidade) prevalece sobre o que veio nas sessões.
+  Object.values(_pacientesById||{}).forEach(c=>{const p=porPac[c.nome];if(!p)return;if(c.genero)p._genero=c.genero;if(c.faixa_etaria)p._faixaEtaria=c.faixa_etaria==='Adulto'?'Adulta':c.faixa_etaria;if(c.modalidade)p._modalidade=c.modalidade;});
   const rotuloGenero=g=>g==='F'?'Feminino':g==='M'?'Masculino':g;
   const grupos={};
-  Object.entries(porPac).forEach(([nome,p])=>{const g=rotuloGenero(p[campo]||'')||'Não informado';(grupos[g]||(grupos[g]=[])).push(iniciais(nome));});
+  Object.entries(porPac).forEach(([nome,p])=>{let val=p[campo]||'';if(sel==='faixa'&&val==='Adulto')val='Adulta';const g=(sel==='genero'?rotuloGenero(val):val)||'Não informado';(grupos[g]||(grupos[g]=[])).push(iniciais(nome));});
   const primeiroNum=l=>{const m=String(l).match(/\d+/);return m?Number(m[0]):Infinity;};
   const lista=Object.entries(grupos).sort((a,b)=>{
     if(a[0]==='Não informado')return 1;if(b[0]==='Não informado')return -1;
@@ -5972,7 +5972,7 @@ async function abrirPerfilPaciente(id){
   document.getElementById('perfil-cpf-responsavel').value=p.cpf_responsavel||'';
   document.getElementById('perfil-inicio-atendimentos').value=p.inicio_atendimentos||'';
   const selComValor=(id,v)=>{const el=document.getElementById(id);v=v||'';if(v&&![...el.options].some(o=>(o.value||o.text)===v))el.add(new Option(v,v));el.value=v;};
-  selComValor('perfil-genero',p.genero);selComValor('perfil-faixa',p.faixa_etaria);
+  selComValor('perfil-genero',p.genero);selComValor('perfil-faixa',p.faixa_etaria==='Adulto'?'Adulta':p.faixa_etaria);
   document.getElementById('perfil-data-anamnese').value=p.data_anamnese?String(p.data_anamnese).split('-').reverse().join('/'):'Ainda não registrada';
   const saldo=Number(_agendaState.balances?.[id]||0),transferWrap=document.getElementById('perfil-transfer-wrap');
   transferWrap.style.display=saldo>0?'block':'none';
@@ -5980,7 +5980,7 @@ async function abrirPerfilPaciente(id){
   document.getElementById('perfil-frequencia').value=r?.frequencia||'';
   document.getElementById('perfil-dia').value=r?.dia_semana||1;
   document.getElementById('perfil-horario').value=String(r?.horario||'').slice(0,5);
-  document.getElementById('perfil-modalidade').value=r?.modalidade||'';
+  selComValor('perfil-modalidade',p.modalidade||r?.modalidade||'');
   document.getElementById('perfil-valor').value=r?.valor_sessao||'';
   document.getElementById('perfil-vigencia').value=agendaHoje();
   const prox=document.getElementById('perfil-proxima');prox.value='';prox.dataset.original='';
@@ -6012,7 +6012,7 @@ async function salvarPerfilPaciente(){
   const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-nome').value.trim();
   if(!nome)return toast('Informe o nome completo do paciente.');
   try{
-    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cpf_paciente:document.getElementById('perfil-cpf-paciente').value||null,cpf_responsavel:document.getElementById('perfil-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('perfil-inicio-atendimentos').value||null,genero:document.getElementById('perfil-genero').value||null,faixa_etaria:document.getElementById('perfil-faixa').value||null,cancel_future:true});
+    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cpf_paciente:document.getElementById('perfil-cpf-paciente').value||null,cpf_responsavel:document.getElementById('perfil-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('perfil-inicio-atendimentos').value||null,genero:document.getElementById('perfil-genero').value||null,faixa_etaria:document.getElementById('perfil-faixa').value||null,modalidade:document.getElementById('perfil-modalidade').value||null,cancel_future:true});
     const freq=document.getElementById('perfil-frequencia').value;
     const proxEl=document.getElementById('perfil-proxima');if(proxEl.value&&proxEl.value!==proxEl.dataset.original)perfilProximaMudou();
     if(freq){
@@ -6056,7 +6056,7 @@ async function abrirDocumentosDoPaciente(){
 function abrirCadastroPaciente(){limparPacienteAgenda();document.getElementById('agenda-paciente-overlay').classList.add('open');setTimeout(()=>document.getElementById('agenda-nome').focus(),0)}
 function fecharCadastroPaciente(){document.getElementById('agenda-paciente-overlay').classList.remove('open')}
 function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-cpf-paciente','agenda-nascimento','agenda-responsavel','agenda-cpf-responsavel','agenda-inicio-atendimentos','agenda-genero','agenda-faixa','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
-async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cpf_paciente:document.getElementById('agenda-cpf-paciente').value||null,cpf_responsavel:document.getElementById('agenda-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('agenda-inicio-atendimentos').value||null,genero:document.getElementById('agenda-genero').value||null,faixa_etaria:document.getElementById('agenda-faixa').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
+async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cpf_paciente:document.getElementById('agenda-cpf-paciente').value||null,cpf_responsavel:document.getElementById('agenda-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('agenda-inicio-atendimentos').value||null,genero:document.getElementById('agenda-genero').value||null,faixa_etaria:document.getElementById('agenda-faixa').value||null,modalidade:document.getElementById('agenda-modalidade').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
   // Gera as ocorrencias do mes exibido na hora -- sem isso, a recorrencia ficava
   // salva mas nao aparecia em "Atendimentos" ate clicar manualmente em "Gerar mes".
   await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value||agendaMesAtual()});}toast(planoNome?`Paciente salvo. ${planoNome} associado.`:'Paciente salvo.');limparPacienteAgenda();fecharCadastroPaciente();await carregarAgenda()}catch(e){toast(e.message,5000)}}

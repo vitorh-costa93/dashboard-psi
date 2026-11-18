@@ -633,6 +633,32 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
    para deixar a área de atendimentos com largura total. */
 #page-agenda .agenda-layout{grid-template-columns:minmax(210px,240px) minmax(0,1fr)}
 @media(max-width:1120px){#page-agenda .agenda-layout{grid-template-columns:1fr}}
+.dsess-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.dsess-totais-bar{font-size:.82rem;font-weight:600;color:#4e553e;background:#f6f3ea;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 12px;line-height:1.4}
+#dsess-table .dsess-cell-num{text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+#dsess-table .dsess-cell-pago{text-align:center;font-size:1rem}
+#dsess-table tfoot .dsess-total-row{font-weight:700;background:#f6f3ea}
+@media(max-width:640px){
+  .dsess-toolbar{display:grid;grid-template-columns:1fr;gap:10px}
+  .dsess-toolbar .gen-field{width:100%!important;min-width:0!important}
+  .dsess-toolbar #dsess-export-img-btn{width:100%;margin-left:0!important}
+  .dsess-totais-bar{font-size:.86rem;padding:10px 12px;margin-bottom:12px}
+  #dsess-table tfoot{display:block;width:100%}
+  #dsess-table tbody td::before{flex:0 0 116px}
+  #dsess-table tbody td:nth-child(3){display:flex;font-size:inherit;padding-bottom:7px}
+  #dsess-table tbody td:nth-child(3)::before{display:block}
+  #dsess-table tbody td:nth-child(4){display:block;font-size:.96rem;padding:6px 0 8px;border-bottom:1px solid #f0ece0;margin-bottom:4px}
+  #dsess-table tbody td:nth-child(4)::before{display:none}
+  #dsess-table tbody .dsess-cell-num,#dsess-table tbody .dsess-cell-pago{text-align:right}
+  #dsess-table tbody td:last-child{justify-content:flex-end;padding-top:6px;border-top:1px dashed #eee9dc;margin-top:4px}
+  #dsess-table tbody td:last-child::before{display:none}
+  #dsess-table tfoot tr.dsess-total-row{background:#f6f3ea;border:1.5px solid #cfc7b2;padding:12px 14px;margin-top:8px}
+  #dsess-table tfoot td.dsess-total-title{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#4e553e;border-bottom:1px solid #e2dac6;padding:0 0 7px;margin-bottom:6px}
+  #dsess-table tfoot td.dsess-total-title::before{display:none}
+  #dsess-table tfoot td#dsess-total-comp,#dsess-table tfoot td#dsess-total-pagas{font-size:.96rem;font-weight:700;color:#2f3425;padding:7px 0;text-align:right}
+  #dsess-table tfoot td#dsess-total-comp::before,#dsess-table tfoot td#dsess-total-pagas::before{flex:0 0 130px;color:#5c614f}
+  #dsess-table tfoot td.dsess-total-spacer{display:none}
+}
 /* Mantém a coluna de paciente compacta e a lista lateral sem rolagem horizontal. */
 #page-agenda .agenda-table th:nth-child(3),#page-agenda .agenda-table td:nth-child(3){width:112px;max-width:112px;white-space:normal;overflow-wrap:anywhere;}
 #page-agenda .agenda-table td:nth-child(3) strong{display:block;overflow-wrap:anywhere;}
@@ -849,7 +875,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
 
     <div id="dashsub-atend">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+      <div class="dsess-toolbar">
         <div class="gen-field" style="min-width:220px"><label>Paciente</label>
           <div class="combo" id="dsess-paciente-combo">
             <button type="button" class="combo-trigger" onclick="comboToggle('dsess-paciente-combo')"><span class="combo-value placeholder" id="dsess-paciente-combo-value">Todos</span><span class="combo-caret">▾</span></button>
@@ -860,9 +886,9 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
         <button type="button" class="btn-secondary" id="dsess-export-img-btn" onclick="exportarImagemSessoesDetalhado()" style="margin-left:auto">🖼 Exportar imagem</button>
       </div>
-      <div id="dsess-totais" style="display:none;font-size:.78rem;color:var(--muted);margin:-6px 0 12px"></div>
+      <div id="dsess-totais" class="dsess-totais-bar" style="display:none"></div>
       <div class="agenda-table-wrap">
-        <table class="agenda-table">
+        <table class="agenda-table" id="dsess-table">
           <thead><tr>
             <th style="width:44px;text-align:center">#</th>
             <th data-tabela="dsess" data-col="data" onclick="ordenarTabela('dsess','data');renderSessoesDetalhado()">Data</th>
@@ -875,7 +901,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
             <th></th>
           </tr></thead>
           <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
-          <tfoot id="dsess-tfoot" style="display:none"><tr style="font-weight:700;background:#f6f3ea"><td colspan="5">Total</td><td id="dsess-total-comp">—</td><td id="dsess-total-pagas">—</td><td colspan="2"></td></tr></tfoot>
+          <tfoot id="dsess-tfoot" style="display:none"><tr class="dsess-total-row"><td colspan="5" class="dsess-total-title">Total</td><td id="dsess-total-comp" data-label="Comparecimentos">—</td><td id="dsess-total-pagas" data-label="Sessões Pagas">—</td><td colspan="2" class="dsess-total-spacer"></td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -2627,7 +2653,7 @@ function renderSessoesDetalhado(){
     :(x.paga===false?'<span title="Sessão não paga (em aberto)" aria-label="Sessão não paga">❌</span>':'<span style="color:var(--muted)" title="Não consome sessão">—</span>');
   tbody.innerHTML=rows.length?rows.map((x,idx)=>{
     const date=x.data_sessao.split('-').reverse().join('/');
-    return `<tr><td data-label="#" style="text-align:center;color:var(--muted);font-variant-numeric:tabular-nums">${idx+1}</td><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas" style="text-align:center">${badgePago(x)}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
+    return `<tr><td data-label="#" class="dsess-cell-num">${idx+1}</td><td data-label="Data">${date}</td><td data-label="Horário">${agendaEscape(x.horario||'')}</td><td data-label="Paciente"><strong>${agendaEscape(x.pacientes?.nome||'')}</strong></td><td data-label="Modalidade">${agendaEscape(x.modalidade||'')}</td><td data-label="Comparecimento">${pillComparecimento(x.comparecimento)}</td><td data-label="Sessões Pagas" class="dsess-cell-pago">${badgePago(x)}</td><td data-label="Valor Recebido">R$ ${Number(x.valor_final||0).toFixed(2)}</td><td>${x.wellz?'':`<button class="btn-xs" onclick="abrirModalSessao('${x.id}')" title="Editar">✏️</button>`}</td></tr>`;
   }).join(''):'<tr><td colspan="9" class="agenda-empty">Nenhum atendimento nesse filtro.</td></tr>';
   marcarSetaOrdenacao('dsess');
   // Totais só fazem sentido com um paciente escolhido (senão seria a soma

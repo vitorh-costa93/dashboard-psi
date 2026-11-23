@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
-import { modelFor, imageQuality } from '../lib/ai-models.js';
+import { resolveModelFor, imageQuality } from '../lib/ai-models.js';
 import { logAiUsage } from '../lib/ai-usage.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
 import { buscarPreferenciaTexto, aprenderComAjusteChat } from '../lib/aprendizado.js';
@@ -13,18 +13,15 @@ import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 // Story image still came out perfectly square before because this was
 // hardcoded to 1024x1024 regardless of what the prompt asked for.
 const ALLOWED_SIZES = new Set(['1024x1024', '1024x1536', '1536x1024']);
-// Modelo e qualidade de imagem vêm de lib/ai-models.js (tarefa 'image').
-const IMAGE_MODEL = modelFor('image');
-
 // Chama a API de imagens e registra uso/custo (sem usage na resposta, usa custo fixo por imagem).
-async function chamarImagem(url, options, timing) {
+async function chamarImagem(url, options, timing, model) {
   const t0 = Date.now();
   let r;
   try { r = await fetchComRetentativa(url, options, timing); }
-  catch (e) { await logAiUsage({task: 'image', model: IMAGE_MODEL, ok: false, durationMs: Date.now() - t0, error: e.message}); throw e; }
+  catch (e) { await logAiUsage({task: 'image', model, ok: false, durationMs: Date.now() - t0, error: e.message}); throw e; }
   let corpo = null;
   try { corpo = await (typeof r.clone === 'function' ? r.clone() : r).json(); } catch { /* corpo não-JSON: segue sem usage */ }
-  await logAiUsage({task: 'image', model: IMAGE_MODEL, ok: r.ok, usage: corpo?.usage, imageFallback: true, durationMs: Date.now() - t0, error: r.ok ? undefined : corpo?.error?.message || `HTTP ${r.status}`});
+  await logAiUsage({task: 'image', model, ok: r.ok, usage: corpo?.usage, imageFallback: true, durationMs: Date.now() - t0, error: r.ok ? undefined : corpo?.error?.message || `HTTP ${r.status}`});
   return r;
 }
 
@@ -118,7 +115,7 @@ ${PERFIL_JAQUELINE}`;
       : pedidoTexto;
 
     try {
-      const textModel = modelFor('text'), t0 = Date.now();
+      const textModel = await resolveModelFor('text', { apiKey }), t0 = Date.now();
       let r;
       try {
       r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {
@@ -173,6 +170,7 @@ ${PERFIL_JAQUELINE}`;
   }
 
   if (type === 'image') {
+    const imageModel = await resolveModelFor('image', { apiKey });
     // Sem logo: geração de texto-pra-imagem normal. Com logo (pedida
     // explicitamente no chat), usa o endpoint de edição passando a logo
     // como imagem-base de entrada, com instrução pra só posicioná-la num
@@ -187,7 +185,7 @@ ${PERFIL_JAQUELINE}`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: IMAGE_MODEL,
+            model: imageModel,
             prompt,
             n: 1,
             size: finalSize,
@@ -203,7 +201,7 @@ ${PERFIL_JAQUELINE}`;
         // precisava de mais tempo. Sem retentativa: se a 1a chamada gastar
         // 90s so pra falhar, uma 2a tentativa nunca caberia no orcamento
         // mesmo assim.
-        }, {tentativas: 0, timeoutMs: 90000});
+        }, {tentativas: 0, timeoutMs: 90000}, imageModel);
         if (!r.ok) {
           const err = await r.json().catch(() => ({}));
           return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2.5' });
@@ -218,7 +216,7 @@ ${PERFIL_JAQUELINE}`;
     try {
       const logoBuffer = await readFile(LOGO_PATH);
       const form = new FormData();
-      form.append('model', IMAGE_MODEL);
+      form.append('model', imageModel);
       form.append('image[]', new Blob([logoBuffer], { type: 'image/png' }), 'logo.png');
       const promptComLogo = `You are given one image: the clinic's logo, on a transparent or plain background. Generate a brand new illustration as described below, and place this exact logo small and tastefully in a corner of the new image (e.g. bottom-right), without altering the logo itself. The logo is a small brand mark, not the main subject -- the illustration described below is the main content. ${prompt}`;
       form.append('prompt', promptComLogo);
@@ -229,7 +227,7 @@ ${PERFIL_JAQUELINE}`;
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}` },
         body: form,
-      }, {tentativas: 0, timeoutMs: 90000});
+      }, {tentativas: 0, timeoutMs: 90000}, imageModel);
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro no GPT Image 2.5' });
@@ -256,8 +254,9 @@ ${PERFIL_JAQUELINE}`;
       return res.status(400).json({ error: 'Imagem grande demais para edição por IA' });
     }
     try {
+      const imageModel = await resolveModelFor('image', { apiKey });
       const form = new FormData();
-      form.append('model', IMAGE_MODEL);
+      form.append('model', imageModel);
       // A OpenAI rejeita duas entradas 'image' repetidas ("Duplicate
       // parameter") -- múltiplas imagens precisam usar a sintaxe de array
       // 'image[]', mesmo quando só uma é enviada.
@@ -300,7 +299,7 @@ ${PERFIL_JAQUELINE}`;
       // precisava de mais tempo. Sem retentativa: se a 1a chamada gastar
       // 90s so pra falhar, uma 2a tentativa nunca caberia no orcamento
       // mesmo assim.
-      }, {tentativas: 0, timeoutMs: 90000});
+      }, {tentativas: 0, timeoutMs: 90000}, imageModel);
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         return res.status(r.status).json({ error: err?.error?.message || 'Erro ao editar imagem' });

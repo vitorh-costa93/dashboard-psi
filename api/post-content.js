@@ -1,7 +1,7 @@
 // Gera conteúdo educativo para posts. A publicação no Instagram não é feita.
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
-import { modelFor } from '../lib/ai-models.js';
+import { resolveModelFor } from '../lib/ai-models.js';
 import { logAiUsage } from '../lib/ai-usage.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
@@ -124,7 +124,7 @@ ${PERFIL_JAQUELINE}`;
     // timeoutMs:30000} podia chegar a ~91s de retentativa interna sem
     // nenhum limite explícito no vercel.json (achado numa varredura depois
     // que a geração de imagem estourou o próprio limite dela em produção).
-    const model=modelFor('post'),t0=Date.now();
+    const model=await resolveModelFor('post',{apiKey}),t0=Date.now();
     let r;
     try{r=await fetchComRetentativa('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model,messages,response_format:{type:'json_schema',json_schema:POST_SCHEMA}})},{tentativas:1,timeoutMs:20000});}
     catch(e){await logAiUsage({task:'post',model,ok:false,durationMs:Date.now()-t0,error:e.message});throw e;}

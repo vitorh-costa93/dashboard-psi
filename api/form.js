@@ -4,6 +4,18 @@ import {encryptClinicalData} from './_clinical-crypto.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 
+function cpfValido(v){
+  const d=String(v||'').replace(/\D/g,'');
+  if(d.length!==11||/^(\d)\1{10}$/.test(d))return false;
+  for(const pos of [9,10]){
+    let soma=0;
+    for(let i=0;i<pos;i++)soma+=Number(d[i])*(pos+1-i);
+    const resto=(soma*10)%11;
+    if((resto===10?0:resto)!==Number(d[pos]))return false;
+  }
+  return true;
+}
+
 export default async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   const token=String(req.query?.token||req.body?.token||'');
@@ -23,7 +35,9 @@ export default async function handler(req,res){
       const conteudo=req.body?.conteudo;if(!conteudo||typeof conteudo!=='object'||Array.isArray(conteudo)||JSON.stringify(conteudo).length>131072)return res.status(400).json({error:'Resposta inválida'});
       for(const campo of ['cpf','cpf_paciente','cpf_responsavel']){
         const valor=String(conteudo[campo]??'').trim();
-        if(valor&&valor.replace(/\D/g,'').length!==11)return res.status(400).json({error:'Informe o CPF completo, com 11 dígitos.'});
+        if(!valor)continue;
+        if(valor.replace(/\D/g,'').length!==11)return res.status(400).json({error:'Informe o CPF completo, com 11 dígitos.'});
+        if(!cpfValido(valor))return res.status(400).json({error:'CPF inválido. Confira os dígitos informados.'});
       }
       const response=await supabase('/rest/v1/rpc/enviar_formulario_externo',{method:'POST',body:JSON.stringify({p_token_hash:tokenHash,p_conteudo:encryptClinicalData(conteudo)})});
       return res.status(response.ok?201:404).json(response.ok?{ok:true}:{error:'Link inválido, expirado ou já utilizado'});

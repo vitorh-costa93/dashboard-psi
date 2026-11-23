@@ -1686,6 +1686,36 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   </div>
 </div>
 
+<!-- Modal de diálogo próprio (substitui alert/confirm/prompt nativos) -->
+<div class="modal-overlay" id="app-dialog-overlay" style="z-index:10050" onclick="if(event.target===this)_fecharAppDialog(null)">
+  <div class="modal" style="max-width:440px" role="dialog" aria-modal="true" aria-labelledby="app-dialog-title">
+    <h3 id="app-dialog-title">Confirmar</h3>
+    <p id="app-dialog-msg" style="font-size:.86rem;line-height:1.5;color:var(--text);white-space:pre-line;margin:8px 0 14px"></p>
+    <input id="app-dialog-input" type="text" style="display:none;width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font:inherit;margin-bottom:14px" autocomplete="off"/>
+    <div class="modal-actions" style="justify-content:flex-end">
+      <button type="button" class="btn-secondary" id="app-dialog-cancel" onclick="_fecharAppDialog(false)">Cancelar</button>
+      <button type="button" class="btn-primary" id="app-dialog-ok" onclick="_confirmarAppDialog()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de reautenticação sem recarregar a página (preserva texto digitado) -->
+<div class="modal-overlay" id="reauth-modal-overlay" style="z-index:10040">
+  <div class="modal" style="max-width:400px" role="dialog" aria-modal="true" aria-labelledby="reauth-title">
+    <h3 id="reauth-title">Sessão expirada</h3>
+    <p id="reauth-hint" style="font-size:.82rem;line-height:1.5;color:var(--muted);margin:6px 0 14px">Sua sessão expirou. Digite sua senha para continuar sem perder o que você estava digitando.</p>
+    <form id="reauth-form" onsubmit="enviarReauth(event)">
+      <label class="auth-field"><span>E-mail</span><input id="reauth-email" type="email" autocomplete="username" required/></label>
+      <label class="auth-field" style="margin-top:10px"><span>Senha</span><input id="reauth-password" type="password" autocomplete="current-password" required/></label>
+      <div id="reauth-error" class="auth-message" role="alert" style="margin-top:8px"></div>
+      <div class="modal-actions" style="margin-top:14px;justify-content:flex-end">
+        <button type="button" class="btn-secondary" onclick="sair()">Sair</button>
+        <button type="submit" class="btn-primary" id="reauth-submit">Continuar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 </div>
@@ -1720,6 +1750,98 @@ function mostrarDigitando(msgsId){
   wrap.appendChild(el);wrap.scrollTop=wrap.scrollHeight;
 }
 function esconderDigitando(msgsId){document.getElementById(msgsId+'-typing')?.remove();}
+
+let _appDialogResolve=null,_appDialogMode='confirm';
+function _abrirAppDialog({mode='confirm',title='Confirmar',message='',okText='Confirmar',cancelText='Cancelar',danger=false,placeholder=''}){
+  return new Promise(resolve=>{
+    _appDialogResolve=resolve;_appDialogMode=mode;
+    const ov=document.getElementById('app-dialog-overlay');
+    const titleEl=document.getElementById('app-dialog-title');
+    const msgEl=document.getElementById('app-dialog-msg');
+    const inpEl=document.getElementById('app-dialog-input');
+    const cancelBtn=document.getElementById('app-dialog-cancel');
+    const okBtn=document.getElementById('app-dialog-ok');
+    titleEl.textContent=title;msgEl.textContent=message;
+    okBtn.textContent=okText;
+    okBtn.className=danger?'btn-danger':'btn-primary';
+    cancelBtn.textContent=cancelText;
+    cancelBtn.style.display=mode==='alert'?'none':'inline-flex';
+    inpEl.style.display=mode==='prompt'?'block':'none';
+    inpEl.value='';inpEl.placeholder=placeholder||'';
+    ov.classList.add('open');
+    setTimeout(()=>{(mode==='prompt'?inpEl:okBtn).focus();},20);
+  });
+}
+function _fecharAppDialog(val){
+  const ov=document.getElementById('app-dialog-overlay');
+  ov?.classList.remove('open');
+  const res=_appDialogResolve;_appDialogResolve=null;
+  if(!res)return;
+  if(_appDialogMode==='prompt')res(null);
+  else if(_appDialogMode==='alert')res(undefined);
+  else res(Boolean(val));
+}
+function _confirmarAppDialog(){
+  const ov=document.getElementById('app-dialog-overlay');
+  const val=document.getElementById('app-dialog-input')?.value??'';
+  ov?.classList.remove('open');
+  const res=_appDialogResolve;_appDialogResolve=null;
+  if(!res)return;
+  if(_appDialogMode==='prompt')res(val);
+  else if(_appDialogMode==='alert')res(undefined);
+  else res(true);
+}
+document.addEventListener('keydown',e=>{
+  const ov=document.getElementById('app-dialog-overlay');
+  if(!ov?.classList.contains('open'))return;
+  if(e.key==='Escape'){e.preventDefault();_fecharAppDialog(false);}
+  else if(e.key==='Enter'&&_appDialogMode==='prompt'){e.preventDefault();_confirmarAppDialog();}
+});
+const appAlert=(message,title='Aviso')=>_abrirAppDialog({mode:'alert',title,message,okText:'Entendi'});
+const appConfirm=(message,title='Confirmar',opts={})=>_abrirAppDialog({mode:'confirm',title,message,...opts});
+const appPrompt=(message,title='Confirmação',opts={})=>_abrirAppDialog({mode:'prompt',title,message,...opts});
+
+let _reauthOpen=false;
+function abrirModalReauth(motivo){
+  if(_reauthOpen||document.getElementById('app-shell')?.style.display==='none')return;
+  _reauthOpen=true;
+  const emailAtual=document.getElementById('auth-email')?.value||'';
+  const reEmail=document.getElementById('reauth-email');
+  if(reEmail&&emailAtual)reEmail.value=emailAtual;
+  const rePass=document.getElementById('reauth-password');
+  if(rePass)rePass.value='';
+  const err=document.getElementById('reauth-error');
+  if(err)err.textContent='';
+  const hint=document.getElementById('reauth-hint');
+  if(hint&&motivo)hint.textContent=motivo;
+  document.getElementById('reauth-modal-overlay')?.classList.add('open');
+  setTimeout(()=>{(reEmail?.value?rePass:reEmail)?.focus();},30);
+}
+async function enviarReauth(event){
+  event.preventDefault();
+  const btn=document.getElementById('reauth-submit'),err=document.getElementById('reauth-error');
+  const email=document.getElementById('reauth-email').value.trim(),password=document.getElementById('reauth-password').value;
+  if(btn)btn.disabled=true;if(err)err.textContent='';
+  try{
+    const r=await _nativeFetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Senha inválida');
+    document.getElementById('reauth-modal-overlay')?.classList.remove('open');
+    _reauthOpen=false;
+    toast('✅ Sessão renovada. Você pode continuar de onde parou.');
+  }catch(e){if(err)err.textContent=e.message;}
+  finally{if(btn)btn.disabled=false;}
+}
+const _nativeFetch=window.fetch.bind(window);
+window.fetch=async function(input,init){
+  const r=await _nativeFetch(input,init);
+  const url=typeof input==='string'?input:(input?.url||'');
+  if(r.status===401&&url.startsWith('/api/')&&!url.startsWith('/api/auth/')&&!url.startsWith('/api/form')){
+    abrirModalReauth('Sua sessão expirou. Entre novamente para continuar sem perder o que estava digitando.');
+  }
+  return r;
+};
+
 let _authMode='login';
 // 15/09/2026: a psicóloga teve a sessão encerrada por "inatividade" enquanto
 // editava um relatório longo de verdade. Causa raiz: o controle antigo só
@@ -1744,9 +1866,7 @@ let _idleHiddenAt=null,_idlePingTimer=null,_idleStarted=false;
 
 async function encerrarPorInatividade(){
   if(document.getElementById('app-shell').style.display==='none')return;
-  await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
-  alert('Sua sessão foi encerrada porque o aplicativo ficou fechado ou em segundo plano por mais de 1 hora. Faça o login novamente.');
-  location.reload();
+  abrirModalReauth('Sua sessão foi encerrada porque o aplicativo ficou fechado ou em segundo plano por mais de 1 hora. Digite sua senha para continuar sem perder o que estava digitando.');
 }
 
 function pingSessao(){
@@ -1837,7 +1957,8 @@ async function enviarAcesso(event){
 
 async function sair(){
   clearInterval(_idlePingTimer);
-  await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  try{sessionStorage.removeItem('psi_pront_draft');}catch{}
+  await _nativeFetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
   window.location.reload();
 }
 // Cópia de segurança sob demanda: não há backup automático nem exportação
@@ -2034,7 +2155,7 @@ async function loadData(){
     const hojeMes=new Date();
     buscarAgendaMes(anoMes(hojeMes));
     const [res]=await Promise.all([fetch('/api/operational',{cache:'no-store'}),carregarPacientes()]);
-    if(res.status===401){window.location.reload();return;}
+    if(res.status===401){abrirModalReauth('Sua sessão expirou. Entre novamente e clique em Atualizar.');return;}
     if(!res.ok)throw new Error('HTTP '+res.status);
     const raw=(await res.json()).filter(r=>r['Data']&&String(r['Data']).trim());
     raw.forEach(r=>{
@@ -3696,7 +3817,7 @@ document.addEventListener('keydown',e=>{
 });
 
 async function deletarAtividade(id) {
-  if (!confirm('Excluir esta atividade da biblioteca?')) return;
+  if (!await appConfirm('Excluir esta atividade da biblioteca?','Excluir atividade',{okText:'Excluir',danger:true})) return;
   try {
     await fetch(`/api/data?table=atividades&id=${id}`, { method: 'DELETE' });
     _atividades = _atividades.filter(a=>a.id!==id);
@@ -3959,7 +4080,7 @@ function baixarPPTSalvo(slidesJson, titulo) {
 }
 
 async function deletarApresentacao(id) {
-  if (!confirm('Excluir esta apresentação?')) return;
+  if (!await appConfirm('Excluir esta apresentação?','Excluir apresentação',{okText:'Excluir',danger:true})) return;
   try {
     await fetch(`/api/data?table=atividades&id=${id}`, { method: 'DELETE' });
     renderPPTBiblioteca();
@@ -4900,7 +5021,7 @@ function abrirRascunhoNoEditor(){
 }
 async function excluirRascunhoAtual(){
   if(!_rascunhoAtual?.id)return;
-  if(!confirm('Excluir este rascunho? Esta ação não pode ser desfeita.'))return;
+  if(!await appConfirm('Excluir este rascunho? Esta ação não pode ser desfeita.','Excluir rascunho',{okText:'Excluir',danger:true}))return;
   try{
     const r=await fetch(`/api/data?table=posts&id=${encodeURIComponent(_rascunhoAtual.id)}`,{method:'DELETE'}),data=await r.json().catch(()=>null);
     if(!r.ok)throw new Error(data?.error?.message||data?.error||'Falha ao excluir');
@@ -4956,6 +5077,38 @@ async function initProntuarios() {
   await carregarProntuarios();
   initAnamnese();
   await initFormularios();
+  iniciarRascunhoProntuario();
+}
+function salvarRascunhoProntuario(){
+  try{
+    const pid=document.getElementById('pront-pac')?.value||'';
+    const data=document.getElementById('pront-data')?.value||'';
+    const relato=document.getElementById('pront-relato')?.value||'';
+    if(!relato.trim()&&!pid){sessionStorage.removeItem('psi_pront_draft');return;}
+    sessionStorage.setItem('psi_pront_draft',JSON.stringify({pid,data,relato,savedAt:Date.now()}));
+  }catch{}
+}
+function limparRascunhoProntuario(){try{sessionStorage.removeItem('psi_pront_draft');}catch{}}
+let _prontDraftBound=false;
+function iniciarRascunhoProntuario(){
+  if(!_prontDraftBound){
+    _prontDraftBound=true;
+    ['pront-pac','pront-data','pront-relato'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.addEventListener('input',salvarRascunhoProntuario);el.addEventListener('change',salvarRascunhoProntuario);}
+    });
+  }
+  try{
+    const raw=sessionStorage.getItem('psi_pront_draft');if(!raw)return;
+    const d=JSON.parse(raw);
+    const relatoEl=document.getElementById('pront-relato');
+    if(d?.relato&&relatoEl&&!relatoEl.value.trim()){
+      if(d.pid&&document.getElementById('pront-pac'))document.getElementById('pront-pac').value=d.pid;
+      if(d.data&&document.getElementById('pront-data'))document.getElementById('pront-data').value=d.data;
+      relatoEl.value=d.relato;
+      toast('📝 Rascunho do prontuário restaurado.');
+    }
+  }catch{}
 }
 
 const _anamneseSecoes=[
@@ -5038,7 +5191,7 @@ async function carregarAnamnese(){
 
 async function excluirAnamnese(){
   const item=_anamneseVersoes[Number(document.getElementById('anamnese-versao').value||0)];if(!item)return toast('Nenhuma versão selecionada.');
-  if(!confirm(`Excluir a versão ${item.versao} da anamnese? Ela sairá da visualização e uma nova poderá ser registrada.`))return;
+  if(!await appConfirm(`Excluir a versão ${item.versao} da anamnese? Ela sairá da visualização e uma nova poderá ser registrada.`,'Excluir versão',{okText:'Excluir',danger:true}))return;
   const r=await fetch(`/api/forms?resource=anamnesis&id=${encodeURIComponent(item.id)}`,{method:'DELETE'}),d=await r.json();
   if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Versão excluída.');await carregarAnamnese();
 }
@@ -5129,8 +5282,8 @@ function renderListaRespostas(rows,elId,badgeId,vazio){
   }).join('');
 }
 function toggleResposta(id){const detail=document.getElementById('response-detail-'+id),arrow=document.getElementById('response-arrow-'+id);if(!detail)return;const abrir=detail.style.display==='none';detail.style.display=abrir?'block':'none';if(arrow)arrow.textContent=abrir?'⌃':'⌄';}
-async function excluirRespostaAprovada(id){if(!confirm('Excluir este registro aprovado da visualização?'))return;const r=await fetch(`/api/forms?resource=response&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Registro excluído.');await initFormularios();}
-async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='sync_profile'?'Atualizar o perfil com os dados desta resposta aprovada? Isso substituirá os campos preenchidos correspondentes.':action==='approve'?(cadastro?'Aprovar estas informações e atualizar o perfil do paciente?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!confirm(pergunta))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='sync_profile'?'✅ Perfil atualizado':action==='approve'?(cadastro?'✅ Informações aprovadas e perfil atualizado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');if(action==='approve'||action==='sync_profile'){await loadData();if(_agendaState)await carregarAgenda();}await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
+async function excluirRespostaAprovada(id){if(!await appConfirm('Excluir este registro aprovado da visualização?','Excluir registro',{okText:'Excluir',danger:true}))return;const r=await fetch(`/api/forms?resource=response&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir');toast('Registro excluído.');await initFormularios();}
+async function revisarFormulario(resposta_id,action,cadastro=false){const pergunta=action==='sync_profile'?'Atualizar o perfil com os dados desta resposta aprovada? Isso substituirá os campos preenchidos correspondentes.':action==='approve'?(cadastro?'Aprovar estas informações e atualizar o perfil do paciente?':'Aprovar e criar uma nova versão da anamnese?'):'Rejeitar esta resposta?';if(!await appConfirm(pergunta,'Revisar formulário',{okText:action==='reject'?'Rejeitar':'Confirmar',danger:action==='reject'}))return;const r=await fetch('/api/forms',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resposta_id,action})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível revisar');toast(action==='sync_profile'?'✅ Perfil atualizado':action==='approve'?(cadastro?'✅ Informações aprovadas e perfil atualizado':'✅ Resposta incorporada à anamnese'):'Resposta rejeitada');if(action==='approve'||action==='sync_profile'){await loadData();if(_agendaState)await carregarAgenda();}await initFormularios();if(action==='approve'&&!cadastro&&document.getElementById('anamnese-paciente').value)await carregarAnamnese();}
 
 async function carregarPacientes() {
   try {
@@ -5354,7 +5507,7 @@ async function abrirAnexoProntuario(id){
   }catch(e){toast('Erro ao abrir anexo: '+e.message);}
 }
 async function removerAnexoProntuario(id){
-  if(!confirm('Remover este anexo?'))return;
+  if(!await appConfirm('Remover este anexo?','Remover anexo',{okText:'Remover',danger:true}))return;
   try{
     const r=await fetch('/api/data?table=prontuario_anexos&id='+encodeURIComponent(id),{method:'DELETE'});if(!r.ok)throw new Error('Falha ao remover');
     await carregarAnexosProntuario();renderAnexosFormProntuario();if(_pacAtual)verProntuario(_pacAtual);
@@ -5376,7 +5529,7 @@ async function salvarSessao(){
   const existente=_prontuarios[pid]?.sessoes.find(s=>s.data===data);
   try{
     if(existente){
-      if(!confirm('Já existe um registro para essa data. Substituir?')) return;
+      if(!await appConfirm('Já existe um registro para essa data. Substituir?','Substituir registro',{okText:'Substituir'})) return;
       const r=await fetch(`/api/data?table=prontuarios&id=${encodeURIComponent(existente.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({relato,paciente_id:pid,paciente_label:label})});
       if(!r.ok)throw new Error('Falha ao atualizar o registro');
       await enviarAnexosPendentes(existente.id);
@@ -5440,6 +5593,7 @@ function selecionarPaciente(){
 function limparFormPront(){
   document.getElementById('pront-pac').value='';
   document.getElementById('pront-relato').value='';
+  limparRascunhoProntuario();
   _prontEditandoId=null;_prontAnexosPend=[];renderAnexosFormProntuario();
   document.getElementById('rec-status').textContent='';
   document.getElementById('btn-gravar').innerHTML=ICON_MIC_INLINE+' Gravar relato';
@@ -5447,7 +5601,7 @@ function limparFormPront(){
   _gravando=false;
 }
 async function deletarSessao(id,pid){
-  if(!confirm('Excluir este registro?'))return;
+  if(!await appConfirm('Excluir este registro?','Excluir registro',{okText:'Excluir',danger:true}))return;
   try{
     const r=await fetch(`/api/data?table=prontuarios&id=${encodeURIComponent(id)}`,{method:'DELETE'});
     if(!r.ok)throw new Error('Falha ao excluir');
@@ -5951,7 +6105,7 @@ function editarPromptDocumento(id){
 }
 async function exportarDocumento(id){const r=await fetch(`/api/forms?resource=documents&action=export&id=${encodeURIComponent(id)}`);if(!r.ok)return toast('Não foi possível exportar.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='documento-'+id.slice(0,8)+'.docx';a.click();URL.revokeObjectURL(url);}
 async function exportarDocumentoPDF(){if(!_docAtual?.id)return toast('Salve o documento antes de exportar o PDF.');const btn=document.querySelector('.doc-preview .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=export-pdf&id=${encodeURIComponent(_docAtual.id)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`documento-${_docAtual.tipo||'documento'}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF para assinatura';}}}
-async function excluirDocumento(id){if(!confirm('Excluir este documento da visualização?'))return;const r=await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir.');_docAtual=null;document.getElementById('doc-preview').innerHTML='<div class="alert-empty">Documento excluído.</div>';await carregarDocumentos();toast('Documento excluído.');}
+async function excluirDocumento(id){if(!await appConfirm('Excluir este documento da visualização?','Excluir documento',{okText:'Excluir',danger:true}))return;const r=await fetch(`/api/forms?resource=documents&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir.');_docAtual=null;document.getElementById('doc-preview').innerHTML='<div class="alert-empty">Documento excluído.</div>';await carregarDocumentos();toast('Documento excluído.');}
 function limparDocumento(){montarFormularioDocumento();}
 async function resetarDocumentoCompleto(pacienteId=''){_docAtual=null;_docEditandoId=null;_docChatHistorico=[];_docChatAnexo=null;document.getElementById('doc-paciente').value=pacienteId;document.getElementById('doc-tipo').value='';document.getElementById('doc-estilo').value='colorido';document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);document.getElementById('doc-editor').innerHTML='<div class="alert-empty">Escolha o paciente e o tipo de documento.</div>';const preview=document.getElementById('doc-preview');preview.className='doc-preview';preview.innerHTML=pacienteId?'<div class="alert-empty">Documento salvo. A pasta do paciente foi atualizada ao lado.</div>':'<div class="alert-empty">Documento salvo. Selecione um paciente para consultar a pasta.</div>';if(pacienteId)await carregarDocumentos();else{_documentos=[];document.getElementById('doc-lista').innerHTML='<div class="alert-empty">Selecione um paciente.</div>';}}
 
@@ -6108,7 +6262,7 @@ async function salvarPSM(){
   _psmEditandoId=null;document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();
 }
 async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
-async function excluirPSM(id){if(!confirm('Excluir esta PSM da biblioteca?'))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');if(_psmEditandoId===id)_psmEditandoId=null;toast('PSM excluída.');await carregarPSMs();}
+async function excluirPSM(id){if(!await appConfirm('Excluir esta PSM da biblioteca?','Excluir PSM',{okText:'Excluir',danger:true}))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');if(_psmEditandoId===id)_psmEditandoId=null;toast('PSM excluída.');await carregarPSMs();}
 
 // Ditado por voz em todos os campos de texto
 function habilitarAudioGlobal(root=document){
@@ -6227,7 +6381,7 @@ async function salvarPerfilPaciente(){
 }
 async function excluirPerfilPaciente(){
   const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-nome').value.trim();
-  const digitado=prompt('Isso apaga o paciente e TODO o histórico (sessões, pacotes, prontuários, documentos) para sempre. Não tem como desfazer.\n\nPara confirmar, digite o nome exato do paciente:\n'+nome);
+  const digitado=await appPrompt('Isso apaga o paciente e TODO o histórico (sessões, pacotes, prontuários, documentos) para sempre. Não tem como desfazer.\n\nPara confirmar, digite o nome exato do paciente:\n'+nome,'Excluir paciente definitivamente',{okText:'Excluir para sempre',danger:true,placeholder:nome});
   if(digitado===null)return;
   try{
     await agendaApi({action:'delete_patient',id,nome_confirmacao:digitado});
@@ -6260,8 +6414,8 @@ async function salvarPacienteAgenda(){const nome=document.getElementById('agenda
   // Gera as ocorrencias do mes exibido na hora -- sem isso, a recorrencia ficava
   // salva mas nao aparecia em "Atendimentos" ate clicar manualmente em "Gerar mes".
   await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value||agendaMesAtual()});}toast(planoNome?`Paciente salvo. ${planoNome} associado.`:'Paciente salvo.');limparPacienteAgenda();fecharCadastroPaciente();await carregarAgenda()}catch(e){toast(e.message,5000)}}
-async function inferirRecorrencias(){if(!confirm('Usar os últimos 180 dias para sugerir padrões? Regras existentes não serão alteradas.'))return;try{const r=await agendaApi({action:'infer_recurrences'});toast(`${r.created} padrão(ões) sugerido(s). Revise antes de gerar.`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
-async function importarHistoricoAgenda(){if(!confirm('Importar todos os atendimentos já registrados para a Agenda? Esta ação preserva status e não altera as sessões originais.'))return;try{const r=await agendaApi({action:'seed_history'});toast(`${r.processed} atendimento(s) histórico(s) processado(s).`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
+async function inferirRecorrencias(){if(!await appConfirm('Usar os últimos 180 dias para sugerir padrões? Regras existentes não serão alteradas.','Sugerir padrões'))return;try{const r=await agendaApi({action:'infer_recurrences'});toast(`${r.created} padrão(ões) sugerido(s). Revise antes de gerar.`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
+async function importarHistoricoAgenda(){if(!await appConfirm('Importar todos os atendimentos já registrados para a Agenda? Esta ação preserva status e não altera as sessões originais.','Importar histórico'))return;try{const r=await agendaApi({action:'seed_history'});toast(`${r.processed} atendimento(s) histórico(s) processado(s).`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
 async function gerarAgendaMes(){try{const r=await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value});toast(`${r.generated} ocorrência(s) processada(s).`);await carregarAgenda()}catch(e){toast(e.message,5000)}}
 // Liquidar (ou excluir) na Agenda grava direto em sessoes/pacotes -- tabelas que
 // alimentam o Dashboard -- mas o Dashboard só relia num loadData() manual. Isso

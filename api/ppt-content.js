@@ -5,7 +5,7 @@
 
 import { requireAuth } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
-import { modelFor } from '../lib/ai-models.js';
+import { resolveModelFor } from '../lib/ai-models.js';
 import { logAiUsage } from '../lib/ai-usage.js';
 import { PERFIL_JAQUELINE } from '../lib/perfil-jaqueline.js';
 import { extrairTextoAnexo, validarImagemAnexo, AnexoError } from '../lib/anexo.js';
@@ -69,7 +69,7 @@ Descrição do que a psicóloga quer na apresentação: ${descricao}`;
     // rejeitam temperature customizado, por isso o parâmetro não é enviado.
     // Structured Outputs (json_schema+strict) no lugar do antigo json_object,
     // mesma melhoria já aplicada em post-content.js.
-    const model = modelFor('ppt'), t0 = Date.now();
+    const model = await resolveModelFor('ppt', { apiKey }), t0 = Date.now();
     let r;
     try {
     r = await fetchComRetentativa('https://api.openai.com/v1/chat/completions', {

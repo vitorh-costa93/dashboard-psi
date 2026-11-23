@@ -146,3 +146,17 @@ test('formulário público recusa CPF incompleto antes de consumir o convite',as
   const res=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'123.456.78'}}},res);
   assert.equal(res.code,400);assert.match(res.body.error,/11 dígitos/);assert.equal(writes,0);
 });
+
+test('formulário público valida dígitos verificadores do CPF e aceita CPF válido',async()=>{
+  const {default:publicForm}=await import('../api/form.js');
+  let writes=0;
+  global.fetch=async()=>{writes++;return supabaseReply({ok:true});};
+  const bad=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'111.111.111-11'}}},bad);
+  assert.equal(bad.code,400);assert.match(bad.body.error,/CPF inválido/);assert.equal(writes,0);
+
+  const badCheck=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'529.982.247-20'}}},badCheck);
+  assert.equal(badCheck.code,400);assert.match(badCheck.body.error,/CPF inválido/);assert.equal(writes,0);
+
+  const ok=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'529.982.247-25'}}},ok);
+  assert.equal(ok.code,201);assert.equal(writes,1);
+});

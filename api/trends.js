@@ -6,7 +6,7 @@
 import { requireAuthOrCron } from './_auth.js';
 import { fetchComRetentativa } from './_openai-retry.js';
 import { applySheetImport } from '../lib/sheet-import.js';
-import { modelFor } from '../lib/ai-models.js';
+import { resolveModelFor } from '../lib/ai-models.js';
 import { logAiUsage } from '../lib/ai-usage.js';
 
 const SHEET_URL = process.env.SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/1rxeRgbqkaX6usYd8iSJYkNSqIlAeyJnDNxrIJJ7mPsI/gviz/tq?tqx=out:csv&gid=0';
@@ -81,7 +81,7 @@ Selecione no máximo 8 oportunidades de conteúdo reais, cada uma com a fonte re
   // arriscaria estourar o maxDuration da função (120s, ver vercel.json).
   // Uma falha isolada só significa que o radar não atualiza nesta rodada
   // (roda de novo amanhã sozinho, ou a psicóloga clica em "Atualizar").
-  const MODEL = modelFor('trends');
+  const MODEL = await resolveModelFor('trends', { apiKey: OPENAI_KEY });
   const t0 = Date.now();
   let r;
   try {

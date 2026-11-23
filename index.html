@@ -75,7 +75,30 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition-property:color,border-color;transition-duration:.2s;white-space:nowrap;}
 .nav-tab.active{color:var(--accent);border-bottom-color:var(--terracotta);}
 .nav-tab:hover:not(.active){color:var(--text);}
-@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row{grid-template-columns:1fr}}
+@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row{grid-template-columns:1fr}.header-sync-pill{width:100%;justify-content:center;order:3}}
+.header-sync-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#eef3ea;border:1px solid #d5e0cd;font-size:.73rem;color:#3d4d32;font-weight:600;white-space:nowrap}
+.header-sync-dot{width:7px;height:7px;border-radius:50%;background:#4a8f47;flex-shrink:0}
+.kpi-card{position:relative}
+.kpi-info-btn{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;border:1px solid #cfd6c6;background:#eef3ea;color:#4e553e;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.kpi-info-btn:hover{background:#e1eadb}
+.kpi-tooltip{position:absolute;top:36px;right:10px;width:240px;background:#fff;border:1px solid #cfc7b2;border-radius:10px;padding:10px 12px;box-shadow:0 12px 28px rgba(0,0,0,.14);font-size:.74rem;line-height:1.45;color:var(--text);z-index:30;text-align:left}
+.kpi-tooltip strong{display:block;color:#4e553e;margin-bottom:3px}
+.alert-lista li.alert-link{cursor:pointer;border-radius:6px;padding:3px 6px;margin:0 -6px;transition:background .15s}
+.alert-lista li.alert-link:hover{background:#f2efe6}
+#agenda-map .hc.hn,#agenda-map .hc.hq{cursor:pointer}
+#agenda-map .hc.hn:hover{background:#ebe5d5}
+.dsess-checks{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--muted)}
+.dsess-checks label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;margin:0;font-weight:500}
+.cnpj-servico-wrap{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;background:#faf8f2;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:0 0 12px}
+.cnpj-cpf-btn{border:1px solid var(--border);background:var(--light);border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;color:#4e553e}
+.cnpj-cpf-btn:hover{background:#e9e4d7}
+.agenda-more-menu{position:relative}
+.agenda-more-menu summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.agenda-more-menu summary::-webkit-details-marker{display:none}
+.agenda-more-panel{position:absolute;right:0;top:calc(100% + 6px);min-width:190px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 28px rgba(0,0,0,.12);padding:6px;display:grid;gap:4px;z-index:25}
+.agenda-more-panel button{width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:6px;font:inherit;font-size:.82rem;color:var(--text);cursor:pointer}
+.agenda-more-panel button:hover{background:#f3efe5}
+.agenda-dirty-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#fff3cd;color:#8a6421;font-size:.72rem;font-weight:700}
 
 /* ── Sub-tabs (dentro de Atividades) ── */
 .sub-tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
@@ -655,9 +678,14 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   #dsess-table tfoot tr.dsess-total-row{background:#f6f3ea;border:1.5px solid #cfc7b2;padding:12px 14px;margin-top:8px}
   #dsess-table tfoot td.dsess-total-title{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#4e553e;border-bottom:1px solid #e2dac6;padding:0 0 7px;margin-bottom:6px}
   #dsess-table tfoot td.dsess-total-title::before{display:none}
-  #dsess-table tfoot td#dsess-total-comp,#dsess-table tfoot td#dsess-total-pagas{font-size:.96rem;font-weight:700;color:#2f3425;padding:7px 0;text-align:right}
-  #dsess-table tfoot td#dsess-total-comp::before,#dsess-table tfoot td#dsess-total-pagas::before{flex:0 0 130px;color:#5c614f}
-  #dsess-table tfoot td.dsess-total-spacer{display:none}
+  #dsess-table tfoot td#dsess-total-comp,#dsess-table tfoot td#dsess-total-pagas,#dsess-table tfoot td#dsess-total-valor,#cnpj-table tfoot td#cnpj-total-sessoes,#cnpj-table tfoot td#cnpj-total-valor{font-size:.96rem;font-weight:700;color:#2f3425;padding:7px 0;text-align:right}
+  #dsess-table tfoot td#dsess-total-comp::before,#dsess-table tfoot td#dsess-total-pagas::before,#dsess-table tfoot td#dsess-total-valor::before,#cnpj-table tfoot td#cnpj-total-sessoes::before,#cnpj-table tfoot td#cnpj-total-valor::before{flex:0 0 130px;color:#5c614f}
+  #dsess-table tfoot td.dsess-total-spacer,#cnpj-table tfoot td.dsess-total-spacer{display:none}
+  #cnpj-table tfoot{display:block;width:100%}
+  #pront-view table,#pront-view tbody,#pront-view tr,#pront-view td{display:block;width:100%}
+  #pront-view thead{display:none}
+  #pront-view tbody tr{padding:10px 12px}
+  #pront-view tbody td{padding:4px 0!important}
 }
 /* Mantém a coluna de paciente compacta e a lista lateral sem rolagem horizontal. */
 #page-agenda .agenda-table th:nth-child(3),#page-agenda .agenda-table td:nth-child(3){width:112px;max-width:112px;white-space:normal;overflow-wrap:anywhere;}
@@ -711,6 +739,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   <div class="app-header-main">
     <div class="brand-lockup app-header-logo" aria-label="Jaqueline Vieira Psicóloga"><span class="brand-symbol" aria-hidden="true"></span><div class="brand-copy"><div class="brand-name"><strong>Jaqueline</strong><br>Vieira</div><div class="brand-role"><strong>PSICÓLOGA</strong><span>CRP 06/191478</span></div></div></div>
   </div>
+  <span class="header-sync-pill" id="header-sync-pill"><span class="header-sync-dot"></span><span id="header-sync-text">Sessão ativa</span></span>
   <button class="logout-btn" type="button" onclick="exportarBackupCompleto(this)" title="Baixa uma cópia de segurança de pacientes, prontuários, atividades, posts e radar de tendências, em JSON">💾 Backup</button>
   <button class="logout-btn" type="button" onclick="sair()">Sair</button>
 </div>
@@ -741,30 +770,40 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 
   <div class="kpi-row">
     <div class="kpi-card">
+      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+      <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Compara o mês corrente até hoje com os mesmos dias corridos do mês anterior e do ano passado.</div>
       <div class="kpi-main" id="kpi-fat">—</div>
       <div class="kpi-comp" id="kpi-fat-mom">—</div>
       <div class="kpi-comp" id="kpi-fat-yoy">—</div>
       <div class="kpi-label">Valor Recebido</div>
     </div>
     <div class="kpi-card">
+      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+      <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Pacientes distintos atendidos no mês até hoje comparados ao mesmo recorte de dias do mês anterior e ano passado.</div>
       <div class="kpi-main" id="kpi-pac">—</div>
       <div class="kpi-comp" id="kpi-pac-mom">—</div>
       <div class="kpi-comp" id="kpi-pac-yoy">—</div>
       <div class="kpi-label">Pacientes</div>
     </div>
     <div class="kpi-card">
+      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+      <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Faltas até o dia atual (exclui cancelamentos pela psicóloga) comparadas aos mesmos dias do mês anterior e ano passado.</div>
       <div class="kpi-main" id="kpi-falta">—</div>
       <div class="kpi-comp" id="kpi-falta-mom">—</div>
       <div class="kpi-comp" id="kpi-falta-yoy">—</div>
       <div class="kpi-label">Faltas</div>
     </div>
     <div class="kpi-card">
+      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+      <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Valor recebido dividido pelas sessões cobradas no mês atual até hoje, comparado ao mesmo período anterior.</div>
       <div class="kpi-main" id="kpi-tkt">—</div>
       <div class="kpi-comp" id="kpi-tkt-mom">—</div>
       <div class="kpi-comp" id="kpi-tkt-yoy">—</div>
       <div class="kpi-label">Ticket médio</div>
     </div>
     <div class="kpi-card">
+      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+      <div class="kpi-tooltip" hidden><strong>Retenção 90 dias</strong>Percentual de pacientes que iniciaram há pelo menos 90 dias e continuam em acompanhamento ativo.</div>
       <div class="kpi-main" id="kpi-ret">—</div>
       <div class="kpi-comp" id="kpi-ret-mom">—</div>
       <div class="kpi-comp" id="kpi-ret-yoy">—</div>
@@ -884,6 +923,10 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
           <input type="hidden" id="dsess-paciente-input">
         </div>
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="dsess-mes" onchange="carregarSessoesDetalhado()"></div>
+        <div class="dsess-checks">
+          <label><input type="checkbox" id="dsess-so-aberto" onchange="renderSessoesDetalhado()"> Só em aberto ❌</label>
+          <label><input type="checkbox" id="dsess-img-valores" checked> Incluir valores na imagem</label>
+        </div>
         <button type="button" class="btn-secondary" id="dsess-export-img-btn" onclick="exportarImagemSessoesDetalhado()" style="margin-left:auto">🖼 Exportar imagem</button>
       </div>
       <div id="dsess-totais" class="dsess-totais-bar" style="display:none"></div>
@@ -901,26 +944,30 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
             <th></th>
           </tr></thead>
           <tbody id="dsess-tbody"><tr><td colspan="9" class="agenda-empty">Selecione o mês.</td></tr></tbody>
-          <tfoot id="dsess-tfoot" style="display:none"><tr class="dsess-total-row"><td colspan="5" class="dsess-total-title">Total</td><td id="dsess-total-comp" data-label="Comparecimentos">—</td><td id="dsess-total-pagas" data-label="Sessões Pagas">—</td><td colspan="2" class="dsess-total-spacer"></td></tr></tfoot>
+          <tfoot id="dsess-tfoot" style="display:none"><tr class="dsess-total-row"><td colspan="5" class="dsess-total-title">Total</td><td id="dsess-total-comp" data-label="Comparecimentos">—</td><td id="dsess-total-pagas" data-label="Sessões Pagas">—</td><td id="dsess-total-valor" data-label="Valor Recebido">—</td><td class="dsess-total-spacer"></td></tr></tfoot>
         </table>
       </div>
     </div>
 
     <div id="dashsub-cnpj" style="display:none">
-      <p id="cnpj-servico-texto" style="font-size:.78rem;color:var(--muted);margin:-4px 0 12px;white-space:pre-line"></p>
+      <div class="cnpj-servico-wrap">
+        <p id="cnpj-servico-texto" style="font-size:.78rem;color:var(--muted);margin:0;white-space:pre-line;flex:1;min-width:220px"></p>
+        <button type="button" class="btn-secondary" onclick="copiarTextoCnpj()" style="white-space:nowrap">📋 Copiar texto</button>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <div class="gen-field" style="width:170px"><label>Mês (em branco = tudo)</label><input type="month" id="cnpj-mes" onchange="renderCnpjResumo()"></div>
       </div>
       <div class="agenda-table-wrap">
-        <table class="agenda-table">
+        <table class="agenda-table" id="cnpj-table">
           <thead><tr>
             <th data-tabela="cnpj" data-col="paciente" onclick="ordenarTabela('cnpj','paciente');renderCnpjResumo()">Paciente</th>
+            <th>CPF</th>
             <th data-tabela="cnpj" data-col="sessoes" onclick="ordenarTabela('cnpj','sessoes');renderCnpjResumo()">Sessões</th>
             <th data-tabela="cnpj" data-col="valor" onclick="ordenarTabela('cnpj','valor');renderCnpjResumo()">Valor recebido</th>
             <th>Comentários</th>
           </tr></thead>
-          <tbody id="cnpj-tbody"><tr><td colspan="4" class="agenda-empty">Carregando…</td></tr></tbody>
-          <tfoot><tr style="font-weight:700"><td>Total</td><td id="cnpj-total-sessoes">—</td><td id="cnpj-total-valor">—</td><td></td></tr></tfoot>
+          <tbody id="cnpj-tbody"><tr><td colspan="5" class="agenda-empty">Carregando…</td></tr></tbody>
+          <tfoot><tr class="dsess-total-row" style="font-weight:700"><td class="dsess-total-title">Total</td><td class="dsess-total-spacer"></td><td id="cnpj-total-sessoes" data-label="Sessões">—</td><td id="cnpj-total-valor" data-label="Valor recebido">—</td><td class="dsess-total-spacer"></td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -952,6 +999,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="gen-field full"><label>Nome completo</label><input id="perfil-nome" maxlength="120"></div>
       <div class="gen-field"><label>CPF do paciente</label><input id="perfil-cpf-paciente" maxlength="14" placeholder="Opcional" inputmode="numeric"></div>
       <div class="gen-field"><label>Data de nascimento</label><input type="date" id="perfil-nascimento"></div>
+      <div class="gen-field"><label>Telefone / WhatsApp</label><input type="tel" id="perfil-telefone" maxlength="20" placeholder="(00) 00000-0000"></div>
     </div>
 
     <h4 style="font:600 .86rem 'Playfair Display',serif;color:#4e553e;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 10px">Responsável <span style="font:400 .7rem 'DM Sans',sans-serif;color:var(--muted)">(quando houver)</span></h4>
@@ -996,6 +1044,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="abrirProntuarioDoPaciente()">📋 Prontuários</button>
       <button class="btn-secondary" onclick="abrirDocumentosDoPaciente()">📄 Documentos</button>
+      <a class="btn-secondary" id="perfil-whatsapp-btn" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">💬 WhatsApp</a>
     </div>
   </div>
 </div>
@@ -1008,7 +1057,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <button type="button" class="combo-trigger" onclick="comboToggle('agenda-busca-combo')"><span class="combo-value placeholder" id="agenda-busca-combo-value">Digite o nome…</span><span class="combo-caret">▾</span></button>
     <div class="combo-panel"><input type="text" class="combo-search" id="agenda-busca-combo-search" placeholder="Buscar paciente…" oninput="comboFiltrar('agenda-busca-combo')"><div class="combo-list" id="agenda-busca-combo-list"></div></div>
   </div>
-</div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-secondary" onclick="inferirRecorrencias()">Sugerir padrões</button><button class="btn-secondary" onclick="importarHistoricoAgenda()">Importar histórico</button><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button></div>
+</div><div class="gen-field"><label>Mês</label><input type="month" id="agenda-mes" onchange="carregarAgenda()"></div><div class="gen-field"><label>Lista de pacientes</label><select id="agenda-paciente-filter" onchange="renderAgenda()"><option value="ativo" selected>Ativos</option><option value="pausado">Pausados</option><option value="inativo">Inativos</option><option value="">Todos</option></select></div><button class="btn-primary" onclick="gerarAgendaMes()">Gerar mês</button><details class="agenda-more-menu"><summary class="btn-secondary">⋯ Mais ações</summary><div class="agenda-more-panel"><button type="button" onclick="this.closest('details').open=false;inferirRecorrencias()">✨ Sugerir padrões</button><button type="button" onclick="this.closest('details').open=false;importarHistoricoAgenda()">📥 Importar histórico</button></div></details></div>
 <div class="agenda-layout"><div><button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="abrirCadastroPaciente()">+ Novo paciente</button><div class="generator-card"><h3>Pacientes</h3><div class="agenda-patient-list" id="agenda-pacientes"></div></div></div>
 <div><div class="generator-card"><h3>Atendimentos</h3><p style="font-size:.74rem;color:var(--muted);margin:-6px 0 10px">Mostrando a semana atual e pendências da semana passada sem registro. <label style="font-weight:600;cursor:pointer"><input type="checkbox" id="agenda-semana-toggle" checked onchange="renderAgenda()"> Só semana atual + pendências</label></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px"><div class="gen-field" style="flex:1;min-width:160px"><label>Novo atendimento — Paciente</label><select id="agenda-novo-paciente"></select></div><div class="gen-field" style="width:150px"><label>Data</label><input type="date" id="agenda-novo-data"></div><div class="gen-field" style="width:110px"><label>Horário</label><input type="time" id="agenda-novo-horario"></div><button class="btn-secondary" onclick="adicionarAtendimentoAvulso()">+ Adicionar</button></div><div class="agenda-summary" id="agenda-summary">—</div><div class="agenda-table-wrap"><table class="agenda-table"><thead><tr>
   <th data-tabela="agenda" data-col="data" onclick="ordenarTabela('agenda','data');renderAgenda()">Data</th>
@@ -1033,6 +1082,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="gen-field full"><label>Nome</label><input id="agenda-nome" maxlength="120"></div>
       <div class="gen-field"><label>CPF do paciente</label><input id="agenda-cpf-paciente" inputmode="numeric" maxlength="14"></div>
       <div class="gen-field"><label>Data de nascimento</label><input type="date" id="agenda-nascimento"></div>
+      <div class="gen-field"><label>Telefone / WhatsApp</label><input type="tel" id="agenda-telefone" maxlength="20" placeholder="(00) 00000-0000"></div>
       <div class="gen-field"><label>Responsável (se aplicável)</label><input id="agenda-responsavel" maxlength="160"></div>
       <div class="gen-field"><label>CPF do responsável</label><input id="agenda-cpf-responsavel" inputmode="numeric" maxlength="14"></div>
       <div class="gen-field"><label>Gênero</label><select id="agenda-genero"><option value="">—</option><option value="F">Feminino</option><option value="M">Masculino</option><option value="Outro">Outro</option></select></div>
@@ -1040,6 +1090,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="gen-field"><label>Início dos atendimentos</label><input type="date" id="agenda-inicio-atendimentos"></div>
       <div class="gen-field"><label>Status</label><select id="agenda-paciente-status" onchange="agendaStatusFields()"><option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="inativo">Inativo</option></select></div>
       <div class="gen-field" id="agenda-pausa-wrap" style="display:none"><label>Pausado até</label><input type="date" id="agenda-pausado-ate"></div>
+      <div class="gen-field"><label>Contabiliza para o CNPJ?</label><select id="agenda-cnpj"><option value="false">Não</option><option value="true">Sim</option></select></div>
       <div class="gen-field"><label>Frequência</label><select id="agenda-frequencia"><option value="">Sem recorrência</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div>
       <div class="gen-field"><label>Dia</label><select id="agenda-dia"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
       <div class="gen-field"><label>Horário</label><input type="time" id="agenda-horario"></div>
@@ -1137,7 +1188,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div class="search-bar-wrap">
       <div class="search-bar-title">🔍 Buscar na biblioteca</div>
       <div class="search-filters-row">
-        <select class="filter-select" id="f-tipo" onchange="renderBiblioteca()">
+        <input type="text" class="filter-select" id="f-busca-img" placeholder="Buscar por título..." oninput="_libLimit=12;renderBiblioteca()" style="flex:1;min-width:170px"/>
+        <select class="filter-select" id="f-tipo" onchange="_libLimit=12;renderBiblioteca()">
           <option value="">Todos os tipos</option>
           <option>Colorir</option>
           <option>Rotina</option>
@@ -1349,6 +1401,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </div>
       <div class="preview-actions">
         <button class="btn-primary" onclick="abrirChatPost()">✦ Elaborar com IA</button>
+        <button class="btn-secondary" type="button" onclick="copiarLegendaHashtagsPost()">📋 Copiar legenda + hashtags</button>
         <button class="btn-save" onclick="salvarPost()">💾 Salvar rascunho</button>
         <button class="btn-secondary" onclick="limparPost()">✕ Limpar</button>
       </div>
@@ -1516,7 +1569,8 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   <div id="pront-view" style="display:none;margin-top:20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <h2 class="pront-section-title" id="pront-view-titulo" style="margin:0;border:none;padding:0;">—</h2>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="pront-filtro-texto" data-no-audio="1" placeholder="Buscar nos relatos..." oninput="_prontLimit=15;if(_pacAtual)verProntuario(_pacAtual)" style="border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:.8rem;background:#fff;min-width:170px;">
         <button class="btn-pdf" onclick="exportarProntPDF()" style="font-size:.76rem;padding:6px 14px;">⬇ PDF</button>
         <button class="btn-save" onclick="exportarProntDOCX()" style="font-size:.76rem;padding:6px 14px;">📄 Word</button>
       </div>
@@ -1533,6 +1587,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
         <tbody id="pront-tabela"></tbody>
       </table>
     </div>
+    <div id="pront-more-wrap" style="text-align:center;margin-top:10px"></div>
   </div>
 
   <div id="pront-empty" style="text-align:center;padding:50px 20px;color:var(--muted);">
@@ -1557,9 +1612,10 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
     <div style="margin:14px 0"><strong style="font-size:.84rem">Respostas online recebidas</strong><div id="anamnese-respostas" style="margin-top:8px"><div class="alert-empty">Nenhuma resposta recebida.</div></div></div>
     <div id="anamnese-editor" style="display:none;margin-top:14px;">
+      <div id="anamnese-diff" style="display:none;margin-bottom:12px;padding:10px 12px;background:#faf8f2;border:1px solid var(--border);border-radius:8px;font-size:.78rem"></div>
       <div id="anamnese-campos"></div>
       <div id="anamnese-meta" style="font-size:.72rem;color:var(--muted);margin-top:10px;"></div>
-      <div class="pront-form-actions"><button class="btn-primary" id="anamnese-salvar" onclick="salvarAnamnese()">💾 Salvar nova versão</button><button class="btn-secondary" onclick="limparCamposAnamnese()">Limpar campos</button><button class="btn-save" id="anamnese-exportar" onclick="exportarAnamneseDOCX()" disabled>📄 Exportar .docx</button><button class="btn-danger" id="anamnese-excluir" onclick="excluirAnamnese()" disabled>Excluir versão</button></div>
+      <div class="pront-form-actions"><button class="btn-primary" id="anamnese-salvar" onclick="salvarAnamnese()">💾 Salvar nova versão</button><button class="btn-secondary" onclick="limparCamposAnamnese()">Limpar campos</button><button class="btn-pdf" id="anamnese-exportar-pdf" onclick="exportarAnamnesePDF()" disabled>⬇ Exportar PDF</button><button class="btn-save" id="anamnese-exportar" onclick="exportarAnamneseDOCX()" disabled>📄 Exportar .docx</button><button class="btn-danger" id="anamnese-excluir" onclick="excluirAnamnese()" disabled>Excluir versão</button></div>
     </div>
   </div>
 
@@ -1572,6 +1628,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </div>
     <div class="pront-form-actions"><button class="btn-primary" onclick="gerarLinkFormulario()">Gerar link seguro</button><button class="btn-secondary" onclick="criarModeloAnamnese()">Criar cadastro online</button></div>
     <div id="form-link-box" style="display:none;margin-top:12px;padding:12px;background:var(--light);border:1px solid var(--border);border-radius:8px;word-break:break-all;"></div>
+    <div id="form-pendentes-wrap" style="margin-top:18px;display:none"><strong style="font-size:.84rem">Links aguardando resposta</strong><div id="form-pendentes" style="margin-top:8px;display:grid;gap:6px"></div></div>
     <h3 class="pront-section-title" style="margin-top:22px;">Respostas recebidas</h3>
     <div id="form-respostas"><div class="alert-empty">Nenhuma resposta pendente.</div></div>
   </div>
@@ -1612,7 +1669,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
           <div class="pront-field"><label class="pront-label">Público-alvo</label><select class="pront-input" id="psm-publico" onchange="atualizarPreviaPSM()"><option value="adulto">Adulto</option><option value="infantil">Infantil</option></select></div>
           <div class="pront-field" style="margin-top:10px"><label class="pront-label">Valor da sessão individual</label><input class="pront-input" id="psm-valor-individual" type="number" min="0" step="0.01" oninput="atualizarPreviaPSM()"></div>
           <div class="pront-field" style="margin-top:10px"><label class="pront-label">Valor do pacote com 4 sessões</label><input class="pront-input" id="psm-valor-pacote" type="number" min="0" step="0.01" oninput="atualizarPreviaPSM()"></div>
-          <div class="pront-form-actions"><button class="btn-primary" onclick="salvarPSM()">💾 Salvar PSM</button><button class="btn-pdf" onclick="exportarPSMPDF()">⬇ Exportar PDF</button></div>
+          <div class="pront-form-actions"><button class="btn-primary" onclick="salvarPSM()">💾 Salvar PSM</button><button class="btn-secondary" type="button" onclick="visualizarPSMPDF()">👁 Visualizar PDF</button><button class="btn-pdf" onclick="exportarPSMPDF()">⬇ Exportar PDF</button></div>
         </div>
         <div class="generator-card"><h3>PSMs salvas</h3><div id="psm-lista" class="doc-list"><div class="alert-empty">Nenhuma PSM salva.</div></div></div>
       </div>
@@ -1680,6 +1737,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div class="draft-actions">
       <button class="btn-primary" onclick="exportarRascunhoAtual()">📤 Exportar artes</button>
       <button class="btn-secondary" onclick="baixarArteRascunhoAtual()">⬇ Baixar arte atual</button>
+      <button class="btn-secondary" onclick="copiarLegendaHashtagsRascunho()">📋 Copiar legenda + hashtags</button>
       <button class="btn-secondary" onclick="abrirRascunhoNoEditor()">✎ Abrir no editor</button>
       <button class="btn-danger" onclick="excluirRascunhoAtual()">Excluir rascunho</button>
     </div>
@@ -2209,7 +2267,10 @@ async function loadData(){
     // O painel aparece assim que os dados principais chegam; alertas e sessões detalhadas completam em seguida.
     document.getElementById('loading').style.display='none';
     document.getElementById('dashboard').style.display='block';
-    document.getElementById('last-update').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const horaSync=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-update').textContent='Atualizado '+horaSync;
+    const syncEl=document.getElementById('header-sync-text');
+    if(syncEl)syncEl.textContent='Sessão ativa · Sincronizado '+horaSync;
     popularFiltroDsess();
     calcularAlertas().then(()=>carregarAlertaProntuarios()).catch(e=>console.warn('Alertas:',e));
   }catch(e){
@@ -2558,12 +2619,12 @@ async function calcularAlertas() {
       const base=new Date(dataOcorrencia);
       if(sessaoRegistrada(nome,base))base.setDate(base.getDate()+7);
       const renovacao=new Date(base); renovacao.setDate(renovacao.getDate()+saldo*7);
-      if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({label:`${p.iniciais} | ${p.horario}`,data:renovacao});
+      if(renovacao>=inicioSemana&&renovacao<=fimSemana) renovacoes.push({nome,label:`${p.iniciais} | ${p.horario}`,data:renovacao});
     }
     // Devedores com atendimento nesta semana aparecem toda semana (aviso
     // antecipado); na última semana do mês, aparecem TODOS os devedores,
     // mesmo quem não tem sessão agendada para essa semana.
-    if(saldo<0)dividas.push({label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo),temSessaoEstaSemana:temEstaSemana});
+    if(saldo<0)dividas.push({nome,label:`${p.iniciais} | ${p.horario}`,qtd:Math.abs(saldo),temSessaoEstaSemana:temEstaSemana});
   });
 
   renovacoes.sort((a,b)=>a.data-b.data); dividas.sort((a,b)=>b.qtd-a.qtd);
@@ -2573,12 +2634,12 @@ async function calcularAlertas() {
   // Pendências (pedem ação) à esquerda; renovações (lembrete) à direita.
   if(dividasVisiveis.length){
     html+='<div class="alert-group"><div class="alert-group-title">⚠️ Sessões pendentes</div>';
-    html+='<ul class="alert-lista">'+dividasVisiveis.map(x=>`<li><span class="nm">${x.label}</span><span class="alert-badge ${x.qtd>=2?'alert-red':'alert-gold'}">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></li>`).join('')+'</ul>';
+    html+='<ul class="alert-lista">'+dividasVisiveis.map(x=>`<li class="alert-link" onclick="abrirPerfilPacientePorNome('${escHtmlAttr(x.nome)}')" title="Abrir cadastro de ${escHtmlAttr(x.nome)}"><span class="nm">${x.label}</span><span class="alert-badge ${x.qtd>=2?'alert-red':'alert-gold'}">deve ${x.qtd} ${x.qtd!==1?'sessões':'sessão'}</span></li>`).join('')+'</ul>';
     html+='</div>';
   }
   if(renovacoes.length){
     html+='<div class="alert-group"><div class="alert-group-title">📦 Renovações esta semana</div>';
-    html+='<ul class="alert-lista">'+renovacoes.map(x=>`<li><span class="nm">${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></li>`).join('')+'</ul>';
+    html+='<ul class="alert-lista">'+renovacoes.map(x=>`<li class="alert-link" onclick="abrirPerfilPacientePorNome('${escHtmlAttr(x.nome)}')" title="Abrir cadastro de ${escHtmlAttr(x.nome)}"><span class="nm">${x.label}</span><span class="alert-badge alert-green">${fmt(x.data)}</span></li>`).join('')+'</ul>';
     html+='</div>';
   }
   html+='<div class="alert-group"><div class="alert-group-title">🎂 Aniversariantes da semana</div>';
@@ -2675,6 +2736,37 @@ function mesUltimoCompleto(){
 // histórico já carregado em _rows -- não só no mês corrente -- para a
 // psicóloga poder escolher um mês passado (ex.: agosto) e conferir contra
 // as notas fiscais que já emitiu.
+function toggleKpiTooltip(btn){
+  const card=btn.closest('.kpi-card'),tip=card?.querySelector('.kpi-tooltip');
+  if(!tip)return;
+  const abrir=tip.hidden;
+  document.querySelectorAll('.kpi-tooltip').forEach(t=>{t.hidden=true;});
+  tip.hidden=!abrir;
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.kpi-card'))document.querySelectorAll('.kpi-tooltip').forEach(t=>{t.hidden=true;});
+});
+async function abrirPerfilPacientePorNome(nome){
+  if(!_agendaState)await carregarAgenda();
+  const p=(_agendaState?.patients||[]).find(x=>x.nome===nome);
+  if(!p)return toast('Paciente não encontrado na Agenda.');
+  abrirPerfilPaciente(p.id);
+}
+async function abrirNovoPacienteNoHorario(dow,hora,isQuinzenal=false){
+  if(!_agendaState)await carregarAgenda();
+  abrirCadastroPaciente();
+  document.getElementById('agenda-dia').value=String(dow);
+  document.getElementById('agenda-horario').value=String(hora).padStart(2,'0')+':00';
+  document.getElementById('agenda-frequencia').value=isQuinzenal?'quinzenal':'semanal';
+}
+function copiarTextoRapido(txt,msg='Copiado.'){
+  if(!txt)return;
+  navigator.clipboard.writeText(txt).then(()=>toast(msg)).catch(()=>toast('Não foi possível copiar.'));
+}
+function copiarTextoCnpj(){
+  const txt=document.getElementById('cnpj-servico-texto')?.textContent||'';
+  if(txt)copiarTextoRapido(txt,'✅ Texto do serviço copiado.');
+}
 function renderCnpjResumo(){
   const tbody=document.getElementById('cnpj-tbody');
   if(!tbody)return;
@@ -2691,6 +2783,8 @@ function renderCnpjResumo(){
       textoEl.textContent='Selecione um mês para gerar o texto do serviço prestado.';
     }
   }
+  const cadPorNome={};
+  Object.values(_pacientesById||{}).forEach(p=>{if(p.nome)cadPorNome[p.nome]=p;});
   const elegiveis=new Set(Object.values(_pacientesById||{}).filter(p=>p.contabiliza_cnpj).map(p=>p.nome));
   const rows=(_rows||[]).filter(r=>elegiveis.has(r._paciente)&&(!mes||r._anoMes===mes));
   const porPaciente={};
@@ -2700,14 +2794,21 @@ function renderCnpjResumo(){
     porPaciente[r._paciente].valor+=r._valorRecebido;
     if(r._comentario)porPaciente[r._paciente].comentarios.push(r._comentario);
   });
+  const fmtCpfDisp=v=>{const d=String(v||'').replace(/\D/g,'');return d.length===11?`${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`:'';};
   const base=_sortState.cnpj?.col?Object.entries(porPaciente):Object.entries(porPaciente).sort((a,b)=>b[1].valor-a[1].valor);
   const entradas=aplicarOrdenacao('cnpj',base,{paciente:x=>x[0],sessoes:x=>x[1].sessoes,valor:x=>x[1].valor});
   if(!elegiveis.size){
-    tbody.innerHTML='<tr><td colspan="4" class="agenda-empty">Nenhum paciente marcado como "Contabiliza para o CNPJ" no perfil ainda.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" class="agenda-empty">Nenhum paciente marcado como "Contabiliza para o CNPJ" no perfil ainda.</td></tr>';
   }else if(!entradas.length){
-    tbody.innerHTML='<tr><td colspan="4" class="agenda-empty">Nenhuma sessão registrada '+(mes?'nesse mês.':'ainda.')+'</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" class="agenda-empty">Nenhuma sessão registrada '+(mes?'nesse mês.':'ainda.')+'</td></tr>';
   }else{
-    tbody.innerHTML=entradas.map(([nome,v])=>`<tr><td>${escHtml(nome)}</td><td>${v.sessoes}</td><td>R$ ${v.valor.toFixed(2)}</td><td>${escHtml(v.comentarios.join('; '))}</td></tr>`).join('');
+    tbody.innerHTML=entradas.map(([nome,v])=>{
+      const cad=cadPorNome[nome]||{};
+      const cpfRaw=cad.cpf_responsavel||cad.cpf_paciente||'';
+      const cpfTxt=fmtCpfDisp(cpfRaw);
+      const cpfHtml=cpfTxt?`${escHtml(cpfTxt)} <button type="button" class="cnpj-cpf-btn" onclick="copiarTextoRapido('${escHtmlAttr(cpfTxt)}','CPF copiado.')" title="Copiar CPF">📋</button>`:'<span style="color:var(--muted)">—</span>';
+      return `<tr><td data-label="Paciente">${escHtml(nome)}</td><td data-label="CPF">${cpfHtml}</td><td data-label="Sessões">${v.sessoes}</td><td data-label="Valor recebido">R$ ${v.valor.toFixed(2)}</td><td data-label="Comentários">${escHtml(v.comentarios.join('; '))}</td></tr>`;
+    }).join('');
   }
   document.getElementById('cnpj-total-sessoes').textContent=entradas.reduce((s,[,v])=>s+v.sessoes,0);
   document.getElementById('cnpj-total-valor').textContent='R$ '+entradas.reduce((s,[,v])=>s+v.valor,0).toFixed(2);
@@ -2758,7 +2859,8 @@ function renderSessoesDetalhado(){
   if(!tbody)return;
   const nomeDigitado=document.getElementById('dsess-paciente-input')?.value.trim()||'';
   const pacienteId=nomeDigitado?_dsessPacienteNomeParaId[nomeDigitado]:'';
-  const filtradas=pacienteId?_dsessRows.filter(x=>x.paciente_id===pacienteId):_dsessRows;
+  const soAberto=document.getElementById('dsess-so-aberto')?.checked;
+  const filtradas=_dsessRows.filter(x=>(!pacienteId||x.paciente_id===pacienteId)&&(!soAberto||x.paga===false));
   const rows=aplicarOrdenacao('dsess',filtradas,{
     data:x=>x.data_sessao+' '+(x.horario||''),
     horario:x=>x.horario||'',
@@ -2795,8 +2897,10 @@ function renderSessoesDetalhado(){
     if(rows.length){
       const totalComp=rows.filter(x=>x.comparecimento==='Sim').length;
       const totalPagas=rows.reduce((s,x)=>s+Number(x.sessoes_cobradas||0),0);
+      const totalValor=rows.reduce((s,x)=>s+Number(x.valor_final||0),0);
       document.getElementById('dsess-total-comp').textContent=`${totalComp} ${totalComp===1?'comparecimento':'comparecimentos'}`;
       document.getElementById('dsess-total-pagas').textContent=`${totalPagas} ${totalPagas===1?'sessão paga':'sessões pagas'}`;
+      const tv=document.getElementById('dsess-total-valor');if(tv)tv.textContent=`R$ ${totalValor.toFixed(2)}`;
       tfoot.style.display='';
     }else{
       tfoot.style.display='none';
@@ -2820,9 +2924,10 @@ function exportarImagemSessoesDetalhado(){
     {label:'PACIENTE',w:260,align:'left'},
     {label:'MODALIDADE',w:118,align:'left'},
     {label:'COMPARECIMENTO',w:148,align:'center'},
-    {label:'SESSÕES PAGAS',w:122,align:'center'},
-    {label:'VALOR RECEBIDO',w:136,align:'right'}
+    {label:'SESSÕES PAGAS',w:122,align:'center'}
   ];
+  const incluirValores=document.getElementById('dsess-img-valores')?.checked!==false;
+  if(incluirValores)cols.push({label:'VALOR RECEBIDO',w:136,align:'right'});
   const padX=28,padTop=26,headerH=totaisTexto?62:56,theadH=38,rowH=38,tfootH=38,padBot=24;
   const tableW=cols.reduce((s,c)=>s+c.w,0);
   const W=tableW+padX*2;
@@ -2935,6 +3040,7 @@ function exportarImagemSessoesDetalhado(){
   const tfootTop=tableTop+theadH+rows.length*rowH;
   const totalComp=rows.filter(r=>r.comparecimento==='Sim').length;
   const totalPagas=rows.reduce((s,r)=>s+Number(r.sessoes_cobradas||0),0);
+  const totalValor=rows.reduce((s,r)=>s+Number(r.valor_final||0),0);
   const totalCompTxt=`${totalComp} ${totalComp===1?'comparecimento':'comparecimentos'}`;
   const totalPagasTxt=`${totalPagas} ${totalPagas===1?'sessão paga':'sessões pagas'}`;
   ctx.fillStyle='#f6f3ea';
@@ -2949,6 +3055,7 @@ function exportarImagemSessoesDetalhado(){
   cols.forEach((col,ci)=>{
     if(ci===5){ctx.textAlign=col.align;ctx.fillText(totalCompTxt,fx+col.w/2,tfootTop+tfootH/2);}
     if(ci===6){ctx.textAlign=col.align;ctx.fillText(totalPagasTxt,fx+col.w/2,tfootTop+tfootH/2);}
+    if(ci===7){ctx.textAlign=col.align;ctx.fillText(`R$ ${totalValor.toFixed(2)}`,fx+col.w-12,tfootTop+tfootH/2);}
     fx+=col.w;
   });
 
@@ -3198,13 +3305,14 @@ function renderMapaAgenda(){
     dias.forEach(([nome,dow])=>{
       const c=cel[dow+'|'+h],wellz=(WELLZ_HORARIOS_FIXOS[dow]||[]).includes(h);
       if(wellz){html+=`<div class="hc hw" title="${nome} ${h}h · horário fixo da Wellz">W</div>`;return;}
-      if(!c){html+='<div class="hc hn"></div>';return;}
+      if(!c){html+=`<div class="hc hn" onclick="abrirNovoPacienteNoHorario(${dow},${h},false)" title="Livre · clique para cadastrar paciente em ${nome} ${String(h).padStart(2,'0')}h"></div>`;return;}
       const nomes=[...c].map(iniciais).join(' / ');
       const regras=(_regrasAgendaSlots||[]).filter(x=>x.dia===dow&&x.hora===h);
       // Só a recorrência confirma a frequência; não inferir quinzenalidade de faltas no histórico.
       const vagaQuinzenal=regras.length===1&&regras[0].frequencia==='quinzenal';
-      const detalhe=vagaQuinzenal?' · Quinzenal: vaga para revezar na semana alternada':'';
-      html+=`<div class="hc ho${vagaQuinzenal?' hq':''}" title="${nome} ${h}h · ${escHtml(nomes)}${detalhe}"><span>${escHtml(nomes)}${vagaQuinzenal?' · 15d + vaga':''}</span></div>`;
+      const detalhe=vagaQuinzenal?' · Quinzenal: vaga para revezar na semana alternada (clique para cadastrar)':'';
+      const clickAttr=vagaQuinzenal?` onclick="abrirNovoPacienteNoHorario(${dow},${h},true)"`:'';
+      html+=`<div class="hc ho${vagaQuinzenal?' hq':''}"${clickAttr} title="${nome} ${h}h · ${escHtml(nomes)}${detalhe}"><span>${escHtml(nomes)}${vagaQuinzenal?' · 15d + vaga':''}</span></div>`;
     });
   }
   html+='<div class="lb" title="Total de horários ocupados">Total</div>';
@@ -3423,11 +3531,44 @@ function atualizarAvisoLogoImg() {
     : 'Sem logo: a imagem é gerada limpa, pronta para imprimir e usar com o paciente.';
 }
 
+async function aplicarLogoAtividade(b64){
+  const load=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});
+  try{
+    const [base,sym]=await Promise.all([load('data:image/png;base64,'+b64),load('/assets/logo-symbol-hires.png')]);
+    const W=base.naturalWidth||base.width,H=base.naturalHeight||base.height;
+    const c=document.createElement('canvas');c.width=W;c.height=H;
+    const ctx=c.getContext('2d');
+    ctx.drawImage(base,0,0,W,H);
+    const s=Math.max(1,Math.min(W,H)/1024);
+    const pad=Math.round(24*s),symH=Math.round(44*s),symW=Math.round(symH*(sym.naturalWidth/Math.max(1,sym.naturalHeight)));
+    const boxW=Math.round(symW+168*s),boxH=Math.round(symH+16*s);
+    const bx=W-pad-boxW,by=H-pad-boxH;
+    ctx.save();
+    ctx.fillStyle='rgba(251,250,246,0.88)';
+    ctx.strokeStyle='rgba(78,85,62,0.22)';
+    ctx.lineWidth=Math.max(1,s);
+    ctx.beginPath();ctx.roundRect(bx,by,boxW,boxH,Math.round(12*s));ctx.fill();ctx.stroke();
+    const sx=bx+Math.round(10*s),sy=by+Math.round((boxH-symH)/2);
+    ctx.drawImage(sym,sx,sy,symW,symH);
+    const tx=sx+symW+Math.round(10*s);
+    ctx.fillStyle='#4e553e';
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.font=`700 ${Math.round(16*s)}px "Playfair Display", Georgia, serif`;
+    ctx.fillText('Jaqueline Vieira',tx,by+Math.round(12*s));
+    ctx.fillStyle='#6c705f';
+    ctx.font=`600 ${Math.round(9.5*s)}px "DM Sans", Arial, sans-serif`;
+    ctx.fillText('PSICÓLOGA · CRP 06/191478',tx,by+Math.round(33*s));
+    ctx.restore();
+    return c.toDataURL('image/png').split(',')[1];
+  }catch{
+    return b64;
+  }
+}
 async function gerarImagem(prompt, size, incluirLogo) {
   const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ type: 'image', prompt, size, incluirLogo: !!incluirLogo })
+    body: JSON.stringify({ type: 'image', prompt, size, incluirLogo: false })
   });
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
@@ -3435,7 +3576,7 @@ async function gerarImagem(prompt, size, incluirLogo) {
   }
   const data = await res.json();
   if (!data.b64) throw new Error('Nenhuma imagem retornada');
-  return data.b64;
+  return incluirLogo ? await aplicarLogoAtividade(data.b64) : data.b64;
 }
 function prepararFotoParaEdicaoIA(fotoB64, maxLado=1536){
   // A foto enviada pode vir de uma câmera de celular moderna (vários MB) --
@@ -3706,10 +3847,13 @@ function exportarPDFModal() {
 }
 
 function clearFilters() {
+  const b=document.getElementById('f-busca-img');if(b)b.value='';
   ['f-tipo','f-faixa','f-tema'].forEach(id=>{document.getElementById(id).selectedIndex=0;});
+  _libLimit=12;
   renderBiblioteca();
 }
 
+let _libLimit=12;
 function setView(v) {
   _currentView = v;
   document.getElementById('vt-grid').className = 'view-tab'+(v==='grid'?' active':'');
@@ -3718,16 +3862,18 @@ function setView(v) {
 }
 
 function renderBiblioteca() {
+  const fBusca = (document.getElementById('f-busca-img')?.value || '').trim().toLowerCase();
   const fTipo  = document.getElementById('f-tipo').value;
   const fFaixa = document.getElementById('f-faixa').value;
   const fTema  = document.getElementById('f-tema').value;
 
   let filtered = _atividades;
+  if (fBusca) filtered = filtered.filter(a=>String(a.titulo||'').toLowerCase().includes(fBusca));
   if (fTipo)  filtered = filtered.filter(a=>a.tipo===fTipo);
   if (fFaixa) filtered = filtered.filter(a=>a.faixa===fFaixa);
   if (fTema)  filtered = filtered.filter(a=>a.tema===fTema);
 
-  const n = [fTipo,fFaixa,fTema].filter(Boolean).length;
+  const n = [fBusca,fTipo,fFaixa,fTema].filter(Boolean).length;
   document.getElementById('count-badge').textContent = n>0?n+' filtro'+(n>1?'s':'')+' ativo'+(n>1?'s':''):'';
   document.getElementById('lib-count').textContent = filtered.length>0?`(${filtered.length})` : '';
 
@@ -3738,9 +3884,13 @@ function renderBiblioteca() {
       : 'Nenhuma atividade encontrada com esses filtros.'}</p></div>`;
     return;
   }
-  container.innerHTML = _currentView === 'grid'
-    ? `<div class="grid-view">${filtered.map(cardGrid).join('')}</div>`
-    : `<div class="list-view">${filtered.map(cardList).join('')}</div>`;
+  const visiveis = filtered.slice(0, _libLimit);
+  const moreBtn = filtered.length > visiveis.length
+    ? `<div style="text-align:center;margin-top:14px"><button type="button" class="btn-secondary" onclick="_libLimit+=12;renderBiblioteca()">Carregar mais (${filtered.length - visiveis.length} restante(s))</button></div>`
+    : '';
+  container.innerHTML = (_currentView === 'grid'
+    ? `<div class="grid-view">${visiveis.map(cardGrid).join('')}</div>`
+    : `<div class="list-view">${visiveis.map(cardList).join('')}</div>`) + moreBtn;
 }
 
 function exportarPDFCard(id){
@@ -3836,14 +3986,22 @@ let _pptMeta         = {};
 let _apresentacoes   = [];
 let _pptChatHistorico=[],_pptChatAnexo=null,_pptChatImagem=null,_pptEditandoId=null;
 
+function atualizarSlidePPT(i,campo,valor){
+  if(!_pptData?.slides?.[i])return;
+  if(campo==='titulo')_pptData.slides[i].titulo=valor;
+  else _pptData.slides[i].conteudo=String(valor||'').split('\n').map(l=>l.trim()).filter(Boolean);
+}
 function renderPPTPreview(data){
   document.getElementById('ppt-preview-titulo').textContent = '📊 ' + data.titulo;
   document.getElementById('ppt-titulo-salvar').value = data.titulo;
   const list = document.getElementById('ppt-slides-list');
   list.innerHTML = data.slides.map((s,i) => `
     <div class="ppt-slide-preview">
-      <h4>Slide ${i+1}: ${escHtml(s.titulo)}</h4>
-      <ul>${s.conteudo.map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:.75rem;font-weight:700;color:var(--muted);white-space:nowrap">Slide ${i+1}:</span>
+        <input type="text" data-no-audio="1" value="${escHtmlAttr(s.titulo)}" oninput="atualizarSlidePPT(${i},'titulo',this.value)" style="flex:1;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:600 .86rem inherit;background:#fff"/>
+      </div>
+      <textarea data-no-audio="1" rows="${Math.max(2,(s.conteudo||[]).length)}" oninput="atualizarSlidePPT(${i},'conteudo',this.value)" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 9px;font:inherit;font-size:.82rem;line-height:1.5;background:#fff;resize:vertical">${escHtml((s.conteudo||[]).join('\n'))}</textarea>
     </div>
   `).join('');
   document.getElementById('ppt-preview').style.display = 'block';
@@ -4209,6 +4367,33 @@ function montarCamposUploadCarrossel(container){
     <div id="post-campos-foto-carrossel"></div>`;
   atualizarCamposFotoCarrossel();
 }
+function copiarLegendaHashtagsPost(){
+  if(!_postAtual)return toast('Gere ou abra um post primeiro.');
+  const leg=(_postAtual.legenda||'').trim(),tags=(_postAtual.hashtags||[]).join(' ').trim(),cta=(_postAtual.cta||'').trim();
+  const txt=[leg,cta,tags].filter(Boolean).join('\n\n');
+  copiarTextoRapido(txt,'✅ Legenda e hashtags copiadas.');
+}
+function copiarLegendaHashtagsRascunho(){
+  if(!_rascunhoAtual)return;
+  const leg=(_rascunhoAtual.legenda||'').trim(),tags=(_rascunhoAtual.hashtags||[]).join(' ').trim(),cta=(_rascunhoAtual.cta||'').trim();
+  const txt=[leg,cta,tags].filter(Boolean).join('\n\n');
+  copiarTextoRapido(txt,'✅ Legenda e hashtags copiadas.');
+}
+function renderCamposFotoPorSlide(){
+  const wrap=document.getElementById('post-campos-foto-carrossel');
+  const n=_postAtual?.slides?.length||0;
+  if(!wrap||!n)return;
+  wrap.innerHTML=Array.from({length:n},(_,i)=>{
+    const tem=_fotosFundo.porSlide[i];
+    return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px"><label class="pront-label" style="min-width:60px;margin:0">Slide ${i+1}</label><input type="file" accept="image/*" style="flex:1;min-width:160px" onchange="lerFotoComoB64(this,b=>{_fotosFundo.porSlide[${i}]=b;renderCamposFotoPorSlide();toast('Foto do slide ${i+1} carregada.');})"/>${tem?'<span style="font-size:.72rem;color:#4a8f47;font-weight:600">✓ carregada</span>':''}${i>0?`<button type="button" class="btn-xs" title="Mover para cima" onclick="moverFotoSlide(${i},-1)">↑</button>`:''}${i<n-1?`<button type="button" class="btn-xs" title="Mover para baixo" onclick="moverFotoSlide(${i},1)">↓</button>`:''}</div>`;
+  }).join('');
+}
+function moverFotoSlide(i,delta){
+  const j=i+delta,arr=_fotosFundo.porSlide;
+  if(j<0||j>=arr.length)return;
+  [arr[i],arr[j]]=[arr[j],arr[i]];
+  renderCamposFotoPorSlide();
+}
 function atualizarCamposFotoCarrossel(){
   const modo=document.getElementById('post-modo-foto-carrossel').value;
   const wrap=document.getElementById('post-campos-foto-carrossel');
@@ -4219,7 +4404,7 @@ function atualizarCamposFotoCarrossel(){
     wrap.innerHTML=`<input type="file" accept="image/*" onchange="lerFotoComoB64(this,b=>{_fotosFundo.unica=b;toast('Foto carregada.');})"/>`;
     return;
   }
-  wrap.innerHTML=Array.from({length:n},(_,i)=>`<div style="margin-bottom:6px"><label class="pront-label">Slide ${i+1}</label><input type="file" accept="image/*" onchange="lerFotoComoB64(this,b=>{_fotosFundo.porSlide[${i}]=b;toast('Foto do slide ${i+1} carregada.');})"/></div>`).join('');
+  renderCamposFotoPorSlide();
 }
 function montarCamposUploadFundo(){
   const formato=(document.getElementById('post-formato').value||'').toLowerCase();
@@ -5165,18 +5350,34 @@ function limparCamposAnamnese(){
 function mostrarVersaoAnamnese(){
   const index=Number(document.getElementById('anamnese-versao').value||0);
   const item=_anamneseVersoes[index];
-  if(!item)return limparCamposAnamnese();
+  const diffBox=document.getElementById('anamnese-diff');
+  if(!item){if(diffBox)diffBox.style.display='none';return limparCamposAnamnese();}
   const c=item.conteudo||{};
   _anamneseCampos.forEach(campo=>document.getElementById('anamnese-'+campo).value=String(c[campo]||''));
   document.getElementById('anamnese-meta').textContent=`Versão ${item.versao} · salva em ${new Date(item.criado_em).toLocaleString('pt-BR')}`;
-  document.getElementById('anamnese-exportar').disabled=false;document.getElementById('anamnese-excluir').disabled=false;
+  document.getElementById('anamnese-exportar').disabled=false;document.getElementById('anamnese-exportar-pdf').disabled=false;document.getElementById('anamnese-excluir').disabled=false;
+  const anterior=_anamneseVersoes[index+1];
+  if(diffBox){
+    if(anterior){
+      const antC=anterior.conteudo||{},mudancas=[];
+      _anamneseSecoes.forEach(([,campos])=>campos.forEach(([k,rotulo])=>{
+        const vAtual=String(c[k]||'').trim(),vAnt=String(antC[k]||'').trim();
+        if(vAtual!==vAnt)mudancas.push(`<li><strong>${escHtml(rotulo)}:</strong> ${escHtml(vAnt||'—')} → <em>${escHtml(vAtual||'—')}</em></li>`);
+      }));
+      diffBox.style.display='block';
+      diffBox.innerHTML=mudancas.length?`<strong>Alterações em relação à versão ${anterior.versao}:</strong><ul style="margin:6px 0 0 18px;padding:0">${mudancas.join('')}</ul>`:`<strong>Comparação com versão ${anterior.versao}:</strong> nenhum campo alterado.`;
+    }else{
+      diffBox.style.display='none';
+    }
+  }
 }
 
 async function carregarAnamnese(){
   const paciente_id=document.getElementById('anamnese-paciente').value;
   const editor=document.getElementById('anamnese-editor'),versao=document.getElementById('anamnese-versao');
   _anamneseVersoes=[];
-  document.getElementById('anamnese-exportar').disabled=true;document.getElementById('anamnese-excluir').disabled=true;
+  document.getElementById('anamnese-exportar').disabled=true;document.getElementById('anamnese-exportar-pdf').disabled=true;document.getElementById('anamnese-excluir').disabled=true;
+  const diffBox=document.getElementById('anamnese-diff');if(diffBox)diffBox.style.display='none';
   if(!paciente_id){editor.style.display='none';versao.disabled=true;versao.innerHTML='<option value="">Nenhuma versão</option>';return;}
   editor.style.display='block';versao.disabled=true;versao.innerHTML='<option>Carregando...</option>';limparCamposAnamnese();
   try{
@@ -5205,6 +5406,19 @@ async function exportarAnamneseDOCX(){
   const bytes=Uint8Array.from(atob(d.arquivo),c=>c.charCodeAt(0)),blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=`anamnese-${String(paciente?.nome||'paciente').replace(/[^a-z0-9]+/gi,'-').toLowerCase()}-v${item.versao}.docx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('✅ Anamnese exportada em Word.');
 }
+async function exportarAnamnesePDF(){
+  const item=_anamneseVersoes[Number(document.getElementById('anamnese-versao').value||0)];if(!item)return toast('Nenhuma versão selecionada.');
+  const paciente=_pacientesById[document.getElementById('anamnese-paciente').value];
+  const btn=document.getElementById('anamnese-exportar-pdf');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}
+  try{
+    const secoes=_anamneseSecoes.map(([titulo,campos])=>({titulo,itens:campos.map(([key,rotulo])=>({rotulo,valor:item.conteudo?.[key]||''}))}));
+    const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'export_anamnesis_pdf',paciente_nome:paciente?.nome||'Paciente',versao:item.versao,criado_em:new Date(item.criado_em).toLocaleString('pt-BR'),secoes})});
+    if(!r.ok)return toast('Não foi possível gerar o PDF.');
+    const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=`anamnese-${String(paciente?.nome||'paciente').replace(/[^a-z0-9]+/gi,'-').toLowerCase()}-v${item.versao}.pdf`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}
+}
 
 async function salvarAnamnese(){
   const paciente_id=document.getElementById('anamnese-paciente').value;if(!paciente_id)return toast('Selecione um paciente.');
@@ -5217,15 +5431,36 @@ async function salvarAnamnese(){
   }catch(e){toast(e.message);}finally{button.disabled=false;}
 }
 
+function linkWhatsAppPaciente(pacienteId,url,modeloNome){
+  const p=_pacientesById?.[pacienteId];
+  const tel=String(p?.telefone||'').replace(/\D/g,'');
+  const msg=encodeURIComponent(`Olá! Segue o link para preencher ${modeloNome||'o formulário'}: ${url}`);
+  return tel.length>=10?`https://wa.me/55${tel.replace(/^55/,'')}?text=${msg}`:`https://wa.me/?text=${msg}`;
+}
+function renderConvitesPendentes(invites){
+  const wrap=document.getElementById('form-pendentes-wrap'),el=document.getElementById('form-pendentes');
+  if(!wrap||!el)return;
+  if(!invites?.length){wrap.style.display='none';el.innerHTML='';return;}
+  wrap.style.display='block';
+  el.innerHTML=invites.map(c=>{
+    const p=_pacientesById?.[c.paciente_id],dias=Math.max(0,Math.floor((Date.now()-new Date(c.criado_em).getTime())/86400000));
+    const tempo=dias===0?'enviado hoje':(dias===1?'há 1 dia':`há ${dias} dias`);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--light);font-size:.8rem"><span><strong>${escHtml(p?.nome||'Paciente')}</strong> · ${escHtml(c.formularios_modelos?.nome||'Formulário')}</span><span class="alert-badge alert-yellow">${tempo}</span></div>`;
+  }).join('');
+}
 let _formTemplates=[];
 async function initFormularios(){
   const paciente=document.getElementById('form-paciente');if(!paciente)return;
   paciente.innerHTML='<option value="">Selecione...</option>'+Object.values(_pacientesById).filter(pacienteAtivo).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${escHtmlAttr(p.id)}">${escHtml(rotuloPaciente(p))}</option>`).join('');
   try{
-    const [tm,rs]=await Promise.all([fetch('/api/forms?resource=templates'),fetch('/api/forms')]);
-    _formTemplates=tm.ok?await tm.json():[];const respostas=rs.ok?await rs.json():[];
+    const [tm,rs]=await Promise.all([fetch('/api/forms?resource=templates'),fetch('/api/forms?include_invites=1')]);
+    _formTemplates=tm.ok?await tm.json():[];
+    const payload=rs.ok?await rs.json():[];
+    const respostas=Array.isArray(payload)?payload:(payload.respostas||[]);
+    const invites=Array.isArray(payload)?[]:(payload.pending_invites||[]);
     document.getElementById('form-modelo').innerHTML='<option value="">Selecione...</option>'+_formTemplates.filter(t=>t.destino==='cadastro').map(t=>`<option value="${escHtmlAttr(t.id)}">${escHtml(t.nome)}</option>`).join('');
     const anamneseModelo=document.getElementById('anamnese-modelo-link');if(anamneseModelo)anamneseModelo.innerHTML='<option value="">Selecione...</option>'+_formTemplates.filter(t=>t.destino==='anamnese').map(t=>`<option value="${escHtmlAttr(t.id)}">${escHtml(t.nome)}</option>`).join('');
+    renderConvitesPendentes(invites);
     renderRespostasFormularios(respostas);
   }catch(e){document.getElementById('form-respostas').innerHTML='<div class="alert-empty">Não foi possível carregar os formulários.</div>';const ar=document.getElementById('anamnese-respostas');if(ar)ar.innerHTML='<div class="alert-empty">Não foi possível carregar as respostas.</div>';}
 }
@@ -5236,7 +5471,8 @@ async function criarModeloAnamnese(){
 async function gerarLinkFormulario(){
   const paciente_id=document.getElementById('form-paciente').value,modelo_id=document.getElementById('form-modelo').value;if(!paciente_id||!modelo_id)return toast('Selecione paciente e modelo.');
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
-  const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
+  const waUrl=linkWhatsAppPaciente(paciente_id,d.url,'as informações iniciais');
+  const box=document.getElementById('form-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(waUrl)}" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
 // Gera o modelo online a partir de _anamneseSecoes (a mesma fonte da Anamnese
 // preenchida internamente) -- pedido do usuário: o formulário online precisa
@@ -5260,7 +5496,8 @@ async function criarModeloAnamneseOnline(){
 async function gerarLinkAnamnese(){
   const paciente_id=document.getElementById('anamnese-paciente').value,modelo_id=document.getElementById('anamnese-modelo-link').value;if(!paciente_id||!modelo_id)return toast('Selecione paciente e modelo de Anamnese.');
   const r=await fetch('/api/forms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'invite',paciente_id,modelo_id,expires_in_hours:72})}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível gerar o link');
-  const box=document.getElementById('anamnese-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
+  const waUrl=linkWhatsAppPaciente(paciente_id,d.url,'a anamnese');
+  const box=document.getElementById('anamnese-link-box');box.style.display='block';box.innerHTML=`<strong>Link seguro pronto</strong><br><span style="font-size:.75rem;color:var(--muted)">Válido por 72 horas e utilizável uma única vez.</span><br><button class="btn-primary" style="margin-top:8px" onclick="navigator.clipboard.writeText('${escHtmlAttr(d.url)}').then(()=>toast('Link copiado'))">Copiar link</button> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(waUrl)}" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a> <a class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none" href="${escHtmlAttr(d.url)}" target="_blank" rel="noopener">Abrir formulário</a>`;
 }
 // São dois formulários distintos: o de Cadastro ("Informações iniciais -
 // online") e o de Anamnese (sub-aba Anamnese). Cada resposta aparece só na
@@ -5550,22 +5787,33 @@ async function salvarSessao(){
   }catch(e){console.error(e);toast('Erro ao salvar: '+e.message);}
 }
 
+let _prontLimit=15;
 function verProntuario(id){
+  if(_pacAtual!==id){_prontLimit=15;const ft=document.getElementById('pront-filtro-texto');if(ft)ft.value='';}
   _pacAtual=id; const p=_prontuarios[id]; if(!p)return;
   const grupo=p.arquivado?'inativos':'ativos';
   if(_prontFiltroStatus!==grupo){_prontFiltroStatus=grupo;renderBuscaProntuario();}
   document.getElementById('pront-view').style.display='block';
   document.getElementById('pront-empty').style.display='none';
   document.getElementById('pront-view-titulo').textContent='📋 '+(p.label||p.nome||'Prontuário')+(p.arquivado?' · inativo':'');
+  const q=(document.getElementById('pront-filtro-texto')?.value||'').trim().toLowerCase();
+  const ordenadas=[...p.sessoes].sort((a,b)=>b.data.localeCompare(a.data)).filter(s=>!q||String(s.relato||'').toLowerCase().includes(q));
+  const visiveis=ordenadas.slice(0,_prontLimit);
   const tbody=document.getElementById('pront-tabela'); tbody.innerHTML='';
-  [...p.sessoes].sort((a,b)=>b.data.localeCompare(a.data)).forEach((s,i)=>{
-    const [y,m,d]=s.data.split('-');
-    tbody.innerHTML+=`<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
-      <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
-      <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${escHtml(String(s.relato||'')).replace(/\n/g,'<br>')}${htmlAnexosProntuario(s.id)}</td>
-      <td style="padding:10px 14px;vertical-align:top;text-align:right;white-space:nowrap;"><button onclick="editarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Editar este registro" style="font-size:.72rem;color:var(--accent);background:#eef1ea;border:1px solid #d5ddc9;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;margin-right:6px;">✏️ editar</button><button onclick="deletarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
-    </tr>`;
-  });
+  if(!visiveis.length){
+    tbody.innerHTML='<tr><td colspan="3" class="agenda-empty">Nenhuma sessão encontrada com esse termo.</td></tr>';
+  }else{
+    visiveis.forEach((s,i)=>{
+      const [y,m,d]=s.data.split('-');
+      tbody.innerHTML+=`<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#fafaf8':''}">
+        <td style="padding:10px 14px;color:var(--muted);font-size:.78rem;white-space:nowrap;vertical-align:top;">${d}/${m}/${y}</td>
+        <td style="padding:10px 14px;line-height:1.6;vertical-align:top;">${escHtml(String(s.relato||'')).replace(/\n/g,'<br>')}${htmlAnexosProntuario(s.id)}</td>
+        <td style="padding:10px 14px;vertical-align:top;text-align:right;white-space:nowrap;"><button onclick="editarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Editar este registro" style="font-size:.72rem;color:var(--accent);background:#eef1ea;border:1px solid #d5ddc9;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;margin-right:6px;">✏️ editar</button><button onclick="deletarSessao('${escHtmlAttr(s.id)}','${escHtmlAttr(id)}')" title="Excluir registro" style="font-size:.72rem;color:var(--danger);background:#fdecea;border:1px solid #f5c6c2;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;">✕ excluir</button></td>
+      </tr>`;
+    });
+  }
+  const moreWrap=document.getElementById('pront-more-wrap');
+  if(moreWrap)moreWrap.innerHTML=ordenadas.length>visiveis.length?`<button type="button" class="btn-secondary" onclick="_prontLimit+=15;verProntuario('${escHtmlAttr(id)}')">Mostrar mais (${ordenadas.length-visiveis.length} restante(s))</button>`:'';
   document.getElementById('pront-busca').value=id;
   renderGridPacientes();
 }
@@ -5761,15 +6009,16 @@ function montarFormularioDocumento(){
   if(tipo==='termo_infantil')html+=inputDoc('doc-responsavel','Nome do responsável')+inputDoc('doc-cpf-responsavel','CPF do responsável')+inputDoc('doc-cpf-paciente','CPF da criança')+inputDoc('doc-anamnese-data','Data da anamnese','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote','Valor do pacote com 4 sessões','number','min="0" step="0.01"');
   if(tipo==='termo_adulto')html+=inputDoc('doc-cpf-paciente','CPF do paciente')+inputDoc('doc-anamnese-data','Data da entrevista inicial','date')+inputDoc('doc-valor','Valor da sessão','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote','Valor do pacote com 4 sessões','number','min="0" step="0.01"');
   if(tipo==='orcamento')html+=inputDoc('doc-inicio','Data de início','date')+inputDoc('doc-valor-avulso','Valor da sessão individual','number','min="0" step="0.01"')+inputDoc('doc-valor-pacote-sessao','Valor de cada sessão no pacote','number','min="0" step="0.01"');
-  if(tipo==='recibo')html+=inputDoc('doc-valor-pago','Valor total pago','number','min="0" step="0.01"')+inputDoc('doc-qtd-sessoes','Total de sessões','number','min="1" max="20" value="1" onchange="renderSessoesRecibo()"')+inputDoc('doc-forma-pagamento','Forma de pagamento')+'<div class="full" id="doc-sessoes-recibo"></div>';
+  if(tipo==='recibo')html+=`<div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:#faf8f2;border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div class="gen-field" style="width:160px;margin:0"><label class="pront-label">Mês para puxar sessões</label><input type="month" id="doc-procv-mes" class="pront-input" value="${new Date().toISOString().slice(0,7)}"></div><button type="button" class="btn-secondary" onclick="puxarSessoesDocumento()">⚡ Puxar sessões do paciente</button></div>`+inputDoc('doc-valor-pago','Valor total pago','number','min="0" step="0.01"')+inputDoc('doc-qtd-sessoes','Total de sessões','number','min="1" max="20" value="1" onchange="renderSessoesRecibo()"')+inputDoc('doc-forma-pagamento','Forma de pagamento')+'<div class="full" id="doc-sessoes-recibo"></div>';
   if(tipo==='relatorio_psicologico')html+=`<div class="pront-field full"><label class="pront-label">Formato do relatório</label><select class="pront-input doc-input" id="doc-relatorio-formato" onchange="atualizarPreviaDocumento()"><option value="estruturado">Estruturado (4 seções)</option><option value="orientacao">Orientação (texto curto)</option></select></div>`+inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do relatório');
   if(tipo==='encaminhamento')html+=inputDoc('doc-nascimento','Data de nascimento','date')+inputDoc('doc-responsavel','Responsável, se aplicável')+inputDoc('doc-inicio','Início dos atendimentos','date')+inputDoc('doc-finalidade','Finalidade (ex.: Encaminhamento para Psiquiatra Infantil)')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto do encaminhamento');
   if(tipo==='solicitacao_escolar')html+=inputDoc('doc-destinatario','Destinatário','text','value="À Equipe Escolar"')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da solicitação');
   if(tipo==='declaracao')html+=inputDoc('doc-frequencia','Frequência do acompanhamento','text','maxlength="80" placeholder="Ex.: 01 sessão semanal"')+inputDoc('doc-inicio','Início dos atendimentos','date')+`<div class="full"><button class="btn-primary" type="button" onclick="abrirChatIA()">✦ Elaborar texto com IA</button></div>`+areaDoc('doc-texto-final','Texto da declaração','Descreva os fatos, a finalidade e o que precisa constar na declaração.');
   if(tipo==='declaracao_comparecimento')html+=inputDoc('doc-sessao-data','Dia da sessão','date')+inputDoc('doc-hora-inicio','Horário de início','time')+inputDoc('doc-hora-fim','Horário final','time');
-  if(tipo==='declaracao_frequencia')html+=inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
+  if(tipo==='declaracao_frequencia')html+=`<div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:#faf8f2;border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div class="gen-field" style="width:160px;margin:0"><label class="pront-label">Mês para puxar sessões</label><input type="month" id="doc-procv-mes" class="pront-input" value="${new Date().toISOString().slice(0,7)}"></div><button type="button" class="btn-secondary" onclick="puxarSessoesDocumento()">⚡ Puxar sessões do paciente</button></div>`+inputDoc('doc-anamnese-coleta-data','Data de preenchimento da anamnese e coleta de dados','date')+inputDoc('doc-qtd-sessoes-freq','Total de sessões','number','min="1" max="40" value="1" onchange="renderSessoesFrequencia()"')+'<div class="full" id="doc-sessoes-frequencia"></div>';
   html+='</div><div class="pront-form-actions" style="margin-top:14px"><button class="btn-primary" onclick="salvarDocumento()">💾 Salvar documento</button><button class="btn-secondary" onclick="limparDocumento()">Limpar</button></div>';
   editor.innerHTML=html;if(tipo==='recibo')renderSessoesRecibo();if(tipo==='declaracao_frequencia')renderSessoesFrequencia();habilitarAudioGlobal();preencherDocumentoDoCadastro();atualizarPreviaDocumento();
+  if((tipo==='recibo'||tipo==='declaracao_frequencia')&&document.getElementById('doc-paciente')?.value)puxarSessoesDocumento(true);
 }
 
 // Pedido do usuário (17/09/2026): o cadastro do paciente (Agenda > Editar
@@ -6008,7 +6257,7 @@ async function carregarDocumentos(){
   // A frequência do acompanhamento (Declaração) vem da recorrência da Agenda;
   // carrega o estado dela uma vez, mesmo que a aba Agenda nunca tenha sido aberta.
   if(!_agendaState){try{_agendaState=await agendaApi();}catch{}}
-  if(document.getElementById('doc-tipo').value){preencherDocumentoDoCadastro();atualizarPreviaDocumento();}
+  if(document.getElementById('doc-tipo').value){preencherDocumentoDoCadastro();atualizarPreviaDocumento();if(['recibo','declaracao_frequencia'].includes(document.getElementById('doc-tipo').value)&&!_docEditandoId)puxarSessoesDocumento(true);}
   const r=await fetch(`/api/forms?resource=documents&paciente_id=${encodeURIComponent(id)}`),d=await r.json();_documentos=r.ok?d:[];box.innerHTML=_documentos.length?_documentos.map(x=>`<button class="doc-record" onclick="abrirDocumento('${escHtmlAttr(x.id)}',this)"><strong>${x.conteudo?.rascunho?'🕓 Rascunho — ':''}${escHtml(x.titulo)}</strong><span>Emitido em ${new Date(x.emitido_em+'T12:00:00').toLocaleDateString('pt-BR')}</span></button>`).join(''):'<div class="alert-empty">Nenhum documento salvo para este paciente.</div>';
 }
 // Clicar num documento salvo (ou rascunho) SÓ mostrava a prévia de leitura à
@@ -6029,6 +6278,49 @@ function restaurarEstadoDocumento(x){
   _docChatHistorico=(x.conteudo.promptHistorico||[]).map(h=>({...h}));
   restaurarCamposDocumento(x);
 }
+async function puxarSessoesDocumento(silencioso=false){
+  const pid=document.getElementById('doc-paciente')?.value,tipo=document.getElementById('doc-tipo')?.value;
+  if(!pid||!['recibo','declaracao_frequencia'].includes(tipo))return;
+  const mes=document.getElementById('doc-procv-mes')?.value||'';
+  try{
+    const r=await fetch('/api/operational?resource=sessions&paciente_id='+encodeURIComponent(pid)+(mes?'&month='+encodeURIComponent(mes):''));
+    if(!r.ok)throw new Error('Falha ao buscar sessões');
+    const all=(await r.json()).filter(x=>!String(x.source_key||'').startsWith('movimento-saldo:'));
+    if(tipo==='recibo'){
+      const pagas=all.filter(x=>Number(x.valor_final)>0||Number(x.sessoes_cobradas)>0).slice(0,20);
+      if(!pagas.length){if(!silencioso)toast('Nenhuma sessão com pagamento encontrada para este período.');return;}
+      const total=pagas.reduce((s,x)=>s+Number(x.valor_final||0),0);
+      document.getElementById('doc-valor-pago').value=total.toFixed(2);
+      document.getElementById('doc-qtd-sessoes').value=String(pagas.length);
+      renderSessoesRecibo();
+      pagas.forEach((s,i)=>{
+        const dEl=document.getElementById(`doc-sessao-${i}-data`),vEl=document.getElementById(`doc-sessao-${i}-valor`);
+        if(dEl)dEl.value=s.data_sessao||'';
+        if(vEl)vEl.value=Number(s.valor_final||0).toFixed(2);
+      });
+      atualizarPreviaDocumento();
+      if(!silencioso)toast(`✅ ${pagas.length} sessão(ões) puxada(s) do histórico.`);
+    }else{
+      const realizadas=all.filter(x=>x.comparecimento==='Sim').slice(0,40);
+      if(!realizadas.length){if(!silencioso)toast('Nenhuma sessão comparecida encontrada para este período.');return;}
+      document.getElementById('doc-qtd-sessoes-freq').value=String(realizadas.length);
+      renderSessoesFrequencia();
+      realizadas.forEach((s,i)=>{
+        const dEl=document.getElementById(`doc-sessao-freq-${i}-data`);
+        if(dEl)dEl.value=s.data_sessao||'';
+      });
+      atualizarPreviaDocumento();
+      if(!silencioso)toast(`✅ ${realizadas.length} sessão(ões) puxada(s) do histórico.`);
+    }
+  }catch(e){if(!silencioso)toast(e.message);}
+}
+function duplicarDocumentoAtual(){
+  if(!_docAtual)return;
+  _docEditandoId=null;_docAtual=null;
+  document.getElementById('doc-emissao').value=new Date().toISOString().slice(0,10);
+  atualizarPreviaDocumento();
+  toast('Documento duplicado no editor. Ajuste o que precisar e clique em Salvar.');
+}
 function abrirDocumento(id,button){
   const x=_documentos.find(d=>d.id===id);if(!x)return;document.querySelectorAll('.doc-record').forEach(b=>b.classList.remove('active'));button?.classList.add('active');
   restaurarEstadoDocumento(x);
@@ -6037,7 +6329,7 @@ function abrirDocumento(id,button){
   // sempre respondia "Salve o documento antes" mesmo com o documento salvo.
   _docAtual=x;
   const campos=x.tipo==='declaracao'?'':camposDocHtml(x.conteudo.campos,dataBR),secoes=(x.tipo==='declaracao'?prepararDeclaracao(x.conteudo.secoes,x.conteudo.campos):(x.conteudo.secoes||[])).map(s=>`${s.titulo?`<h3>${escHtml(s.titulo)}</h3>`:''}${paragrafosDocHtml(dataBR(s.texto))}`).join('');const preview=document.getElementById('doc-preview');preview.className=`doc-preview ${x.conteudo.estilo||'colorido'}`;const temPrompt=!!(x.conteudo.promptHistorico&&x.conteudo.promptHistorico.length);
-  preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em,true,x.tipo,x.conteudo.campos)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
+  preview.innerHTML=`${cabecalhoDocumento()}<h2>${escHtml(x.titulo)}</h2>${campos}${secoes}${fechamentoDocumento(x.emitido_em,true,x.tipo,x.conteudo.campos)}<div class="pront-form-actions" style="margin-top:28px"><button class="btn-save" onclick="exportarDocumento('${escHtmlAttr(x.id)}')">📄 Exportar .docx</button><button class="btn-pdf" onclick="exportarDocumentoPDF()">⬇ Exportar PDF para assinatura</button><button class="btn-secondary" onclick="duplicarDocumentoAtual()">📋 Duplicar</button>${temPrompt?`<button class="btn-secondary" onclick="editarPromptDocumento('${escHtmlAttr(x.id)}')">✏️ Editar prompt</button>`:''}<button class="btn-danger" onclick="excluirDocumento('${escHtmlAttr(x.id)}')">Excluir</button></div>${temPrompt?'':'<p style="font-size:.72rem;color:var(--muted);margin-top:6px">Este documento foi criado antes do recurso de conversa com a IA, por isso não tem prompt salvo para editar.</p>'}`;
 }
 function restaurarCamposDocumento(x){
   const c=x.conteudo||{},campos=c.campos||{};
@@ -6261,6 +6553,15 @@ async function salvarPSM(){
   const d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível salvar a PSM.');toast('✅ PSM salva para reutilização.');
   _psmEditandoId=null;document.getElementById('psm-publico').value='adulto';document.getElementById('psm-valor-individual').value='';document.getElementById('psm-valor-pacote').value='';atualizarPreviaPSM();await carregarPSMs();
 }
+async function visualizarPSMPDF(){
+  const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');
+  if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de visualizar.');
+  const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);
+  if(!r.ok)return toast('Não foi possível gerar o PDF.');
+  const blob=await r.blob(),url=URL.createObjectURL(blob);
+  window.open(url,'_blank');
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
 async function exportarPSMPDF(){const publico=document.getElementById('psm-publico').value,individual=campo('psm-valor-individual'),pacote=campo('psm-valor-pacote');if(!(Number(individual)>0)||!(Number(pacote)>0))return toast('Informe os dois valores antes de exportar.');const btn=document.querySelector('#doc-main-panel-psm .btn-pdf');if(btn){btn.disabled=true;btn.textContent='⏳ Gerando PDF…';}try{const r=await fetch(`/api/forms?resource=documents&action=psm-pdf&publico=${encodeURIComponent(publico)}&individual=${encodeURIComponent(individual)}&pacote=${encodeURIComponent(pacote)}`);if(!r.ok)return toast('Não foi possível gerar o PDF.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`psm-${publico}.pdf`;a.click();URL.revokeObjectURL(url);}finally{if(btn){btn.disabled=false;btn.textContent='⬇ Exportar PDF';}}}
 async function excluirPSM(id){if(!await appConfirm('Excluir esta PSM da biblioteca?','Excluir PSM',{okText:'Excluir',danger:true}))return;const r=await fetch(`/api/forms?resource=documents&action=psm-delete&id=${encodeURIComponent(id)}`,{method:'DELETE'}),d=await r.json();if(!r.ok)return toast(d.error||'Não foi possível excluir a PSM.');if(_psmEditandoId===id)_psmEditandoId=null;toast('PSM excluída.');await carregarPSMs();}
 
@@ -6309,7 +6610,35 @@ async function wellzSalvar(iso){
   }catch(e){toast(e.message,5000)}
 }
 function agendaLimitesSemana(){const hoje=new Date();hoje.setHours(0,0,0,0);const diaSemana=hoje.getDay(),desloc=diaSemana===0?-6:1-diaSemana,inicioSemana=new Date(hoje);inicioSemana.setDate(hoje.getDate()+desloc);const fimSemana=new Date(inicioSemana);fimSemana.setDate(inicioSemana.getDate()+6);const inicioSemanaPassada=new Date(inicioSemana);inicioSemanaPassada.setDate(inicioSemana.getDate()-7);const fimSemanaPassada=new Date(inicioSemana);fimSemanaPassada.setDate(inicioSemana.getDate()-1);const iso=d=>d.toISOString().slice(0,10);return{inicioSemana:iso(inicioSemana),fimSemana:iso(fimSemana),inicioSemanaPassada:iso(inicioSemanaPassada),fimSemanaPassada:iso(fimSemanaPassada)};}
-function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(pf){const stPac={};_agendaState.patients.forEach(p=>{stPac[p.id]=p.status_operacional||(p.ativo?'ativo':'inativo')});rows=rows.filter(x=>(stPac[x.paciente_id]||'ativo')===pf);}if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+'>'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+(locked?'—':'Pendente')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const itensBusca=_agendaState.patients.filter(p=>!pf||(p.status_operacional||(p.ativo?'ativo':'inativo'))===pf).map(p=>({value:p.id,label:p.nome+' ('+(p.status_operacional||(p.ativo?'ativo':'inativo'))+')'}));if(!_combos['agenda-busca-combo'])comboCriar('agenda-busca-combo',{items:itensBusca,placeholder:'Digite o nome…',allowAll:false,onSelect:id=>{if(id){abrirPerfilPaciente(id);comboSelecionar('agenda-busca-combo','',{silent:true});}}});else comboAtualizarItens('agenda-busca-combo',itensBusca);marcarSetaOrdenacao('agenda');}
+function agendaAtualizarBotaoSalvar(){
+  const pendentes=(_agendaState?.appointments||[]).filter(x=>{const s=document.getElementById('agenda-status-'+x.id);return !x.sessao_id&&s&&s.value!=='agendado';}).length;
+  const btn=document.getElementById('agenda-save-batch-btn')||[...document.querySelectorAll('#page-agenda button')].find(x=>x.textContent.includes('Salvar alterações da tabela'));
+  if(btn){
+    btn.id='agenda-save-batch-btn';
+    btn.innerHTML=pendentes?`💾 Salvar alterações da tabela <span class="agenda-dirty-badge">${pendentes} pendente(s)</span>`:'💾 Salvar alterações da tabela';
+  }
+  return pendentes;
+}
+async function remarcarAtendimentoAgenda(id,dataAtual,horaAtual){
+  const novaData=await appPrompt('Nova data (AAAA-MM-DD):','Remarcar atendimento',{okText:'Avançar',placeholder:dataAtual});
+  if(!novaData)return;
+  const novaHora=await appPrompt('Novo horário (HH:MM):','Remarcar atendimento',{okText:'Remarcar',placeholder:horaAtual});
+  if(!novaHora)return;
+  try{
+    await agendaApi({action:'reschedule_appointment',id,data_atendimento:novaData.trim(),horario:novaHora.trim()});
+    toast('Atendimento remarcado.');
+    await carregarAgenda();
+  }catch(e){toast(e.message,5000);}
+}
+async function excluirAtendimentoAgenda(id){
+  if(!await appConfirm('Excluir este agendamento da Agenda?','Excluir agendamento',{okText:'Excluir',danger:true}))return;
+  try{
+    await agendaApi({action:'delete_appointment',id});
+    toast('Agendamento excluído.');
+    await carregarAgenda();
+  }catch(e){toast(e.message,5000);}
+}
+function renderAgenda(){if(!_agendaState)return;const pf=document.getElementById('agenda-paciente-filter')?.value||'ativo',soSemana=document.getElementById('agenda-semana-toggle')?.checked;let rows=_agendaState.appointments;if(pf){const stPac={};_agendaState.patients.forEach(p=>{stPac[p.id]=p.status_operacional||(p.ativo?'ativo':'inativo')});rows=rows.filter(x=>(stPac[x.paciente_id]||'ativo')===pf);}if(soSemana){const w=agendaLimitesSemana();rows=rows.filter(x=>(x.data_atendimento>=w.inicioSemana&&x.data_atendimento<=w.fimSemana)||(x.data_atendimento>=w.inicioSemanaPassada&&x.data_atendimento<=w.fimSemanaPassada&&x.status==='agendado'));}rows=aplicarOrdenacao('agenda',rows,{data:x=>x.data_atendimento+' '+(x.horario||''),horario:x=>x.horario||'',paciente:x=>x.pacientes?.nome||'',comparecimento:x=>x.status||'',cobradas:x=>Number((x.sessao_id?x.sessoes?.sessoes_cobradas:x.sessoes_cobradas)||0),valor:x=>Number((x.sessao_id?x.sessoes?.valor_final:x.valor_recebido)||0)});document.getElementById('agenda-summary').textContent=rows.length+' atendimento(s) · '+_agendaState.patients.filter(p=>(p.status_operacional||(p.ativo?'ativo':'inativo'))==='ativo').length+' paciente(s) ativo(s)';document.getElementById('agenda-tbody').innerHTML=rows.length?rows.map(x=>{const date=x.data_atendimento.split('-').reverse().join('/'),time=x.origem==='historico'&&x.horario==='00:00'?'Não informado':String(x.horario).slice(0,5),actual=x.sessoes||{},locked=!!x.sessao_id,charged=locked?(actual.sessoes_cobradas||0):(x.sessoes_cobradas||0),received=locked?(actual.valor_final||0):(x.valor_recebido||0),disabled=locked?'disabled':'',comparecimentoLabels={agendado:'Agendado',realizado:'Sim',falta:'Não',cancelado:'Cancelado'},statusOptions=['agendado','realizado','falta','cancelado'].map(v=>'<option value="'+v+'" '+(x.status===v?'selected':'')+'>'+comparecimentoLabels[v]+'</option>').join('');const comentario=agendaEscape(actual.comentario||'');const acaoHtml=locked?'—':`<div style="display:flex;gap:4px;align-items:center"><span>Pendente</span>${x.status==='agendado'?`<button type="button" class="btn-xs" title="Remarcar" onclick="remarcarAtendimentoAgenda('${x.id}','${x.data_atendimento}','${String(x.horario).slice(0,5)}')">📅</button><button type="button" class="btn-xs" title="Excluir agendamento" onclick="excluirAtendimentoAgenda('${x.id}')">🗑️</button>`:''}</div>`;return'<tr><td data-label="Data">'+date+'</td><td data-label="Horário">'+time+'</td><td data-label="Paciente"><strong>'+agendaEscape(x.pacientes?.nome||'')+'</strong></td><td data-label="Comparecimento"><select id="agenda-status-'+x.id+'" '+disabled+' onchange="agendaAtualizarBotaoSalvar()">'+statusOptions+'</select></td><td data-label="Sessões Pagas"><input id="agenda-cobranca-'+x.id+'" type="number" min="0" step="1" value="'+charged+'" '+disabled+' oninput="agendaAtualizarValorSugerido(\''+x.id+'\','+Number(x.valor_previsto||0)+')"></td><td data-label="Valor Recebido"><input id="agenda-recebido-'+x.id+'" type="number" min="0" step=".01" value="'+received+'" '+disabled+'></td><td data-label="Comentário">'+(locked?(comentario||'—'):'<input id="agenda-comentario-'+x.id+'" type="text" style="width:140px" placeholder="Opcional" value="'+comentario+'">')+'</td><td data-label="Ação">'+acaoHtml+'</td></tr>'}).join(''):'<tr><td colspan="8" class="agenda-empty">Nenhuma linha nesse filtro.</td></tr>';agendaAtualizarBotaoSalvar();const patients=_agendaState.patients.filter(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo');return!pf||state===pf});document.getElementById('agenda-pacientes').innerHTML=patients.length?patients.map(p=>{const state=p.status_operacional||(p.ativo?'ativo':'inativo'),r=agendaRule(p.id),meta=r?r.frequencia+' · '+AGENDA_DIAS[r.dia_semana]+' · '+String(r.horario).slice(0,5):'Sem recorrência';return'<div class="agenda-patient"><div><div class="agenda-patient-name">'+agendaEscape(p.nome)+'</div><div class="agenda-patient-meta">'+meta+'</div></div><div style="display:flex;gap:6px;align-items:center"><span class="agenda-badge '+state+'">'+state+'</span><button class="btn-xs" onclick="abrirPerfilPaciente(\''+p.id+'\')">Editar</button></div></div>'}).join(''):'<div class="agenda-empty">Nenhum paciente nesse filtro.</div>';const itensBusca=_agendaState.patients.filter(p=>!pf||(p.status_operacional||(p.ativo?'ativo':'inativo'))===pf).map(p=>({value:p.id,label:p.nome+' ('+(p.status_operacional||(p.ativo?'ativo':'inativo'))+')'}));if(!_combos['agenda-busca-combo'])comboCriar('agenda-busca-combo',{items:itensBusca,placeholder:'Digite o nome…',allowAll:false,onSelect:id=>{if(id){abrirPerfilPaciente(id);comboSelecionar('agenda-busca-combo','',{silent:true});}}});else comboAtualizarItens('agenda-busca-combo',itensBusca);marcarSetaOrdenacao('agenda');}
 // Perfil do paciente: popup com cadastro, historico de valores (cada mudanca de
 // valor/dia/horario fecha o periodo atual na vigencia escolhida e abre um novo --
 // mesma logica que save_recurrence ja fazia, so que agora com uma data escolhivel
@@ -6324,6 +6653,10 @@ async function abrirPerfilPaciente(id){
   document.getElementById('perfil-cnpj').value=p.contabiliza_cnpj?'true':'false';document.getElementById('perfil-nascimento').value=p.data_nascimento||'';document.getElementById('perfil-responsavel').value=p.responsavel_nome||'';
   document.getElementById('perfil-cpf-paciente').value=p.cpf_paciente||'';
   document.getElementById('perfil-cpf-responsavel').value=p.cpf_responsavel||'';
+  document.getElementById('perfil-telefone').value=p.telefone||'';
+  const waBtn=document.getElementById('perfil-whatsapp-btn');
+  const telDigits=String(p.telefone||'').replace(/\D/g,'');
+  if(waBtn){if(telDigits.length>=10){waBtn.href='https://wa.me/55'+telDigits.replace(/^55/,'');waBtn.style.display='inline-flex';}else{waBtn.style.display='none';}}
   document.getElementById('perfil-inicio-atendimentos').value=p.inicio_atendimentos||'';
   const selComValor=(id,v)=>{const el=document.getElementById(id);v=v||'';if(v&&![...el.options].some(o=>(o.value||o.text)===v))el.add(new Option(v,v));el.value=v;};
   selComValor('perfil-genero',p.genero);selComValor('perfil-faixa',p.faixa_etaria==='Adulto'?'Adulta':p.faixa_etaria);
@@ -6356,17 +6689,17 @@ function perfilStatusFields(){document.getElementById('perfil-pausa-wrap').style
 function renderHistoricoPaciente(rows){
   const el=document.getElementById('perfil-historico');
   if(!rows.length){el.innerHTML='<div class="alert-empty">Sem histórico registrado ainda.</div>';return;}
-  el.innerHTML='<table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 6px">Período</th><th style="text-align:left;padding:4px 6px">Valor</th><th style="text-align:left;padding:4px 6px">Dia/Horário</th></tr></thead><tbody>'+
+  el.innerHTML='<table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 6px">Período</th><th style="text-align:left;padding:4px 6px">Valor</th><th style="text-align:left;padding:4px 6px">Modalidade</th><th style="text-align:left;padding:4px 6px">Dia/Horário</th></tr></thead><tbody>'+
     rows.map(r=>{
       const inicio=String(r.vigencia_inicio).split('-').reverse().join('/'),fim=r.vigencia_fim?String(r.vigencia_fim).split('-').reverse().join('/'):'atual';
-      return '<tr><td style="padding:4px 6px">'+inicio+' – '+fim+'</td><td style="padding:4px 6px">R$ '+Number(r.valor_sessao||0).toFixed(2)+'</td><td style="padding:4px 6px">'+agendaEscape(r.frequencia||'')+' · '+agendaEscape(AGENDA_DIAS[r.dia_semana]||'')+' · '+agendaEscape(String(r.horario||'').slice(0,5))+'</td></tr>';
+      return '<tr><td style="padding:4px 6px">'+inicio+' – '+fim+'</td><td style="padding:4px 6px">R$ '+Number(r.valor_sessao||0).toFixed(2)+'</td><td style="padding:4px 6px">'+agendaEscape(r.modalidade||'—')+'</td><td style="padding:4px 6px">'+agendaEscape(r.frequencia||'')+' · '+agendaEscape(AGENDA_DIAS[r.dia_semana]||'')+' · '+agendaEscape(String(r.horario||'').slice(0,5))+'</td></tr>';
     }).join('')+'</tbody></table>';
 }
 async function salvarPerfilPaciente(){
   const id=document.getElementById('perfil-paciente-id').value,nome=document.getElementById('perfil-nome').value.trim();
   if(!nome)return toast('Informe o nome completo do paciente.');
   try{
-    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cpf_paciente:document.getElementById('perfil-cpf-paciente').value||null,cpf_responsavel:document.getElementById('perfil-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('perfil-inicio-atendimentos').value||null,genero:document.getElementById('perfil-genero').value||null,faixa_etaria:document.getElementById('perfil-faixa').value||null,modalidade:document.getElementById('perfil-modalidade').value||null,cancel_future:true});
+    await agendaApi({action:'save_patient',id,nome,status:document.getElementById('perfil-status').value,pausado_ate:document.getElementById('perfil-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('perfil-cnpj').value==='true',data_nascimento:document.getElementById('perfil-nascimento').value||null,responsavel_nome:document.getElementById('perfil-responsavel').value||null,cpf_paciente:document.getElementById('perfil-cpf-paciente').value||null,cpf_responsavel:document.getElementById('perfil-cpf-responsavel').value||null,telefone:document.getElementById('perfil-telefone').value||null,inicio_atendimentos:document.getElementById('perfil-inicio-atendimentos').value||null,genero:document.getElementById('perfil-genero').value||null,faixa_etaria:document.getElementById('perfil-faixa').value||null,modalidade:document.getElementById('perfil-modalidade').value||null,cancel_future:true});
     const freq=document.getElementById('perfil-frequencia').value;
     const proxEl=document.getElementById('perfil-proxima');if(proxEl.value&&proxEl.value!==proxEl.dataset.original)perfilProximaMudou();
     if(freq){
@@ -6409,8 +6742,8 @@ async function abrirDocumentosDoPaciente(){
 }
 function abrirCadastroPaciente(){limparPacienteAgenda();document.getElementById('agenda-paciente-overlay').classList.add('open');setTimeout(()=>document.getElementById('agenda-nome').focus(),0)}
 function fecharCadastroPaciente(){document.getElementById('agenda-paciente-overlay').classList.remove('open')}
-function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-cpf-paciente','agenda-nascimento','agenda-responsavel','agenda-cpf-responsavel','agenda-inicio-atendimentos','agenda-genero','agenda-faixa','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
-async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cpf_paciente:document.getElementById('agenda-cpf-paciente').value||null,cpf_responsavel:document.getElementById('agenda-cpf-responsavel').value||null,inicio_atendimentos:document.getElementById('agenda-inicio-atendimentos').value||null,genero:document.getElementById('agenda-genero').value||null,faixa_etaria:document.getElementById('agenda-faixa').value||null,modalidade:document.getElementById('agenda-modalidade').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
+function limparPacienteAgenda(){['agenda-paciente-id','agenda-nome','agenda-cpf-paciente','agenda-nascimento','agenda-telefone','agenda-responsavel','agenda-cpf-responsavel','agenda-inicio-atendimentos','agenda-genero','agenda-faixa','agenda-horario','agenda-pausado-ate','agenda-valor'].forEach(id=>document.getElementById(id).value='');document.getElementById('agenda-paciente-status').value='ativo';document.getElementById('agenda-cnpj').value='false';document.getElementById('agenda-frequencia').value='';document.getElementById('agenda-dia').value=1;document.getElementById('agenda-vigencia').value=agendaHoje();document.getElementById('agenda-modalidade').value='';document.getElementById('agenda-plano-info').textContent='';agendaStatusFields()}
+async function salvarPacienteAgenda(){const nome=document.getElementById('agenda-nome').value.trim();if(!nome)return toast('Informe o nome.');try{const p=await agendaApi({action:'save_patient',id:document.getElementById('agenda-paciente-id').value||null,nome,status:document.getElementById('agenda-paciente-status').value,pausado_ate:document.getElementById('agenda-pausado-ate').value||null,contabiliza_cnpj:document.getElementById('agenda-cnpj').value==='true',data_nascimento:document.getElementById('agenda-nascimento').value||null,responsavel_nome:document.getElementById('agenda-responsavel').value||null,cpf_paciente:document.getElementById('agenda-cpf-paciente').value||null,cpf_responsavel:document.getElementById('agenda-cpf-responsavel').value||null,telefone:document.getElementById('agenda-telefone').value||null,inicio_atendimentos:document.getElementById('agenda-inicio-atendimentos').value||null,genero:document.getElementById('agenda-genero').value||null,faixa_etaria:document.getElementById('agenda-faixa').value||null,modalidade:document.getElementById('agenda-modalidade').value||null,cancel_future:document.getElementById('agenda-cancelar-futuros').checked}),freq=document.getElementById('agenda-frequencia').value;let planoNome=null;if(freq){const rec=await agendaApi({action:'save_recurrence',paciente_id:p.id,frequencia:freq,dia_semana:+document.getElementById('agenda-dia').value,horario:document.getElementById('agenda-horario').value,vigencia_inicio:document.getElementById('agenda-vigencia').value||agendaHoje(),modalidade:document.getElementById('agenda-modalidade').value,valor_sessao:+document.getElementById('agenda-valor').value||0});planoNome=rec.plano_pacote_nome;
   // Gera as ocorrencias do mes exibido na hora -- sem isso, a recorrencia ficava
   // salva mas nao aparecia em "Atendimentos" ate clicar manualmente em "Gerar mes".
   await agendaApi({action:'generate_month',month:document.getElementById('agenda-mes').value||agendaMesAtual()});}toast(planoNome?`Paciente salvo. ${planoNome} associado.`:'Paciente salvo.');limparPacienteAgenda();fecharCadastroPaciente();await carregarAgenda()}catch(e){toast(e.message,5000)}}
@@ -6449,7 +6782,11 @@ function toast(msg, dur=3000) {
   setTimeout(()=>el.classList.remove('show'), dur);
 }
 
-function switchTab(name) {
+async function switchTab(name) {
+  const atualAgenda=document.getElementById('page-agenda')?.classList.contains('active');
+  if(atualAgenda&&name!=='agenda'&&agendaAtualizarBotaoSalvar()>0){
+    if(!await appConfirm('Você alterou atendimentos na tabela da Agenda e ainda não clicou em "Salvar alterações da tabela". Sair mesmo assim?','Alterações não salvas',{okText:'Sair sem salvar'}))return;
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');

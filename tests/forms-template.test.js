@@ -160,3 +160,22 @@ test('formulário público valida dígitos verificadores do CPF e aceita CPF vá
   const ok=response();await publicForm({method:'POST',body:{token:'x'.repeat(44),conteudo:{cpf:'529.982.247-25'}}},ok);
   assert.equal(ok.code,201);assert.equal(writes,1);
 });
+
+test('api/forms suporta include_invites=1 sem quebrar contrato padrão e valida export_anamnesis_pdf', async()=>{
+  global.fetch=authFetchStub(async url=>{
+    if(url.includes('formularios_respostas?'))return supabaseReply([]);
+    if(url.includes('formularios_convites?'))return supabaseReply([{id:'c1',paciente_id:'p1',criado_em:new Date().toISOString(),expira_em:'2099-01-01T00:00:00Z',formularios_modelos:{nome:'Cadastro',destino:'cadastro'}}]);
+    throw new Error('unexpected: '+url);
+  });
+  const reqDefault=baseReq({},{resource:undefined});reqDefault.method='GET';
+  const rDefault=response();await forms(reqDefault,rDefault);
+  assert.equal(rDefault.code,200);assert.ok(Array.isArray(rDefault.body));
+
+  const reqInv=baseReq();reqInv.method='GET';reqInv.query={include_invites:'1'};
+  const rInv=response();await forms(reqInv,rInv);
+  assert.equal(rInv.code,200);assert.equal(rInv.body.pending_invites.length,1);
+
+  const reqPdf=baseReq({action:'export_anamnesis_pdf',secoes:'invalido'});reqPdf.method='POST';
+  const rPdf=response();await forms(reqPdf,rPdf);
+  assert.equal(rPdf.code,400);
+});

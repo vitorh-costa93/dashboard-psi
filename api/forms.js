@@ -2,7 +2,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {requireAuth,supabase} from './_auth.js';
 import {decryptClinicalData,encryptClinicalData} from './_clinical-crypto.js';
 import {Document,Packer,Paragraph,TextRun,HeadingLevel} from 'docx';
-import {handleDocuments,renderProntuarioPdf,renderAtividadePdf} from '../lib/documents.js';
+import {handleDocuments,renderAnamnesePdf,renderProntuarioPdf,renderAtividadePdf} from '../lib/documents.js';
 
 const digest=token=>createHash('sha256').update(token).digest('hex');
 const safeJson=async response=>response.json().catch(()=>null);
@@ -46,10 +46,22 @@ export default async function handler(req,res){
         const response=await supabase('/rest/v1/formularios_modelos?select=id,nome,finalidade,campos,destino,ativo&ativo=eq.true&order=criado_em.desc');
         const data=await safeJson(response);return res.status(response.ok?200:response.status).json(response.ok?data:{error:'Falha ao carregar modelos'});
       }
-      const response=await supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino,campos))&status=in.(pending_review,approved)&arquivado_em=is.null&order=enviado_em.desc');
+      const [response,invitesRes]=await Promise.all([
+        supabase('/rest/v1/formularios_respostas?select=id,status,enviado_em,conteudo,formularios_convites!inner(paciente_id,formularios_modelos(nome,finalidade,destino,campos))&status=in.(pending_review,approved)&arquivado_em=is.null&order=enviado_em.desc'),
+        req.query?.include_invites==='1'
+          ? supabase(`/rest/v1/formularios_convites?select=id,paciente_id,criado_em,expira_em,formularios_modelos(nome,destino)&status=eq.pending&expira_em=gt.${encodeURIComponent(new Date().toISOString())}&order=criado_em.desc`)
+          : Promise.resolve(null)
+      ]);
       const data=await safeJson(response);
       if(response.ok){
-        try{return res.status(200).json(data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)})));}
+        try{
+          const respostas=data.map(item=>({...item,conteudo:decryptClinicalData(item.conteudo)}));
+          if(invitesRes){
+            const pending_invites=invitesRes.ok?(await safeJson(invitesRes)||[]):[];
+            return res.status(200).json({respostas,pending_invites});
+          }
+          return res.status(200).json(respostas);
+        }
         catch{return res.status(500).json({error:'Não foi possível abrir os dados clínicos'});}
       }
       return res.status(response.status).json({error:'Falha ao carregar respostas'});
@@ -77,6 +89,14 @@ export default async function handler(req,res){
       const doc=new Document({sections:[{properties:{},children}]});
       const buffer=await Packer.toBuffer(doc);
       return res.status(200).json({arquivo:buffer.toString('base64')});
+    }
+    if(req.method==='POST'&&req.body?.action==='export_anamnesis_pdf'){
+      const {paciente_nome,versao,criado_em,secoes}=req.body;
+      if(!Array.isArray(secoes)||secoes.length>30)return res.status(400).json({error:'Dados de exportação inválidos'});
+      const pdf=await renderAnamnesePdf({paciente_nome,versao,criado_em,secoes});
+      res.setHeader('Content-Type','application/pdf');
+      res.setHeader('Content-Disposition','attachment; filename="anamnese.pdf"');
+      return res.status(200).send(pdf);
     }
     if(req.method==='POST'&&req.body?.action==='export_prontuario'){
       const nome=String(req.body?.paciente_nome||'').trim();

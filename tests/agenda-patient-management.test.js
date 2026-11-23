@@ -100,3 +100,29 @@ test('tabela detalhada remove Convênio, inclui contador dinâmico de linhas e e
   assert.match(html, /data-label="#"[^>]*>\$\{idx\+1\}<\/td>/);
   assert.match(html, /function exportarImagemSessoesDetalhado\(\)/);
 });
+
+test('Fases 2-5: header sync, tooltips KPI, CNPJ, Agenda telefone/remarcar e Espaço de criação', async () => {
+  const html = await read('index.html');
+  const api = await read('api/operational.js');
+  const sql = await read('supabase/migrations/20261123150000_pacientes_telefone.sql');
+  assert.match(html, /id="header-sync-pill"/);
+  assert.match(html, /class="kpi-info-btn"/);
+  assert.match(html, /id="dsess-so-aberto"/);
+  assert.match(html, /id="dsess-img-valores"/);
+  assert.match(html, /onclick="copiarTextoCnpj\(\)"/);
+  assert.match(html, /id="perfil-telefone"/);
+  assert.match(html, /id="agenda-telefone"/);
+  assert.match(html, /id="agenda-cnpj"/);
+  assert.match(html, /function aplicarLogoAtividade\(/);
+  assert.match(html, /id="f-busca-img"/);
+  assert.match(html, /function atualizarSlidePPT\(/);
+  assert.match(html, /function copiarLegendaHashtagsPost\(/);
+  assert.match(html, /function moverFotoSlide\(/);
+  assert.match(html, /id="pront-filtro-texto"/);
+  assert.match(html, /function puxarSessoesDocumento\(/);
+  assert.match(html, /function duplicarDocumentoAtual\(/);
+  assert.match(html, /function visualizarPSMPDF\(/);
+  assert.match(api, /b\.action==='reschedule_appointment'/);
+  assert.match(api, /b\.action==='delete_appointment'/);
+  assert.match(sql, /ADD COLUMN IF NOT EXISTS telefone text/);
+});

@@ -126,3 +126,14 @@ test('Fases 2-5: header sync, tooltips KPI, CNPJ, Agenda telefone/remarcar e Esp
   assert.match(api, /b\.action==='delete_appointment'/);
   assert.match(sql, /ADD COLUMN IF NOT EXISTS telefone text/);
 });
+
+test('Dashboard simplificado exibe 3 KPIs principais e accordion abaixo da tabela', async () => {
+  const html = await read('index.html');
+  const dash = html.match(/id="page-dashboard"[\s\S]*?<!-- \/page-dashboard -->/)[0];
+  const idxTabela = dash.indexOf('id="dsess-table"');
+  const idxAccordion = dash.indexOf('id="dash-more-analytics"');
+  assert.ok(idxTabela > 0 && idxAccordion > idxTabela);
+  assert.match(dash, /class="kpi-row"[\s\S]*?id="kpi-fat"[\s\S]*?id="kpi-pac"[\s\S]*?id="kpi-falta"/);
+  assert.doesNotMatch(dash.slice(0, idxTabela), /id="kpi-tkt"|id="kpi-ret"/);
+  assert.match(dash.slice(idxAccordion), /id="kpi-tkt"[\s\S]*?id="kpi-ret"/);
+});

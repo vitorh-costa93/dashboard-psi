@@ -75,7 +75,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 .nav-tab{padding:11px 18px;font-family:'Playfair Display',serif;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition-property:color,border-color;transition-duration:.2s;white-space:nowrap;}
 .nav-tab.active{color:var(--accent);border-bottom-color:var(--terracotta);}
 .nav-tab:hover:not(.active){color:var(--text);}
-@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row{grid-template-columns:1fr}.header-sync-pill{width:100%;justify-content:center;order:3}}
+@media(max-width:600px){.nav-tabs{flex-wrap:wrap;padding:0;position:relative;top:auto}.nav-tab{flex:1 1 50%;padding:9px 6px;margin-bottom:0;border-bottom-width:2px}.app-header{position:relative;padding:10px 16px;flex-wrap:wrap;row-gap:10px}.app-header-main{flex:1 1 100%}.app-header-logo .brand-symbol{width:52px;height:44px}.app-header-logo .brand-name{font-size:18px}.app-header-logo .brand-role{font-size:6px;margin-top:7px}.kpi-row,.kpi-row-sec{grid-template-columns:1fr}.header-sync-pill{width:100%;justify-content:center;order:3}}
 .header-sync-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#eef3ea;border:1px solid #d5e0cd;font-size:.73rem;color:#3d4d32;font-weight:600;white-space:nowrap}
 .header-sync-dot{width:7px;height:7px;border-radius:50%;background:#4a8f47;flex-shrink:0}
 .kpi-card{position:relative}
@@ -135,7 +135,19 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
 #btn-reload:hover{opacity:.85;}
 
 /* ── KPIs ── */
-.kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:12px;}
+.kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px;}
+.kpi-row-sec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px;}
+.dsh-g-main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);}
+.dash-more-acc{margin-top:16px;}
+.dash-more-acc>summary{list-style:none;cursor:pointer;background:var(--card);border:1.5px dashed #cfc7b2;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);transition:border-color .15s,background .15s;}
+.dash-more-acc>summary::-webkit-details-marker{display:none;}
+.dash-more-acc>summary:hover{border-color:#9ea88b;background:#fcfbf7;}
+.dash-more-acc-title{font-family:'Fraunces',serif;font-size:.98rem;font-weight:600;color:var(--olive);}
+.dash-more-acc-sub{font-size:.74rem;color:var(--muted);margin-top:3px;line-height:1.4;}
+.dash-more-acc-btn{padding:6px 12px;border-radius:8px;background:#eef3ea;border:1px solid #cfd6c6;color:#3d4d32;font-size:.76rem;font-weight:700;white-space:nowrap;}
+.dash-more-acc[open]>summary{margin-bottom:14px;border-style:solid;}
+.dash-more-acc[open] .dash-more-acc-btn::after{content:'▴ Recolher';}
+.dash-more-acc:not([open]) .dash-more-acc-btn::after{content:'▾ Expandir';}
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;box-shadow:var(--shadow);text-align:center;animation:fadeUp .4s ease both;}
 .kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.10s}.kpi-card:nth-child(3){animation-delay:.15s}.kpi-card:nth-child(4){animation-delay:.2s}.kpi-card:nth-child(5){animation-delay:.25s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -243,7 +255,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
   .dsh-g4x2>.dsh-r2 .dsh-saldo-scroll{max-height:380px;overflow:auto;}
 }
 @media(max-width:900px){
-  .kpi-row,.dsh-g75{grid-template-columns:minmax(0,1fr);}
+  .kpi-row,.dsh-g75,.dsh-g-main{grid-template-columns:minmax(0,1fr);}
 }
 @media(max-width:700px){
   .dsh-g4x2{grid-template-columns:minmax(0,1fr);}
@@ -783,7 +795,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="kpi-main" id="kpi-pac">—</div>
       <div class="kpi-comp" id="kpi-pac-mom">—</div>
       <div class="kpi-comp" id="kpi-pac-yoy">—</div>
-      <div class="kpi-label">Pacientes</div>
+      <div class="kpi-label">Pacientes (Horas)</div>
     </div>
     <div class="kpi-card">
       <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
@@ -791,23 +803,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       <div class="kpi-main" id="kpi-falta">—</div>
       <div class="kpi-comp" id="kpi-falta-mom">—</div>
       <div class="kpi-comp" id="kpi-falta-yoy">—</div>
-      <div class="kpi-label">Faltas</div>
-    </div>
-    <div class="kpi-card">
-      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
-      <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Valor recebido dividido pelas sessões cobradas no mês atual até hoje, comparado ao mesmo período anterior.</div>
-      <div class="kpi-main" id="kpi-tkt">—</div>
-      <div class="kpi-comp" id="kpi-tkt-mom">—</div>
-      <div class="kpi-comp" id="kpi-tkt-yoy">—</div>
-      <div class="kpi-label">Ticket médio</div>
-    </div>
-    <div class="kpi-card">
-      <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
-      <div class="kpi-tooltip" hidden><strong>Retenção 90 dias</strong>Percentual de pacientes que iniciaram há pelo menos 90 dias e continuam em acompanhamento ativo.</div>
-      <div class="kpi-main" id="kpi-ret">—</div>
-      <div class="kpi-comp" id="kpi-ret-mom">—</div>
-      <div class="kpi-comp" id="kpi-ret-yoy">—</div>
-      <div class="kpi-label">Retenção 90 dias</div>
+      <div class="kpi-label">% Faltas</div>
     </div>
   </div>
 
@@ -820,7 +816,7 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     <div id="alerts-content"><div class="alert-empty">Calculando alertas...</div></div>
   </div>
 
-  <div class="dsh-g dsh-g75">
+  <div class="dsh-g dsh-g-main">
     <section class="panel">
       <h3>Histórico | ano atual × ano anterior
         <span class="dsh-seg" id="hist-seg">
@@ -835,79 +831,13 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
     </section>
 
     <section class="panel">
-      <h3><span id="acum-titulo">Receita acumulada no mês</span><small>R$</small></h3>
-      <p class="dsh-sub" id="acum-sub">—</p>
-      <div class="dsh-leg"><span><i class="dsh-sw" style="background:var(--olive)"></i>Realizado</span><span><i class="dsh-sw" style="background:var(--sand)"></i>Média 3 meses anteriores</span></div>
-      <div class="dsh-chart"><canvas id="chart-acum"></canvas></div>
-    </section>
-  </div>
-
-  <div class="dsh-g dsh-g4x2">
-    <section class="panel dsh-r2">
-      <h3>Sessões Restantes | Pacote</h3>
-      <div class="dsh-saldo-scroll">
-      <table class="saldo-table">
-        <thead><tr>
-          <td data-tabela="saldo" data-col="paciente" onclick="ordenarTabela('saldo','paciente');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
-          <td data-tabela="saldo" data-col="horario" onclick="ordenarTabela('saldo','horario');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
-          <td data-tabela="saldo" data-col="saldo" onclick="ordenarTabela('saldo','saldo');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
-        </tr></thead>
-        <tbody id="tabela-saldo"></tbody>
-      </table>
-      </div>
-    </section>
-
-    <section class="panel dsh-c2">
       <h3>Mapa da agenda <small>pacientes ativos · grade semanal</small></h3>
       <div class="dsh-leg"><span><i class="dsh-sw" style="background:#f6f2e8"></i>Livre</span><span><i class="dsh-sw" style="background:#e3ead8"></i>Ocupado</span><span><i class="dsh-sw" style="background:#dceaf4"></i>Quinzenal · vaga para revezar</span><span><i class="dsh-sw" style="background:repeating-linear-gradient(135deg,#b86a49 0 2px,#f3dccf 2px 4px)"></i>Wellz</span></div>
       <div class="dsh-hm" id="agenda-map"></div>
     </section>
-
-    <section class="panel dsh-fill">
-      <h3>Origem da receita <small id="donut-fat-mes"></small></h3>
-      <div class="dsh-body">
-        <div class="dsh-origem">
-          <div class="dsh-donut"><canvas id="chart-donut-fat"></canvas><div class="dsh-donut-c" id="origem-centro"></div></div>
-          <div id="origem-legenda" class="dsh-lg"></div>
-        </div>
-        <div>
-          <div class="dsh-sub" style="margin:0 0 2px">Ticket médio por sessão</div>
-          <div id="origem-ticket"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel dsh-fill">
-      <h3>
-        Pacientes por
-        <select class="profile-select" id="profile-select" onchange="updateProfileBars()" aria-label="Agrupar pacientes por">
-          <option value="genero">Gênero</option>
-          <option value="faixa">Faixa Etária</option>
-          <option value="modal">Modalidade</option>
-        </select>
-      </h3>
-      <div class="dsh-body" id="perfil-wrap">
-        <div class="dsh-origem">
-          <div class="dsh-donut"><canvas id="chart-perfil"></canvas><div class="dsh-donut-c" id="perfil-centro"></div></div>
-          <div id="perfil-legenda" class="dsh-lg"></div>
-        </div>
-        <p class="dsh-sub" style="margin:0">Toque numa fatia ou numa linha para ver quem são.</p>
-        <div class="dsh-pop" id="perfil-pop" hidden></div>
-      </div>
-    </section>
-
-    <section class="panel dsh-fill">
-      <h3>Pacientes em atenção <small>faltas · por risco</small></h3>
-      <div id="atencao-lista"></div>
-    </section>
-
-    <section class="panel dsh-fill">
-      <h3>Tempo de acompanhamento <small id="perm-ret"></small></h3>
-      <div class="dsh-body" id="perm-lista"></div>
-    </section>
   </div>
 
-  <div class="generator-card" style="margin-top:20px">
+  <div class="generator-card" style="margin-top:16px">
     <div class="sub-tabs">
       <button class="sub-tab active" id="dashsub-btn-atend" onclick="switchDashSubTab('atend')">Atendimentos — detalhado</button>
       <button class="sub-tab" id="dashsub-btn-cnpj" onclick="switchDashSubTab('cnpj')">🧾 Notas Fiscais (CNPJ)</button>
@@ -972,6 +902,101 @@ button:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.bt
       </div>
     </div>
   </div>
+
+  <details id="dash-more-analytics" class="dash-more-acc" ontoggle="if(this.open){renderAcumulado();updateDonutFat();updateProfileBars();}">
+    <summary>
+      <div>
+        <div class="dash-more-acc-title">📊 Mais análises e gráficos</div>
+        <div class="dash-more-acc-sub">Ticket médio · Retenção 90 dias · Receita acumulada · Sessões Restantes (Pacote) · Origem da receita · Pacientes por perfil · Pacientes em atenção · Tempo de acompanhamento</div>
+      </div>
+      <span class="dash-more-acc-btn" aria-hidden="true"></span>
+    </summary>
+
+    <div class="kpi-row-sec">
+      <div class="kpi-card">
+        <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+        <div class="kpi-tooltip" hidden><strong>Comparação proporcional</strong>Valor recebido dividido pelas sessões cobradas no mês atual até hoje, comparado ao mesmo período anterior.</div>
+        <div class="kpi-main" id="kpi-tkt">—</div>
+        <div class="kpi-comp" id="kpi-tkt-mom">—</div>
+        <div class="kpi-comp" id="kpi-tkt-yoy">—</div>
+        <div class="kpi-label">Ticket médio</div>
+      </div>
+      <div class="kpi-card">
+        <button type="button" class="kpi-info-btn" onclick="toggleKpiTooltip(this)" aria-label="Como este indicador é calculado">i</button>
+        <div class="kpi-tooltip" hidden><strong>Retenção 90 dias</strong>Percentual de pacientes que iniciaram há pelo menos 90 dias e continuam em acompanhamento ativo.</div>
+        <div class="kpi-main" id="kpi-ret">—</div>
+        <div class="kpi-comp" id="kpi-ret-mom">—</div>
+        <div class="kpi-comp" id="kpi-ret-yoy">—</div>
+        <div class="kpi-label">Retenção 90 dias</div>
+      </div>
+    </div>
+
+    <div class="dsh-g dsh-g4x2">
+      <section class="panel dsh-r2">
+        <h3>Sessões Restantes | Pacote</h3>
+        <div class="dsh-saldo-scroll">
+        <table class="saldo-table">
+          <thead><tr>
+            <td data-tabela="saldo" data-col="paciente" onclick="ordenarTabela('saldo','paciente');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Paciente</td>
+            <td data-tabela="saldo" data-col="horario" onclick="ordenarTabela('saldo','horario');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Horário</td>
+            <td data-tabela="saldo" data-col="saldo" onclick="ordenarTabela('saldo','saldo');renderSaldoTable()" style="font-size:.7rem;color:var(--muted);padding-bottom:6px;">Saldo</td>
+          </tr></thead>
+          <tbody id="tabela-saldo"></tbody>
+        </table>
+        </div>
+      </section>
+
+      <section class="panel dsh-c2">
+        <h3><span id="acum-titulo">Receita acumulada no mês</span><small>R$</small></h3>
+        <p class="dsh-sub" id="acum-sub">—</p>
+        <div class="dsh-leg"><span><i class="dsh-sw" style="background:var(--olive)"></i>Realizado</span><span><i class="dsh-sw" style="background:var(--sand)"></i>Média 3 meses anteriores</span></div>
+        <div class="dsh-chart"><canvas id="chart-acum"></canvas></div>
+      </section>
+
+      <section class="panel dsh-fill">
+        <h3>Origem da receita <small id="donut-fat-mes"></small></h3>
+        <div class="dsh-body">
+          <div class="dsh-origem">
+            <div class="dsh-donut"><canvas id="chart-donut-fat"></canvas><div class="dsh-donut-c" id="origem-centro"></div></div>
+            <div id="origem-legenda" class="dsh-lg"></div>
+          </div>
+          <div>
+            <div class="dsh-sub" style="margin:0 0 2px">Ticket médio por sessão</div>
+            <div id="origem-ticket"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel dsh-fill">
+        <h3>
+          Pacientes por
+          <select class="profile-select" id="profile-select" onchange="updateProfileBars()" aria-label="Agrupar pacientes por">
+            <option value="genero">Gênero</option>
+            <option value="faixa">Faixa Etária</option>
+            <option value="modal">Modalidade</option>
+          </select>
+        </h3>
+        <div class="dsh-body" id="perfil-wrap">
+          <div class="dsh-origem">
+            <div class="dsh-donut"><canvas id="chart-perfil"></canvas><div class="dsh-donut-c" id="perfil-centro"></div></div>
+            <div id="perfil-legenda" class="dsh-lg"></div>
+          </div>
+          <p class="dsh-sub" style="margin:0">Toque numa fatia ou numa linha para ver quem são.</p>
+          <div class="dsh-pop" id="perfil-pop" hidden></div>
+        </div>
+      </section>
+
+      <section class="panel dsh-fill">
+        <h3>Pacientes em atenção <small>faltas · por risco</small></h3>
+        <div id="atencao-lista"></div>
+      </section>
+
+      <section class="panel dsh-fill">
+        <h3>Tempo de acompanhamento <small id="perm-ret"></small></h3>
+        <div class="dsh-body" id="perm-lista"></div>
+      </section>
+    </div>
+  </details>
 </div>
 </div>
 </div><!-- /page-dashboard -->
